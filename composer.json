@@ -11,6 +11,7 @@
         "automattic/woocommerce": "^3.1",
         "barryvdh/laravel-dompdf": "^1.0",
         "composer/semver": "^3.3",
+        "consoletvs/charts": "^7.3",
         "guzzlehttp/guzzle": "^7.2",
         "laravel/framework": "^9.2",
         "laravel/sanctum": "^2.14.1",

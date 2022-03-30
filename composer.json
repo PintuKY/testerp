@@ -9,6 +9,7 @@
         "aloha/twilio": "^5.0",
         "arcanedev/log-viewer": "^9.0",
         "automattic/woocommerce": "^3.1",
+        "barryvdh/laravel-dompdf": "^1.0",
         "guzzlehttp/guzzle": "^7.2",
         "laravel/framework": "^9.2",
         "laravel/sanctum": "^2.14.1",

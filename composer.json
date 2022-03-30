@@ -21,7 +21,8 @@
         "mpdf/mpdf": "^6.1",
         "nwidart/laravel-modules": "^9.0",
         "pusher/pusher-php-server": "^7.0",
-        "razorpay/razorpay": "^2.8"
+        "razorpay/razorpay": "^2.8",
+        "spatie/flysystem-dropbox": "^2.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",

@@ -17,7 +17,7 @@ use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Auth;
-use App\System;
+use App\Models\System;
 use Config;
 
 class Util
@@ -157,7 +157,7 @@ class Util
                 $custom_labels = [];
             }
         }
-        
+
         $payment_types = ['cash' => __('lang_v1.cash'), 'card' => __('lang_v1.card'), 'cheque' => __('lang_v1.cheque'), 'bank_transfer' => __('lang_v1.bank_transfer'), 'other' => __('lang_v1.other')];
 
         $payment_types['custom_pay_1'] = !empty($custom_labels['payments']['custom_pay_1']) ? $custom_labels['payments']['custom_pay_1'] : __('lang_v1.custom_payment', ['number' => 1]);
@@ -295,7 +295,7 @@ class Util
                 $format .= ' H:i';
             }
         }
-        
+
         return !empty($date) ? \Carbon::createFromTimestamp(strtotime($date))->format($format) : null;
     }
 
@@ -379,7 +379,7 @@ class Util
     public function is_admin($user, $business_id = null)
     {
         $business_id = empty($business_id) ? $user->business_id : $business_id;
-        
+
         return $user->hasRole('Admin#' . $business_id) ? true : false;
     }
 
@@ -440,7 +440,7 @@ class Util
         foreach ($numbers as $number) {
             $twilio->message($number, $data['sms_body']);
         }
-        
+
     }
 
     /**
@@ -510,7 +510,7 @@ class Util
         if (!empty($sms_settings['header_3'])) {
             $headers[$sms_settings['header_3']] = $sms_settings['header_val_3'];
         }
-        
+
         $options = [];
         if (!empty($headers)) {
             $options['headers'] = $headers;
@@ -538,7 +538,7 @@ class Util
      * @return string
      */
     public function getWhatsappNotificationLink($data)
-    {   
+    {
         //Supports only integers without leading zeros
         $whatsapp_number = abs((int) filter_var($data['mobile_number'],FILTER_SANITIZE_NUMBER_INT));
         $text = $data['whatsapp_text'];
@@ -652,7 +652,7 @@ class Util
         if ($transaction->is_quotation == 1) {
           return route('show_quote', ['token' => $transaction->invoice_token]);
         }
-        
+
         return route('show_invoice', ['token' => $transaction->invoice_token]);
     }
 
@@ -677,7 +677,7 @@ class Util
             return route('invoice_payment', ['token' => $transaction->invoice_token]);
         } else {
             return '';
-        }  
+        }
     }
 
     /**
@@ -692,10 +692,10 @@ class Util
         if (config('app.env') == 'demo') {
             return null;
         }
-        
+
         $uploaded_file_name = null;
         if ($request->hasFile($file_name) && $request->file($file_name)->isValid()) {
-            
+
             //Check if mime type is image
             if ($file_type == 'image') {
                 if (strpos($request->$file_name->getClientMimeType(), 'image/') === false) {
@@ -708,7 +708,7 @@ class Util
                     throw new \Exception("Invalid document file");
                 }
             }
-            
+
             if ($request->$file_name->getSize() <= config('constants.document_size_limit')) {
                 $new_file_name = time() . '_' . $request->$file_name->getClientOriginalName();
                 if ($request->$file_name->storeAs($dir_name, $new_file_name)) {
@@ -719,7 +719,7 @@ class Util
 
         return $uploaded_file_name;
     }
-    
+
     public function serviceStaffDropdown($business_id, $location_id = null)
     {
         return $this->getServiceStaff($business_id, $location_id, true);
@@ -733,7 +733,7 @@ class Util
                             ->where('is_service_staff', 1)
                             ->pluck('name')
                             ->toArray();
-        
+
         //Get all users of service staff roles
         if (!empty($service_staff_roles)) {
             $waiters = User::where('business_id', $business_id)
@@ -748,7 +748,7 @@ class Util
             } else {
               $waiters = $waiters->get();
             }
-            
+
         }
 
         return $waiters;
@@ -769,7 +769,7 @@ class Util
                             ->with(['contact', 'payment_lines'])
                             ->findOrFail($transaction);
         }
-        
+
         $business = !is_object($business_id) ? Business::with(['currency'])->findOrFail($business_id) : $business_id;
 
         $contact = empty($transaction->contact) ? $contact : $transaction->contact;
@@ -812,7 +812,7 @@ class Util
                     }
                 }
             }
-            
+
             $paid_amount = $this->num_f($total_paid, true, $business->currency);
 
             //Replace paid_amount
@@ -1180,12 +1180,12 @@ class Util
                     ->where('location_id', $location_id)
                     ->increment('qty_available', $difference);
                 }
-                
+
                 //Update the child line quantity
                 $prev_line->quantity = $line['quantity'];
                 $prev_line->save();
             }
-            
+
             //Recalculate the price.
             if (is_null($change_percent)) {
                 $parent = TransactionSellLine::findOrFail($prev_line->parent_sell_line_id);
@@ -1193,7 +1193,7 @@ class Util
                     ->select(DB::raw('SUM(unit_price_inc_tax * quantity) as total_price'))
                     ->first()
                     ->total_price;
-                    
+
                 $change_percent = $this->get_percent($child_sum, $parent->unit_price_inc_tax * $parent->quantity);
             }
 
@@ -1214,7 +1214,7 @@ class Util
     {
         $table_name = !empty($table_name) ? $table_name . '.' : '';
         $string = $table_name . "quantity_sold + " . $table_name . "quantity_adjusted + " . $table_name . "quantity_returned + " . $table_name . "mfg_quantity_used";
-        
+
         return $string;
     }
 
@@ -1253,7 +1253,7 @@ class Util
         if (!empty($business_id)) {
             $query->where('contacts.business_id', $business_id);
         }
-        
+
         $contact_payments = $query->first();
         $due = $contact_payments->total_invoice + $contact_payments->total_purchase - $contact_payments->total_paid - $contact_payments->purchase_paid + $contact_payments->opening_balance - $contact_payments->opening_balance_paid;
 
@@ -1335,7 +1335,7 @@ class Util
     * @return string
     */
     public function numToWord($number, $lang = null, $format = 'international')
-    {   
+    {
         if ($format == 'indian') {
            return $this->numToIndianFormat($number);
         }
@@ -1347,7 +1347,7 @@ class Util
         if (empty($lang)) {
             $lang = !empty(auth()->user()) ? auth()->user()->language : 'en';
         }
-        
+
         $f = new \NumberFormatter($lang, \NumberFormatter::SPELLOUT);
 
         return $f->format($number);
@@ -1411,7 +1411,7 @@ class Util
     * @param $action string name of the operation performed on the model instance
     * @param $before object Previous state of the model instance
     * @param $properties array Extra properties to be saved along with model properties
-    * update_note key to directly show message in note section, 
+    * update_note key to directly show message in note section,
     * from_api key to show api client if added from api
     * @param $log_changes boolean whether to log changes to modal properties
     *
@@ -1426,7 +1426,7 @@ class Util
                 if (isset($on->$property)) {
                     $properties['attributes'][$property] = $on->$property;
                 }
-                
+
                 if (!empty($before) && isset($before->$property)) {
                     $properties['old'][$property] = $before->$property;
                 }
@@ -1442,9 +1442,9 @@ class Util
         }
 
         $business = session()->has('business') ? session('business') : Business::find($business_id);
-        
+
         date_default_timezone_set($business->time_zone);
-        
+
         $activity = activity()
                     ->performedOn($on)
                     ->withProperties($properties)
@@ -1469,7 +1469,7 @@ class Util
 
     /**
     * Get location from latitude and longitude
-    * Uses Google's Geocoding api 
+    * Uses Google's Geocoding api
     * @param $lat string latitude
     * @param $long string longitude
     *
@@ -1524,7 +1524,7 @@ class Util
             }
 
             return $full_address;
-           
+
         } catch (\Exception $e) {
             return null;
         }
@@ -1564,10 +1564,10 @@ class Util
 
         $user_details['status'] = !empty($request->input('is_active')) ? $request->input('is_active') : 'inactive';
         $user_details['user_type'] = !empty($user_details['user_type']) ? $user_details['user_type'] : 'user';
-        
+
         $business_id = Auth::user()->business_id;
         $user_details['business_id'] = $business_id;
-        
+
         //Check if subscribed or not, then check for users quota
         if($user_details['user_type'] == 'user') {
             $moduleUtil = new \App\Utils\ModuleUtil;
@@ -1577,7 +1577,7 @@ class Util
                 return $moduleUtil->quotaExpiredResponse('users', $business_id, action('ManageUserController@index'));
             }
         }
-        
+
         if (empty($user_details['allow_login']) || !$user_details['allow_login']) {
             unset($user_details['username']);
             unset($user_details['password']);
@@ -1593,12 +1593,12 @@ class Util
         $user_details['password'] = $user_details['allow_login'] ? Hash::make($user_details['password']) : null;
 
         if ($user_details['allow_login']) {
-            
+
             if (empty($user_details['username'])) {
                 $ref_count = $this->setAndGetReferenceCount('username', $business_id);
                 $user_details['username'] = $this->generateReferenceNumber('username', $ref_count, $business_id);
             }
-            
+
             if($user_details['user_type'] == 'user') {
                 $username_ext = $this->getUsernameExtension();
                 if (!empty($username_ext)) {
@@ -1677,7 +1677,7 @@ class Util
         $location_permissions = $request->input('location_permissions');
         $revoked_permissions = [];
 
-        //during api call if access_all_locations = 1 then generate location permissions 
+        //during api call if access_all_locations = 1 then generate location permissions
         if(($permissions != 'access_all_locations') && $permissions == 1) {
             $permissions = 'access_all_locations';
             $location_ids = $request->input('location_permissions');

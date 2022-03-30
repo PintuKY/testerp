@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -12,7 +12,7 @@ class System extends Model
      * @var string
      */
     protected $table = 'system';
-    
+
     /**
      * Indicates if the model should be timestamped.
      *
@@ -76,7 +76,7 @@ class System extends Model
                 ->value;
 
         $currency = Currency::find($c_id);
-        
+
         return $currency;
     }
 

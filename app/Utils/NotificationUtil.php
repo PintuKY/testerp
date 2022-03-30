@@ -12,7 +12,7 @@ use App\Notifications\SupplierNotification;
 
 use App\NotificationTemplate;
 use App\Restaurant\Booking;
-use App\System;
+use App\Models\System;
 use App\Transaction;
 use Config;
 
@@ -70,7 +70,7 @@ class NotificationUtil extends Util
                                             ->notify(new SupplierNotification($data));
                         }
                         $this->activityLog($transaction, 'email_notification_sent', null, [], false, $business_id);
-                        
+
                     } catch (\Exception $e) {
                         \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
                     }

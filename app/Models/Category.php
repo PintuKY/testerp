@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use DB;
 use Illuminate\Database\Eloquent\Model;
@@ -14,7 +14,7 @@ class Category extends Model
      *
      * @var array
      */
-    
+
 
     /**
      * The attributes that aren't mass assignable.
@@ -36,7 +36,7 @@ class Category extends Model
                                 ->orderBy('name', 'asc')
                                 ->get()
                                 ->toArray();
-                        
+
         if (empty($all_categories)) {
             return [];
         }

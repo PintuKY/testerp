@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\System;
+use App\Models\System;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
@@ -31,7 +31,7 @@ class AppServiceProvider extends ServiceProvider
 
         //force https
         $url = parse_url(config('app.url'));
-        
+
         if($url['scheme'] == 'https'){
            \URL::forceScheme('https');
         }
@@ -48,7 +48,7 @@ class AppServiceProvider extends ServiceProvider
 
         $asset_v = config('constants.asset_version', 1);
         View::share('asset_v', $asset_v);
-        
+
         // Share the list of modules enabled in sidebar
         View::composer(
             ['*'],
@@ -85,7 +85,7 @@ class AppServiceProvider extends ServiceProvider
                             } else {
                                 $__system_settings['additional_js'] = $value['additional_js'];
                             }
-                            
+
                         }
                         if (!empty($value['additional_css'])) {
                             if (isset($__system_settings['additional_css'])){
@@ -101,17 +101,17 @@ class AppServiceProvider extends ServiceProvider
                             $additional_views = array_merge($additional_views, $value['additional_views']);
                         }
                     }
-                    
+
                     $view->with('__additional_views', $additional_views);
                     $view->with('__additional_html', $additional_html);
                     $view->with('__system_settings', $__system_settings);
                 }
             }
         );
-        
+
         //This will fix "Specified key was too long; max key length is 767 bytes issue during migration"
         Schema::defaultStringLength(191);
-        
+
         //Blade directive to format number into required format.
         Blade::directive('num_format', function ($expression) {
             return "number_format($expression, config('constants.currency_precision', 2), session('currency')['decimal_separator'], session('currency')['thousand_separator'])";
@@ -152,8 +152,8 @@ class AppServiceProvider extends ServiceProvider
         Blade::directive('show_tooltip', function ($message) {
             return "<?php
                 if(session('business.enable_tooltip')){
-                    echo '<i class=\"fa fa-info-circle text-info hover-q no-print \" aria-hidden=\"true\" 
-                    data-container=\"body\" data-toggle=\"popover\" data-placement=\"auto bottom\" 
+                    echo '<i class=\"fa fa-info-circle text-info hover-q no-print \" aria-hidden=\"true\"
+                    data-container=\"body\" data-toggle=\"popover\" data-placement=\"auto bottom\"
                     data-content=\"' . $message . '\" data-html=\"true\" data-trigger=\"hover\"></i>';
                 }
                 ?>";
@@ -187,7 +187,7 @@ class AppServiceProvider extends ServiceProvider
                 if (session('business.time_format') == 24) {
                     $time_format = 'H:i';
                 }
-                
+
                 return "\Carbon::createFromTimestamp(strtotime($date))->format(session('business.date_format') . ' ' . '$time_format')";
             } else {
                 return null;
@@ -196,11 +196,11 @@ class AppServiceProvider extends ServiceProvider
 
         //Blade directive to format currency.
         Blade::directive('format_currency', function ($number) {
-            return '<?php 
+            return '<?php
             $formated_number = "";
             if (session("business.currency_symbol_placement") == "before") {
                 $formated_number .= session("currency")["symbol"] . " ";
-            } 
+            }
             $formated_number .= number_format((float) ' . $number . ', config("constants.currency_precision", 2) , session("currency")["decimal_separator"], session("currency")["thousand_separator"]);
 
             if (session("business.currency_symbol_placement") == "after") {

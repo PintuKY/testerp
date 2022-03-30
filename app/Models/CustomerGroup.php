@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -12,7 +12,7 @@ class CustomerGroup extends Model
      * @var array
      */
     protected $dates = ['deleted_at'];
-    
+
     /**
      * The attributes that aren't mass assignable.
      *
@@ -43,7 +43,7 @@ class CustomerGroup extends Model
         if ($prepend_all) {
             $all_cg = $all_cg->prepend(__("report.all"), '');
         }
-        
+
         return $all_cg;
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use DB;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -29,7 +29,7 @@ class Contact extends Authenticatable
     protected $casts = [
         'shipping_custom_field_details' => 'array',
     ];
-    
+
 
     /**
     * Get the business that owns the user.
@@ -87,7 +87,7 @@ class Contact extends Authenticatable
         $query = Contact::where('business_id', $business_id)
                     ->where('type', '!=', 'lead')
                     ->active();
-                    
+
         if ($exclude_default) {
             $query->where('is_default', 0);
         }
@@ -103,7 +103,7 @@ class Contact extends Authenticatable
                 DB::raw("IF (supplier_business_name IS not null, CONCAT(name, ' (', supplier_business_name, ')'), name) as supplier")
             );
         }
-        
+
         if (auth()->check() && !auth()->user()->can('supplier.view') && auth()->user()->can('supplier.view_own')) {
             $query->where('contacts.created_by', auth()->user()->id);
         }
@@ -211,7 +211,7 @@ class Contact extends Authenticatable
 
         $types['customer'] = __('report.customer');
         $types['supplier'] = __('report.supplier');
-        
+
 
         return $types;
     }
@@ -230,7 +230,7 @@ class Contact extends Authenticatable
         if (auth()->check() && auth()->user()->can('customer.create')) {
             $types['customer'] = __('report.customer');
         }
-        
+
 
         return $types;
     }
@@ -286,7 +286,7 @@ class Contact extends Authenticatable
         if (!empty($this->last_name)) {
             $name_array[] = $this->last_name;
         }
-        
+
         return implode(' ', $name_array);
     }
 
@@ -305,7 +305,7 @@ class Contact extends Authenticatable
         if (!empty($this->last_name)) {
             $name_array[] = $this->last_name;
         }
-        
+
         $full_name = implode(' ', $name_array);
         $business_name = !empty($this->supplier_business_name) ? $this->supplier_business_name . ', ' : '';
 

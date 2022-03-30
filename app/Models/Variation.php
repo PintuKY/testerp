@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -15,7 +15,7 @@ class Variation extends Model
      * @var array
      */
     protected $guarded = ['id'];
-    
+
     /**
      * The attributes that should be cast to native types.
      *
@@ -24,7 +24,7 @@ class Variation extends Model
     protected $casts = [
         'combo_variations' => 'array',
     ];
-    
+
     public function product_variation()
     {
         return $this->belongsTo(\App\ProductVariation::class);

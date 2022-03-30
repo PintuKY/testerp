@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Business;
 use App\Currency;
 use App\Notifications\TestEmailNotification;
-use App\System;
+use App\Models\System;
 use App\TaxRate;
 use App\Unit;
 use App\User;
@@ -50,7 +50,7 @@ class BusinessController extends Controller
     {
         $this->businessUtil = $businessUtil;
         $this->moduleUtil = $moduleUtil;
-        
+
         $this->theme_colors = [
             'blue' => 'Blue',
             'black' => 'Black',
@@ -87,7 +87,7 @@ class BusinessController extends Controller
         }
 
         $currencies = $this->businessUtil->allCurrencies();
-        
+
         $timezone_list = $this->businessUtil->allTimeZones();
 
         $months = [];
@@ -99,7 +99,7 @@ class BusinessController extends Controller
         $package_id = request()->package;
 
         $system_settings = System::getProperties(['superadmin_enable_register_tc', 'superadmin_register_tc'], true);
-        
+
         return view('business.register', compact(
             'currencies',
             'timezone_list',
@@ -120,7 +120,7 @@ class BusinessController extends Controller
         if (!config('constants.allow_registration')) {
             return redirect('/');
         }
-        
+
         try {
             $validator = $request->validate(
                 [
@@ -175,22 +175,22 @@ class BusinessController extends Controller
             $business_details['fy_start_month'] = 1;
 
             $business_location = $request->only(['name', 'country', 'state', 'city', 'zip_code', 'landmark', 'website', 'mobile', 'alternate_number']);
-            
+
             //Create the business
             $business_details['owner_id'] = $user->id;
             if (!empty($business_details['start_date'])) {
                 $business_details['start_date'] = Carbon::createFromFormat(config('constants.default_date_format'), $business_details['start_date'])->toDateString();
             }
-            
+
             //upload logo
             $logo_name = $this->businessUtil->uploadFile($request, 'business_logo', 'business_logos', 'image');
             if (!empty($logo_name)) {
                 $business_details['logo'] = $logo_name;
             }
-            
+
             //default enabled modules
             $business_details['enabled_modules'] = ['purchases','add_sale','pos_sale','stock_transfers','stock_adjustment','expenses'];
-            
+
             $business = $this->businessUtil->createNewBusiness($business_details);
 
             //Update user with business id
@@ -237,7 +237,7 @@ class BusinessController extends Controller
             return back()->with('status', $output)->withInput();
         }
     }
-    
+
     /**
      * Handles the validation username
      *
@@ -261,7 +261,7 @@ class BusinessController extends Controller
             exit;
         }
     }
-    
+
     /**
      * Shows business settings form
      *
@@ -281,7 +281,7 @@ class BusinessController extends Controller
 
         $business_id = request()->session()->get('user.business_id');
         $business = Business::where('id', $business_id)->first();
-        
+
         $currencies = $this->businessUtil->allCurrencies();
         $tax_details = TaxRate::forBusinessDropdown($business_id);
         $tax_rates = $tax_details['tax_rates'];
@@ -307,7 +307,7 @@ class BusinessController extends Controller
         $date_formats = Business::date_formats();
 
         $shortcuts = json_decode($business->keyboard_shortcuts, true);
-        
+
         $pos_settings = empty($business->pos_settings) ? $this->businessUtil->defaultPosSettings() : json_decode($business->pos_settings, true);
 
         $email_settings = empty($business->email_settings) ? $this->businessUtil->defaultEmailSettings() : $business->email_settings;
@@ -342,13 +342,13 @@ class BusinessController extends Controller
         if (!auth()->user()->can('business_settings.access')) {
             abort(403, 'Unauthorized action.');
         }
-        
+
         try {
             $notAllowed = $this->businessUtil->notAllowedInDemo();
             if (!empty($notAllowed)) {
                 return $notAllowed;
             }
-        
+
             $business_details = $request->only(['name', 'start_date', 'currency_id', 'tax_label_1', 'tax_number_1', 'tax_label_2', 'tax_number_2', 'default_profit_percent', 'default_sales_tax', 'default_sales_discount', 'sell_price_tax', 'sku_prefix', 'time_zone', 'fy_start_month', 'accounting_method', 'transaction_edit_days', 'sales_cmsn_agnt', 'item_addition_method', 'currency_symbol_placement', 'on_product_expiry',
                 'stop_selling_before', 'default_unit', 'expiry_type', 'date_format',
                 'time_format', 'ref_no_prefixes', 'theme_color', 'email_settings',
@@ -415,7 +415,7 @@ class BusinessController extends Controller
             foreach ($checkboxes as $value) {
                 $business_details[$value] = !empty($request->input($value)) &&  $request->input($value) == 1 ? 1 : 0;
             }
-            
+
             $business_id = request()->session()->get('user.business_id');
             $business = Business::where('id', $business_id)->first();
 
@@ -463,17 +463,17 @@ class BusinessController extends Controller
                         'thousand_separator' => $currency->thousand_separator,
                         'decimal_separator' => $currency->decimal_separator,
                         ]);
-            
+
             //update current financial year to session
             $financial_year = $this->businessUtil->getCurrentFinancialYear($business->id);
             $request->session()->put('financial_year', $financial_year);
-            
+
             $output = ['success' => 1,
                             'msg' => __('business.settings_updated_success')
                         ];
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0,
                             'msg' => __('messages.something_went_wrong')
                         ];
@@ -525,7 +525,7 @@ class BusinessController extends Controller
             }
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             return $this->respondWentWrong($e);
         }
 
@@ -570,7 +570,7 @@ class BusinessController extends Controller
     {
         try {
             $sms_settings = $request->input();
-            
+
             $data = [
                 'sms_settings' => $sms_settings,
                 'mobile_number' => $sms_settings['test_number'],

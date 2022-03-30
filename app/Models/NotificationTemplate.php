@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -86,7 +86,7 @@ class NotificationTemplate extends Model
                     ['{location_name}', '{location_address}', '{location_email}', '{location_phone}', '{location_custom_field_1}', '{location_custom_field_2}', '{location_custom_field_3}', '{location_custom_field_4}'],
                     ['{contact_name}', '{contact_custom_field_1}', '{contact_custom_field_2}','{contact_custom_field_3}','{contact_custom_field_4}', '{contact_custom_field_5}', '{contact_custom_field_6}', '{contact_custom_field_7}', '{contact_custom_field_8}', '{contact_custom_field_9}', '{contact_custom_field_10}']
 
-                ] 
+                ]
             ],
         ];
     }
@@ -100,7 +100,7 @@ class NotificationTemplate extends Model
                     ['{business_name}', '{business_logo}'],
                     ['{balance_due}'],
                     ['{contact_name}', '{contact_custom_field_1}', '{contact_custom_field_2}','{contact_custom_field_3}','{contact_custom_field_4}', '{contact_custom_field_5}', '{contact_custom_field_6}', '{contact_custom_field_7}', '{contact_custom_field_8}', '{contact_custom_field_9}', '{contact_custom_field_10}']
-                ] 
+                ]
             ],
         ];
     }
@@ -125,10 +125,10 @@ class NotificationTemplate extends Model
                     ['{business_name}', '{business_logo}'],
                     ['{order_ref_number}', '{payment_ref_number}', '{paid_amount}'],
                     ['{contact_name}', '{contact_business_name}', '{contact_custom_field_1}', '{contact_custom_field_2}','{contact_custom_field_3}','{contact_custom_field_4}', '{contact_custom_field_5}', '{contact_custom_field_6}', '{contact_custom_field_7}', '{contact_custom_field_8}', '{contact_custom_field_9}', '{contact_custom_field_10}']
-                ] 
+                ]
             ],
             'items_received' => [
-                'name' =>  __('lang_v1.items_received'), 
+                'name' =>  __('lang_v1.items_received'),
                 'extra_tags' => [
                     ['{business_name}', '{business_logo}'],
                     ['{order_ref_number}'],

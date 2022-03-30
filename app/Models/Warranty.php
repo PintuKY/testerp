@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -22,7 +22,7 @@ class Warranty extends Model
         foreach ($warranties as $warranty) {
             $dropdown[$warranty->id] = $warranty->name . ' (' . $warranty->duration . ' ' . __('lang_v1.' . $warranty->duration_type) . ')';
         }
-        
+
         return $dropdown;
     }
 

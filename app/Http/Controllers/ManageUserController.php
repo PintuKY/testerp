@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\BusinessLocation;
 use App\Contact;
-use App\System;
+use App\Models\System;
 use App\User;
 use App\Utils\ModuleUtil;
 use DB;
@@ -128,11 +128,11 @@ class ManageUserController extends Controller
         }
 
         try {
-            
+
             if (!empty($request->input('dob'))) {
                 $request['dob'] = $this->moduleUtil->uf_date($request->input('dob'));
             }
-            
+
             $request['cmmsn_percent'] = !empty($request->input('cmmsn_percent')) ? $this->moduleUtil->num_uf($request->input('cmmsn_percent')) : 0;
 
             $request['max_sales_discount_percent'] = !is_null($request->input('max_sales_discount_percent')) ? $this->moduleUtil->num_uf($request->input('max_sales_discount_percent')) : null;
@@ -144,7 +144,7 @@ class ManageUserController extends Controller
                     ];
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0,
                         'msg' => __("messages.something_went_wrong")
                     ];
@@ -219,7 +219,7 @@ class ManageUserController extends Controller
 
         //Get user form part from modules
         $form_partials = $this->moduleUtil->getModuleData('moduleViewPartials', ['view' => 'manage_user.edit', 'user' => $user]);
-        
+
         return view('manage_user.edit')
                 ->with(compact('roles', 'user', 'contact_access', 'is_checked_checkbox', 'locations', 'permitted_locations', 'form_partials', 'username_ext'));
     }
@@ -308,7 +308,7 @@ class ManageUserController extends Controller
                 if (!empty($previous_role)) {
                     $user->removeRole($user_role->name);
                 }
-                
+
                 $role = Role::findOrFail($role_id);
                 $user->assignRole($role->name);
             }
@@ -340,7 +340,7 @@ class ManageUserController extends Controller
             DB::rollBack();
 
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0,
                             'msg' => $e->getMessage()
                         ];
@@ -372,7 +372,7 @@ class ManageUserController extends Controller
         if (request()->ajax()) {
             try {
                 $business_id = request()->session()->get('user.business_id');
-                
+
                 $user = User::where('business_id', $business_id)
                     ->findOrFail($id);
 
@@ -384,7 +384,7 @@ class ManageUserController extends Controller
                                 ];
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
                 $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];

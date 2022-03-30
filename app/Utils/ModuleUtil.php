@@ -6,7 +6,7 @@ use \Module;
 use App\Account;
 use App\BusinessLocation;
 use App\Product;
-use App\System;
+use App\Models\System;
 use App\Transaction;
 use App\User;
 use Composer\Semver\Comparator;
@@ -32,7 +32,7 @@ class ModuleUtil extends Util
                 return true;
             }
         }
-      
+
         return false;
     }
 
@@ -56,7 +56,7 @@ class ModuleUtil extends Util
     public function getModuleData($function_name, $arguments = null)
     {
         $modules = Module::toCollection()->toArray();
-        
+
         $installed_modules = [];
         foreach ($modules as $module => $details) {
             if ($this->isModuleInstalled($details['name'])) {
@@ -68,7 +68,7 @@ class ModuleUtil extends Util
         if (!empty($installed_modules)) {
             foreach ($installed_modules as $module) {
                 $class = 'Modules\\' . $module['name'] . '\Http\Controllers\DataController';
-                
+
                 if (class_exists($class)) {
                     $class_object = new $class();
                     if (method_exists($class_object, $function_name)) {
@@ -98,7 +98,7 @@ class ModuleUtil extends Util
         $check_for_enable = [];
 
         $output = !empty($is_installed) ? true : false;
-        
+
         if (in_array($module_name, $check_for_enable) &&
             !$this->isModuleEnabled(strtolower($module_name))) {
             $output = false;
@@ -117,12 +117,12 @@ class ModuleUtil extends Util
     {
         if ($this->isSuperadminInstalled()) {
             $package = \Modules\Superadmin\Entities\Subscription::active_subscription($business_id);
-           
+
             if (empty($package)) {
                 return false;
             }
         }
-      
+
         return true;
     }
 
@@ -144,7 +144,7 @@ class ModuleUtil extends Util
             }
 
             $package = \Modules\Superadmin\Entities\Subscription::active_subscription($business_id);
-           
+
             if (empty($package)) {
                 return false;
             } elseif (isset($package['package_details'][$permission])) {
@@ -171,7 +171,7 @@ class ModuleUtil extends Util
                 return false;
             }
         }
-      
+
         return true;
     }
 
@@ -228,11 +228,11 @@ class ModuleUtil extends Util
     public function countProducts($business_id, $start_dt, $end_dt)
     {
         $query = Product::where('business_id', $business_id);
-        
+
         if (!empty($start_dt) && !empty($start_dt)) {
             $query->whereBetween('created_at', [$start_dt, $end_dt]);
         }
-                            
+
         $count = $query->count();
 
         return $count;
@@ -247,7 +247,7 @@ class ModuleUtil extends Util
         if (!empty($start_dt) && !empty($start_dt)) {
             $query->whereBetween('created_at', [$start_dt, $end_dt]);
         }
-                            
+
         $count = $query->count();
 
         return $count;
@@ -256,7 +256,7 @@ class ModuleUtil extends Util
     public function getResourceCount($business_id, $package)
     {
         $is_available = $this->isSuperadminInstalled();
-        
+
         $start_dt = null;
         $end_dt = null;
 
@@ -286,7 +286,7 @@ class ModuleUtil extends Util
     public function isQuotaAvailable($type, $business_id, $total_rows = 0)
     {
         $is_available = $this->isSuperadminInstalled();
-        
+
         if ($is_available) {
             $package = \Modules\Superadmin\Entities\Subscription::active_subscription($business_id);
 
@@ -334,7 +334,7 @@ class ModuleUtil extends Util
                 }
             } elseif ($type == 'invoices') {
                 $max_allowed = isset($package->package_details['invoice_count']) ? $package->package_details['invoice_count'] : 0;
-                
+
                 if ($max_allowed == 0) {
                     return true;
                 } else {
@@ -466,7 +466,7 @@ class ModuleUtil extends Util
 
             $output['is_update_available'] = Comparator::greaterThan($output['available_version'], $output['installed_version']);
         }
-        
+
         return $output;
     }
 

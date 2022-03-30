@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -23,7 +23,7 @@ class Product extends Model
     protected $casts = [
         'sub_unit_ids' => 'array',
     ];
-    
+
     /**
      * Get the products image.
      *
@@ -58,7 +58,7 @@ class Product extends Model
     {
         return $this->hasMany(\App\ProductVariation::class);
     }
-    
+
     /**
      * Get the brand associated with the product.
      */
@@ -66,7 +66,7 @@ class Product extends Model
     {
         return $this->belongsTo(\App\Brands::class);
     }
-    
+
     /**
     * Get the unit associated with the product.
     */
@@ -88,7 +88,7 @@ class Product extends Model
     {
         return $this->belongsTo(\App\Category::class, 'sub_category_id', 'id');
     }
-    
+
     /**
      * Get the brand associated with the product.
      */

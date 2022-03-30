@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -120,10 +120,10 @@ class Business extends Model
         }
     }
 
-    public function getBusinessAddressAttribute() 
+    public function getBusinessAddressAttribute()
     {
         $location = $this->locations->first();
-        $address = $location->landmark . ', ' .$location->city . 
+        $address = $location->landmark . ', ' .$location->city .
         ', ' . $location->state . '<br>' . $location->country . ', ' . $location->zip_code;
 
         return $address;

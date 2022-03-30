@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -13,8 +13,8 @@ class TaxRate extends Model
      *
      * @var array
      */
-    
-    
+
+
     /**
      * The attributes that aren't mass assignable.
      *

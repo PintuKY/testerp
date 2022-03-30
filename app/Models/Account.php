@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -11,7 +11,7 @@ use App\BusinessLocation;
 class Account extends Model
 {
     use SoftDeletes;
-    
+
     protected $guarded = ['id'];
 
     /**
@@ -22,7 +22,7 @@ class Account extends Model
     protected $casts = [
         'account_details' => 'array',
     ];
-    
+
     public static function forDropdown($business_id, $prepend_none, $closed = false, $show_balance = false)
     {
         $query = Account::where('business_id', $business_id);
@@ -58,8 +58,8 @@ class Account extends Model
             //     $join->on('AT.account_id', '=', 'accounts.id');
             //     $join->whereNull('AT.deleted_at');
             // })
-            $query->select('accounts.name', 
-                    'accounts.id', 
+            $query->select('accounts.name',
+                    'accounts.id',
                     DB::raw("(SELECT SUM( IF(account_transactions.type='credit', amount, -1*amount) ) as balance from account_transactions where account_transactions.account_id = accounts.id AND deleted_at is NULL) as balance")
                 );
         }

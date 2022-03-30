@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class PaymentAccount extends Model
 {
     use SoftDeletes;
-    
+
     public static function account_types()
     {
         return ['cash' => trans("lang_v1.cash"), 'card' => trans("lang_v1.card"),

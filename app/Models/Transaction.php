@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -10,7 +10,7 @@ class Transaction extends Model
 
     //Transaction status = ['received','pending','ordered','draft','final', 'in_transit', 'completed']
 
-    
+
     /**
      * The attributes that aren't mass assignable.
      *
@@ -35,7 +35,7 @@ class Transaction extends Model
      * @var string
      */
     protected $table = 'transactions';
-    
+
     public function purchase_lines()
     {
         return $this->hasMany(\App\PurchaseLine::class);
@@ -132,7 +132,7 @@ class Transaction extends Model
     public function getDocumentPathAttribute()
     {
         $path = !empty($this->document) ? asset('/uploads/documents/' . $this->document) : null;
-        
+
         return $path;
     }
 
@@ -259,7 +259,7 @@ class Transaction extends Model
     {
         return $this->belongsTo(\App\Account::class, 'prefer_payment_account');
     }
-    
+
     /**
      * Returns the list of discount types.
      */
@@ -353,9 +353,9 @@ class Transaction extends Model
     public static function sell_statuses()
     {
         return [
-            'final' => __('sale.final'), 
-            'draft' => __('sale.draft'), 
-            'quotation' => __('lang_v1.quotation'), 
+            'final' => __('sale.final'),
+            'draft' => __('sale.draft'),
+            'quotation' => __('lang_v1.quotation'),
             'proforma' => __('lang_v1.proforma')
         ];
     }
@@ -394,7 +394,7 @@ class Transaction extends Model
                                 ->whereIn('id', $this->sales_order_ids)
                                 ->get();
         }
-        
+
         return $sales_orders;
     }
 }

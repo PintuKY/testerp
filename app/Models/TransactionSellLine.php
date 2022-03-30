@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -12,7 +12,7 @@ class TransactionSellLine extends Model
      * @var array
      */
     protected $guarded = ['id'];
-    
+
     public function transaction()
     {
         return $this->belongsTo(\App\Transaction::class);

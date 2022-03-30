@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
@@ -157,14 +157,14 @@ class Media extends Model
         $output_file = public_path('uploads') . '/media/' . $file_name;
 
         // open the output file for writing
-        $ifp = fopen( $output_file, 'wb' ); 
+        $ifp = fopen( $output_file, 'wb' );
 
         fwrite( $ifp, base64_decode( $base64_string ) );
 
         // clean up the file resource
-        fclose( $ifp ); 
+        fclose( $ifp );
 
-        return $file_name; 
+        return $file_name;
     }
 
     /**
@@ -203,12 +203,12 @@ class Media extends Model
                             'model_media_type' => $model_media_type
                         ]);
                 }
-                
+
                 $model->media()->saveMany($media_obj);
             } else {
                 //delete previous media if exists
                 $model->media()->delete();
-                
+
                 $media_obj = new \App\Media([
                         'file_name' => $uploaded_files,
                         'business_id' => $business_id,

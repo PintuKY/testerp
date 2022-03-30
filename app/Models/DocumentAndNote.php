@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -27,7 +27,7 @@ class DocumentAndNote extends Model
     {
         return $this->morphTo();
     }
-    
+
     public function media()
     {
         return $this->morphMany(\App\Media::class, 'model');

@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use DB;
 use Illuminate\Database\Eloquent\Model;
@@ -14,8 +14,8 @@ class Unit extends Model
      *
      * @var array
      */
-    
-    
+
+
     /**
      * The attributes that aren't mass assignable.
      *
@@ -43,7 +43,7 @@ class Unit extends Model
         if ($show_none) {
             $dropdown->prepend(__('messages.please_select'), '');
         }
-        
+
         return $dropdown;
     }
 

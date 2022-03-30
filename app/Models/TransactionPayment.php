@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Events\TransactionPaymentDeleted;
@@ -53,7 +53,7 @@ class TransactionPayment extends Model
     public function getDocumentPathAttribute()
     {
         $path = !empty($this->document) ? asset('/uploads/documents/' . $this->document) : null;
-        
+
         return $path;
     }
 
@@ -95,7 +95,7 @@ class TransactionPayment extends Model
             $payment_status = $transactionUtil->updatePaymentStatus($payment->transaction_id);
 
             $transaction->payment_status = $payment_status;
-            
+
             $transactionUtil->activityLog($transaction, 'payment_edited', $transaction_before);
         }
 
@@ -107,6 +107,6 @@ class TransactionPayment extends Model
 
         //Add event to delete account transaction
         event(new TransactionPaymentDeleted($payment));
-        
+
     }
 }

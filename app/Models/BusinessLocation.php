@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use DB;
 use Illuminate\Database\Eloquent\Model;
@@ -45,7 +45,7 @@ class BusinessLocation extends Model
                 $query->whereIn('id', $permitted_locations);
             }
         }
-        
+
 
         if ($append_id) {
             $query->select(
@@ -138,7 +138,7 @@ class BusinessLocation extends Model
         return $featured_products;
     }
 
-    public function getLocationAddressAttribute() 
+    public function getLocationAddressAttribute()
     {
         $location = $this;
         $address_line_1 = [];

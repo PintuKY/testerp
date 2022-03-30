@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3053a9a665d99f39012994046a364cc6",
+    "content-hash": "3afac6c44cbf78ee601b419ef67365d1",
     "packages": [
         {
             "name": "aloha/twilio",
@@ -4961,6 +4961,66 @@
                 "source": "https://github.com/srmklive/laravel-paypal/tree/3.0.14"
             },
             "time": "2022-03-12T12:22:46+00:00"
+        },
+        {
+            "name": "stripe/stripe-php",
+            "version": "v7.120.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/stripe/stripe-php.git",
+                "reference": "d63a23a281d2efa1a9618ac48b74c61ce8a775f1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/stripe/stripe-php/zipball/d63a23a281d2efa1a9618ac48b74c61ce8a775f1",
+                "reference": "d63a23a281d2efa1a9618ac48b74c61ce8a775f1",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "ext-json": "*",
+                "ext-mbstring": "*",
+                "php": ">=5.6.0"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "3.5.0",
+                "phpstan/phpstan": "^1.2",
+                "phpunit/phpunit": "^5.7 || ^9.0",
+                "squizlabs/php_codesniffer": "^3.3"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.0-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Stripe\\": "lib/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Stripe and contributors",
+                    "homepage": "https://github.com/stripe/stripe-php/contributors"
+                }
+            ],
+            "description": "Stripe PHP Library",
+            "homepage": "https://stripe.com/",
+            "keywords": [
+                "api",
+                "payment processing",
+                "stripe"
+            ],
+            "support": {
+                "issues": "https://github.com/stripe/stripe-php/issues",
+                "source": "https://github.com/stripe/stripe-php/tree/v7.120.0"
+            },
+            "time": "2022-03-29T15:44:39+00:00"
         },
         {
             "name": "symfony/console",

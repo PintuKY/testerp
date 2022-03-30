@@ -2,14 +2,14 @@
 
 namespace App\Exceptions;
 
-use App\Mail\ExceptionOccured;
-use Exception;
-use Illuminate\Auth\AuthenticationException;
-
+// use App\Mail\ExceptionOccured;
+// use Exception;
+// use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
-use Mail;
-use Symfony\Component\Debug\Exception\FlattenException;
-use Symfony\Component\Debug\ExceptionHandler as SymfonyExceptionHandler;
+use Throwable;
+// use Mail;
+// use Symfony\Component\Debug\Exception\FlattenException;
+// use Symfony\Component\Debug\ExceptionHandler as SymfonyExceptionHandler;
 
 class Handler extends ExceptionHandler
 {
@@ -35,16 +35,16 @@ class Handler extends ExceptionHandler
      * @param  \Exception  $exception
      * @return void
      */
-    public function report(Exception $exception)
-    {
-        if ($this->shouldReport($exception)) {
-            if (config('app.env') == 'demo') {
-                $this->sendEmail($exception); // sends an email in demo server
-            }
-        }
+    // public function report(Exception $exception)
+    // {
+    //     if ($this->shouldReport($exception)) {
+    //         if (config('app.env') == 'demo') {
+    //             $this->sendEmail($exception); // sends an email in demo server
+    //         }
+    //     }
 
-        parent::report($exception);
-    }
+    //     parent::report($exception);
+    // }
 
     /**
      * Render an exception into an HTTP response.
@@ -53,10 +53,10 @@ class Handler extends ExceptionHandler
      * @param  \Exception  $exception
      * @return \Illuminate\Http\Response
      */
-    public function render($request, Exception $exception)
-    {
-        return parent::render($request, $exception);
-    }
+    // public function render($request, Exception $exception)
+    // {
+    //     return parent::render($request, $exception);
+    // }
 
     /**
      * Convert an authentication exception into an unauthenticated response.
@@ -65,35 +65,35 @@ class Handler extends ExceptionHandler
      * @param  \Illuminate\Auth\AuthenticationException  $exception
      * @return \Illuminate\Http\Response
      */
-    protected function unauthenticated($request, AuthenticationException $exception)
-    {
-        if ($request->expectsJson()) {
-            return response()->json(['error' => 'Unauthenticated.'], 401);
-        }
+    // protected function unauthenticated($request, AuthenticationException $exception)
+    // {
+    //     if ($request->expectsJson()) {
+    //         return response()->json(['error' => 'Unauthenticated.'], 401);
+    //     }
 
-        return redirect()->guest(route('login'));
-    }
+    //     return redirect()->guest(route('login'));
+    // }
 
     /**
      * Sends the exception email in demo server
      *
      * @param $exception
      */
-    public function sendEmail(Exception $exception)
-    {
-        try {
-            $e = FlattenException::create($exception);
+    // public function sendEmail(Exception $exception)
+    // {
+    //     try {
+    //         $e = FlattenException::create($exception);
 
-            $handler = new SymfonyExceptionHandler();
+    //         $handler = new SymfonyExceptionHandler();
 
-            $html = $handler->getHtml($e);
-            $email = config('mail.username');
+    //         $html = $handler->getHtml($e);
+    //         $email = config('mail.username');
             
-            if (!empty($email)) {
-                Mail::to($email)->send(new ExceptionOccured($html));
-            }
-        } catch (Exception $ex) {
-            dd($ex);
-        }
-    }
+    //         if (!empty($email)) {
+    //             Mail::to($email)->send(new ExceptionOccured($html));
+    //         }
+    //     } catch (Exception $ex) {
+    //         dd($ex);
+    //     }
+    // }
 }

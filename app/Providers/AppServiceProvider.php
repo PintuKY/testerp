@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use App\Utils\ModuleUtil;
+use Illuminate\Support\Carbon;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -161,37 +162,40 @@ class AppServiceProvider extends ServiceProvider
 
         //Blade directive to convert.
         Blade::directive('format_date', function ($date) {
-            if (!empty($date)) {
-                return "\Carbon::createFromTimestamp(strtotime($date))->format(session('business.date_format'))";
-            } else {
-                return null;
-            }
+            // if (!empty($date)) {
+            //     return "Carbon::createFromTimestamp(strtotime($date))->format(session('business.date_format'))";
+            // } else {
+            //     return null;
+            // }
+            return "";
         });
 
         //Blade directive to convert.
         Blade::directive('format_time', function ($date) {
-            if (!empty($date)) {
-                $time_format = 'h:i A';
-                if (session('business.time_format') == 24) {
-                    $time_format = 'H:i';
-                }
-                return "\Carbon::createFromTimestamp(strtotime($date))->format('$time_format')";
-            } else {
-                return null;
-            }
+            // if (!empty($date)) {
+            //     $time_format = 'h:i A';
+            //     if (session('business.time_format') == 24) {
+            //         $time_format = 'H:i';
+            //     }
+            //     return "Carbon::createFromTimestamp(strtotime($date))->format('$time_format')";
+            // } else {
+            //     return null;
+            // }
+            return "";
         });
 
         Blade::directive('format_datetime', function ($date) {
-            if (!empty($date)) {
-                $time_format = 'h:i A';
-                if (session('business.time_format') == 24) {
-                    $time_format = 'H:i';
-                }
+            // if (!empty($date)) {
+            //     $time_format = 'h:i A';
+            //     if (session('business.time_format') == 24) {
+            //         $time_format = 'H:i';
+            //     }
 
-                return "\Carbon::createFromTimestamp(strtotime($date))->format(session('business.date_format') . ' ' . '$time_format')";
-            } else {
-                return null;
-            }
+            //     return "Carbon::createFromTimestamp(strtotime($date))->format(session('business.date_format') . ' ' . '$time_format')";
+            // } else {
+            //     return null;
+            // }
+            return "";
         });
 
         //Blade directive to format currency.

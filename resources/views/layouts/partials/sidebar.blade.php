@@ -9,7 +9,7 @@
 	</a>
 
     <!-- Sidebar Menu -->
-    {!! Menu::render('admin-sidebar-menu', 'adminltecustom'); !!}
+    {{-- {!! Menu::render('admin-sidebar-menu', 'adminltecustom'); !!} --}}
 
     <!-- /.sidebar-menu -->
   </section>

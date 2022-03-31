@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Business;
+use App\Models\Business;
 use App\BusinessLocation;
 use App\Contact;
 use App\CustomerGroup;
@@ -83,7 +83,7 @@ class ContactController extends Controller
         if ($type == 'customer') {
             $customer_groups = CustomerGroup::forDropdown($business_id);
         }
-        
+
         return view('contact.index')
             ->with(compact('type', 'reward_enabled', 'customer_groups'));
     }
@@ -147,7 +147,7 @@ class ContactController extends Controller
                 'action',
                 function ($row) {
                     $html = '<div class="btn-group">
-                    <button type="button" class="btn btn-info dropdown-toggle btn-xs" 
+                    <button type="button" class="btn btn-info dropdown-toggle btn-xs"
                         data-toggle="dropdown" aria-expanded="false">' .
                         __("messages.actions") .
                         '<span class="caret"></span><span class="sr-only">Toggle Dropdown
@@ -301,7 +301,7 @@ class ContactController extends Controller
                 ->where('uca.user_id', $user_id);
             }
         }
-        
+
 
         if (request()->has('has_sell_due')) {
            $query->havingRaw('(total_invoice - invoice_received) > 0');
@@ -322,8 +322,8 @@ class ContactController extends Controller
         $has_no_sell_from = request()->input('has_no_sell_from', null);
 
         if (
-            (!$is_admin && auth()->user()->can('customer_with_no_sell_one_month')) || 
-            ($has_no_sell_from == 'one_month' && (auth()->user()->can('customer_with_no_sell_one_month') || auth()->user()->can('customer_irrespective_of_sell')) ) 
+            (!$is_admin && auth()->user()->can('customer_with_no_sell_one_month')) ||
+            ($has_no_sell_from == 'one_month' && (auth()->user()->can('customer_with_no_sell_one_month') || auth()->user()->can('customer_irrespective_of_sell')) )
             ) {
             $from_transaction_date = \Carbon::now()->subDays(30)->format('Y-m-d');
             $query->havingRaw("max_transaction_date < '{$from_transaction_date}'")
@@ -331,8 +331,8 @@ class ContactController extends Controller
         }
 
         if (
-            (!$is_admin && auth()->user()->can('customer_with_no_sell_three_month')) || 
-            ($has_no_sell_from == 'three_months' && (auth()->user()->can('customer_with_no_sell_three_month') || auth()->user()->can('customer_irrespective_of_sell')) ) 
+            (!$is_admin && auth()->user()->can('customer_with_no_sell_three_month')) ||
+            ($has_no_sell_from == 'three_months' && (auth()->user()->can('customer_with_no_sell_three_month') || auth()->user()->can('customer_irrespective_of_sell')) )
         ) {
             $from_transaction_date = \Carbon::now()->subMonths(3)->format('Y-m-d');
             $query->havingRaw("max_transaction_date < '{$from_transaction_date}'")
@@ -340,16 +340,16 @@ class ContactController extends Controller
         }
 
         if (
-            (!$is_admin && auth()->user()->can('customer_with_no_sell_six_month')) || 
-            ($has_no_sell_from == 'six_months' && (auth()->user()->can('customer_with_no_sell_six_month') || auth()->user()->can('customer_irrespective_of_sell')) ) 
+            (!$is_admin && auth()->user()->can('customer_with_no_sell_six_month')) ||
+            ($has_no_sell_from == 'six_months' && (auth()->user()->can('customer_with_no_sell_six_month') || auth()->user()->can('customer_irrespective_of_sell')) )
         ) {
             $from_transaction_date = \Carbon::now()->subMonths(6)->format('Y-m-d');
             $query->havingRaw("max_transaction_date < '{$from_transaction_date}'")
                      ->orHavingRaw('transaction_date IS NULL');
         }
 
-        if ((!$is_admin && auth()->user()->can('customer_with_no_sell_one_year')) || 
-            ($has_no_sell_from == 'one_year' && (auth()->user()->can('customer_with_no_sell_one_year') || auth()->user()->can('customer_irrespective_of_sell')) ) 
+        if ((!$is_admin && auth()->user()->can('customer_with_no_sell_one_year')) ||
+            ($has_no_sell_from == 'one_year' && (auth()->user()->can('customer_with_no_sell_one_year') || auth()->user()->can('customer_irrespective_of_sell')) )
         ) {
             $from_transaction_date = \Carbon::now()->subYear()->format('Y-m-d');
             $query->havingRaw("max_transaction_date < '{$from_transaction_date}'")
@@ -378,7 +378,7 @@ class ContactController extends Controller
                 'action',
                 function ($row) {
                     $html = '<div class="btn-group">
-                    <button type="button" class="btn btn-info dropdown-toggle btn-xs" 
+                    <button type="button" class="btn btn-info dropdown-toggle btn-xs"
                         data-toggle="dropdown" aria-expanded="false">' .
                         __("messages.actions") .
                         '<span class="caret"></span><span class="sr-only">Toggle Dropdown
@@ -391,7 +391,7 @@ class ContactController extends Controller
                     if ($return_due > 0) {
                         $html .= '<li><a href="' . action('TransactionPaymentController@getPayContactDue', [$row->id]) . '?type=sell_return" class="pay_purchase_due"><i class="fas fa-money-bill-alt" aria-hidden="true"></i>' . __("lang_v1.pay_sell_return_due") . '</a></li>';
                     }
-                    
+
                     if (auth()->user()->can('customer.view') || auth()->user()->can('customer.view_own')) {
                         $html .= '<li><a href="' . action('ContactController@show', [$row->id]) . '"><i class="fas fa-eye" aria-hidden="true"></i>' . __("messages.view") . '</a></li>';
                     }
@@ -552,13 +552,13 @@ class ContactController extends Controller
         if (auth()->user()->can('customer.create') || auth()->user()->can('customer.view_own')) {
             $types['customer'] = __('report.customer');
         }
-       
+
 
         $customer_groups = CustomerGroup::forDropdown($business_id);
         $selected_type = request()->type;
 
         $module_form_parts = $this->moduleUtil->getModuleData('contact_form_part');
-        
+
         return view('contact.create')
             ->with(compact('types', 'customer_groups', 'selected_type', 'module_form_parts'));
     }
@@ -621,7 +621,7 @@ class ContactController extends Controller
 
             $input['credit_limit'] = $request->input('credit_limit') != '' ? $this->commonUtil->num_uf($request->input('credit_limit')) : null;
             $input['opening_balance'] = $this->commonUtil->num_uf($request->input('opening_balance'));
-            
+
             $output = $this->contactUtil->createNewContact($input);
 
             $this->moduleUtil->getModuleData('after_contact_saved', ['contact' => $output['data'], 'input' => $request->input()]);
@@ -630,7 +630,7 @@ class ContactController extends Controller
 
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => false,
                             'msg' =>__("messages.something_went_wrong")
                         ];
@@ -683,7 +683,7 @@ class ContactController extends Controller
            ->with(['causer', 'subject'])
            ->latest()
            ->get();
-        
+
         return view('contact.show')
              ->with(compact('contact', 'reward_enabled', 'contact_dropdown', 'business_locations', 'view_type', 'contact_view_tabs', 'activities'));
     }
@@ -715,7 +715,7 @@ class ContactController extends Controller
             if (auth()->user()->can('customer.create')) {
                 $types['customer'] = __('report.customer');
             }
-            
+
 
             $customer_groups = CustomerGroup::forDropdown($business_id);
 
@@ -785,7 +785,7 @@ class ContactController extends Controller
                 }
 
                 $input['credit_limit'] = $request->input('credit_limit') != '' ? $this->commonUtil->num_uf($request->input('credit_limit')) : null;
-                
+
                 $business_id = $request->session()->get('user.business_id');
 
                 $input['opening_balance'] = $this->commonUtil->num_uf($request->input('opening_balance'));
@@ -800,7 +800,7 @@ class ContactController extends Controller
 
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
                 $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -857,7 +857,7 @@ class ContactController extends Controller
                 }
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
                 $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -931,7 +931,7 @@ class ContactController extends Controller
                 'export_custom_field_5',
                 'export_custom_field_6'
             );
-                    
+
             if (request()->session()->get('business.enable_rp') == 1) {
                 $contacts->addSelect('total_rp');
             }
@@ -1013,7 +1013,7 @@ class ContactController extends Controller
             if (!empty($notAllowed)) {
                 return $notAllowed;
             }
-            
+
             //Set maximum php execution time
             ini_set('max_execution_time', 0);
 
@@ -1022,7 +1022,7 @@ class ContactController extends Controller
                 $parsed_array = Excel::toArray([], $file);
                 //Remove header row
                 $imported_data = array_splice($parsed_array[0], 1);
-                
+
                 $business_id = $request->session()->get('user.business_id');
                 $user_id = $request->session()->get('user.id');
 
@@ -1030,7 +1030,7 @@ class ContactController extends Controller
 
                 $is_valid = true;
                 $error_msg = '';
-                
+
                 DB::beginTransaction();
                 foreach ($imported_data as $key => $value) {
                     //Check if 27 no. of columns exists
@@ -1066,7 +1066,7 @@ class ContactController extends Controller
                         break;
                     }
 
-                    $contact_array['prefix'] = $value[1]; 
+                    $contact_array['prefix'] = $value[1];
                     //Check contact name
                     if (!empty($value[2])) {
                         $contact_array['first_name'] = $value[2];
@@ -1082,7 +1082,7 @@ class ContactController extends Controller
                     //Check business name
                     if (!empty(trim($value[5]))) {
                         $contact_array['supplier_business_name'] = $value[5];
-                    } 
+                    }
 
                     //Check supplier fields
                     if (in_array($contact_type, ['supplier', 'both'])) {
@@ -1111,7 +1111,7 @@ class ContactController extends Controller
                         $count = Contact::where('business_id', $business_id)
                                     ->where('contact_id', $value[6])
                                     ->count();
-                
+
 
                         if ($count == 0) {
                             $contact_array['contact_id'] = $value[6];
@@ -1227,7 +1227,7 @@ class ContactController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0,
                             'msg' => $e->getMessage()
                         ];
@@ -1313,7 +1313,7 @@ class ContactController extends Controller
             }
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             return $this->respondWentWrong($e);
         }
 
@@ -1356,7 +1356,7 @@ class ContactController extends Controller
 
             //replace balance_due
             $data['email_body'] = str_replace('{balance_due}', $this->notificationUtil->num_f($ledger_details['balance_due']), $data['email_body']);
-            
+
             $data['email_settings'] = request()->session()->get('business.email_settings');
 
 
@@ -1381,7 +1381,7 @@ class ContactController extends Controller
             $output = ['success' => 1, 'msg' => __('lang_v1.notification_sent_successfully')];
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0,
                             'msg' => "File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage()
                         ];

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Business;
+use App\Models\Business;
 
 use App\BusinessLocation;
 use App\Product;
@@ -80,14 +80,14 @@ class ImportOpeningStockController extends Controller
             if (!empty($notAllowed)) {
                 return $notAllowed;
             }
-            
+
             //Set maximum php execution time
             ini_set('max_execution_time', 0);
             ini_set('memory_limit', -1);
 
             if ($request->hasFile('products_csv')) {
                 $file = $request->file('products_csv');
-                
+
                 $parsed_array = Excel::toArray([], $file);
                 //Remove header row
                 $imported_data = array_splice($parsed_array[0], 1);
@@ -99,7 +99,7 @@ class ImportOpeningStockController extends Controller
 
                 $is_valid = true;
                 $error_msg = '';
-                
+
                 DB::beginTransaction();
                 foreach ($imported_data as $key => $value) {
                     $row_no = $key + 1;
@@ -179,7 +179,7 @@ class ImportOpeningStockController extends Controller
                     // //If exist add to it.
                     // if(!empty($os_transaction)){
                     //  //If not create new
-                        
+
                     // } else {
                     //  //If not create new
                     //  $this->addOpeningStock($opening_stock, $product_info, $business_id, $unit_cost_before_tax);
@@ -199,7 +199,7 @@ class ImportOpeningStockController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0,
                             'msg' => "File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage()
                         ];

@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Utils\NotificationUtil;
-use App\Business;
+use App\Models\Business;
 use App\Transaction;
 use \Notification;
 use App\Notifications\CustomerNotification;
@@ -48,7 +48,7 @@ class AutoSendPaymentReminder extends Command
         try {
             ini_set('max_execution_time', 0);
             ini_set('memory_limit', '512M');
-            
+
             $templates = NotificationTemplate::where('template_for', 'payment_reminder')
                                         ->where( function($q) {
                                             $q->where('auto_send', 1)
@@ -56,7 +56,7 @@ class AutoSendPaymentReminder extends Command
                                             ->orWhere('auto_send_wa_notif', 1);
                                         })
                                         ->get();
-                                        
+
 
             foreach ($templates as $template) {
 
@@ -98,7 +98,7 @@ class AutoSendPaymentReminder extends Command
                                     ->groupBy('transactions.id')
                                     ->OverDue()
                                     ->get();
-                    
+
                     foreach ($overdue_sells as $sell) {
                         $tag_replaced_data = $this->notificationUtil->replaceTags($business, $orig_data, $sell);
 
@@ -120,7 +120,7 @@ class AutoSendPaymentReminder extends Command
                             } catch (\Exception $e) {
                                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
                             }
-                            
+
                         }
 
                         //send sms notification
@@ -139,7 +139,7 @@ class AutoSendPaymentReminder extends Command
 
                 }
             }
-            
+
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
 

@@ -4,10 +4,10 @@ namespace App\Utils;
 
 use App\Barcode;
 
-use App\Business;
+use App\Models\Business;
 use App\BusinessLocation;
 use App\Contact;
-use App\Currency;
+use App\Models\Currency;
 use App\InvoiceLayout;
 use App\InvoiceScheme;
 use App\NotificationTemplate;
@@ -118,7 +118,7 @@ class BusinessUtil extends Util
         //                 'is_default' => 1,
         //                 'business_id' => $business_id
         //             ]);
-        
+
         //Add Default Unit for new business
         $unit = [
                     'business_id' => $business_id,
@@ -257,7 +257,7 @@ class BusinessUtil extends Util
         if ($start_month == 1) {
             $end_month = 12;
         }
-        
+
         $start_year = date('Y');
         //if current month is less than start month change start year to last year
         if (date('n') < $start_month) {
@@ -353,7 +353,7 @@ class BusinessUtil extends Util
         if (!empty($layout_id)) {
             $layout = InvoiceLayout::find($layout_id);
         }
-        
+
         //If layout is not found (deleted) then get the default layout for the business
         if (empty($layout)) {
             $layout = InvoiceLayout::where('business_id', $business_id)

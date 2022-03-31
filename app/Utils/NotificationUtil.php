@@ -3,7 +3,7 @@
 namespace App\Utils;
 
 use \Notification;
-use App\Business;
+use App\Models\Business;
 use App\Notifications\CustomerNotification;
 use App\Notifications\RecurringInvoiceNotification;
 use App\Notifications\RecurringExpenseNotification;

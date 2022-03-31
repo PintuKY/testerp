@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\BusinessLocation;
 
 use App\Charts\CommonChart;
-use App\Currency;
+use App\Models\Currency;
 use App\Transaction;
 use App\Utils\BusinessUtil;
 
@@ -75,7 +75,7 @@ class HomeController extends Controller
         $date_filters['this_week']['end'] = date('Y-m-d', strtotime('sunday this week'));
 
         $currency = Currency::where('id', request()->session()->get('business.currency_id'))->first();
-        
+
         //Chart for sells last 30 days
         $sells_last_30_days = $this->transactionUtil->getSellsLast30Days($business_id);
         $labels = [];
@@ -105,7 +105,7 @@ class HomeController extends Controller
                     return $item->date == $date &&
                         $item->location_id == $loc_id;
                 });
-                
+
                 if (!empty($sell)) {
                     $values[] = (float) $sell->total_sells;
                 } else {
@@ -172,7 +172,7 @@ class HomeController extends Controller
                     return $item->yearmonth == $month &&
                         $item->location_id == $loc_id;
                 });
-                
+
                 if (!empty($sell)) {
                     $values_data[] = (float) $sell->total_sells;
                 } else {
@@ -258,7 +258,7 @@ class HomeController extends Controller
 
             $output['invoice_due'] = $sell_details['invoice_due'];
             $output['total_expense'] = $transaction_totals['total_expense'];
-            
+
             return $output;
         }
     }
@@ -572,12 +572,12 @@ class HomeController extends Controller
             if (in_array('bookings', $data['events'])) {
                 $events = $this->restUtil->getBookingsForCalendar($data);
             }
-            
+
             $module_events = $this->moduleUtil->getModuleData('calendarEvents', $data);
 
             foreach ($module_events as $module_event) {
                 $events = array_merge($events, $module_event);
-            }  
+            }
 
             return $events;
         }
@@ -598,7 +598,7 @@ class HomeController extends Controller
         foreach ($module_event_types as $module_event_type) {
             $event_types = array_merge($event_types, $module_event_type);
         }
-        
+
         return view('home.calendar')->with(compact('all_locations', 'users', 'event_types'));
     }
 
@@ -616,10 +616,10 @@ class HomeController extends Controller
     }
 
     public function attachMediasToGivenModel(Request $request)
-    {   
+    {
         if ($request->ajax()) {
             try {
-                
+
                 $business_id = request()->session()->get('user.business_id');
 
                 $model_id = $request->input('model_id');

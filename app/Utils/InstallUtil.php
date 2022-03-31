@@ -2,7 +2,7 @@
 
 namespace App\Utils;
 
-use App\Business;
+use App\Models\Business;
 use App\Variation;
 use App\VariationLocationDetails;
 use App\Product;

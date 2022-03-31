@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Business;
+use App\Models\Business;
 use App\Transaction;
 use App\TransactionSellLinesPurchaseLines;
 use App\PurchaseLine;
@@ -92,7 +92,7 @@ class MapPurchaseSell extends Command
                                     ->get();
 
                 $pos_settings = empty($business->pos_settings) ? $this->businessUtil->defaultPosSettings() : json_decode($business->pos_settings, true);
-                $pos_settings['allow_overselling'] = 1; 
+                $pos_settings['allow_overselling'] = 1;
                 //Iterate through all transaction and add mapping. First go throught sell_lines having lot number.
                 foreach ($transactions as $transaction) {
                     $business_formatted = ['id' => $business->id,

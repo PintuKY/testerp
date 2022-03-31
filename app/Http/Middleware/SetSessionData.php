@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Support\Facades\Auth;
 use App\Utils\BusinessUtil;
 
-use App\Business;
+use App\Models\Business;
 
 class SetSessionData
 {
@@ -32,7 +32,7 @@ class SetSessionData
                             'language' => $user->language,
                             ];
             $business = Business::findOrFail($user->business_id);
-            
+
             $currency = $business->currency;
             $currency_data = ['id' => $currency->id,
                                 'code' => $currency->code,

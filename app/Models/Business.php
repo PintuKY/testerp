@@ -67,7 +67,7 @@ class Business extends Model
      */
     public function currency()
     {
-        return $this->belongsTo(\App\Currency::class);
+        return $this->belongsTo(\App\Models\Currency::class);
     }
 
     /**

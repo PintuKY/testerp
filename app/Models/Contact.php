@@ -36,7 +36,7 @@ class Contact extends Authenticatable
     */
     public function business()
     {
-        return $this->belongsTo(\App\Business::class);
+        return $this->belongsTo(\App\Models\Business::class);
     }
 
     public function scopeActive($query)

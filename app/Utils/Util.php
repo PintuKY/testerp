@@ -2,7 +2,7 @@
 
 namespace App\Utils;
 
-use App\Business;
+use App\Models\Business;
 use App\BusinessLocation;
 use App\Contact;
 use App\Product;

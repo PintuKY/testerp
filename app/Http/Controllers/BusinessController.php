@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Business;
-use App\Currency;
+use App\Models\Business;
+use App\Models\Currency;
 use App\Notifications\TestEmailNotification;
 use App\Models\System;
 use App\TaxRate;

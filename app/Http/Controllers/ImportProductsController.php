@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Brands;
-use App\Business;
+use App\Models\Business;
 use App\BusinessLocation;
 use App\Category;
 use App\Product;
@@ -87,7 +87,7 @@ class ImportProductsController extends Controller
             if (!empty($notAllowed)) {
                 return $notAllowed;
             }
-            
+
             //Set maximum php execution time
             ini_set('max_execution_time', 0);
             ini_set('memory_limit', -1);
@@ -133,7 +133,7 @@ class ImportProductsController extends Controller
                     $product_array = [];
                     $product_array['business_id'] = $business_id;
                     $product_array['created_by'] = $user_id;
-                    
+
                     //Add name
                     $product_name = trim($value[0]);
                     if (!empty($product_name)) {
@@ -143,11 +143,11 @@ class ImportProductsController extends Controller
                         $error_msg = "Product name is required in row no. $row_no";
                         break;
                     }
-                    
+
                     //image name
                     $image_name = trim($value[29]);
                     if (!empty($image_name)) {
-                        if (filter_var($image_name, FILTER_VALIDATE_URL)) { 
+                        if (filter_var($image_name, FILTER_VALIDATE_URL)) {
                             $source_image = file_get_contents($image_name);
 
                             $path = parse_url($image_name, PHP_URL_PATH);
@@ -158,7 +158,7 @@ class ImportProductsController extends Controller
                         } else {
                             $product_array['image'] = $image_name;
                         }
-                        
+
                     } else {
                         $product_array['image'] = '';
                     }
@@ -274,7 +274,7 @@ class ImportProductsController extends Controller
                     if ($product_array['enable_stock'] == 1) {
                         $product_array['alert_quantity'] = trim($value[8]);
                     }
-                    
+
 
                     //Add brand
                     //Check if brand exists else create new
@@ -391,7 +391,7 @@ class ImportProductsController extends Controller
                         $product_array['variation']['dpp_exc_tax'] = $product_prices['dpp_exc_tax'];
                         $product_array['variation']['dsp_inc_tax'] = $product_prices['dsp_inc_tax'];
                         $product_array['variation']['dsp_exc_tax'] = $product_prices['dsp_exc_tax'];
-                        
+
                         //Opening stock
                         if (!empty($value[21]) && $enable_stock == 1) {
                             $product_array['opening_stock_details']['quantity'] = trim($value[21]);
@@ -475,7 +475,7 @@ class ImportProductsController extends Controller
                                 $dpp_inc_tax[$k] = 0;
                             }
                         }
-                        
+
                         $dpp_exc_tax = [];
                         if (!empty($dpp_exc_tax_string)) {
                             $dpp_exc_tax = array_map('trim', explode(
@@ -547,7 +547,7 @@ class ImportProductsController extends Controller
                                   'variation_template_id' => $variation->id
                                 ]);
                             }
-                            
+
                             //Assign Values
                             $product_array['variation']['variations'][] = [
                                 'value' => $v,
@@ -592,7 +592,7 @@ class ImportProductsController extends Controller
                             foreach ($variation_os as $k => $v) {
                                 $product_array['variation']['variations'][$k]['opening_stock'] = $v;
                                 $product_array['variation']['variations'][$k]['opening_stock_exp_date'] = null;
-                                
+
                                 if (!empty($value[23])) {
                                     $product_array['variation']['variations'][$k]['opening_stock_exp_date'] = \Carbon::createFromFormat('m-d-Y', trim($value[23]))->format('Y-m-d');
                                 } else {
@@ -686,7 +686,7 @@ class ImportProductsController extends Controller
                     }
                 }
             }
-            
+
             $output = ['success' => 1,
                             'msg' => __('product.file_imported_successfully')
                         ];
@@ -768,7 +768,7 @@ class ImportProductsController extends Controller
     private function addOpeningStock($opening_stock, $product, $business_id)
     {
         $user_id = request()->session()->get('user.id');
-        
+
         $variation = Variation::where('product_id', $product->id)
             ->first();
 
@@ -814,7 +814,7 @@ class ImportProductsController extends Controller
 
         //Add product location
         $this->__addProductLocation($product, $opening_stock['location_id']);
-        
+
     }
 
     private function __addProductLocation($product, $location_id)
@@ -823,7 +823,7 @@ class ImportProductsController extends Controller
                                             ->where('location_id', $location_id)
                                             ->count();
         if ($count == 0) {
-            DB::table('product_locations')->insert(['product_id' => $product->id, 
+            DB::table('product_locations')->insert(['product_id' => $product->id,
                                 'location_id' => $location_id]);
         }
     }

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Business;
+use App\Models\Business;
 use App\BusinessLocation;
 use App\Contact;
 use App\CustomerGroup;
@@ -153,7 +153,7 @@ class PurchaseOrderController extends Controller
             return Datatables::of($purchase_orders)
                 ->addColumn('action', function ($row) use ($is_admin) {
                     $html = '<div class="btn-group">
-                            <button type="button" class="btn btn-info dropdown-toggle btn-xs" 
+                            <button type="button" class="btn btn-info dropdown-toggle btn-xs"
                                 data-toggle="dropdown" aria-expanded="false">' .
                                 __("messages.actions") .
                                 '<span class="caret"></span><span class="sr-only">Toggle Dropdown
@@ -186,7 +186,7 @@ class PurchaseOrderController extends Controller
                             $html .= '<li><a href="#" data-href="' . url('uploads/documents/' . $row->document) .'" class="view_uploaded_document"><i class="fas fa-image" aria-hidden="true"></i>' . __("lang_v1.view_document") . '</a></li>';
                         }
                     }
-                                        
+
                     $html .=  '</ul></div>';
                     return $html;
                 })
@@ -216,7 +216,7 @@ class PurchaseOrderController extends Controller
                 ->editColumn('shipping_status', function ($row) use ($shipping_statuses) {
                     $status_color = !empty($this->shipping_status_colors[$row->shipping_status]) ? $this->shipping_status_colors[$row->shipping_status] : 'bg-gray';
                     $status = !empty($row->shipping_status) ? '<a href="#" class="btn-modal" data-href="' . action('SellController@editShipping', [$row->id]) . '" data-container=".view_modal"><span class="label ' . $status_color .'">' . $shipping_statuses[$row->shipping_status] . '</span></a>' : '';
-                     
+
                     return $status;
                 })
                 ->setRowAttr([
@@ -267,7 +267,7 @@ class PurchaseOrderController extends Controller
         if (auth()->user()->can('customer.create')) {
             $types['customer'] = __('report.customer');
         }
-        
+
         $customer_groups = CustomerGroup::forDropdown($business_id);
 
         $business_details = $this->businessUtil->getDetails($business_id);
@@ -382,7 +382,7 @@ class PurchaseOrderController extends Controller
 
             //upload document
             $transaction_data['document'] = $this->transactionUtil->uploadFile($request, 'document', 'documents');
-            
+
             DB::beginTransaction();
 
             //Update reference count
@@ -396,23 +396,23 @@ class PurchaseOrderController extends Controller
 
             //Upload Shipping documents
             Media::uploadMedia($business_id, $transaction, $request, 'shipping_documents', false, 'shipping_document');
-            
+
             $purchase_lines = [];
             $purchases = $request->input('purchases');
 
             $this->productUtil->createOrUpdatePurchaseLines($transaction, $purchases, $currency_details, $enable_product_editing);
 
             $this->transactionUtil->activityLog($transaction, 'added');
-            
+
             DB::commit();
-            
+
             $output = ['success' => 1,
                             'msg' => __('lang_v1.added_success')
                         ];
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0,
                             'msg' => __('messages.something_went_wrong')
                         ];
@@ -452,7 +452,7 @@ class PurchaseOrderController extends Controller
         if (!auth()->user()->can('purchase_order.view_all') && auth()->user()->can('purchase_order.view_own')) {
             $query->where('transactions.created_by', request()->session()->get('user.id'));
         }
-                                   
+
         $purchase = $query->firstOrFail();
 
         foreach ($purchase->purchase_lines as $key => $value) {
@@ -461,7 +461,7 @@ class PurchaseOrderController extends Controller
                 $purchase->purchase_lines[$key] = $formated_purchase_line;
             }
         }
-        
+
         $purchase_taxes = [];
         if (!empty($purchase->tax)) {
             if ($purchase->tax->is_tax_group) {
@@ -521,16 +521,16 @@ class PurchaseOrderController extends Controller
         if (!auth()->user()->can('purchase_order.view_all') && auth()->user()->can('purchase_order.view_own')) {
             $query->where('transactions.created_by', request()->session()->get('user.id'));
         }
-        
+
         $purchase =  $query->first();
-        
+
         foreach ($purchase->purchase_lines as $key => $value) {
             if (!empty($value->sub_unit_id)) {
                 $formated_purchase_line = $this->productUtil->changePurchaseLineUnit($value, $business_id);
                 $purchase->purchase_lines[$key] = $formated_purchase_line;
             }
         }
-       
+
         $business_locations = BusinessLocation::forDropdown($business_id);
 
         $types = [];
@@ -540,7 +540,7 @@ class PurchaseOrderController extends Controller
         if (auth()->user()->can('customer.create')) {
             $types['customer'] = __('report.customer');
         }
-       
+
         $customer_groups = CustomerGroup::forDropdown($business_id);
 
         $business_details = $this->businessUtil->getDetails($business_id);
@@ -666,7 +666,7 @@ class PurchaseOrderController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0,
                             'msg' => $e->getMessage()
                         ];
@@ -691,7 +691,7 @@ class PurchaseOrderController extends Controller
         try {
             if (request()->ajax()) {
                 $business_id = request()->session()->get('user.business_id');
-        
+
                 $transaction = Transaction::where('business_id', $business_id)
                                 ->where('type', 'purchase_order')
                                 ->with('purchase_lines')
@@ -699,15 +699,15 @@ class PurchaseOrderController extends Controller
 
                 //unset purchase_order_line_id if set
                 PurchaseLine::whereIn('purchase_order_line_id', $transaction->purchase_lines->pluck('id'))
-                        ->update(['purchase_order_line_id' => null]); 
+                        ->update(['purchase_order_line_id' => null]);
 
                 $log_properities = [
                     'id' => $transaction->id,
                     'ref_no' => $transaction->ref_no
                 ];
-                $this->transactionUtil->activityLog($transaction, 'po_deleted', null, $log_properities); 
+                $this->transactionUtil->activityLog($transaction, 'po_deleted', null, $log_properities);
 
-                $transaction->delete();           
+                $transaction->delete();
 
                 $output = ['success' => true,
                             'msg' => __('lang_v1.purchase_order_delete_success')
@@ -716,7 +716,7 @@ class PurchaseOrderController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => false,
                             'msg' => $e->getMessage()
                         ];
@@ -728,7 +728,7 @@ class PurchaseOrderController extends Controller
     public function getPurchaseOrders($contact_id)
     {
         $business_id = request()->session()->get('user.business_id');
-        
+
         $purchase_orders = Transaction::where('business_id', $business_id)
                         ->where('type', 'purchase_order')
                         ->whereIn('status', ['partial', 'ordered'])
@@ -744,7 +744,7 @@ class PurchaseOrderController extends Controller
      *
      */
     public function downloadPdf($id)
-    {   
+    {
         if (!(config('constants.enable_download_pdf') && (auth()->user()->can("purchase_order.view_all") || auth()->user()->can("purchase_order.view_own")))) {
             abort(403, 'Unauthorized action.');
         }
@@ -778,14 +778,14 @@ class PurchaseOrderController extends Controller
         $total_in_words = $this->transactionUtil->numToWord($purchase->final_total, null, $word_format);
 
         $custom_labels = json_decode(session('business.custom_labels'), true);
-        
+
         //Generate pdf
         $body = view('purchase_order.receipts.download_pdf')
                     ->with(compact('purchase', 'invoice_layout', 'location_details', 'logo', 'total_in_words', 'custom_labels', 'taxes'))
                     ->render();
 
-        $mpdf = new \Mpdf\Mpdf(['tempDir' => public_path('uploads/temp'), 
-                    'mode' => 'utf-8', 
+        $mpdf = new \Mpdf\Mpdf(['tempDir' => public_path('uploads/temp'),
+                    'mode' => 'utf-8',
                     'autoScriptToLang' => true,
                     'autoLangToFont' => true,
                     'autoVietnamese' => true,
@@ -804,14 +804,14 @@ class PurchaseOrderController extends Controller
     }
 
     /**
-     * get required resources 
+     * get required resources
      *
      * to edit purchase order status
      *
      * @return \Illuminate\Http\Response
      */
     public function getEditPurchaseOrderStatus(Request $request, $id)
-    {   
+    {
         $is_admin = $this->businessUtil->is_admin(auth()->user());
         if ( !$is_admin) {
             abort(403, 'Unauthorized action.');
@@ -844,13 +844,13 @@ class PurchaseOrderController extends Controller
 
         if ($request->ajax()) {
             try {
-                
+
                 $business_id = request()->session()->get('user.business_id');
                 $transaction = Transaction::where('business_id', $business_id)
                                 ->findOrFail($id);
 
                 $transaction_before = $transaction->replicate();
-                
+
                 $transaction->status = $request->input('status');
                 $transaction->save();
 

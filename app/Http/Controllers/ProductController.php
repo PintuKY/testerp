@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Brands;
-use App\Business;
+use App\Models\Business;
 use App\BusinessLocation;
 use App\Category;
 use App\Media;
@@ -133,7 +133,7 @@ class ProductController extends Controller
             if ($is_woocommerce) {
                 $products->addSelect('woocommerce_disable_sync');
             }
-            
+
             $products->groupBy('products.id');
 
             $type = request()->get('type', null);
@@ -229,7 +229,7 @@ class ProductController extends Controller
                         }
 
                         if (auth()->user()->can('product.create')) {
-            
+
                             if ($selling_price_group_count > 0) {
                                 $html .=
                                 '<li><a href="' . action('ProductController@addSellingPrices', [$row->id]) . '"><i class="fas fa-money-bill-alt"></i> ' . __("lang_v1.add_selling_price_group_prices") . '</a></li>';
@@ -255,7 +255,7 @@ class ProductController extends Controller
 
                     $product = $row->not_for_selling == 1 ? $product . ' <span class="label bg-gray">' . __("lang_v1.not_for_selling") .
                         '</span>' : $product;
-                    
+
                     if ($is_woocommerce && !$row->woocommerce_disable_sync) {
                         $product = $product .'<br><i class="fab fa-wordpress"></i>';
                     }
@@ -435,7 +435,7 @@ class ProductController extends Controller
             if (!empty($module_form_fields)) {
                 $form_fields = array_merge($form_fields, $module_form_fields);
             }
-            
+
             $product_details = $request->only($form_fields);
             $product_details['business_id'] = $business_id;
             $product_details['created_by'] = $request->session()->get('user.id');
@@ -486,7 +486,7 @@ class ProductController extends Controller
             if (!empty($product_locations)) {
                 $product->product_locations()->sync($product_locations);
             }
-            
+
             if ($product->type == 'single') {
                 $this->productUtil->createSingleProductVariation($product->id, $product->sku, $request->input('single_dpp'), $request->input('single_dpp_inc_tax'), $request->input('profit_percent'), $request->input('single_dsp'), $request->input('single_dsp_inc_tax'));
             } elseif ($product->type == 'variable') {
@@ -535,7 +535,7 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -594,13 +594,13 @@ class ProductController extends Controller
         $business_id = request()->session()->get('user.business_id');
         $categories = Category::forDropdown($business_id, 'product');
         $brands = Brands::forDropdown($business_id);
-        
+
         $tax_dropdown = TaxRate::forBusinessDropdown($business_id, true, true);
         $taxes = $tax_dropdown['tax_rates'];
         $tax_attributes = $tax_dropdown['attributes'];
 
         $barcode_types = $this->barcode_types;
-        
+
         $product = Product::where('business_id', $business_id)
                             ->with(['product_locations'])
                             ->where('id', $id)
@@ -613,13 +613,13 @@ class ProductController extends Controller
                         ->pluck('name', 'id')
                         ->toArray();
         $sub_categories = [ "" => "None"] + $sub_categories;
-        
+
         $default_profit_percent = request()->session()->get('business.default_profit_percent');
 
         //Get units.
         $units = Unit::forDropdown($business_id, true);
         $sub_units = $this->productUtil->getSubUnits($business_id, $product->unit_id, true);
-        
+
         //Get all business locations
         $business_locations = BusinessLocation::forDropdown($business_id);
         //Rack details
@@ -657,7 +657,7 @@ class ProductController extends Controller
             $product_details = $request->only(['name', 'brand_id', 'unit_id', 'category_id', 'tax', 'barcode_type', 'sku', 'alert_quantity', 'tax_type', 'weight', 'product_custom_field1', 'product_custom_field2', 'product_custom_field3', 'product_custom_field4', 'product_description', 'sub_unit_ids']);
 
             DB::beginTransaction();
-            
+
             $product = Product::where('business_id', $business_id)
                                 ->where('id', $id)
                                 ->with(['product_variations'])
@@ -669,7 +669,7 @@ class ProductController extends Controller
                     $product->$column = $request->input($column);
                 }
             }
-            
+
             $product->name = $product_details['name'];
             $product->brand_id = $product_details['brand_id'];
             $product->unit_id = $product_details['unit_id'];
@@ -701,7 +701,7 @@ class ProductController extends Controller
             } else {
                 $product->sub_category_id = null;
             }
-            
+
             $expiry_enabled = $request->session()->get('business.enable_product_expiry');
             if (!empty($expiry_enabled)) {
                 if (!empty($request->input('expiry_period_type')) && !empty($request->input('expiry_period')) && ($product->enable_stock == 1)) {
@@ -727,7 +727,7 @@ class ProductController extends Controller
                 if (!empty($product->image_path) && file_exists($product->image_path)) {
                     unlink($product->image_path);
                 }
-                
+
                 $product->image = $file_name;
                 //If product image is updated update woocommerce media id
                 if (!empty($product->woocommerce_media_id)) {
@@ -742,7 +742,7 @@ class ProductController extends Controller
             $product_locations = !empty($request->input('product_locations')) ?
                                 $request->input('product_locations') : [];
             $product->product_locations()->sync($product_locations);
-            
+
             if ($product->type == 'single') {
                 $single_data = $request->only(['single_variation_id', 'single_dpp', 'single_dpp_inc_tax', 'single_dsp_inc_tax', 'profit_percent', 'single_dsp']);
                 $variation = Variation::find($single_data['single_variation_id']);
@@ -812,9 +812,9 @@ class ProductController extends Controller
             if (!empty($request->input('has_module_data'))) {
                 $this->moduleUtil->getModuleData('after_product_saved', ['product' => $product, 'request' => $request]);
             }
-            
+
             Media::uploadMedia($product->business_id, $product, $request, 'product_brochure', true);
-            
+
             DB::commit();
             $output = ['success' => 1,
                             'msg' => __('product.product_updated_success')
@@ -822,7 +822,7 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0,
                             'msg' => $e->getMessage()
                         ];
@@ -919,7 +919,7 @@ class ProductController extends Controller
                                 ->where('business_id', $business_id)
                                 ->with('variations')
                                 ->first();
-        
+
                 //Check if product is added as an ingredient of any recipe
                 if ($this->moduleUtil->isModuleInstalled('Manufacturing')) {
                     $variation_ids = $product->variations->pluck('id');
@@ -954,7 +954,7 @@ class ProductController extends Controller
             } catch (\Exception $e) {
                 DB::rollBack();
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-                
+
                 $output = ['success' => false,
                                 'msg' => __("messages.something_went_wrong")
                             ];
@@ -963,7 +963,7 @@ class ProductController extends Controller
             return $output;
         }
     }
-    
+
     /**
      * Get subcategories list for a category.
      *
@@ -1046,7 +1046,7 @@ class ProductController extends Controller
             }
         }
     }
-    
+
     /**
      * Get product form parts.
      *
@@ -1198,7 +1198,7 @@ class ProductController extends Controller
             $products = Product::join('variations', 'products.id', '=', 'variations.product_id')
                 ->where('products.business_id', $business_id)
                 ->where('products.type', '!=', 'modifier');
-                
+
             //Include search
             if (!empty($term)) {
                 $products->where(function ($query) use ($term) {
@@ -1212,7 +1212,7 @@ class ProductController extends Controller
             // if($check_qty){
             //     $products->where('VLD.qty_available', '>', 0);
             // }
-            
+
             $products = $products->groupBy('products.id')
                 ->select(
                     'products.id as product_id',
@@ -1246,7 +1246,7 @@ class ProductController extends Controller
             $query->where('id', '!=', $product_id);
         }
         $count = $query->count();
-        
+
         //check in variation table if $count = 0
         if ($count == 0) {
             $query2 = Variation::where('sub_sku', $sku)
@@ -1327,7 +1327,7 @@ class ProductController extends Controller
         if (!auth()->user()->can('product.create')) {
             abort(403, 'Unauthorized action.');
         }
-        
+
         try {
             $business_id = $request->session()->get('user.business_id');
             $form_fields = ['name', 'brand_id', 'unit_id', 'category_id', 'tax', 'barcode_type','tax_type', 'sku',
@@ -1342,7 +1342,7 @@ class ProductController extends Controller
                 }
             }
             $product_details = $request->only($form_fields);
-            
+
             $product_details['type'] = empty($product_details['type']) ? 'single' : $product_details['type'];
             $product_details['business_id'] = $business_id;
             $product_details['created_by'] = $request->session()->get('user.id');
@@ -1367,13 +1367,13 @@ class ProductController extends Controller
                 $product_details['expiry_period_type'] = $request->input('expiry_period_type');
                 $product_details['expiry_period'] = $this->productUtil->num_uf($request->input('expiry_period'));
             }
-            
+
             if (!empty($request->input('enable_sr_no')) &&  $request->input('enable_sr_no') == 1) {
                 $product_details['enable_sr_no'] = 1 ;
             }
 
             $product_details['warranty_id'] = !empty($request->input('warranty_id')) ? $request->input('warranty_id') : null;
-            
+
             DB::beginTransaction();
 
             $product = Product::create($product_details);
@@ -1383,7 +1383,7 @@ class ProductController extends Controller
                 $product->sku = $sku;
                 $product->save();
             }
-            
+
             $this->productUtil->createSingleProductVariation(
                 $product->id,
                 $product->sku,
@@ -1420,7 +1420,7 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -1550,7 +1550,7 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -1632,7 +1632,7 @@ class ProductController extends Controller
             }
             //Update product updated_at timestamp
             $product->touch();
-            
+
             DB::commit();
             $output = ['success' => 1,
                             'msg' => __("lang_v1.updated_success")
@@ -1640,7 +1640,7 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -1725,7 +1725,7 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -1758,7 +1758,7 @@ class ProductController extends Controller
                             ];
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-                
+
                 $output = ['success' => false,
                                 'msg' => __("messages.something_went_wrong")
                             ];
@@ -1783,7 +1783,7 @@ class ProductController extends Controller
         if (request()->ajax()) {
             try {
                 $business_id = request()->session()->get('user.business_id');
-                
+
                 Media::deleteMedia($business_id, $media_id);
 
                 $output = ['success' => true,
@@ -1791,7 +1791,7 @@ class ProductController extends Controller
                             ];
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-                
+
                 $output = ['success' => false,
                                 'msg' => __("messages.something_went_wrong")
                             ];
@@ -1811,11 +1811,11 @@ class ProductController extends Controller
             parse_str($filter_string, $filters);
 
             $api_settings = $this->moduleUtil->getApiSettings($api_token);
-            
+
             $limit = !empty(request()->input('limit')) ? request()->input('limit') : 10;
 
             $location_id = $api_settings->location_id;
-            
+
             $query = Product::where('business_id', $api_settings->business_id)
                             ->active()
                             ->with(['brand', 'unit', 'category', 'sub_category',
@@ -1853,7 +1853,7 @@ class ProductController extends Controller
             }
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             return $this->respondWentWrong($e);
         }
 
@@ -1890,7 +1890,7 @@ class ProductController extends Controller
             $variations = is_array($variation_ids) ? $query->whereIn('id', $variation_ids)->get() : $query->where('id', $variation_ids)->first();
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             return $this->respondWentWrong($e);
         }
 
@@ -1913,7 +1913,7 @@ class ProductController extends Controller
         if (!empty($selected_products_string)) {
             $selected_products = explode(',', $selected_products_string);
             $business_id = $request->session()->get('user.business_id');
-           
+
             $products = Product::where('business_id', $business_id)
                                 ->whereIn('id', $selected_products)
                                 ->with(['variations', 'variations.product_variation', 'variations.group_prices', 'product_locations'])
@@ -2023,7 +2023,7 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -2044,7 +2044,7 @@ class ProductController extends Controller
             abort(403, 'Unauthorized action.');
         }
         $business_id = request()->session()->get('user.business_id');
-       
+
         $product = Product::where('business_id', $business_id)
                             ->with(['variations', 'variations.product_variation', 'variations.group_prices'])
                             ->findOrFail($product_id);
@@ -2121,7 +2121,7 @@ class ProductController extends Controller
             $business_id = $request->session()->get('user.business_id');
 
             $product_ids = explode(',', $selected_products);
-           
+
             $products = Product::where('business_id', $business_id)
                                 ->whereIn('id', $product_ids)
                                 ->with(['product_locations'])
@@ -2149,7 +2149,7 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -2174,14 +2174,14 @@ class ProductController extends Controller
             return view('product.stock_history_details')
                 ->with(compact('stock_details', 'stock_history'));
         }
-        
+
         $product = Product::where('business_id', $business_id)
                             ->with(['variations', 'variations.product_variation'])
                             ->findOrFail($id);
-        
+
         //Get all business locations
         $business_locations = BusinessLocation::forDropdown($business_id);
-        
+
 
         return view('product.stock_history')
                 ->with(compact('product', 'business_locations'));
@@ -2195,16 +2195,16 @@ class ProductController extends Controller
      */
     public function toggleWooCommerceSync(Request $request)
     {
-        
+
         try {
             $selected_products = $request->input('woocommerce_products_sync');
             $woocommerce_disable_sync = $request->input('woocommerce_disable_sync');
 
             $business_id = $request->session()->get('user.business_id');
             $product_ids = explode(',', $selected_products);
-            
+
             DB::beginTransaction();
-                if ($this->moduleUtil->isModuleInstalled('Woocommerce')) {   
+                if ($this->moduleUtil->isModuleInstalled('Woocommerce')) {
                     Product::where('business_id', $business_id)
                         ->whereIn('id', $product_ids)
                         ->update(['woocommerce_disable_sync' => $woocommerce_disable_sync]);
@@ -2217,7 +2217,7 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = [
                 'success' => 0,
                     'msg' => __("messages.something_went_wrong")

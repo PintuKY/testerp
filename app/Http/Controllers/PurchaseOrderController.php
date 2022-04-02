@@ -21,7 +21,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
 use Spatie\Activitylog\Models\Activity;
-use App\Media;
+use App\Models\Media;
 
 class PurchaseOrderController extends Controller
 {

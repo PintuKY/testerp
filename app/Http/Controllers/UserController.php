@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Media;
+use App\Models\Media;
 use App\User;
 use App\Utils\ModuleUtil;
 use Illuminate\Http\Request;
@@ -98,14 +98,14 @@ class UserController extends Controller
                     ];
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0,
                         'msg' => __('messages.something_went_wrong')
                     ];
         }
         return redirect('user/profile')->with('status', $output);
     }
-    
+
     /**
      * updates user password
      *
@@ -122,7 +122,7 @@ class UserController extends Controller
         try {
             $user_id = $request->session()->get('user.id');
             $user = User::where('id', $user_id)->first();
-            
+
             if (Hash::check($request->input('current_password'), $user->password)) {
                 $user->password = Hash::make($request->input('new_password'));
                 $user->save();
@@ -136,7 +136,7 @@ class UserController extends Controller
             }
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0,
                             'msg' => __('messages.something_went_wrong')
                         ];

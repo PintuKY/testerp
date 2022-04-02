@@ -33,7 +33,7 @@ use App\BusinessLocation;
 use App\Category;
 use App\Contact;
 use App\CustomerGroup;
-use App\Media;
+use App\Models\Media;
 use App\Product;
 use App\SellingPriceGroup;
 use App\TaxRate;

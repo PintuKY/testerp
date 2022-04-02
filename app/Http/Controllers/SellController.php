@@ -24,7 +24,7 @@ use DB;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 use App\Product;
-use App\Media;
+use App\Models\Media;
 use Spatie\Activitylog\Models\Activity;
 use Illuminate\Support\Facades\Artisan;
 

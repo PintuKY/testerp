@@ -11,7 +11,7 @@ use DB;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Yajra\DataTables\Facades\DataTables;
-use App\Media;
+use App\Models\Media;
 use App\BusinessLocation;
 use App\Utils\ModuleUtil;
 
@@ -223,7 +223,7 @@ class AccountController extends Controller
                 $user_id = $request->session()->get('user.id');
                 $input['business_id'] = $business_id;
                 $input['created_by'] = $user_id;
-               
+
                 $account = Account::create($input);
 
                 //Opening Balance
@@ -241,13 +241,13 @@ class AccountController extends Controller
 
                     AccountTransaction::createAccountTransaction($ob_transaction_data);
                 }
-                
+
                 $output = ['success' => true,
                             'msg' => __("account.account_created_success")
                         ];
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-                    
+
                 $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                             ];
@@ -322,7 +322,7 @@ class AccountController extends Controller
             if (!empty(request()->input('type'))) {
                 $accounts->where('account_transactions.type', request()->input('type'));
             }
-            
+
             if (!empty($start_date) && !empty($end_date)) {
                 $accounts->whereDate('operation_date', '>=', $start_date)
                         ->whereDate('operation_date', '<=', $end_date);
@@ -343,7 +343,7 @@ class AccountController extends Controller
                             })
                             ->addColumn('balance', function ($row) use ($bal_before_start_date, $start_date) {
                                 //TODO:: Need to fix same balance showing for transactions having same operation date
-                                $current_bal = AccountTransaction::where('account_id', 
+                                $current_bal = AccountTransaction::where('account_id',
                                                     $row->account_id)
                                                 ->where('operation_date', '>=', $start_date)
                                                 ->where('operation_date', '<=', $row->operation_date)
@@ -361,7 +361,7 @@ class AccountController extends Controller
                             ->editColumn('action', function ($row) {
                                 $action = '';
                                 if (auth()->user()->can('delete_account_transaction')) {
-                                    
+
                                     if ($row->sub_type == 'fund_transfer' || $row->sub_type == 'deposit') {
                                         $action .= '<button type="button" class="btn btn-danger btn-xs delete_account_transaction" data-href="' . action('AccountController@destroyAccountTransaction', [$row->id]) . '"><i class="fa fa-trash"></i> ' . __('messages.delete') . '</button>';
                                     }
@@ -413,7 +413,7 @@ class AccountController extends Controller
                                      ->whereNull('parent_account_type_id')
                                      ->with(['sub_types'])
                                      ->get();
-           
+
             return view('account.edit')
                 ->with(compact('account', 'account_types'));
         }
@@ -449,12 +449,12 @@ class AccountController extends Controller
                                 ];
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
                 $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];
             }
-            
+
             return $output;
         }
     }
@@ -474,7 +474,7 @@ class AccountController extends Controller
                 $business_id = request()->session()->get('user.business_id');
 
                 $account_transaction = AccountTransaction::findOrFail($id);
-                
+
                 if (in_array($account_transaction->sub_type, ['fund_transfer', 'deposit'])) {
                     //Delete transfer transaction for fund transfer
                     if (!empty($account_transaction->transfer_transaction_id)) {
@@ -489,7 +489,7 @@ class AccountController extends Controller
                             ];
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
                 $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -508,11 +508,11 @@ class AccountController extends Controller
         if (!auth()->user()->can('account.access')) {
             abort(403, 'Unauthorized action.');
         }
-        
+
         if (request()->ajax()) {
             try {
                 $business_id = session()->get('user.business_id');
-            
+
                 $account = Account::where('business_id', $business_id)
                                                     ->findOrFail($id);
                 $account->is_closed = 1;
@@ -523,12 +523,12 @@ class AccountController extends Controller
                                     ];
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
                 $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];
             }
-            
+
             return $output;
         }
     }
@@ -543,10 +543,10 @@ class AccountController extends Controller
         if (!auth()->user()->can('account.access')) {
             abort(403, 'Unauthorized action.');
         }
-        
+
         if (request()->ajax()) {
             $business_id = session()->get('user.business_id');
-            
+
             $from_account = Account::where('business_id', $business_id)
                             ->NotClosed()
                             ->find($id);
@@ -569,7 +569,7 @@ class AccountController extends Controller
         if (!auth()->user()->can('account.access')) {
             abort(403, 'Unauthorized action.');
         }
-        
+
         try {
             $business_id = session()->get('user.business_id');
 
@@ -613,14 +613,14 @@ class AccountController extends Controller
 
                 DB::commit();
             }
-            
+
             $output = ['success' => true,
                                 'msg' => __("account.fund_transfered_success")
                                 ];
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-        
+
             $output = ['success' => false,
                         'msg' => __("messages.something_went_wrong")
                     ];
@@ -639,10 +639,10 @@ class AccountController extends Controller
         if (!auth()->user()->can('account.access')) {
             abort(403, 'Unauthorized action.');
         }
-        
+
         if (request()->ajax()) {
             $business_id = session()->get('user.business_id');
-            
+
             $account = Account::where('business_id', $business_id)
                             ->NotClosed()
                             ->find($id);
@@ -703,14 +703,14 @@ class AccountController extends Controller
                     $credit->save();
                 }
             }
-            
+
             $output = ['success' => true,
                                 'msg' => __("account.deposited_successfully")
                                 ];
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-        
+
             $output = ['success' => false,
                         'msg' => __("messages.something_went_wrong")
                     ];
@@ -841,7 +841,7 @@ class AccountController extends Controller
 
             $start_date = request()->input('start_date');
             $end_date = request()->input('end_date');
-            
+
             if (!empty($start_date) && !empty($end_date)) {
                 $accounts->whereBetween(DB::raw('date(operation_date)'), [$start_date, $end_date]);
             }
@@ -849,8 +849,8 @@ class AccountController extends Controller
             return DataTables::of($accounts)
                 ->addColumn('debit', '@if($type == "debit")<span class="debit" data-orig-value="{{$amount}}">@format_currency($amount)</span>@endif')
                 ->addColumn('credit', '@if($type == "credit")<span class="debit" data-orig-value="{{$amount}}">@format_currency($amount)</span>@endif')
-                ->addColumn('balance', function ($row) {      
-                    $balance = AccountTransaction::where('account_id', 
+                ->addColumn('balance', function ($row) {
+                    $balance = AccountTransaction::where('account_id',
                                         $row->account_id)
                                     ->where('operation_date', '<=', $row->operation_date)
                                     ->whereNull('deleted_at')
@@ -859,7 +859,7 @@ class AccountController extends Controller
 
                     return '<span class="balance" data-orig-value="' . $balance . '">' . $this->commonUtil->num_f($balance, true) . '</span>';
                 })
-                ->addColumn('total_balance', function ($row) use ($business_id, $account_ids, $permitted_locations){      
+                ->addColumn('total_balance', function ($row) use ($business_id, $account_ids, $permitted_locations){
                     $query = AccountTransaction::join(
                                         'accounts as A',
                                         'account_transactions.account_id',
@@ -899,7 +899,7 @@ class AccountController extends Controller
         $accounts = Account::forDropdown($business_id, false);
 
         $business_locations = BusinessLocation::forDropdown($business_id, true);
-                            
+
         return view('account.cash_flow')
                  ->with(compact('accounts', 'business_locations'));
     }
@@ -990,11 +990,11 @@ class AccountController extends Controller
         if (!auth()->user()->can('account.access')) {
             abort(403, 'Unauthorized action.');
         }
-        
+
         if (request()->ajax()) {
             try {
                 $business_id = session()->get('user.business_id');
-            
+
                 $account = Account::where('business_id', $business_id)
                                 ->findOrFail($id);
 
@@ -1006,12 +1006,12 @@ class AccountController extends Controller
                         ];
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
                 $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];
             }
-            
+
             return $output;
         }
     }
@@ -1078,7 +1078,7 @@ class AccountController extends Controller
             }
 
             DB::commit();
-            
+
             $output = ['success' => true,
                 'msg' => __("lang_v1.success")
             ];
@@ -1087,7 +1087,7 @@ class AccountController extends Controller
             DB::rollBack();
 
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-        
+
             $output = ['success' => false,
                         'msg' => __("messages.something_went_wrong")
                     ];

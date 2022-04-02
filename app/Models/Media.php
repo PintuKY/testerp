@@ -195,7 +195,7 @@ class Media extends Model
             if (is_array($uploaded_files)) {
                 $media_obj = [];
                 foreach ($uploaded_files as $value) {
-                    $media_obj[] = new \App\Media([
+                    $media_obj[] = new \App\Models\Media([
                             'file_name' => $value,
                             'business_id' => $business_id,
                             'description' => !empty($request->description) ? $request->description : null,
@@ -209,7 +209,7 @@ class Media extends Model
                 //delete previous media if exists
                 $model->media()->delete();
 
-                $media_obj = new \App\Media([
+                $media_obj = new \App\Models\Media([
                         'file_name' => $uploaded_files,
                         'business_id' => $business_id,
                         'description' => !empty($request->description) ? $request->description : null,

@@ -19,7 +19,7 @@ use App\Utils\Util;
 use App\Utils\RestaurantUtil;
 use App\User;
 use Illuminate\Notifications\DatabaseNotification;
-use App\Media;
+use App\Models\Media;
 
 class HomeController extends Controller
 {

@@ -6,7 +6,7 @@ use App\Brands;
 use App\Models\Business;
 use App\BusinessLocation;
 use App\Category;
-use App\Media;
+use App\Models\Media;
 use App\Product;
 use App\ProductVariation;
 use App\PurchaseLine;

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\DocumentAndNote;
-use App\Media;
+use App\Models\Media;
 use App\User;
 use App\Utils\ModuleUtil;
 use Illuminate\Http\Request;
@@ -96,7 +96,7 @@ class DocumentAndNoteController extends Controller
                                     </a>
                                 </li>';
                         }
-                        
+
                         $html .= '</ul>
                                 </div>';
 
@@ -209,7 +209,7 @@ class DocumentAndNoteController extends Controller
     public function store(Request $request)
     {
         try {
-            
+
             //model id like project_id, user_id
             $notable_id = request()->get('notable_id');
             //model name like App\User
@@ -230,7 +230,7 @@ class DocumentAndNoteController extends Controller
                 ->findOrFail($notable_id);
 
             $model_note = $model->documentsAndnote()->create($input);
-            
+
             if (!empty($request->get('file_name')[0])) {
                 $file_names = explode(',', $request->get('file_name')[0]);
                 $business_id = request()->session()->get('user.business_id');
@@ -324,7 +324,7 @@ class DocumentAndNoteController extends Controller
 
             $input = $request->only('heading', 'description');
             $input['is_private'] = !empty($request->get('is_private')) ? 1 : 0;
-            
+
             $document_note = DocumentAndNote::where('business_id', $business_id)
                 ->where('notable_id', $notable_id)
                 ->where('notable_type', $notable_type)
@@ -393,7 +393,7 @@ class DocumentAndNoteController extends Controller
             $document_note->media()->delete();
 
             DB::commit();
-            
+
             $output = [
                 'success' => true,
                 'msg' => __('lang_v1.success')

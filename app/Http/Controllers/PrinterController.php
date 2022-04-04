@@ -15,9 +15,9 @@ class PrinterController extends Controller
      */
     public function index()
     {
-        if (!auth()->user()->can('access_printers')) {
-             abort(403, 'Unauthorized action.');
-        }
+        // if (!auth()->user()->can('access_printers')) {
+        //      abort(403, 'Unauthorized action.');
+        // }
 
         if (request()->ajax()) {
             $business_id = request()->session()->get('user.business_id');

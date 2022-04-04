@@ -28,9 +28,9 @@ class CustomerGroupController extends Controller
      */
     public function index()
     {
-        if (!auth()->user()->can('customer.view')) {
-            abort(403, 'Unauthorized action.');
-        }
+        // if (!auth()->user()->can('customer.view')) {
+        //     abort(403, 'Unauthorized action.');
+        // }
 
         if (request()->ajax()) {
             $business_id = request()->session()->get('user.business_id');

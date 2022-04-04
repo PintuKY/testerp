@@ -15,9 +15,9 @@ class ExpenseCategoryController extends Controller
      */
     public function index()
     {
-        if (!(auth()->user()->can('expense.add') || auth()->user()->can('expense.edit'))) {
-            abort(403, 'Unauthorized action.');
-        }
+        // if (!(auth()->user()->can('expense.add') || auth()->user()->can('expense.edit'))) {
+        //     abort(403, 'Unauthorized action.');
+        // }
 
         if (request()->ajax()) {
             $business_id = request()->session()->get('user.business_id');

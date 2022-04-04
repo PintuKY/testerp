@@ -37,9 +37,9 @@ class BusinessLocationController extends Controller
      */
     public function index()
     {
-        if (!auth()->user()->can('business_settings.access')) {
-            abort(403, 'Unauthorized action.');
-        }
+        // if (!auth()->user()->can('business_settings.access')) {
+        //     abort(403, 'Unauthorized action.');
+        // }
 
         if (request()->ajax()) {
             $business_id = request()->session()->get('user.business_id');

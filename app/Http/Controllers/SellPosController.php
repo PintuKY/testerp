@@ -111,9 +111,9 @@ class SellPosController extends Controller
      */
     public function index()
     {
-        if (!auth()->user()->can('sell.view') && !auth()->user()->can('sell.create')) {
-            abort(403, 'Unauthorized action.');
-        }
+        // if (!auth()->user()->can('sell.view') && !auth()->user()->can('sell.create')) {
+        //     abort(403, 'Unauthorized action.');
+        // }
 
         $business_id = request()->session()->get('user.business_id');
 

@@ -53,9 +53,9 @@ class SellReturnController extends Controller
      */
     public function index()
     {
-        if (!auth()->user()->can('access_sell_return') && !auth()->user()->can('access_own_sell_return')) {
-            abort(403, 'Unauthorized action.');
-        }
+        // if (!auth()->user()->can('access_sell_return') && !auth()->user()->can('access_own_sell_return')) {
+        //     abort(403, 'Unauthorized action.');
+        // }
 
         $business_id = request()->session()->get('user.business_id');
         if (request()->ajax()) {

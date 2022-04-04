@@ -33,9 +33,9 @@ class BrandController extends Controller
      */
     public function index()
     {
-        if (!auth()->user()->can('brand.view') && !auth()->user()->can('brand.create')) {
-            abort(403, 'Unauthorized action.');
-        }
+        // if (!auth()->user()->can('brand.view') && !auth()->user()->can('brand.create')) {
+        //     abort(403, 'Unauthorized action.');
+        // }
 
         if (request()->ajax()) {
             $business_id = request()->session()->get('user.business_id');

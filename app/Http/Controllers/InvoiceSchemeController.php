@@ -16,9 +16,9 @@ class InvoiceSchemeController extends Controller
      */
     public function index()
     {
-        if (!auth()->user()->can('invoice_settings.access')) {
-            abort(403, 'Unauthorized action.');
-        }
+        // if (!auth()->user()->can('invoice_settings.access')) {
+        //     abort(403, 'Unauthorized action.');
+        // }
 
         $business_id = request()->session()->get('user.business_id');
         if (request()->ajax()) {

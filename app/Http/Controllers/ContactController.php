@@ -977,9 +977,9 @@ class ContactController extends Controller
      */
     public function getImportContacts()
     {
-        if (!auth()->user()->can('supplier.create') && !auth()->user()->can('customer.create')) {
-            abort(403, 'Unauthorized action.');
-        }
+        // if (!auth()->user()->can('supplier.create') && !auth()->user()->can('customer.create')) {
+        //     abort(403, 'Unauthorized action.');
+        // }
 
         $zip_loaded = extension_loaded('zip') ? true : false;
 

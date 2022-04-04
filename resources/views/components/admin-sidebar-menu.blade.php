@@ -24,8 +24,8 @@
                       <ul class="treeview-menu">
                           <li><a href="https://rcgerp.com/contacts?type=supplier"><i class="fa fas fa-star"></i> <span>Suppliers</span></a></li>
     <li><a href="https://rcgerp.com/contacts?type=customer"><i class="fa fas fa-star"></i> <span>Customers</span></a></li>
-    <li><a href="https://rcgerp.com/customer-group"><i class="fa fas fa-users"></i> <span>Customer Groups</span></a></li>
-    <li><a href="https://rcgerp.com/contacts/import"><i class="fa fas fa-download"></i> <span>Import Contacts</span></a></li>
+    <li><a href="{{route('customer-group.index')}}"><i class="fa fas fa-users"></i> <span>Customer Groups</span></a></li>
+    <li><a href="{{route('contacts.import')}}"><i class="fa fas fa-download"></i> <span>Import Contacts</span></a></li>
 
                       </ul>
                       </li>
@@ -37,17 +37,17 @@
                         </span>
                       </a>
                       <ul class="treeview-menu">
-                          <li><a href="https://rcgerp.com/products"><i class="fa fas fa-list"></i> <span>List Products</span></a></li>
-    <li><a href="https://rcgerp.com/products/create"><i class="fa fas fa-plus-circle"></i> <span>Add Product</span></a></li>
+                          <li><a href="{{route('products.index')}}"><i class="fa fas fa-list"></i> <span>List Products</span></a></li>
+    <li><a href="{{route('products.create')}}"><i class="fa fas fa-plus-circle"></i> <span>Add Product</span></a></li>
     <li><a href="https://rcgerp.com/labels/show"><i class="fa fas fa-barcode"></i> <span>Print Labels</span></a></li>
-    <li><a href="https://rcgerp.com/variation-templates"><i class="fa fas fa-circle"></i> <span>Variations</span></a></li>
+    <li><a href="{{route('variation-templates.index')}}"><i class="fa fas fa-circle"></i> <span>Variations</span></a></li>
     <li><a href="https://rcgerp.com/import-products"><i class="fa fas fa-download"></i> <span>Import Products</span></a></li>
     <li><a href="https://rcgerp.com/import-opening-stock"><i class="fa fas fa-download"></i> <span>Import Opening Stock</span></a></li>
-    <li><a href="https://rcgerp.com/selling-price-group"><i class="fa fas fa-circle"></i> <span>Selling Price Group</span></a></li>
-    <li><a href="https://rcgerp.com/units"><i class="fa fas fa-balance-scale"></i> <span>Units</span></a></li>
+    <li><a href="{{route('selling-price-group.index')}}"><i class="fa fas fa-circle"></i> <span>Selling Price Group</span></a></li>
+    <li><a href="{{route('units.index')}}"><i class="fa fas fa-balance-scale"></i> <span>Units</span></a></li>
     <li><a href="https://rcgerp.com/taxonomies?type=product"><i class="fa fas fa-tags"></i> <span>Categories</span></a></li>
-    <li><a href="https://rcgerp.com/brands"><i class="fa fas fa-gem"></i> <span>Brands</span></a></li>
-    <li><a href="https://rcgerp.com/warranties"><i class="fa fas fa-shield-alt"></i> <span>Warranties</span></a></li>
+    <li><a href="{{route('brands.index')}}"><i class="fa fas fa-gem"></i> <span>Brands</span></a></li>
+    <li><a href="{{route('warranties.index')}}"><i class="fa fas fa-shield-alt"></i> <span>Warranties</span></a></li>
 
                       </ul>
                       </li>
@@ -59,8 +59,8 @@
                         </span>
                       </a>
                       <ul class="treeview-menu">
-                          <li><a href="https://rcgerp.com/purchases"><i class="fa fas fa-list"></i> <span>List Purchases</span></a></li>
-    <li><a href="https://rcgerp.com/purchases/create"><i class="fa fas fa-plus-circle"></i> <span>Add Purchase</span></a></li>
+                          <li><a href="{{route('purchases.index')}}"><i class="fa fas fa-list"></i> <span>List Purchases</span></a></li>
+    <li><a href="{{route('purchases.create')}}"><i class="fa fas fa-plus-circle"></i> <span>Add Purchase</span></a></li>
     <li><a href="https://rcgerp.com/purchase-return"><i class="fa fas fa-undo"></i> <span>List Purchase Return</span></a></li>
 
                       </ul>
@@ -73,17 +73,17 @@
                         </span>
                       </a>
                       <ul class="treeview-menu">
-                          <li><a href="https://rcgerp.com/sells"><i class="fa fas fa-list"></i> <span>All sales</span></a></li>
-    <li><a href="https://rcgerp.com/sells/create"><i class="fa fas fa-plus-circle"></i> <span>Add Sale</span></a></li>
-    <li><a href="https://rcgerp.com/pos"><i class="fa fas fa-list"></i> <span>List POS</span></a></li>
-    <li><a href="https://rcgerp.com/pos/create"><i class="fa fas fa-plus-circle"></i> <span>POS</span></a></li>
+                          <li><a href="{{route('sells.index')}}"><i class="fa fas fa-list"></i> <span>All sales</span></a></li>
+    <li><a href="{{route('sells.create')}}"><i class="fa fas fa-plus-circle"></i> <span>Add Sale</span></a></li>
+    <li><a href="{{route('pos.index')}}"><i class="fa fas fa-list"></i> <span>List POS</span></a></li>
+    <li><a href="{{route('pos.create')}}"><i class="fa fas fa-plus-circle"></i> <span>POS</span></a></li>
     <li><a href="https://rcgerp.com/sells/create?status=draft"><i class="fa fas fa-plus-circle"></i> <span>Add Draft</span></a></li>
     <li><a href="https://rcgerp.com/sells/drafts"><i class="fa fas fa-pen-square"></i> <span>List Drafts</span></a></li>
     <li><a href="https://rcgerp.com/sells/create?status=quotation"><i class="fa fas fa-plus-circle"></i> <span>Add Quotation</span></a></li>
     <li><a href="https://rcgerp.com/sells/quotations"><i class="fa fas fa-pen-square"></i> <span>List quotations</span></a></li>
-    <li><a href="https://rcgerp.com/sell-return"><i class="fa fas fa-undo"></i> <span>List Sell Return</span></a></li>
+    <li><a href="{{route('sell-return.index')}}"><i class="fa fas fa-undo"></i> <span>List Sell Return</span></a></li>
     <li><a href="https://rcgerp.com/shipments"><i class="fa fas fa-truck"></i> <span>Shipments</span></a></li>
-    <li><a href="https://rcgerp.com/discount"><i class="fa fas fa-percent"></i> <span>Discounts</span></a></li>
+    <li><a href="{{route('discount.index')}}"><i class="fa fas fa-percent"></i> <span>Discounts</span></a></li>
     <li><a href="https://rcgerp.com/import-sales"><i class="fa fas fa-file-import"></i> <span>Import Sales</span></a></li>
 
                       </ul>
@@ -96,8 +96,8 @@
                         </span>
                       </a>
                       <ul class="treeview-menu">
-                          <li><a href="https://rcgerp.com/stock-transfers"><i class="fa fas fa-list"></i> <span>List Stock Transfers</span></a></li>
-    <li><a href="https://rcgerp.com/stock-transfers/create"><i class="fa fas fa-plus-circle"></i> <span>Add Stock Transfer</span></a></li>
+                          <li><a href="{{route('stock-transfers.index')}}"><i class="fa fas fa-list"></i> <span>List Stock Transfers</span></a></li>
+    <li><a href="{{route('stock-transfers.create')}}"><i class="fa fas fa-plus-circle"></i> <span>Add Stock Transfer</span></a></li>
 
                       </ul>
                       </li>
@@ -109,8 +109,8 @@
                         </span>
                       </a>
                       <ul class="treeview-menu">
-                          <li><a href="https://rcgerp.com/stock-adjustments"><i class="fa fas fa-list"></i> <span>List Stock Adjustments</span></a></li>
-    <li><a href="https://rcgerp.com/stock-adjustments/create"><i class="fa fas fa-plus-circle"></i> <span>Add Stock Adjustment</span></a></li>
+                          <li><a href="{{route('stock-transfers.index')}}"><i class="fa fas fa-list"></i> <span>List Stock Adjustments</span></a></li>
+    <li><a href="{{route('stock-adjustments.create')}}"><i class="fa fas fa-plus-circle"></i> <span>Add Stock Adjustment</span></a></li>
 
                       </ul>
                       </li>
@@ -122,9 +122,9 @@
                         </span>
                       </a>
                       <ul class="treeview-menu">
-                          <li><a href="https://rcgerp.com/expenses"><i class="fa fas fa-list"></i> <span>List Expenses</span></a></li>
-    <li><a href="https://rcgerp.com/expenses/create"><i class="fa fas fa-plus-circle"></i> <span>Add Expense</span></a></li>
-    <li><a href="https://rcgerp.com/expense-categories"><i class="fa fas fa-circle"></i> <span>Expense Categories</span></a></li>
+                          <li><a href="{{route('expenses.index')}}"><i class="fa fas fa-list"></i> <span>List Expenses</span></a></li>
+    <li><a href="{{route('expenses.create')}}"><i class="fa fas fa-plus-circle"></i> <span>Add Expense</span></a></li>
+    <li><a href="{{route('expense-categories.index')}}"><i class="fa fas fa-circle"></i> <span>Expense Categories</span></a></li>
 
                       </ul>
                       </li>
@@ -156,7 +156,7 @@
 
                       </ul>
                       </li>
-    <li><a href="https://rcgerp.com/notification-templates"><i class="fa fas fa-envelope"></i> <span>Notification Templates</span></a></li>
+    <li><a href="{{route('notification-templates.index')}}"><i class="fa fas fa-envelope"></i> <span>Notification Templates</span></a></li>
     <li class="treeview" id="tour_step3">
                       <a href="#">
                         <i class="fa fas fa-cog"></i> <span>Settings</span>
@@ -165,12 +165,12 @@
                         </span>
                       </a>
                       <ul class="treeview-menu">
-                          <li><a href="https://rcgerp.com/business/settings" id="tour_step2"><i class="fa fas fa-cogs"></i> <span>Business Settings</span></a></li>
-    <li><a href="https://rcgerp.com/business-location"><i class="fa fas fa-map-marker"></i> <span>Business Locations</span></a></li>
-    <li><a href="https://rcgerp.com/invoice-schemes"><i class="fa fas fa-file"></i> <span>Invoice Settings</span></a></li>
-    <li><a href="https://rcgerp.com/barcodes"><i class="fa fas fa-barcode"></i> <span>Barcode Settings</span></a></li>
-    <li><a href="https://rcgerp.com/printers"><i class="fa fas fa-share-alt"></i> <span>Receipt Printers</span></a></li>
-    <li><a href="https://rcgerp.com/tax-rates"><i class="fa fas fa-bolt"></i> <span>Tax Rates</span></a></li>
+                          <li><a href="{{route('business.getBusinessSettings')}}" id="tour_step2"><i class="fa fas fa-cogs"></i> <span>Business Settings</span></a></li>
+    <li><a href="{{route('business-location.index')}}"><i class="fa fas fa-map-marker"></i> <span>Business Locations</span></a></li>
+    <li><a href="{{route('invoice-schemes.index')}}"><i class="fa fas fa-file"></i> <span>Invoice Settings</span></a></li>
+    <li><a href="{{route('barcodes.index')}}"><i class="fa fas fa-barcode"></i> <span>Barcode Settings</span></a></li>
+    <li><a href="{{route('printers.index')}}"><i class="fa fas fa-share-alt"></i> <span>Receipt Printers</span></a></li>
+    <li><a href="{{route('tax-rates.index')}}"><i class="fa fas fa-bolt"></i> <span>Tax Rates</span></a></li>
 
                       </ul>
                       </li>

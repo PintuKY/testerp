@@ -53,9 +53,9 @@ class StockTransferController extends Controller
      */
     public function index()
     {
-        if (!auth()->user()->can('purchase.view') && !auth()->user()->can('purchase.create')) {
-            abort(403, 'Unauthorized action.');
-        }
+        // if (!auth()->user()->can('purchase.view') && !auth()->user()->can('purchase.create')) {
+        //     abort(403, 'Unauthorized action.');
+        // }
 
         $statuses = $this->stockTransferStatuses();
 
@@ -148,9 +148,9 @@ class StockTransferController extends Controller
      */
     public function create()
     {
-        if (!auth()->user()->can('purchase.create')) {
-            abort(403, 'Unauthorized action.');
-        }
+        // if (!auth()->user()->can('purchase.create')) {
+        //     abort(403, 'Unauthorized action.');
+        // }
 
         $business_id = request()->session()->get('user.business_id');
 

@@ -38,9 +38,9 @@ class DiscountController extends Controller
      */
     public function index()
     {
-        if (!auth()->user()->can('discount.access')) {
-            abort(403, 'Unauthorized action.');
-        }
+        // if (!auth()->user()->can('discount.access')) {
+        //     abort(403, 'Unauthorized action.');
+        // }
 
         if (request()->ajax()) {
             $business_id = request()->session()->get('user.business_id');

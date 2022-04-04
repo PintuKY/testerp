@@ -36,9 +36,9 @@ class UnitController extends Controller
      */
     public function index()
     {
-        if (!auth()->user()->can('unit.view') && !auth()->user()->can('unit.create')) {
-            abort(403, 'Unauthorized action.');
-        }
+        // if (!auth()->user()->can('unit.view') && !auth()->user()->can('unit.create')) {
+        //     abort(403, 'Unauthorized action.');
+        // }
 
         if (request()->ajax()) {
             $business_id = request()->session()->get('user.business_id');

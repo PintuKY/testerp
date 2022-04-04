@@ -269,9 +269,9 @@ class BusinessController extends Controller
      */
     public function getBusinessSettings()
     {
-        if (!auth()->user()->can('business_settings.access')) {
-            abort(403, 'Unauthorized action.');
-        }
+        // if (!auth()->user()->can('business_settings.access')) {
+        //     abort(403, 'Unauthorized action.');
+        // }
 
         $timezones = DateTimeZone::listIdentifiers(DateTimeZone::ALL);
         $timezone_list = [];

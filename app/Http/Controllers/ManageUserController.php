@@ -34,9 +34,9 @@ class ManageUserController extends Controller
      */
     public function index()
     {
-        if (!auth()->user()->can('user.view') && !auth()->user()->can('user.create')) {
-            abort(403, 'Unauthorized action.');
-        }
+        // if (!auth()->user()->can('user.view') && !auth()->user()->can('user.create')) {
+        //     abort(403, 'Unauthorized action.');
+        // }
 
         if (request()->ajax()) {
             $business_id = request()->session()->get('user.business_id');

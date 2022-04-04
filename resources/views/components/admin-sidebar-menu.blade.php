@@ -10,7 +10,7 @@
                       <ul class="treeview-menu" style="display: none;">
                           <li><a href="{{route('users.index')}}"><i class="fa fas fa-user"></i> <span>Users</span></a></li>
     <li><a href="{{route('roles.index')}}"><i class="fa fas fa-briefcase"></i> <span>Roles</span></a></li>
-    <li><a href="https://rcgerp.com/sales-commission-agents"><i class="fa fas fa-handshake"></i> <span>Sales Commission Agents</span></a></li>
+    <li><a href="{{route('sales-commission-agents.index')}}"><i class="fa fas fa-handshake"></i> <span>Sales Commission Agents</span></a></li>
 
                       </ul>
                       </li>

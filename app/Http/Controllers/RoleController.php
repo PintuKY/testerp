@@ -34,9 +34,9 @@ class RoleController extends Controller
      */
     public function index()
     {
-        if (!auth()->user()->can('roles.view')) {
-            abort(403, 'Unauthorized action.');
-        }
+        // if (!auth()->user()->can('roles.view')) {
+        //     abort(403, 'Unauthorized action.');
+        // }
 
         if (request()->ajax()) {
             $business_id = request()->session()->get('user.business_id');

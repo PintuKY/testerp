@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Restaurant;
 
-use App\BusinessLocation;
-use App\Contact;
+use App\Models\BusinessLocation;
+use App\Models\Contact;
 use App\CustomerGroup;
 use App\Restaurant\Booking;
-use App\User;
+use App\Models\User;
 use App\Utils\Util;
 use DB;
 use Illuminate\Http\Request;
@@ -114,7 +114,7 @@ class BookingController extends Controller
                 if (isset($input['res_table_id'])) {
                     $query->where('table_id', $input['res_table_id']);
                 }
-                
+
                 $existing_booking = $query->first();
                 if (empty($existing_booking)) {
                     $input['business_id'] = $business_id;
@@ -122,7 +122,7 @@ class BookingController extends Controller
                     $input['booking_start'] = $booking_start;
                     $input['booking_end'] = $booking_end;
                     $booking = Booking::createBooking($input);
-                    
+
                     $output = ['success' => 1,
                         'msg' => trans("lang_v1.added_success"),
                     ];
@@ -277,7 +277,7 @@ class BookingController extends Controller
                         ->where('booking_status', 'booked')
                         ->whereDate('booking_start', $today)
                         ->with(['table', 'customer', 'correspondent', 'waiter', 'location']);
-                        
+
             if (!empty(request()->location_id)) {
                 $query->where('location_id', request()->location_id);
             }

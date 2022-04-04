@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\BusinessLocation;
+use App\Models\BusinessLocation;
 use App\PurchaseLine;
 use App\TaxRate;
-use App\Transaction;
+use App\Models\Transaction;
 use App\Utils\ModuleUtil;
 use App\Utils\ProductUtil;
 use App\Utils\TransactionUtil;
@@ -87,7 +87,7 @@ class CombinedPurchaseReturnController extends Controller
             if (!$this->moduleUtil->isSubscribed($business_id)) {
                 return $this->moduleUtil->expiredResponse();
             }
-        
+
             $user_id = $request->session()->get('user.id');
 
             $input_data['type'] = 'purchase_return';
@@ -124,7 +124,7 @@ class CombinedPurchaseReturnController extends Controller
                         'lot_number' => !empty($product['lot_number']) ? $product['lot_number'] : null,
                         'exp_date' => !empty($product['exp_date']) ? $this->productUtil->uf_date($product['exp_date']) : null
                     ];
-                    
+
                     $product_data[] = $return_line;
 
                     //Decrease available quantity
@@ -150,7 +150,7 @@ class CombinedPurchaseReturnController extends Controller
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
 
             $output = ['success' => 0,
@@ -205,7 +205,7 @@ class CombinedPurchaseReturnController extends Controller
                         ->leftjoin('units', 'units.id', '=', 'p.unit_id')
                         ->where('purchase_lines.transaction_id', $id)
                         ->select(
-                            DB::raw("IF(pv.is_dummy = 0, CONCAT(p.name, 
+                            DB::raw("IF(pv.is_dummy = 0, CONCAT(p.name,
                                     ' (', pv.name, ':',variations.name, ')'), p.name) AS product_name"),
                             'p.id as product_id',
                             'p.enable_stock',
@@ -266,7 +266,7 @@ class CombinedPurchaseReturnController extends Controller
             if (!$this->moduleUtil->isSubscribed($business_id)) {
                 return $this->moduleUtil->expiredResponse();
             }
-        
+
             $input_data['transaction_date'] = $this->productUtil->uf_date($input_data['transaction_date'], true);
             $input_data['total_before_tax'] = $input_data['final_total'] - $input_data['tax_amount'];
 
@@ -352,7 +352,7 @@ class CombinedPurchaseReturnController extends Controller
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
 
             $output = ['success' => 0,
@@ -379,7 +379,7 @@ class CombinedPurchaseReturnController extends Controller
             $business_id = $request->session()->get('user.business_id');
             $product = $this->productUtil->getDetailsFromVariation($variation_id, $business_id, $location_id);
             $product->formatted_qty_available = $this->productUtil->num_f($product->qty_available);
-            
+
             return view('purchase_return.partials.product_table_row')
             ->with(compact('product', 'row_index'));
         }

@@ -47,7 +47,7 @@ class User extends Authenticatable
      */
     public function business()
     {
-        return $this->belongsTo(\App\Business::class);
+        return $this->belongsTo(\App\Models\Business::class);
     }
 
     public function scopeUser($query)
@@ -62,7 +62,7 @@ class User extends Authenticatable
      */
     public function contactAccess()
     {
-        return $this->belongsToMany(\App\Contact::class, 'user_contact_access');
+        return $this->belongsToMany(\App\Models\Contact::class, 'user_contact_access');
     }
 
     /**
@@ -284,7 +284,7 @@ class User extends Authenticatable
      * Find the user instance for the given username.
      *
      * @param  string  $username
-     * @return \App\User
+     * @return \App\Models\User
      */
     public function findForPassport($username)
     {

@@ -15,7 +15,7 @@ class ProductVariation extends Model
 
     public function variations()
     {
-        return $this->hasMany(\App\Variation::class);
+        return $this->hasMany(\App\Models\Variation::class);
     }
 
     public function variation_template()

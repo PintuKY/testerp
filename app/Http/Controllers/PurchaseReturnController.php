@@ -4,13 +4,13 @@ namespace App\Http\Controllers;
 
 use App\AccountTransaction;
 use App\PurchaseLine;
-use App\Transaction;
+use App\Models\Transaction;
 use App\Utils\ProductUtil;
 use App\Utils\TransactionUtil;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
-use App\BusinessLocation;
+use App\Models\BusinessLocation;
 use Spatie\Activitylog\Models\Activity;
 
 class PurchaseReturnController extends Controller
@@ -93,7 +93,7 @@ class PurchaseReturnController extends Controller
             if (!empty(request()->location_id)) {
                 $purchases_returns->where('transactions.location_id', request()->location_id);
             }
-            
+
             if (!empty(request()->supplier_id)) {
                 $supplier_id = request()->supplier_id;
                 $purchases_returns->where('contacts.id', $supplier_id);
@@ -107,7 +107,7 @@ class PurchaseReturnController extends Controller
             return Datatables::of($purchases_returns)
                 ->addColumn('action', function ($row) {
                     $html = '<div class="btn-group">
-                                    <button type="button" class="btn btn-info dropdown-toggle btn-xs" 
+                                    <button type="button" class="btn btn-info dropdown-toggle btn-xs"
                                         data-toggle="dropdown" aria-expanded="false">' .
                                         __("messages.actions") .
                                         '<span class="caret"></span><span class="sr-only">Toggle Dropdown
@@ -134,7 +134,7 @@ class PurchaseReturnController extends Controller
                                 __("messages.delete") .
                                 '</a></li>';
                     $html .= '</ul></div>';
-                    
+
                     return $html;
                 })
                 ->removeColumn('id')
@@ -282,7 +282,7 @@ class PurchaseReturnController extends Controller
                 $ref_count = $this->transactionUtil->setAndGetReferenceCount('purchase_return');
                 $return_transaction_data['ref_no'] = $this->transactionUtil->generateReferenceNumber('purchase_return', $ref_count);
             }
-            
+
             $return_transaction = Transaction::where('business_id', $business_id)
                                             ->where('type', 'purchase_return')
                                             ->where('return_parent_id', $purchase->id)
@@ -320,7 +320,7 @@ class PurchaseReturnController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0,
                             'msg' => __('messages.something_went_wrong')
                         ];
@@ -353,7 +353,7 @@ class PurchaseReturnController extends Controller
                 $purchase->purchase_lines[$key] = $formated_purchase_line;
             }
         }
-        
+
         $purchase_taxes = [];
         if (!empty($purchase->return_parent->tax)) {
             if ($purchase->return_parent->tax->is_tax_group) {
@@ -397,13 +397,13 @@ class PurchaseReturnController extends Controller
             if (request()->ajax()) {
                 $business_id = request()->session()->get('user.business_id');
 
-        
+
                 $purchase_return = Transaction::where('id', $id)
                                 ->where('business_id', $business_id)
                                 ->where('type', 'purchase_return')
                                 ->with(['purchase_lines'])
                                 ->first();
-                
+
                 DB::beginTransaction();
 
                 if (empty($purchase_return->return_parent_id)) {
@@ -446,7 +446,7 @@ class PurchaseReturnController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => false,
                             'msg' => __('messages.something_went_wrong')
                         ];

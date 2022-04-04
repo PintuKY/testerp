@@ -5,15 +5,15 @@ namespace App\Utils;
 use App\Barcode;
 
 use App\Models\Business;
-use App\BusinessLocation;
-use App\Contact;
+use App\Models\BusinessLocation;
+use App\Models\Contact;
 use App\Models\Currency;
 use App\InvoiceLayout;
 use App\InvoiceScheme;
 use App\NotificationTemplate;
 use App\Printer;
-use App\Unit;
-use App\User;
+use App\Models\Unit;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 

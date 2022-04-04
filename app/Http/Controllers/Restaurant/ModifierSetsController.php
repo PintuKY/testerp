@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Restaurant;
 
-use App\Product;
+use App\Models\Product;
 
 use App\Utils\ProductUtil;
 use Illuminate\Http\Request;
@@ -89,7 +89,7 @@ class ModifierSetsController extends Controller
         if (!auth()->user()->can('product.create')) {
             abort(403, 'Unauthorized action.');
         }
-        
+
         return view('restaurant.modifier_sets.create');
     }
 
@@ -150,7 +150,7 @@ class ModifierSetsController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0, 'msg' => __("messages.something_went_wrong")];
         }
 
@@ -188,7 +188,7 @@ class ModifierSetsController extends Controller
                 ->with(compact('modifer_set'));
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0, 'msg' => __("messages.something_went_wrong")];
         }
     }
@@ -266,7 +266,7 @@ class ModifierSetsController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0, 'msg' => __("messages.something_went_wrong")];
         }
 
@@ -298,7 +298,7 @@ class ModifierSetsController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0, 'msg' => __("messages.something_went_wrong")];
         }
 

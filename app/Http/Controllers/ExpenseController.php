@@ -2,21 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Account;
+use App\Models\Account;
 
 use App\AccountTransaction;
-use App\BusinessLocation;
+use App\Models\BusinessLocation;
 use App\ExpenseCategory;
 use App\TaxRate;
-use App\Transaction;
-use App\User;
+use App\Models\Transaction;
+use App\Models\User;
 use App\Utils\ModuleUtil;
 use App\Utils\TransactionUtil;
 use DB;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Str;
-use App\Contact;
+use App\Models\Contact;
 use App\Utils\CashRegisterUtil;
 
 class ExpenseController extends Controller
@@ -163,12 +163,12 @@ class ExpenseController extends Controller
                         ->orWhere('transactions.expense_for', $user_id);
                     });
             }
-            
+
             return Datatables::of($expenses)
                 ->addColumn(
                     'action',
                     '<div class="btn-group">
-                        <button type="button" class="btn btn-info dropdown-toggle btn-xs" 
+                        <button type="button" class="btn btn-info dropdown-toggle btn-xs"
                             data-toggle="dropdown" aria-expanded="false"> @lang("messages.actions")<span class="caret"></span><span class="sr-only">Toggle Dropdown
                                 </span>
                         </button>
@@ -177,7 +177,7 @@ class ExpenseController extends Controller
                         <li><a href="{{action(\'ExpenseController@edit\', [$id])}}"><i class="glyphicon glyphicon-edit"></i> @lang("messages.edit")</a></li>
                     @endif
                     @if($document)
-                        <li><a href="{{ url(\'uploads/documents/\' . $document)}}" 
+                        <li><a href="{{ url(\'uploads/documents/\' . $document)}}"
                         download=""><i class="fa fa-download" aria-hidden="true"></i> @lang("purchase.download_document")</a></li>
                         @if(isFileImage($document))
                             <li><a href="#" data-href="{{ url(\'uploads/documents/\' . $document)}}" class="view_uploaded_document"><i class="fas fa-file-image" aria-hidden="true"></i>@lang("lang_v1.view_document")</a></li>
@@ -187,7 +187,7 @@ class ExpenseController extends Controller
                         <li>
                         <a href="#" data-href="{{action(\'ExpenseController@destroy\', [$id])}}" class="delete_expense"><i class="glyphicon glyphicon-trash"></i> @lang("messages.delete")</a></li>
                     @endif
-                    <li class="divider"></li> 
+                    <li class="divider"></li>
                     @if($payment_status != "paid")
                         <li><a href="{{action("TransactionPaymentController@addPayment", [$id])}}" class="add_payment_modal"><i class="fas fa-money-bill-alt" aria-hidden="true"></i> @lang("purchase.add_payment")</a></li>
                     @endif
@@ -218,13 +218,13 @@ class ExpenseController extends Controller
                     if ($row->is_recurring == 1) {
                         $type = $row->recur_interval == 1 ? Str::singular(__('lang_v1.' . $row->recur_interval_type)) : __('lang_v1.' . $row->recur_interval_type);
                         $recur_interval = $row->recur_interval . $type;
-                        
-                        $details .= __('lang_v1.recur_interval') . ': ' . $recur_interval; 
+
+                        $details .= __('lang_v1.recur_interval') . ': ' . $recur_interval;
                         if (!empty($row->recur_repetitions)) {
-                            $details .= ', ' .__('lang_v1.no_of_repetitions') . ': ' . $row->recur_repetitions; 
+                            $details .= ', ' .__('lang_v1.no_of_repetitions') . ': ' . $row->recur_repetitions;
                         }
                         if ($row->recur_interval_type == 'months' && !empty($row->subscription_repeat_on)) {
-                            $details .= '<br><small class="text-muted">' . 
+                            $details .= '<br><small class="text-muted">' .
                             __('lang_v1.repeat_on') . ': ' . str_ordinal($row->subscription_repeat_on) ;
                         }
                     } elseif (!empty($row->recur_parent_id)) {
@@ -281,7 +281,7 @@ class ExpenseController extends Controller
         }
 
         $business_id = request()->session()->get('user.business_id');
-        
+
         //Check if subscribed or not
         if (!$this->moduleUtil->isSubscribed($business_id)) {
             return $this->moduleUtil->expiredResponse(action('ExpenseController@index'));
@@ -298,7 +298,7 @@ class ExpenseController extends Controller
         $users = User::forDropdown($business_id, true, true);
 
         $taxes = TaxRate::forBusinessDropdown($business_id, true, true);
-        
+
         $payment_line = $this->dummyPaymentLine;
 
         $payment_types = $this->transactionUtil->payment_types(null, false, $business_id);
@@ -348,7 +348,7 @@ class ExpenseController extends Controller
             $user_id = $request->session()->get('user.id');
 
             DB::beginTransaction();
-            
+
             $expense = $this->transactionUtil->createExpense($request, $business_id, $user_id);
 
             if (request()->ajax()) {
@@ -367,7 +367,7 @@ class ExpenseController extends Controller
             DB::rollBack();
 
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0,
                             'msg' => __('messages.something_went_wrong')
                         ];
@@ -434,7 +434,7 @@ class ExpenseController extends Controller
                         ->pluck('name', 'id')
                         ->toArray();
         }
-        
+
         return view('expense.edit')
             ->with(compact('expense', 'expense_categories', 'business_locations', 'users', 'taxes', 'contacts', 'sub_categories'));
     }
@@ -457,9 +457,9 @@ class ExpenseController extends Controller
             $request->validate([
                 'document' => 'file|max:'. (config('constants.document_size_limit') / 1000)
             ]);
-            
+
             $business_id = $request->session()->get('user.business_id');
-            
+
             //Check if subscribed or not
             if (!$this->moduleUtil->isSubscribed($business_id)) {
                 return $this->moduleUtil->expiredResponse(action('ExpenseController@index'));
@@ -474,7 +474,7 @@ class ExpenseController extends Controller
                         ];
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0,
                             'msg' => __('messages.something_went_wrong')
                         ];
@@ -516,7 +516,7 @@ class ExpenseController extends Controller
                             ];
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
                 $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];

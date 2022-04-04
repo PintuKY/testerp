@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Account;
+use App\Models\Account;
 use App\AccountTransaction;
 use App\AccountType;
-use App\TransactionPayment;
+use App\Models\TransactionPayment;
 use App\Utils\Util;
 use DB;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Yajra\DataTables\Facades\DataTables;
 use App\Models\Media;
-use App\BusinessLocation;
+use App\Models\BusinessLocation;
 use App\Utils\ModuleUtil;
 
 class AccountController extends Controller

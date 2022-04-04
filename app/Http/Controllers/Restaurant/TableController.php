@@ -8,7 +8,7 @@ use Illuminate\Routing\Controller;
 use Datatables;
 
 use App\Restaurant\ResTable;
-use App\BusinessLocation;
+use App\Models\BusinessLocation;
 
 class TableController extends Controller
 {
@@ -90,7 +90,7 @@ class TableController extends Controller
                         ];
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -121,7 +121,7 @@ class TableController extends Controller
         if (!auth()->user()->can('access_tables')) {
              abort(403, 'Unauthorized action.');
         }
-        
+
         if (request()->ajax()) {
             $business_id = request()->session()->get('user.business_id');
             $table = ResTable::where('business_id', $business_id)->find($id);
@@ -157,7 +157,7 @@ class TableController extends Controller
                             ];
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
                 $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -189,7 +189,7 @@ class TableController extends Controller
                             ];
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
                 $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];

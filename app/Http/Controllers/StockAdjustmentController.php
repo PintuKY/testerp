@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\BusinessLocation;
+use App\Models\BusinessLocation;
 
 use App\PurchaseLine;
 
-use App\Transaction;
+use App\Models\Transaction;
 use App\Utils\ModuleUtil;
 
 use App\Utils\ProductUtil;
@@ -92,7 +92,7 @@ class StockAdjustmentController extends Controller
             if (!empty($location_id)) {
                 $stock_adjustments->where('transactions.location_id', $location_id);
             }
-            
+
             return Datatables::of($stock_adjustments)
                 ->addColumn('action', '<button type="button" data-href="{{  action("StockAdjustmentController@show", [$id]) }}" class="btn btn-primary btn-xs btn-modal" data-container=".view_modal"><i class="fa fa-eye" aria-hidden="true"></i> @lang("messages.view")</button>
                  &nbsp;
@@ -167,7 +167,7 @@ class StockAdjustmentController extends Controller
             if (!$this->moduleUtil->isSubscribed($business_id)) {
                 return $this->moduleUtil->expiredResponse(action('StockAdjustmentController@index'));
             }
-        
+
             $user_id = $request->session()->get('user.id');
 
             $input_data['type'] = 'stock_adjustment';
@@ -230,14 +230,14 @@ class StockAdjustmentController extends Controller
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
             $msg = trans("messages.something_went_wrong");
-                
+
             if (get_class($e) == \App\Exceptions\PurchaseSellMismatch::class) {
                 $msg = $e->getMessage();
             }
-            
+
             $output = ['success' => 0,
                             'msg' => $msg
                         ];
@@ -281,7 +281,7 @@ class StockAdjustmentController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Transaction  $stockAdjustment
+     * @param  \App\Models\Transaction  $stockAdjustment
      * @return \Illuminate\Http\Response
      */
     public function edit(Transaction $stockAdjustment)
@@ -293,7 +293,7 @@ class StockAdjustmentController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Transaction  $stockAdjustment
+     * @param  \App\Models\Transaction  $stockAdjustment
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, Transaction $stockAdjustment)
@@ -350,7 +350,7 @@ class StockAdjustmentController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0,
                             'msg' => __('messages.something_went_wrong')
                         ];
@@ -478,11 +478,11 @@ class StockAdjustmentController extends Controller
             DB::rollBack();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
             $msg = trans("messages.something_went_wrong");
-                
+
             if (get_class($e) == \App\Exceptions\PurchaseSellMismatch::class) {
                 $msg = $e->getMessage();
             }
-            
+
             $output = ['success' => 0,
                             'msg' => $msg
                         ];

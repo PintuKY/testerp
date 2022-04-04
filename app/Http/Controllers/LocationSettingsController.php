@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\BusinessLocation;
+use App\Models\BusinessLocation;
 use App\Printer;
 use App\InvoiceLayout;
 use App\InvoiceScheme;
@@ -78,7 +78,7 @@ class LocationSettingsController extends Controller
             ) {
                 abort(403, 'Unauthorized action.');
             }
-            
+
             $input = $request->only(['print_receipt_on_invoice', 'receipt_printer_type', 'printer_id', 'invoice_layout_id', 'invoice_scheme_id']);
 
             //Auto set to browser in demo.

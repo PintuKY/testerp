@@ -4,8 +4,8 @@ namespace App\Models;
 
 use DB;
 use Illuminate\Database\Eloquent\Model;
-use App\SellingPriceGroup;
-use App\Variation;
+use App\Models\SellingPriceGroup;
+use App\Models\Variation;
 
 class BusinessLocation extends Model
 {
@@ -92,7 +92,7 @@ class BusinessLocation extends Model
 
     public function price_group()
     {
-        return $this->belongsTo(\App\SellingPriceGroup::class, 'selling_price_group_id');
+        return $this->belongsTo(\App\Models\SellingPriceGroup::class, 'selling_price_group_id');
     }
 
     /**

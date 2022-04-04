@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Business;
 
-use App\Transaction;
+use App\Models\Transaction;
 use App\Utils\NotificationUtil;
 
 use App\Utils\ProductUtil;

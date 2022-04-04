@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Account;
-use App\BusinessLocation;
+use App\Models\Account;
+use App\Models\BusinessLocation;
 use App\InvoiceLayout;
 use App\InvoiceScheme;
-use App\SellingPriceGroup;
+use App\Models\SellingPriceGroup;
 use App\Utils\ModuleUtil;
 use App\Utils\Util;
 use Illuminate\Http\Request;
@@ -188,7 +188,7 @@ class BusinessLocationController extends Controller
                         ];
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -270,7 +270,7 @@ class BusinessLocationController extends Controller
             $input = $request->only(['name', 'landmark', 'city', 'state', 'country',
                 'zip_code', 'invoice_scheme_id',
                 'invoice_layout_id', 'mobile', 'alternate_number', 'email', 'website', 'custom_field1', 'custom_field2', 'custom_field3', 'custom_field4', 'location_id', 'selling_price_group_id', 'default_payment_accounts', 'featured_products', 'sale_invoice_layout_id']);
-            
+
             $business_id = $request->session()->get('user.business_id');
 
             $input['default_payment_accounts'] = !empty($input['default_payment_accounts']) ? json_encode($input['default_payment_accounts']) : null;
@@ -286,7 +286,7 @@ class BusinessLocationController extends Controller
                         ];
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -363,7 +363,7 @@ class BusinessLocationController extends Controller
                         ];
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];

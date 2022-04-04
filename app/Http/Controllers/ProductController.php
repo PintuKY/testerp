@@ -4,20 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Brands;
 use App\Models\Business;
-use App\BusinessLocation;
+use App\Models\BusinessLocation;
 use App\Category;
 use App\Models\Media;
-use App\Product;
-use App\ProductVariation;
+use App\Models\Product;
+use App\Models\ProductVariation;
 use App\PurchaseLine;
-use App\SellingPriceGroup;
+use App\Models\SellingPriceGroup;
 use App\TaxRate;
-use App\Unit;
+use App\Models\Unit;
 use App\Utils\ModuleUtil;
 use App\Utils\ProductUtil;
-use App\Variation;
+use App\Models\Variation;
 use App\VariationGroupPrice;
-use App\VariationLocationDetails;
+use App\Models\VariationLocationDetails;
 use App\VariationTemplate;
 use App\Warranty;
 use Illuminate\Http\Request;
@@ -564,7 +564,7 @@ class ProductController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Product  $product
+     * @param  \App\Models\Product  $product
      * @return \Illuminate\Http\Response
      */
     public function show($id)
@@ -850,7 +850,7 @@ class ProductController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Product  $product
+     * @param  \App\Models\Product  $product
      * @return \Illuminate\Http\Response
      */
     public function destroy($id)
@@ -1432,7 +1432,7 @@ class ProductController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Product  $product
+     * @param  \App\Models\Product  $product
      * @return \Illuminate\Http\Response
      */
     public function view($id)
@@ -1737,7 +1737,7 @@ class ProductController extends Controller
     /**
      * Activates the specified resource from storage.
      *
-     * @param  \App\Product  $product
+     * @param  \App\Models\Product  $product
      * @return \Illuminate\Http\Response
      */
     public function activate($id)

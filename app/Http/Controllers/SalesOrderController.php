@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\BusinessLocation;
-use App\Contact;
-use App\Transaction;
+use App\Models\BusinessLocation;
+use App\Models\Contact;
+use App\Models\Transaction;
 use App\Utils\TransactionUtil;
 use App\Utils\BusinessUtil;
 use App\Utils\Util;
@@ -56,7 +56,7 @@ class SalesOrderController extends Controller
         $business_id = request()->session()->get('user.business_id');
 
         $business_locations = BusinessLocation::forDropdown($business_id, false);
-        $customers = Contact::customersDropdown($business_id, false);    
+        $customers = Contact::customersDropdown($business_id, false);
 
         $shipping_statuses = $this->transactionUtil->shipping_statuses();
 
@@ -73,7 +73,7 @@ class SalesOrderController extends Controller
     {
         $business_id = request()->session()->get('user.business_id');
         $location_id = request()->input('location_id');
-        
+
         $sales_orders = Transaction::where('business_id', $business_id)
                             ->where('location_id', $location_id)
                             ->where('type', 'sales_order')
@@ -86,14 +86,14 @@ class SalesOrderController extends Controller
     }
 
     /**
-     * get required resources 
+     * get required resources
      *
      * to edit sales order status
      *
      * @return \Illuminate\Http\Response
      */
     public function getEditSalesOrderStatus(Request $request, $id)
-    {   
+    {
         $is_admin = $this->businessUtil->is_admin(auth()->user());
         if ( !$is_admin) {
             abort(403, 'Unauthorized action.');
@@ -126,13 +126,13 @@ class SalesOrderController extends Controller
 
         if ($request->ajax()) {
             try {
-                
+
                 $business_id = request()->session()->get('user.business_id');
                 $transaction = Transaction::where('business_id', $business_id)
                                 ->findOrFail($id);
 
                 $transaction_before = $transaction->replicate();
-                
+
                 $transaction->status = $request->input('status');
                 $transaction->save();
 

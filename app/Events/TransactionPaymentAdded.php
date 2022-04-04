@@ -2,7 +2,7 @@
 
 namespace App\Events;
 
-use App\TransactionPayment;
+use App\Models\TransactionPayment;
 use Illuminate\Queue\SerializesModels;
 
 class TransactionPaymentAdded

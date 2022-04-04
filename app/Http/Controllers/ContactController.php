@@ -3,13 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Business;
-use App\BusinessLocation;
-use App\Contact;
+use App\Models\BusinessLocation;
+use App\Models\Contact;
 use App\CustomerGroup;
 use App\Notifications\CustomerNotification;
 use App\PurchaseLine;
-use App\Transaction;
-use App\User;
+use App\Models\Transaction;
+use App\Models\User;
 use App\Utils\ContactUtil;
 use App\Utils\ModuleUtil;
 use App\Utils\NotificationUtil;
@@ -19,7 +19,7 @@ use DB;
 use Excel;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
-use App\TransactionPayment;
+use App\Models\TransactionPayment;
 use Spatie\Activitylog\Models\Activity;
 
 class ContactController extends Controller

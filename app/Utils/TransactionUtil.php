@@ -4,8 +4,8 @@ namespace App\Utils;
 
 use App\AccountTransaction;
 use App\Models\Business;
-use App\BusinessLocation;
-use App\Contact;
+use App\Models\BusinessLocation;
+use App\Models\Contact;
 use App\Models\Currency;
 use App\Events\TransactionPaymentAdded;
 use App\Events\TransactionPaymentDeleted;
@@ -13,16 +13,16 @@ use App\Events\TransactionPaymentUpdated;
 use App\Exceptions\PurchaseSellMismatch;
 use App\Exceptions\AdvanceBalanceNotAvailable;
 use App\InvoiceScheme;
-use App\Product;
+use App\Models\Product;
 use App\PurchaseLine;
 use App\Restaurant\ResTable;
 use App\TaxRate;
-use App\Transaction;
-use App\TransactionPayment;
-use App\TransactionSellLine;
-use App\TransactionSellLinesPurchaseLines;
-use App\Variation;
-use App\VariationLocationDetails;
+use App\Models\Transaction;
+use App\Models\TransactionPayment;
+use App\Models\TransactionSellLine;
+use App\Models\TransactionSellLinesPurchaseLines;
+use App\Models\Variation;
+use App\Models\VariationLocationDetails;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Utils\ModuleUtil;
@@ -1582,7 +1582,7 @@ class TransactionUtil extends Util
             if (isset($il->module_info['service_staff']['show_service_staff'])) {
                 $output['service_staff_label'] = !empty($il->module_info['service_staff']['service_staff_label']) ? $il->module_info['service_staff']['service_staff_label'] : '';
                 if (!empty($transaction->res_waiter_id)) {
-                    $waiter = \App\User::find($transaction->res_waiter_id);
+                    $waiter = \App\Models\User::find($transaction->res_waiter_id);
                 }
 
                 //res_table_id

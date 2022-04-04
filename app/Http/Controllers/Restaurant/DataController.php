@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Restaurant;
 
 use App\Restaurant\ResTable;
-use App\Transaction;
+use App\Models\Transaction;
 
 use App\Utils\Util;
 

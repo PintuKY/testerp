@@ -10,7 +10,7 @@
 
     <!-- Sidebar Menu -->
     {{-- {!! Menu::render('admin-sidebar-menu', 'adminltecustom'); !!} --}}
-
+    <x-admin-sidebar-menu/>
     <!-- /.sidebar-menu -->
   </section>
   <!-- /.sidebar -->

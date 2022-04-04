@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Media;
-use App\User;
+use App\Models\User;
 use App\Utils\ModuleUtil;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;

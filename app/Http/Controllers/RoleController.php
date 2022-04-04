@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\SellingPriceGroup;
+use App\Models\SellingPriceGroup;
 use App\Utils\ModuleUtil;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
@@ -55,7 +55,7 @@ class RoleController extends Controller
                             $action .= '&nbsp
                                 <button data-href="' . action('RoleController@destroy', [$row->id]) . '" class="btn btn-xs btn-danger delete_role_button"><i class="glyphicon glyphicon-trash"></i> ' . __("messages.delete") . '</button>';
                         }
-                        
+
                         return $action;
                     } else {
                         return '';
@@ -165,7 +165,7 @@ class RoleController extends Controller
             }
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -291,7 +291,7 @@ class RoleController extends Controller
             }
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -330,7 +330,7 @@ class RoleController extends Controller
                 }
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
                 $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];

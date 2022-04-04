@@ -27,12 +27,12 @@ class Variation extends Model
 
     public function product_variation()
     {
-        return $this->belongsTo(\App\ProductVariation::class);
+        return $this->belongsTo(\App\Models\ProductVariation::class);
     }
 
     public function product()
     {
-        return $this->belongsTo(\App\Product::class, 'product_id');
+        return $this->belongsTo(\App\Models\Product::class, 'product_id');
     }
 
     /**
@@ -40,7 +40,7 @@ class Variation extends Model
      */
     public function sell_lines()
     {
-        return $this->hasMany(\App\TransactionSellLine::class);
+        return $this->hasMany(\App\Models\TransactionSellLine::class);
     }
 
     /**
@@ -48,7 +48,7 @@ class Variation extends Model
      */
     public function variation_location_details()
     {
-        return $this->hasMany(\App\VariationLocationDetails::class);
+        return $this->hasMany(\App\Models\VariationLocationDetails::class);
     }
 
     /**

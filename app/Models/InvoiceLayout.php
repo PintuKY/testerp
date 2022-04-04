@@ -31,7 +31,7 @@ class InvoiceLayout extends Model
      */
     public function locations()
     {
-        return $this->hasMany(\App\BusinessLocation::class);
+        return $this->hasMany(\App\Models\BusinessLocation::class);
     }
 
     /**

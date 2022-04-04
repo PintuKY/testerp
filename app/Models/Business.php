@@ -59,7 +59,7 @@ class Business extends Model
      */
     public function owner()
     {
-        return $this->hasOne(\App\User::class, 'id', 'owner_id');
+        return $this->hasOne(\App\Models\User::class, 'id', 'owner_id');
     }
 
     /**
@@ -75,7 +75,7 @@ class Business extends Model
      */
     public function locations()
     {
-        return $this->hasMany(\App\BusinessLocation::class);
+        return $this->hasMany(\App\Models\BusinessLocation::class);
     }
 
     /**

@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\BusinessLocation;
-use App\SellingPriceGroup;
+use App\Models\BusinessLocation;
+use App\Models\SellingPriceGroup;
 use App\TypesOfService;
 use App\Utils\Util;
 use Illuminate\Http\Request;
@@ -54,7 +54,7 @@ class TypesOfServiceController extends Controller
                 )
                 ->editColumn('packing_charge', function ($row) {
                     $html = '<span class="display_currency" data-currency_symbol="false">' . $row->packing_charge . '</span>';
-                    
+
                     if ($row->packing_charge_type == 'percent') {
                         $html .= '%';
                     }
@@ -116,7 +116,7 @@ class TypesOfServiceController extends Controller
                         ];
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -191,7 +191,7 @@ class TypesOfServiceController extends Controller
                         ];
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -211,7 +211,7 @@ class TypesOfServiceController extends Controller
         if (!auth()->user()->can('access_types_of_service')) {
              abort(403, 'Unauthorized action.');
         }
-        
+
         if (request()->ajax()) {
             try {
                 $business_id = request()->session()->get('user.business_id');
@@ -224,7 +224,7 @@ class TypesOfServiceController extends Controller
                             ];
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
                 $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];

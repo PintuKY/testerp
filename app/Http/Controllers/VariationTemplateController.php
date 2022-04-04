@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\VariationTemplate;
 use App\VariationValueTemplate;
-use App\ProductVariation;
-use App\Variation;
+use App\Models\ProductVariation;
+use App\Models\Variation;
 
 use Illuminate\Http\Request;
 
@@ -75,7 +75,7 @@ class VariationTemplateController extends Controller
             $input = $request->only(['name']);
             $input['business_id'] = $request->session()->get('user.business_id');
             $variation = VariationTemplate::create($input);
-            
+
             //craete variation values
             if (!empty($request->input('variation_values'))) {
                 $values = $request->input('variation_values');
@@ -87,14 +87,14 @@ class VariationTemplateController extends Controller
                 }
                 $variation->values()->createMany($data);
             }
-            
+
             $output = ['success' => true,
                             'data' => $variation,
                             'msg' => 'Variation added succesfully'
                         ];
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => false,
                             'msg' => 'Something went wrong, please try again'
                         ];
@@ -155,7 +155,7 @@ class VariationTemplateController extends Controller
                     ProductVariation::where('variation_template_id', $variation->id)
                                 ->update(['name' => $variation->name]);
                 }
-                
+
                 //update variation
                 $data = [];
                 if (!empty($request->input('edit_variation_values'))) {
@@ -189,7 +189,7 @@ class VariationTemplateController extends Controller
                             ];
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
                 $output = ['success' => false,
                             'msg' => 'Something went wrong, please try again'
                         ];
@@ -219,7 +219,7 @@ class VariationTemplateController extends Controller
                             ];
             } catch (\Eexception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
                 $output = ['success' => false,
                             'msg' => 'Something went wrong, please try again'
                         ];

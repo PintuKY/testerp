@@ -186,7 +186,7 @@ class Media extends Model
 
     public function uploaded_by_user()
     {
-        return $this->belongsTo(\App\User::class, 'uploaded_by');
+        return $this->belongsTo(\App\Models\User::class, 'uploaded_by');
     }
 
     public static function attachMediaToModel($model, $business_id, $uploaded_files, $request = null, $model_media_type = null)

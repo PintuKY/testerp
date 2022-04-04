@@ -49,11 +49,11 @@ class Unit extends Model
 
     public function sub_units()
     {
-        return $this->hasMany(\App\Unit::class, 'base_unit_id');
+        return $this->hasMany(\App\Models\Unit::class, 'base_unit_id');
     }
 
     public function base_unit()
     {
-        return $this->belongsTo(\App\Unit::class, 'base_unit_id');
+        return $this->belongsTo(\App\Models\Unit::class, 'base_unit_id');
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\User;
+use App\Models\User;
 use App\Utils\Util;
 use DataTables;
 use DB;
@@ -98,13 +98,13 @@ class SalesCommissionAgentController extends Controller
             $input['is_cmmsn_agnt'] = 1;
 
             $user = User::create($input);
-            
+
             $output = ['success' => true,
                           'msg' => __("lang_v1.commission_agent_added_success")
                       ];
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => false,
                            'msg' => __("messages.something_went_wrong")
                        ];
@@ -161,7 +161,7 @@ class SalesCommissionAgentController extends Controller
                             ];
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
                 $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -197,7 +197,7 @@ class SalesCommissionAgentController extends Controller
                                 ];
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
                 $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];

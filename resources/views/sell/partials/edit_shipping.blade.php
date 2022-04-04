@@ -46,15 +46,15 @@
 			        $is_shipping_custom_field_2_required = !empty($custom_labels['shipping']['is_custom_field_2_required']) && $custom_labels['shipping']['is_custom_field_2_required'] == 1 ? true : false;
 
 			        $shipping_custom_label_3 = !empty($custom_labels['shipping']['custom_field_3']) ? $custom_labels['shipping']['custom_field_3'] : '';
-			        
+
 			        $is_shipping_custom_field_3_required = !empty($custom_labels['shipping']['is_custom_field_3_required']) && $custom_labels['shipping']['is_custom_field_3_required'] == 1 ? true : false;
 
 			        $shipping_custom_label_4 = !empty($custom_labels['shipping']['custom_field_4']) ? $custom_labels['shipping']['custom_field_4'] : '';
-			        
+
 			        $is_shipping_custom_field_4_required = !empty($custom_labels['shipping']['is_custom_field_4_required']) && $custom_labels['shipping']['is_custom_field_4_required'] == 1 ? true : false;
 
 			        $shipping_custom_label_5 = !empty($custom_labels['shipping']['custom_field_5']) ? $custom_labels['shipping']['custom_field_5'] : '';
-			        
+
 			        $is_shipping_custom_field_5_required = !empty($custom_labels['shipping']['is_custom_field_5_required']) && $custom_labels['shipping']['is_custom_field_5_required'] == 1 ? true : false;
 		        @endphp
 
@@ -149,7 +149,7 @@
                         {{-- params for media upload --}}
 					    <input type="hidden" id="media_upload_url" value="{{route('attach.medias.to.model')}}">
 					    <input type="hidden" id="model_id" value="{{$transaction->id}}">
-					    <input type="hidden" id="model_type" value="App\Transaction">
+					    <input type="hidden" id="model_type" value="App\Models\Transaction">
 					    <input type="hidden" id="model_media_type" value="shipping_document">
                     </div>
 		        </div>

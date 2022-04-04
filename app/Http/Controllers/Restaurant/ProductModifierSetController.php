@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Restaurant;
 
-use App\Product;
-use App\Variation;
+use App\Models\Product;
+use App\Models\Variation;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -81,7 +81,7 @@ class ProductModifierSetController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0,
                 'msg' => __("messages.something_went_wrong")];
         }

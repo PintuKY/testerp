@@ -3,8 +3,8 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Transaction;
-use App\User;
+use App\Models\Transaction;
+use App\Models\User;
 use App\Utils\TransactionUtil;
 use App\Utils\NotificationUtil;
 use Illuminate\Support\Facades\DB;
@@ -59,7 +59,7 @@ class RecurringExpense extends Command
             foreach ($transactions as $transaction) {
                 date_default_timezone_set($transaction->business->time_zone);
                 //inner try-catch block open
-                try { 
+                try {
 
                     //Check if no. of generated invoices exceed limit
                     $no_of_recurring_invoice_generated = count($transaction->recurring_invoices);
@@ -89,7 +89,7 @@ class RecurringExpense extends Command
                         } elseif ($transaction->recur_interval_type == 'years') {
                             $diff_from_today = $last_generated->diffInYears($today);
                         }
-                        
+
                         //if last generated is today or less than today then continue
                         if ($diff_from_today == 0) {
                             continue;

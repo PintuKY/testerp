@@ -76,7 +76,7 @@
                         <li class="active">
                             <a href="#user_info_tab" data-toggle="tab" aria-expanded="true"><i class="fas fa-user" aria-hidden="true"></i> @lang( 'lang_v1.user_info')</a>
                         </li>
-                        
+
                         <li>
                             <a href="#documents_and_notes_tab" data-toggle="tab" aria-expanded="true"><i class="fas fa-paperclip" aria-hidden="true"></i> @lang('lang_v1.documents_and_notes')</a>
                         </li>
@@ -97,21 +97,21 @@
                                         @php
                                             $selected_contacts = ''
                                         @endphp
-                                        @if(count($user->contactAccess)) 
+                                        @if(count($user->contactAccess))
                                             @php
                                                 $selected_contacts_array = [];
                                             @endphp
-                                            @foreach($user->contactAccess as $contact) 
+                                            @foreach($user->contactAccess as $contact)
                                                 @php
-                                                    $selected_contacts_array[] = $contact->name; 
+                                                    $selected_contacts_array[] = $contact->name;
                                                 @endphp
-                                            @endforeach 
+                                            @endforeach
                                             @php
                                                 $selected_contacts = implode(', ', $selected_contacts_array);
                                             @endphp
-                                        @else 
+                                        @else
                                             @php
-                                                $selected_contacts = __('lang_v1.all'); 
+                                                $selected_contacts = __('lang_v1.all');
                                             @endphp
                                         @endif
                                         <p>
@@ -126,8 +126,8 @@
                         <div class="tab-pane" id="documents_and_notes_tab">
                             <!-- model id like project_id, user_id -->
                             <input type="hidden" name="notable_id" id="notable_id" value="{{$user->id}}">
-                            <!-- model name like App\User -->
-                            <input type="hidden" name="notable_type" id="notable_type" value="App\User">
+                            <!-- model name like App\Models\User -->
+                            <input type="hidden" name="notable_type" id="notable_type" value="App\Models\User">
                             <div class="document_note_body">
                             </div>
                         </div>
@@ -142,7 +142,7 @@
                 </div>
             </div>
         </div>
-    </section>    
+    </section>
 @endsection
 @section('javascript')
     <!-- document & note.js -->

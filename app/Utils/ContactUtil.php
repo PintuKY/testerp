@@ -2,9 +2,9 @@
 
 namespace App\Utils;
 
-use App\Contact;
+use App\Models\Contact;
 use App\Utils\TransactionUtil;
-use App\Transaction;
+use App\Models\Transaction;
 use DB;
 
 class ContactUtil extends Util
@@ -23,7 +23,7 @@ class ContactUtil extends Util
                     ->where('contacts.business_id', $business_id)
                     ->where('contacts.is_default', 1)
                     ->leftjoin('customer_groups as cg', 'cg.id', '=', 'contacts.customer_group_id')
-                    ->select('contacts.*', 
+                    ->select('contacts.*',
                         'cg.amount as discount_percent',
                         'cg.price_calculation_type',
                         'cg.selling_price_group_id'
@@ -113,7 +113,7 @@ class ContactUtil extends Util
             if (isset($input['opening_balance'])) {
                 unset($input['opening_balance']);
             }
-            
+
             $contact = Contact::create($input);
 
             //Add opening balance
@@ -153,20 +153,20 @@ class ContactUtil extends Util
             if (isset($input['opening_balance'])) {
                 unset($input['opening_balance']);
             }
-            
+
             $contact = Contact::where('business_id', $business_id)->findOrFail($id);
             foreach ($input as $key => $value) {
                 $contact->$key = $value;
             }
             $contact->save();
-            
+
             $transactionUtil = new TransactionUtil();
             if (!empty($ob_transaction)) {
                 $opening_balance_paid = $transactionUtil->getTotalAmountPaid($ob_transaction->id);
                 if (!empty($opening_balance_paid)) {
                     $opening_balance += $opening_balance_paid;
                 }
-                
+
                 $ob_transaction->final_total = $opening_balance;
                 $ob_transaction->save();
                 //Update opening balance payment status
@@ -188,7 +188,7 @@ class ContactUtil extends Util
 
         return $output;
     }
-    
+
     public function getContactQuery($business_id, $type, $contact_ids = [])
     {
         $query = Contact::leftjoin('transactions AS t', 'contacts.id', '=', 't.contact_id')
@@ -205,7 +205,7 @@ class ContactUtil extends Util
         }
 
         $query->select([
-            'contacts.*', 
+            'contacts.*',
             'cg.name as customer_group',
             DB::raw("SUM(IF(t.type = 'opening_balance', final_total, 0)) as opening_balance"),
             DB::raw("SUM(IF(t.type = 'opening_balance', (SELECT SUM(IF(is_return = 1,-1*amount,amount)) FROM transaction_payments WHERE transaction_payments.transaction_id=t.id), 0)) as opening_balance_paid"),
@@ -229,7 +229,7 @@ class ContactUtil extends Util
                 DB::raw("SUM(IF(t.type = 'sell_return', final_total, 0)) as total_sell_return"),
                 DB::raw("SUM(IF(t.type = 'sell_return', (SELECT SUM(amount) FROM transaction_payments WHERE transaction_payments.transaction_id=t.id), 0)) as sell_return_paid")
             ]);
-        } 
+        }
         $query->groupBy('contacts.id');
 
         return $query;

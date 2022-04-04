@@ -4,13 +4,13 @@ namespace App\Http\Controllers;
 
 use \Notification;
 
-use App\Contact;
+use App\Models\Contact;
 use App\Notifications\CustomerNotification;
 use App\Notifications\SupplierNotification;
 use App\NotificationTemplate;
 use App\Restaurant\Booking;
 
-use App\Transaction;
+use App\Models\Transaction;
 use App\Utils\NotificationUtil;
 use App\Utils\TransactionUtil;
 use Illuminate\Http\Request;
@@ -115,7 +115,7 @@ class NotificationController extends Controller
 
             $transaction = !empty($transaction_id) ? Transaction::find($transaction_id) : null;
 
-            
+
 
             $orig_data = [
                 'email_body' => $data['email_body'],
@@ -139,7 +139,7 @@ class NotificationController extends Controller
                 $data['subject'] = $tag_replaced_data['subject'];
                 $data['whatsapp_text'] = $tag_replaced_data['whatsapp_text'];
             }
-            
+
 
             $data['email_settings'] = request()->session()->get('business.email_settings');
 
@@ -155,21 +155,21 @@ class NotificationController extends Controller
                         $data['pdf_name'] = 'INVOICE-'.$transaction->invoice_no.'.pdf';
                         $data['pdf'] = $this->transactionUtil->getEmailAttachmentForGivenTransaction($business_id, $transaction_id, true);
                     }
-                    
+
                     Notification::route('mail', $emails_array)
                                     ->notify(new CustomerNotification($data));
 
                     if (!empty($transaction)) {
                         $this->notificationUtil->activityLog($transaction, 'email_notification_sent', null, [], false);
                     }
-                } 
+                }
                 if (in_array('sms', $notification_type)) {
                     $this->notificationUtil->sendSms($data);
 
                     if (!empty($transaction)) {
                         $this->notificationUtil->activityLog($transaction, 'sms_notification_sent', null, [], false);
                     }
-                } 
+                }
                 if (in_array('whatsapp', $notification_type)) {
                     $whatsapp_link = $this->notificationUtil->getWhatsappNotificationLink($data);
                 }
@@ -181,14 +181,14 @@ class NotificationController extends Controller
                     if (!empty($transaction)) {
                         $this->notificationUtil->activityLog($transaction, 'email_notification_sent', null, [], false);
                     }
-                } 
+                }
                 if (in_array('sms', $notification_type)) {
                     $this->notificationUtil->sendSms($data);
 
                     if (!empty($transaction)) {
                         $this->notificationUtil->activityLog($transaction, 'sms_notification_sent', null, [], false);
                     }
-                } 
+                }
                 if (in_array('whatsapp', $notification_type)) {
                     $whatsapp_link = $this->notificationUtil->getWhatsappNotificationLink($data);
                 }
@@ -200,7 +200,7 @@ class NotificationController extends Controller
             }
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0,
                             'msg' => $e->getMessage()
                         ];

@@ -43,22 +43,22 @@ class Transaction extends Model
 
     public function sell_lines()
     {
-        return $this->hasMany(\App\TransactionSellLine::class);
+        return $this->hasMany(\App\Models\TransactionSellLine::class);
     }
 
     public function contact()
     {
-        return $this->belongsTo(\App\Contact::class, 'contact_id');
+        return $this->belongsTo(\App\Models\Contact::class, 'contact_id');
     }
 
     public function payment_lines()
     {
-        return $this->hasMany(\App\TransactionPayment::class, 'transaction_id');
+        return $this->hasMany(\App\Models\TransactionPayment::class, 'transaction_id');
     }
 
     public function location()
     {
-        return $this->belongsTo(\App\BusinessLocation::class, 'location_id');
+        return $this->belongsTo(\App\Models\BusinessLocation::class, 'location_id');
     }
 
     public function business()
@@ -78,22 +78,22 @@ class Transaction extends Model
 
     public function sales_person()
     {
-        return $this->belongsTo(\App\User::class, 'created_by');
+        return $this->belongsTo(\App\Models\User::class, 'created_by');
     }
 
     public function sale_commission_agent()
     {
-        return $this->belongsTo(\App\User::class, 'commission_agent');
+        return $this->belongsTo(\App\Models\User::class, 'commission_agent');
     }
 
     public function return_parent()
     {
-        return $this->hasOne(\App\Transaction::class, 'return_parent_id');
+        return $this->hasOne(\App\Models\Transaction::class, 'return_parent_id');
     }
 
     public function return_parent_sell()
     {
-        return $this->belongsTo(\App\Transaction::class, 'return_parent_id');
+        return $this->belongsTo(\App\Models\Transaction::class, 'return_parent_id');
     }
 
     public function table()
@@ -103,22 +103,22 @@ class Transaction extends Model
 
     public function service_staff()
     {
-        return $this->belongsTo(\App\User::class, 'res_waiter_id');
+        return $this->belongsTo(\App\Models\User::class, 'res_waiter_id');
     }
 
     public function recurring_invoices()
     {
-        return $this->hasMany(\App\Transaction::class, 'recur_parent_id');
+        return $this->hasMany(\App\Models\Transaction::class, 'recur_parent_id');
     }
 
     public function recurring_parent()
     {
-        return $this->hasOne(\App\Transaction::class, 'id', 'recur_parent_id');
+        return $this->hasOne(\App\Models\Transaction::class, 'id', 'recur_parent_id');
     }
 
     public function price_group()
     {
-        return $this->belongsTo(\App\SellingPriceGroup::class, 'selling_price_group_id');
+        return $this->belongsTo(\App\Models\SellingPriceGroup::class, 'selling_price_group_id');
     }
 
     public function types_of_service()
@@ -147,7 +147,7 @@ class Transaction extends Model
 
     public function subscription_invoices()
     {
-        return $this->hasMany(\App\Transaction::class, 'recur_parent_id');
+        return $this->hasMany(\App\Models\Transaction::class, 'recur_parent_id');
     }
 
     /**
@@ -248,7 +248,7 @@ class Transaction extends Model
 
     public function transaction_for()
     {
-        return $this->belongsTo(\App\User::class, 'expense_for');
+        return $this->belongsTo(\App\Models\User::class, 'expense_for');
     }
 
     /**
@@ -257,7 +257,7 @@ class Transaction extends Model
      */
     public function preferredAccount()
     {
-        return $this->belongsTo(\App\Account::class, 'prefer_payment_account');
+        return $this->belongsTo(\App\Models\Account::class, 'prefer_payment_account');
     }
 
     /**

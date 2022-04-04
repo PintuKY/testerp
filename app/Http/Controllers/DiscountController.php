@@ -3,14 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Brands;
-use App\BusinessLocation;
+use App\Models\BusinessLocation;
 use App\Category;
 use App\Discount;
 use App\Utils\Util;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
-use App\SellingPriceGroup;
+use App\Models\SellingPriceGroup;
 
 class DiscountController extends Controller
 {
@@ -169,7 +169,7 @@ class DiscountController extends Controller
                         ];
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -268,7 +268,7 @@ class DiscountController extends Controller
                             ];
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
                 $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -289,7 +289,7 @@ class DiscountController extends Controller
         if (!auth()->user()->can('discount.access')) {
             abort(403, 'Unauthorized action.');
         }
-        
+
         if (request()->ajax()) {
             try {
                 $business_id = request()->user()->business_id;
@@ -302,7 +302,7 @@ class DiscountController extends Controller
                             ];
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
                 $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -344,7 +344,7 @@ class DiscountController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -377,7 +377,7 @@ class DiscountController extends Controller
                             ];
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-                
+
                 $output = ['success' => false,
                                 'msg' => __("messages.something_went_wrong")
                             ];

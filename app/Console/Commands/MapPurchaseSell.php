@@ -3,8 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Models\Business;
-use App\Transaction;
-use App\TransactionSellLinesPurchaseLines;
+use App\Models\Transaction;
+use App\Models\TransactionSellLinesPurchaseLines;
 use App\PurchaseLine;
 
 use Illuminate\Console\Command;

@@ -4,19 +4,19 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Excel;
-use App\BusinessLocation;
+use App\Models\BusinessLocation;
 use DB;
 use App\Utils\BusinessUtil;
 use App\Utils\ProductUtil;
 use App\Utils\TransactionUtil;
-use App\Variation;
-use App\Product;
+use App\Models\Variation;
+use App\Models\Product;
 use App\TaxRate;
-use App\Transaction;
-use App\Contact;
+use App\Models\Transaction;
+use App\Models\Contact;
 use App\Utils\ModuleUtil;
 use App\TypesOfService;
-use App\Unit;
+use App\Models\Unit;
 
 class ImportSalesController extends Controller
 {
@@ -95,7 +95,7 @@ class ImportSalesController extends Controller
         if (!empty($notAllowed)) {
             return $notAllowed;
         }
-        
+
     	$business_id = request()->session()->get('user.business_id');
 
     	if ($request->hasFile('sales')) {
@@ -136,7 +136,7 @@ class ImportSalesController extends Controller
     	$array = Excel::toArray([], public_path('uploads/temp/' . $file_name))[0];
 
     	//remove blank columns from headers
-    	$headers = array_filter($array[0]); 
+    	$headers = array_filter($array[0]);
 
     	//Remove header row
  		unset($array[0]);
@@ -173,7 +173,7 @@ class ImportSalesController extends Controller
 	    	$file_name = $request->input('file_name');
 	    	$import_fields = $request->input('import_fields');
 	    	$group_by = $request->input('group_by');
-	    	$location_id = $request->input('location_id');	
+	    	$location_id = $request->input('location_id');
 	    	$business_id = $request->session()->get('user.business_id');
 
 	    	$file_path = public_path('uploads/temp/' . $file_name);
@@ -208,7 +208,7 @@ class ImportSalesController extends Controller
 
         return redirect('import-sales')->with('status', $output);
     }
-    
+
     private function __importSales($formated_data, $business_id, $location_id)
     {
     	$import_batch = Transaction::where('business_id', $business_id)->max('import_batch');
@@ -257,7 +257,7 @@ class ImportSalesController extends Controller
 
                     if (empty($tax)) {
                         throw new \Exception(__('lang_v1.import_sale_tax_not_found', ['row' => $row_index, 'tax_name' => $line_data['item_tax']]));
-                    } 
+                    }
                     $tax_id = $tax->id;
                     $item_tax = $this->transactionUtil->calc_percentage($price_before_tax, $tax->amount);
                     $price_inc_tax = $price_before_tax + $item_tax;
@@ -290,7 +290,7 @@ class ImportSalesController extends Controller
 
                     if (empty($unit)) {
                         throw new \Exception(__('lang_v1.import_sale_unit_not_found', ['row' => $row_index, 'unit_name' => $unit_name]));
-                    } 
+                    }
 
                     //Check if sub unit
                     if ($unit->id != $product->unit_id) {
@@ -316,7 +316,7 @@ class ImportSalesController extends Controller
     			$contact = Contact::where('business_id', $business_id)
     							->where('email', $first_sell_line['customer_email'])
     							->first();
-    		} 
+    		}
     		if (empty($contact)) {
     			$customer_name = !empty($first_sell_line['customer_name']) ? $first_sell_line['customer_name'] : $first_sell_line['customer_phone_number'];
     			$contact = Contact::create([
@@ -375,7 +375,7 @@ class ImportSalesController extends Controller
 	                    $location_id,
 	                    $line['quantity']
 	                );
-	            } 
+	            }
 
                 if ($line['type'] == 'combo') {
                     $line_total_quantity = $line['quantity'];
@@ -476,11 +476,11 @@ class ImportSalesController extends Controller
 	    	//check empty
 	    	if (empty($formatted_array[$key]['customer_phone_number']) && empty($formatted_array[$key]['customer_email'])) {
 	    		throw new \Exception(__('lang_v1.email_or_phone_cannot_be_empty_in_row', ['row' => $row_index]));
-	    		
+
 	    	}
 	    	if (empty($formatted_array[$key]['product']) && empty($formatted_array[$key]['sku'])) {
 	    		throw new \Exception(__('lang_v1.product_cannot_be_empty_in_row', ['row' => $row_index]));
-	    		
+
 	    	}
 	    	if (empty($formatted_array[$key]['quantity'])) {
 	    		throw new \Exception(__('lang_v1.quantity_cannot_be_empty_in_row', ['row' => $row_index]));
@@ -556,9 +556,9 @@ class ImportSalesController extends Controller
             foreach ($sales as $sale) {
             	$this->transactionUtil->deleteSale($business_id, $sale->id);
             }
-            
+
             DB::commit();
-            
+
             $output = ['success' => 1, 'msg' => __('lang_v1.import_reverted_successfully') ];
         } catch (\Exception $e) {
             DB::rollBack();

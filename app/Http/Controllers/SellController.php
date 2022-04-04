@@ -2,18 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Account;
+use App\Models\Account;
 use App\Models\Business;
-use App\BusinessLocation;
-use App\Contact;
+use App\Models\BusinessLocation;
+use App\Models\Contact;
 use App\CustomerGroup;
 use App\InvoiceScheme;
-use App\SellingPriceGroup;
+use App\Models\SellingPriceGroup;
 use App\TaxRate;
-use App\Transaction;
-use App\TransactionSellLine;
+use App\Models\Transaction;
+use App\Models\TransactionSellLine;
 use App\TypesOfService;
-use App\User;
+use App\Models\User;
 use App\Utils\BusinessUtil;
 use App\Utils\ContactUtil;
 use App\Utils\ModuleUtil;
@@ -23,7 +23,7 @@ use App\Warranty;
 use DB;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
-use App\Product;
+use App\Models\Product;
 use App\Models\Media;
 use Spatie\Activitylog\Models\Activity;
 use Illuminate\Support\Facades\Artisan;
@@ -430,7 +430,7 @@ class SellController extends Controller
 
                             $html .= '<li><a href="#" data-href="' . action('NotificationController@getTemplate', ["transaction_id" => $row->id,"template_for" => "new_sale"]) . '" class="btn-modal" data-container=".view_modal"><i class="fa fa-envelope" aria-hidden="true"></i>' . __("lang_v1.new_sale_notification") . '</a></li>';
                         } else {
-                            $html .= '<li><a href="#" data-href="' . action('SellController@viewMedia', ["model_id" => $row->id, "model_type" => "App\Transaction", 'model_media_type' => 'shipping_document']) . '" class="btn-modal" data-container=".view_modal"><i class="fas fa-paperclip" aria-hidden="true"></i>' . __("lang_v1.shipping_documents") . '</a></li>';
+                            $html .= '<li><a href="#" data-href="' . action('SellController@viewMedia', ["model_id" => $row->id, "model_type" => "App\Models\Transaction", 'model_media_type' => 'shipping_document']) . '" class="btn-modal" data-container=".view_modal"><i class="fas fa-paperclip" aria-hidden="true"></i>' . __("lang_v1.shipping_documents") . '</a></li>';
                         }
 
                         $html .= '</ul></div>';
@@ -973,7 +973,7 @@ class SellController extends Controller
 
                             $html .= '<li><a href="#" data-href="' . action('NotificationController@getTemplate', ["transaction_id" => $row->id,"template_for" => "new_sale"]) . '" class="btn-modal" data-container=".view_modal"><i class="fa fa-envelope" aria-hidden="true"></i>' . __("lang_v1.new_sale_notification") . '</a></li>';
                         } else {
-                            $html .= '<li><a href="#" data-href="' . action('SellController@viewMedia', ["model_id" => $row->id, "model_type" => "App\Transaction", 'model_media_type' => 'shipping_document']) . '" class="btn-modal" data-container=".view_modal"><i class="fas fa-paperclip" aria-hidden="true"></i>' . __("lang_v1.shipping_documents") . '</a></li>';
+                            $html .= '<li><a href="#" data-href="' . action('SellController@viewMedia', ["model_id" => $row->id, "model_type" => "App\Models\Transaction", 'model_media_type' => 'shipping_document']) . '" class="btn-modal" data-container=".view_modal"><i class="fas fa-paperclip" aria-hidden="true"></i>' . __("lang_v1.shipping_documents") . '</a></li>';
                         }
 
                         $html .= '</ul></div>';

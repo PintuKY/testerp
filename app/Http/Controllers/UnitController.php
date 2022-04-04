@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Unit;
-use App\Product;
+use App\Models\Unit;
+use App\Models\Product;
 
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Http\Request;
@@ -138,7 +138,7 @@ class UnitController extends Controller
                     ];
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => false,
                         'msg' => __("messages.something_went_wrong")
                     ];
@@ -223,7 +223,7 @@ class UnitController extends Controller
                             ];
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
                 $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -266,7 +266,7 @@ class UnitController extends Controller
                 }
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
                 $output = ['success' => false,
                             'msg' => '__("messages.something_went_wrong")'
                         ];

@@ -26,21 +26,21 @@
  */
 namespace App\Http\Controllers;
 
-use App\Account;
+use App\Models\Account;
 use App\Brands;
 use App\Models\Business;
-use App\BusinessLocation;
+use App\Models\BusinessLocation;
 use App\Category;
-use App\Contact;
+use App\Models\Contact;
 use App\CustomerGroup;
 use App\Models\Media;
-use App\Product;
-use App\SellingPriceGroup;
+use App\Models\Product;
+use App\Models\SellingPriceGroup;
 use App\TaxRate;
-use App\Transaction;
-use App\TransactionSellLine;
+use App\Models\Transaction;
+use App\Models\TransactionSellLine;
 use App\TypesOfService;
-use App\User;
+use App\Models\User;
 use App\Utils\BusinessUtil;
 use App\Utils\CashRegisterUtil;
 use App\Utils\ContactUtil;
@@ -48,7 +48,7 @@ use App\Utils\ModuleUtil;
 use App\Utils\NotificationUtil;
 use App\Utils\ProductUtil;
 use App\Utils\TransactionUtil;
-use App\Variation;
+use App\Models\Variation;
 use App\Warranty;
 use App\InvoiceLayout;
 use Illuminate\Http\Request;
@@ -59,7 +59,7 @@ use Yajra\DataTables\Facades\DataTables;
 use App\InvoiceScheme;
 use App\SalesOrderController;
 use Razorpay\Api\Api;
-use App\TransactionPayment;
+use App\Models\TransactionPayment;
 use Stripe\Charge;
 use Stripe\Stripe;
 

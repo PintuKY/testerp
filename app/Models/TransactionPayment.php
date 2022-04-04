@@ -20,7 +20,7 @@ class TransactionPayment extends Model
      */
     public function payment_account()
     {
-        return $this->belongsTo(\App\Account::class, 'account_id');
+        return $this->belongsTo(\App\Models\Account::class, 'account_id');
     }
 
     /**
@@ -28,7 +28,7 @@ class TransactionPayment extends Model
      */
     public function transaction()
     {
-        return $this->belongsTo(\App\Transaction::class, 'transaction_id');
+        return $this->belongsTo(\App\Models\Transaction::class, 'transaction_id');
     }
 
     /**
@@ -36,7 +36,7 @@ class TransactionPayment extends Model
      */
     public function created_user()
     {
-        return $this->belongsTo(\App\User::class, 'created_by');
+        return $this->belongsTo(\App\Models\User::class, 'created_by');
     }
 
     /**
@@ -44,7 +44,7 @@ class TransactionPayment extends Model
      */
     public function child_payments()
     {
-        return $this->hasMany(\App\TransactionPayment::class, 'parent_id');
+        return $this->hasMany(\App\Models\TransactionPayment::class, 'parent_id');
     }
 
     /**

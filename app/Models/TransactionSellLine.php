@@ -15,28 +15,28 @@ class TransactionSellLine extends Model
 
     public function transaction()
     {
-        return $this->belongsTo(\App\Transaction::class);
+        return $this->belongsTo(\App\Models\Transaction::class);
     }
 
     public function product()
     {
-        return $this->belongsTo(\App\Product::class, 'product_id');
+        return $this->belongsTo(\App\Models\Product::class, 'product_id');
     }
 
     public function variations()
     {
-        return $this->belongsTo(\App\Variation::class, 'variation_id');
+        return $this->belongsTo(\App\Models\Variation::class, 'variation_id');
     }
 
     public function modifiers()
     {
-        return $this->hasMany(\App\TransactionSellLine::class, 'parent_sell_line_id')
+        return $this->hasMany(\App\Models\TransactionSellLine::class, 'parent_sell_line_id')
             ->where('children_type', 'modifier');
     }
 
     public function sell_line_purchase_lines()
     {
-        return $this->hasMany(\App\TransactionSellLinesPurchaseLines::class, 'sell_line_id');
+        return $this->hasMany(\App\Models\TransactionSellLinesPurchaseLines::class, 'sell_line_id');
     }
 
     /**
@@ -73,7 +73,7 @@ class TransactionSellLine extends Model
      */
     public function sub_unit()
     {
-        return $this->belongsTo(\App\Unit::class, 'sub_unit_id');
+        return $this->belongsTo(\App\Models\Unit::class, 'sub_unit_id');
     }
 
     public function order_statuses()
@@ -87,7 +87,7 @@ class TransactionSellLine extends Model
 
     public function service_staff()
     {
-        return $this->belongsTo(\App\User::class, 'res_service_staff_id');
+        return $this->belongsTo(\App\Models\User::class, 'res_service_staff_id');
     }
 
     /**
@@ -105,6 +105,6 @@ class TransactionSellLine extends Model
 
     public function so_line()
     {
-        return $this->belongsTo(\App\TransactionSellLine::class, 'so_line_id');
+        return $this->belongsTo(\App\Models\TransactionSellLine::class, 'so_line_id');
     }
 }

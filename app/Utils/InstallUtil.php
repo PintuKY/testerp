@@ -3,9 +3,9 @@
 namespace App\Utils;
 
 use App\Models\Business;
-use App\Variation;
-use App\VariationLocationDetails;
-use App\Product;
+use App\Models\Variation;
+use App\Models\VariationLocationDetails;
+use App\Models\Product;
 use App\VariationTemplate;
 use App\VariationValueTemplate;
 

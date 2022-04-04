@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Account;
+use App\Models\Account;
 
 use App\AccountTransaction;
-use App\TransactionPayment;
+use App\Models\TransactionPayment;
 use App\Utils\TransactionUtil;
 use DB;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
-use App\BusinessLocation;
+use App\Models\BusinessLocation;
 
 class AccountReportsController extends Controller
 {
@@ -274,11 +274,11 @@ class AccountReportsController extends Controller
                         return $this->transactionUtil->format_date($row->paid_on, true);
                     })
                     ->addColumn('action', function ($row) {
-                        $action = '<button type="button" class="btn btn-info 
+                        $action = '<button type="button" class="btn btn-info
                         btn-xs btn-modal"
-                        data-container=".view_modal" 
+                        data-container=".view_modal"
                         data-href="' . action('AccountReportsController@getLinkAccount', [$row->payment_id]). '">' . __('account.link_account') .'</button>';
-                        
+
                         return $action;
                     })
                     ->addColumn('account', function ($row) {
@@ -324,7 +324,7 @@ class AccountReportsController extends Controller
 
         $accounts = Account::forDropdown($business_id, false);
         $accounts = ['' => __('messages.all'), 'none' => __('lang_v1.none')] + $accounts;
-        
+
         return view('account_reports.payment_account_report')
                 ->with(compact('accounts'));
     }
@@ -383,7 +383,7 @@ class AccountReportsController extends Controller
                         ];
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-                
+
             $output = ['success' => false,
                         'msg' => __("messages.something_went_wrong")
                         ];

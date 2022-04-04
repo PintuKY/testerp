@@ -56,7 +56,7 @@ class Product extends Model
 
     public function product_variations()
     {
-        return $this->hasMany(\App\ProductVariation::class);
+        return $this->hasMany(\App\Models\ProductVariation::class);
     }
 
     /**
@@ -72,7 +72,7 @@ class Product extends Model
     */
     public function unit()
     {
-        return $this->belongsTo(\App\Unit::class);
+        return $this->belongsTo(\App\Models\Unit::class);
     }
     /**
      * Get category associated with the product.
@@ -102,7 +102,7 @@ class Product extends Model
      */
     public function variations()
     {
-        return $this->hasMany(\App\Variation::class);
+        return $this->hasMany(\App\Models\Variation::class);
     }
 
     /**
@@ -110,7 +110,7 @@ class Product extends Model
      */
     public function modifier_products()
     {
-        return $this->belongsToMany(\App\Product::class, 'res_product_modifier_sets', 'modifier_set_id', 'product_id');
+        return $this->belongsToMany(\App\Models\Product::class, 'res_product_modifier_sets', 'modifier_set_id', 'product_id');
     }
 
     /**
@@ -118,7 +118,7 @@ class Product extends Model
      */
     public function modifier_sets()
     {
-        return $this->belongsToMany(\App\Product::class, 'res_product_modifier_sets', 'product_id', 'modifier_set_id');
+        return $this->belongsToMany(\App\Models\Product::class, 'res_product_modifier_sets', 'product_id', 'modifier_set_id');
     }
 
     /**
@@ -175,7 +175,7 @@ class Product extends Model
 
     public function product_locations()
     {
-        return $this->belongsToMany(\App\BusinessLocation::class, 'product_locations', 'product_id', 'location_id');
+        return $this->belongsToMany(\App\Models\BusinessLocation::class, 'product_locations', 'product_id', 'location_id');
     }
 
     /**

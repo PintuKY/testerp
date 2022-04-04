@@ -6,9 +6,9 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 
-use App\Transaction;
-use App\User;
-use App\TransactionSellLine;
+use App\Models\Transaction;
+use App\Models\User;
+use App\Models\TransactionSellLine;
 
 use App\Utils\Util;
 use App\Utils\RestaurantUtil;
@@ -97,7 +97,7 @@ class OrderController extends Controller
                         ];
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0,
                             'msg' => trans("messages.something_went_wrong")
                         ];
@@ -136,7 +136,7 @@ class OrderController extends Controller
             }
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0,
                             'msg' => trans("messages.something_went_wrong")
                         ];
@@ -146,7 +146,7 @@ class OrderController extends Controller
     }
 
     public function printLineOrder(Request $request)
-    {   
+    {
         try {
             $business_id = request()->session()->get('user.business_id');
             $waiter_id = request()->session()->get('user.id');

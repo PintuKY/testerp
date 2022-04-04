@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Barcode;
-use App\Product;
+use App\Models\Product;
 use App\Utils\ProductUtil;
 use App\Utils\TransactionUtil;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\SellingPriceGroup;
+use App\Models\SellingPriceGroup;
 
 class LabelsController extends Controller
 {
@@ -72,7 +72,7 @@ class LabelsController extends Controller
             $product_id = $request->input('product_id');
             $variation_id = $request->input('variation_id');
             $business_id = $request->session()->get('user.business_id');
-            
+
             if (!empty($product_id)) {
                 $index = $request->input('row_count');
                 $products = $this->productUtil->getDetailsFromProduct($business_id, $product_id, $variation_id);
@@ -80,7 +80,7 @@ class LabelsController extends Controller
                 $price_groups = SellingPriceGroup::where('business_id', $business_id)
                                             ->active()
                                             ->pluck('name', 'id');
-                
+
                 return view('labels.partials.show_table_rows')
                         ->with(compact('products', 'index', 'price_groups'));
             }
@@ -159,7 +159,7 @@ class LabelsController extends Controller
             // echo "==";
             // print_r($margin_left);exit;
 
-            // $mpdf = new \Mpdf\Mpdf(['mode' => 'utf-8', 
+            // $mpdf = new \Mpdf\Mpdf(['mode' => 'utf-8',
             //             'format' => [$paper_width, $paper_height],
             //             'margin_top' => $margin_top,
             //             'margin_bottom' => $margin_top,

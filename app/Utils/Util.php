@@ -3,15 +3,15 @@
 namespace App\Utils;
 
 use App\Models\Business;
-use App\BusinessLocation;
-use App\Contact;
-use App\Product;
-use App\ReferenceCount;
-use App\Transaction;
-use App\TransactionSellLine;
-use App\Unit;
-use App\User;
-use App\VariationLocationDetails;
+use App\Models\BusinessLocation;
+use App\Models\Contact;
+use App\Models\Product;
+use App\Models\ReferenceCount;
+use App\Models\Transaction;
+use App\Models\TransactionSellLine;
+use App\Models\Unit;
+use App\Models\User;
+use App\Models\VariationLocationDetails;
 use DB;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Hash;
@@ -19,6 +19,7 @@ use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Auth;
 use App\Models\System;
 use Config;
+use Illuminate\Support\Carbon;
 
 class Util
 {
@@ -244,7 +245,7 @@ class Util
             $mysql_format = 'Y-m-d H:i:s';
         }
 
-        return !empty($date_format) ? \Carbon::createFromFormat($date_format, $date)->format($mysql_format) : null;
+        return !empty($date_format) ? Carbon::createFromFormat($date_format, $date)->format($mysql_format) : null;
     }
 
     /**
@@ -259,7 +260,7 @@ class Util
         if (session('business.time_format') == 12) {
             $time_format = 'h:i A';
         }
-        return !empty($time_format) ? \Carbon::createFromFormat($time_format, $time)->format('H:i') : null;
+        return !empty($time_format) ? Carbon::createFromFormat($time_format, $time)->format('H:i') : null;
     }
 
     /**
@@ -274,7 +275,7 @@ class Util
         if (session('business.time_format') == 12) {
             $time_format = 'h:i A';
         }
-        return !empty($time) ? \Carbon::createFromFormat('H:i:s', $time)->format($time_format) : null;
+        return !empty($time) ? Carbon::createFromFormat('H:i:s', $time)->format($time_format) : null;
     }
 
     /**
@@ -296,7 +297,7 @@ class Util
             }
         }
 
-        return !empty($date) ? \Carbon::createFromTimestamp(strtotime($date))->format($format) : null;
+        return !empty($date) ? Carbon::createFromTimestamp(strtotime($date))->format($format) : null;
     }
 
     /**
@@ -359,7 +360,7 @@ class Util
         $ref_digits =  str_pad($ref_count, 4, 0, STR_PAD_LEFT);
 
         if (!in_array($type, ['contacts', 'business_location', 'username'])) {
-            $ref_year = \Carbon::now()->year;
+            $ref_year = Carbon::now()->year;
             $ref_number = $prefix . $ref_year . '/' . $ref_digits;
         } else {
             $ref_number = $prefix . $ref_digits;
@@ -1444,7 +1445,6 @@ class Util
         $business = session()->has('business') ? session('business') : Business::find($business_id);
 
         date_default_timezone_set($business->time_zone);
-
         $activity = activity()
                     ->performedOn($on)
                     ->withProperties($properties)

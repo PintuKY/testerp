@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\BusinessLocation;
+use App\Models\BusinessLocation;
 use App\CashRegister;
 use App\Utils\CashRegisterUtil;
 use App\Utils\ModuleUtil;
@@ -69,7 +69,7 @@ class CashRegisterController extends Controller
     {
         //like:repair
         $sub_type = request()->get('sub_type');
-            
+
         try {
             $initial_amount = 0;
             if (!empty($request->input('amount'))) {
@@ -93,7 +93,7 @@ class CashRegisterController extends Controller
                             'transaction_type' => 'initial'
                         ]);
             }
-            
+
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
         }
@@ -140,7 +140,7 @@ class CashRegisterController extends Controller
         }
 
         $business_id = request()->session()->get('user.business_id');
-        
+
         $register_details =  $this->cashRegisterUtil->getRegisterDetails();
 
         $user_id = auth()->user()->id;
@@ -152,7 +152,7 @@ class CashRegisterController extends Controller
         $details = $this->cashRegisterUtil->getRegisterTransactionDetails($user_id, $open_time, $close_time, $is_types_of_service_enabled);
 
         $payment_types = $this->cashRegisterUtil->payment_types($register_details->location_id, true, $business_id);
-        
+
         return view('cash_register.register_details')
                 ->with(compact('register_details', 'details', 'payment_types', 'close_time'));
     }
@@ -179,7 +179,7 @@ class CashRegisterController extends Controller
         $is_types_of_service_enabled = $this->moduleUtil->isModuleEnabled('types_of_service');
 
         $details = $this->cashRegisterUtil->getRegisterTransactionDetails($user_id, $open_time, $close_time, $is_types_of_service_enabled);
-        
+
         $payment_types = $this->cashRegisterUtil->payment_types($register_details->location_id, true, $business_id);
 
         $pos_settings = !empty(request()->session()->get('business.pos_settings')) ? json_decode(request()->session()->get('business.pos_settings'), true) : [];
@@ -208,7 +208,7 @@ class CashRegisterController extends Controller
                             ];
                 return redirect()->action('HomeController@index')->with('status', $output);
             }
-            
+
             $input = $request->only(['closing_amount', 'total_card_slips', 'total_cheques', 'closing_note']);
             $input['closing_amount'] = $this->cashRegisterUtil->num_uf($input['closing_amount']);
             $user_id = $request->input('user_id');

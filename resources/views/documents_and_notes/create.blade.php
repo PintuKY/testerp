@@ -11,7 +11,7 @@
         </div>
         <!-- model id like project_id, user_id -->
         {!! Form::hidden('notable_id', $notable_id, ['class' => 'form-control']) !!}
-        <!-- model name like App\User -->
+        <!-- model name like App\Models\User -->
         {!! Form::hidden('notable_type', $notable_type, ['class' => 'form-control']) !!}
         <div class="modal-body">
             <div class="row">

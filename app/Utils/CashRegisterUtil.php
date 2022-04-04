@@ -4,7 +4,7 @@ namespace App\Utils;
 
 use App\CashRegister;
 use App\CashRegisterTransaction;
-use App\Transaction;
+use App\Models\Transaction;
 
 use DB;
 
@@ -117,7 +117,7 @@ class CashRegisterUtil extends Util
                     'custom_pay_5' => $prev_payments->total_custom_pay_5,
                     'custom_pay_6' => $prev_payments->total_custom_pay_6,
                     'custom_pay_7' => $prev_payments->total_custom_pay_7,
-                    'advance' => $prev_payments->total_advance 
+                    'advance' => $prev_payments->total_advance
                 ];
 
                 foreach ($payments as $payment) {
@@ -252,7 +252,7 @@ class CashRegisterUtil extends Util
         } else {
             $query->where('cash_registers.id', $register_id);
         }
-                              
+
         $register_details = $query->select(
             'cash_registers.created_at as open_time',
             'cash_registers.closed_at as closed_at',

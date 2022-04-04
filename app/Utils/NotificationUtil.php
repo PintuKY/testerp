@@ -13,7 +13,7 @@ use App\Notifications\SupplierNotification;
 use App\NotificationTemplate;
 use App\Restaurant\Booking;
 use App\Models\System;
-use App\Transaction;
+use App\Models\Transaction;
 use Config;
 
 class NotificationUtil extends Util

@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\BusinessLocation;
+use App\Models\BusinessLocation;
 
-use App\Product;
+use App\Models\Product;
 use App\PurchaseLine;
-use App\Transaction;
+use App\Models\Transaction;
 use App\Utils\ProductUtil;
 
 use App\Utils\TransactionUtil;
@@ -66,7 +66,7 @@ class OpeningStockController extends Controller
                                 ->where('type', 'opening_stock')
                                 ->with(['purchase_lines'])
                                 ->get();
-                 
+
             $purchases = [];
             $purchase_lines = [];
             foreach ($transactions as $transaction) {
@@ -96,7 +96,7 @@ class OpeningStockController extends Controller
                     $purchases[$pl['location_id']][$v_id][] = $pl;
                 }
             }
-            
+
             $locations = BusinessLocation::forDropdown($business_id);
 
             //Unset locations where product is not available
@@ -106,7 +106,7 @@ class OpeningStockController extends Controller
                     unset($locations[$key]);
                 }
             }
-            
+
 
             $enable_expiry = request()->session()->get('business.enable_product_expiry');
             $enable_lot = request()->session()->get('business.enable_lot_number');
@@ -169,14 +169,14 @@ class OpeningStockController extends Controller
                 $transaction_date = request()->session()->get("financial_year.start");
                 $transaction_date = \Carbon::createFromFormat('Y-m-d', $transaction_date)->toDateTimeString();
 
-                DB::beginTransaction(); 
+                DB::beginTransaction();
 
                 //$key_os is the location_id
-                foreach ($opening_stocks as $location_id => $value) {  
+                foreach ($opening_stocks as $location_id => $value) {
                     $new_purchase_lines = [];
                     $edit_purchase_lines = [];
                     $new_transaction_data = [];
-                    $edit_transaction_data= [];                  
+                    $edit_transaction_data= [];
                     //Check if valid location
                     if (array_key_exists($location_id, $locations)) {
                         foreach ($value as $vid => $purchase_lines_data) {
@@ -199,7 +199,7 @@ class OpeningStockController extends Controller
 
                                 $purchase_line_note = !empty($pl['purchase_line_note']) ? $pl['purchase_line_note'] : null;
                                 $transaction_date = !empty($pl['transaction_date']) ? $this->productUtil->uf_date($pl['transaction_date'], true) : $transaction_date;
-                
+
                                 $purchase_line = null;
 
                                 if (isset($pl['purchase_line_id'])) {
@@ -319,7 +319,7 @@ class OpeningStockController extends Controller
                             ->with(['purchase_lines'])
                             ->whereNotIn('id', $updated_transaction_ids)
                             ->get();
-                        
+
                         if (count($delete_transactions) > 0) {
                             foreach ($delete_transactions as $delete_transaction) {
                                 $delete_purchase_lines = $delete_transaction->purchase_lines;

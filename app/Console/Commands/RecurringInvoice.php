@@ -5,9 +5,9 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
-use App\Transaction;
-use App\Contact;
-use App\User;
+use App\Models\Transaction;
+use App\Models\Contact;
+use App\Models\User;
 
 use App\Utils\TransactionUtil;
 use App\Utils\ProductUtil;
@@ -67,7 +67,7 @@ class RecurringInvoice extends Command
             foreach ($transactions as $transaction) {
                 date_default_timezone_set($transaction->business->time_zone);
                 //inner try-catch block open
-                try { 
+                try {
                     //Check if recurring invoice is enabled
                     if (!empty($transaction->business->enabled_modules)
                         && !in_array('subscription', $transaction->business->enabled_modules)) {
@@ -102,7 +102,7 @@ class RecurringInvoice extends Command
                         } elseif ($transaction->recur_interval_type == 'years') {
                             $diff_from_today = $last_generated->diffInYears($today);
                         }
-                        
+
                         //if last generated is today or less than today then continue
                         if ($diff_from_today == 0) {
                             continue;
@@ -128,7 +128,7 @@ class RecurringInvoice extends Command
                             }
                         }
                     }
-                    
+
                     DB::beginTransaction();
                     //Create new recurring invoice
                     $recurring_invoice = $this->transactionUtil->createRecurringInvoice($transaction, $save_as_draft);

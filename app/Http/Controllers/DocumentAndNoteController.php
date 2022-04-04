@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\DocumentAndNote;
 use App\Models\Media;
-use App\User;
+use App\Models\User;
 use App\Utils\ModuleUtil;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -40,7 +40,7 @@ class DocumentAndNoteController extends Controller
             $user_id = request()->session()->get('user.id');
             //model id like project_id, user_id
             $notable_id = request()->get('notable_id');
-            //model name like App\User
+            //model name like App\Models\User
             $notable_type = request()->get('notable_type');
 
             $document_note = DocumentAndNote::where('business_id', $business_id)
@@ -158,10 +158,10 @@ class DocumentAndNoteController extends Controller
 
         //Define all notable for main app.
         $app_notable = [
-            'App\User' => [
+            'App\Models\User' => [
                 'permissions' => ['view', 'create', 'delete']
             ],
-            'App\Contact' => [
+            'App\Models\Contact' => [
                 'permissions' => ['view', 'create', 'delete']
             ]
         ];
@@ -194,7 +194,7 @@ class DocumentAndNoteController extends Controller
     {
         //model id like project_id, user_id
         $notable_id = request()->get('notable_id');
-        //model name like App\User
+        //model name like App\Models\User
         $notable_type = request()->get('notable_type');
         return view('documents_and_notes.create')
             ->with(compact('notable_id', 'notable_type'));
@@ -212,7 +212,7 @@ class DocumentAndNoteController extends Controller
 
             //model id like project_id, user_id
             $notable_id = request()->get('notable_id');
-            //model name like App\User
+            //model name like App\Models\User
             $notable_type = request()->get('notable_type');
 
             $input = $request->only('heading', 'description', 'is_private');
@@ -267,7 +267,7 @@ class DocumentAndNoteController extends Controller
     {
         //model id like project_id, user_id
         $notable_id = request()->get('notable_id');
-        //model name like App\User
+        //model name like App\Models\User
         $notable_type = request()->get('notable_type');
 
         $business_id = request()->session()->get('user.business_id');
@@ -291,7 +291,7 @@ class DocumentAndNoteController extends Controller
     {
         //model id like project_id, user_id
         $notable_id = request()->get('notable_id');
-        //model name like App\User
+        //model name like App\Models\User
         $notable_type = request()->get('notable_type');
 
         $business_id = request()->session()->get('user.business_id');
@@ -317,7 +317,7 @@ class DocumentAndNoteController extends Controller
 
             //model id like project_id, user_id
             $notable_id = request()->get('notable_id');
-            //model name like App\User
+            //model name like App\Models\User
             $notable_type = request()->get('notable_type');
 
             $business_id = request()->session()->get('user.business_id');
@@ -379,7 +379,7 @@ class DocumentAndNoteController extends Controller
             $business_id = request()->session()->get('user.business_id');
             //model id like project_id, user_id
             $notable_id = request()->get('notable_id');
-            //model name like App\User
+            //model name like App\Models\User
             $notable_type = request()->get('notable_type');
 
             $document_note = DocumentAndNote::where('business_id', $business_id)

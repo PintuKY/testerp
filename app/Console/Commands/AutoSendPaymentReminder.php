@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Utils\NotificationUtil;
 use App\Models\Business;
-use App\Transaction;
+use App\Models\Transaction;
 use \Notification;
 use App\Notifications\CustomerNotification;
 use App\NotificationTemplate;
@@ -89,7 +89,7 @@ class AutoSendPaymentReminder extends Command
                                     ->where('transactions.status', 'final')
                                     ->leftjoin('activity_log as a', function($join){
                                         $join->on('a.subject_id', '=', 'transactions.id')
-                                            ->where('subject_type', 'App\Transaction')
+                                            ->where('subject_type', 'App\Models\Transaction')
                                             ->where('description', 'payment_reminder');
                                     })
                                     ->whereNull('a.id')

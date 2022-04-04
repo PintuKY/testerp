@@ -6,8 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 
-use App\Transaction;
-use App\TransactionSellLine;
+use App\Models\Transaction;
+use App\Models\TransactionSellLine;
 
 use App\Utils\Util;
 
@@ -76,7 +76,7 @@ class KitchenController extends Controller
                         ];
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0,
                             'msg' => trans("messages.something_went_wrong")
                         ];
@@ -110,7 +110,7 @@ class KitchenController extends Controller
         } elseif ($orders_for == 'waiter') {
             $filter['waiter_id'] = $service_staff_id;
         }
-        
+
         $orders = $this->restUtil->getAllOrders($business_id, $filter);
         return view('restaurant.partials.show_orders', compact('orders', 'orders_for'));
     }
@@ -140,7 +140,7 @@ class KitchenController extends Controller
         } elseif ($orders_for == 'waiter') {
             $filter['waiter_id'] = $service_staff_id;
         }
-        
+
         $line_orders = $this->restUtil->getLineOrders($business_id, $filter);
         return view('restaurant.partials.line_orders', compact('line_orders', 'orders_for'));
     }

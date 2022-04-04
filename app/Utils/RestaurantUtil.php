@@ -5,10 +5,10 @@ use Illuminate\Support\Facades\DB;
 
 use Spatie\Permission\Models\Role;
 
-use App\Transaction;
-use App\BusinessLocation;
-use App\User;
-use App\TransactionSellLine;
+use App\Models\Transaction;
+use App\Models\BusinessLocation;
+use App\Models\User;
+use App\Models\TransactionSellLine;
 use App\Restaurant\Booking;
 
 class RestaurantUtil extends Util
@@ -78,7 +78,7 @@ class RestaurantUtil extends Util
         if (!empty($filter['waiter_id'])) {
             $query->where('transactions.res_waiter_id', $filter['waiter_id']);
         }
-                
+
         $orders =  $query->select(
             'transactions.*',
             'contacts.name as customer_name',
@@ -166,11 +166,11 @@ class RestaurantUtil extends Util
         if (!empty($filter['waiter_id'])) {
             $query->where('transaction_sell_lines.res_service_staff_id', $filter['waiter_id']);
         }
-        
+
         if (!empty($filter['line_id'])) {
             $query->where('transaction_sell_lines.id', $filter['line_id']);
         }
-        
+
         $orders =  $query->select(
             'p.name as product_name',
             'p.type as product_type',

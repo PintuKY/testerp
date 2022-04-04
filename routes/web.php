@@ -56,7 +56,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
 
     Route::resource('brands', 'BrandController');
 
-   // Route::resource('payment-account', 'PaymentAccountController');
+   //Route::resource('payment-account', 'PaymentAccountController');
 
     Route::resource('tax-rates', 'TaxRateController');
 

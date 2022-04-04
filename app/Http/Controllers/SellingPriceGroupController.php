@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\SellingPriceGroup;
+use App\Models\SellingPriceGroup;
 use App\Utils\Util;
-use App\Variation;
+use App\Models\Variation;
 use App\VariationGroupPrice;
 use DB;
 use Excel;
@@ -108,7 +108,7 @@ class SellingPriceGroupController extends Controller
                         ];
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -120,7 +120,7 @@ class SellingPriceGroupController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\SellingPriceGroup  $sellingPriceGroup
+     * @param  \App\Models\SellingPriceGroup  $sellingPriceGroup
      * @return \Illuminate\Http\Response
      */
     public function show(SellingPriceGroup $sellingPriceGroup)
@@ -131,7 +131,7 @@ class SellingPriceGroupController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\SellingPriceGroup  $sellingPriceGroup
+     * @param  \App\Models\SellingPriceGroup  $sellingPriceGroup
      * @return \Illuminate\Http\Response
      */
     public function edit($id)
@@ -153,7 +153,7 @@ class SellingPriceGroupController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\SellingPriceGroup  $sellingPriceGroup
+     * @param  \App\Models\SellingPriceGroup  $sellingPriceGroup
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
@@ -177,7 +177,7 @@ class SellingPriceGroupController extends Controller
                             ];
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
                 $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -190,7 +190,7 @@ class SellingPriceGroupController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\SellingPriceGroup  $sellingPriceGroup
+     * @param  \App\Models\SellingPriceGroup  $sellingPriceGroup
      * @return \Illuminate\Http\Response
      */
     public function destroy($id)
@@ -211,7 +211,7 @@ class SellingPriceGroupController extends Controller
                             ];
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
                 $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -250,7 +250,7 @@ class SellingPriceGroupController extends Controller
                 $variation_pg = $variation->group_prices->filter(function ($item) use ($price_group_id) {
                     return $item->price_group_id == $price_group_id;
                 });
-                
+
                 $temp[$price_group->name] = $variation_pg->isNotEmpty() ? $variation_pg->first()->price_inc_tax : '';
             }
             $export_data[] = $temp;
@@ -279,14 +279,14 @@ class SellingPriceGroupController extends Controller
             if (!empty($notAllowed)) {
                 return $notAllowed;
             }
-        
+
             //Set maximum php execution time
             ini_set('max_execution_time', 0);
             ini_set('memory_limit', -1);
 
             if ($request->hasFile('product_group_prices')) {
                 $file = $request->file('product_group_prices');
-                
+
                 $parsed_array = Excel::toArray([], $file);
 
                 $headers = $parsed_array[0][0];
@@ -356,7 +356,7 @@ class SellingPriceGroupController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0,
                             'msg' => $e->getMessage()
                         ];

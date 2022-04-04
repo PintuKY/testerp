@@ -4,21 +4,21 @@ namespace App\Http\Controllers;
 
 use App\AccountTransaction;
 use App\Models\Business;
-use App\BusinessLocation;
-use App\Contact;
+use App\Models\BusinessLocation;
+use App\Models\Contact;
 use App\CustomerGroup;
-use App\Product;
+use App\Models\Product;
 use App\PurchaseLine;
 use App\TaxRate;
-use App\Transaction;
-use App\User;
+use App\Models\Transaction;
+use App\Models\User;
 use App\Utils\BusinessUtil;
 
 use App\Utils\ModuleUtil;
 use App\Utils\ProductUtil;
 use App\Utils\TransactionUtil;
 
-use App\Variation;
+use App\Models\Variation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;

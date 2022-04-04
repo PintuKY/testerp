@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\BusinessLocation;
-use App\Transaction;
-use App\Contact;
-use App\User;
+use App\Models\BusinessLocation;
+use App\Models\Transaction;
+use App\Models\Contact;
+use App\Models\User;
 use App\Utils\BusinessUtil;
 use App\Utils\ContactUtil;
 
@@ -15,7 +15,7 @@ use App\Utils\TransactionUtil;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
-use App\TransactionSellLine;
+use App\Models\TransactionSellLine;
 use App\Events\TransactionPaymentDeleted;
 use Spatie\Activitylog\Models\Activity;
 
@@ -60,7 +60,7 @@ class SellReturnController extends Controller
         $business_id = request()->session()->get('user.business_id');
         if (request()->ajax()) {
             $sells = Transaction::leftJoin('contacts', 'transactions.contact_id', '=', 'contacts.id')
-                    
+
                     ->join(
                         'business_locations AS bl',
                         'transactions.location_id',
@@ -137,7 +137,7 @@ class SellReturnController extends Controller
                 ->addColumn(
                     'action',
                     '<div class="btn-group">
-                    <button type="button" class="btn btn-info dropdown-toggle btn-xs" 
+                    <button type="button" class="btn btn-info dropdown-toggle btn-xs"
                         data-toggle="dropdown" aria-expanded="false">' .
                         __("messages.actions") .
                         '<span class="caret"></span><span class="sr-only">Toggle Dropdown
@@ -187,7 +187,7 @@ class SellReturnController extends Controller
         }
         $business_locations = BusinessLocation::forDropdown($business_id, false);
         $customers = Contact::customersDropdown($business_id, false);
-      
+
         $sales_representative = User::forDropdown($business_id, false, false, true);
 
         return view('sell_return.index')->with(compact('business_locations', 'customers', 'sales_representative'));
@@ -274,7 +274,7 @@ class SellReturnController extends Controller
                 if (!$this->moduleUtil->isSubscribed($business_id)) {
                     return $this->moduleUtil->expiredResponse(action('SellReturnController@index'));
                 }
-        
+
                 $user_id = $request->session()->get('user.id');
 
                 DB::beginTransaction();
@@ -282,7 +282,7 @@ class SellReturnController extends Controller
                 $sell_return =  $this->transactionUtil->addSellReturn($input, $business_id, $user_id);
 
                 $receipt = $this->receiptContent($business_id, $sell_return->location_id, $sell_return->id);
-                
+
                 DB::commit();
 
                 $output = ['success' => 1,
@@ -408,13 +408,13 @@ class SellReturnController extends Controller
                 }
                 $sell_return = $query->first();
 
-                $sell_lines = TransactionSellLine::where('transaction_id', 
+                $sell_lines = TransactionSellLine::where('transaction_id',
                                             $sell_return->return_parent_id)
                                     ->get();
 
                 if (!empty($sell_return)) {
                     $transaction_payments = $sell_return->payment_lines;
-                    
+
                     foreach ($sell_lines as $sell_line) {
                         if ($sell_line->quantity_returned > 0) {
                             $quantity = 0;
@@ -436,7 +436,7 @@ class SellReturnController extends Controller
                         event(new TransactionPaymentDeleted($payment));
                     }
                 }
-                
+
                 DB::commit();
                 $output = ['success' => 1,
                             'msg' => __('lang_v1.success'),
@@ -497,14 +497,14 @@ class SellReturnController extends Controller
             $receipt_printer_type = is_null($printer_type) ? $location_details->receipt_printer_type : $printer_type;
 
             $receipt_details = $this->transactionUtil->getReceiptDetails($transaction_id, $location_id, $invoice_layout, $business_details, $location_details, $receipt_printer_type);
-            
+
             //If print type browser - return the content, printer - return printer config data, and invoice format config
             $output['print_title'] = $receipt_details->invoice_no;
             if ($receipt_printer_type == 'printer') {
                 $output['print_type'] = 'printer';
                 $output['printer_config'] = $this->businessUtil->printerConfig($business_id, $location_details->printer_id);
                 $output['data'] = $receipt_details;
-                
+
             } else {
                 $output['html_content'] = view('sell_return.receipt', compact('receipt_details'))->render();
             }
@@ -528,7 +528,7 @@ class SellReturnController extends Controller
                         ];
 
                 $business_id = $request->session()->get('user.business_id');
-            
+
                 $transaction = Transaction::where('business_id', $business_id)
                                 ->where('id', $transaction_id)
                                 ->first();

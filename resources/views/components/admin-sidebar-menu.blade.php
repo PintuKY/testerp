@@ -1,6 +1,6 @@
 <ul class="sidebar-menu tree" data-widget="tree">
     <li class=""><a href="{{route('home')}}"><i class="fa fas fa-tachometer-alt"></i> <span>Home</span></a></li>
-    <li class="treeview">
+    <li class="treeview ">
                       <a href="#">
                         <i class="fa fas fa-users"></i> <span>User Management</span>
                         <span class="pull-right-container">
@@ -8,9 +8,9 @@
                         </span>
                       </a>
                       <ul class="treeview-menu" style="display: none;">
-                          <li><a href="{{route('users.index')}}"><i class="fa fas fa-user"></i> <span>Users</span></a></li>
-    <li><a href="{{route('roles.index')}}"><i class="fa fas fa-briefcase"></i> <span>Roles</span></a></li>
-    <li><a href="{{route('sales-commission-agents.index')}}"><i class="fa fas fa-handshake"></i> <span>Sales Commission Agents</span></a></li>
+                          <li  @if(request()->segment(1) == 'users') class="active" @endif ><a href="{{route('users.index')}}"><i class="fa fas fa-user"></i> <span>Users</span></a></li>
+    <li @if(request()->segment(1) == 'roles') class="active" @endif ><a href="{{route('roles.index')}}"><i class="fa fas fa-briefcase"></i> <span>Roles</span></a></li>
+    <li @if(request()->segment(1) == 'sales-commission-agents') class="active" @endif><a href="{{route('sales-commission-agents.index')}}"><i class="fa fas fa-handshake"></i> <span>Sales Commission Agents</span></a></li>
 
                       </ul>
                       </li>

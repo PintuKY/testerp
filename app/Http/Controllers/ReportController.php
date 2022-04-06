@@ -11,7 +11,7 @@ use App\Charts\CommonChart;
 use App\Models\Contact;
 
 use App\CustomerGroup;
-use App\ExpenseCategory;
+use App\Models\ExpenseCategory;
 use App\Models\Product;
 use App\PurchaseLine;
 use App\Restaurant\ResTable;

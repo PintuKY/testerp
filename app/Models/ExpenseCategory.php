@@ -24,7 +24,7 @@ class ExpenseCategory extends Model
 
     public function sub_categories()
     {
-        return $this->hasMany(\App\ExpenseCategory::class, 'parent_id');
+        return $this->hasMany(\App\Models\ExpenseCategory::class, 'parent_id');
     }
 
      /**

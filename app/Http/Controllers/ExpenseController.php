@@ -6,7 +6,7 @@ use App\Models\Account;
 
 use App\AccountTransaction;
 use App\Models\BusinessLocation;
-use App\ExpenseCategory;
+use App\Models\ExpenseCategory;
 use App\TaxRate;
 use App\Models\Transaction;
 use App\Models\User;
@@ -43,9 +43,9 @@ class ExpenseController extends Controller
      */
     public function index()
     {
-        // if (!auth()->user()->can('all_expense.access') && !auth()->user()->can('view_own_expense')) {
-        //     abort(403, 'Unauthorized action.');
-        // }
+        if (!auth()->user()->can('all_expense.access') && !auth()->user()->can('view_own_expense')) {
+            abort(403, 'Unauthorized action.');
+        }
 
         if (request()->ajax()) {
             $business_id = request()->session()->get('user.business_id');

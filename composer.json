@@ -17,11 +17,13 @@
         "laravel/framework": "^9.2",
         "laravel/sanctum": "^2.14.1",
         "laravel/tinker": "^2.7",
+        "laravel/ui": "^3.4",
+        "laravelcollective/html": "^6.3",
+        "maatwebsite/excel": "^3.1",
         "milon/barcode": "^9.0",
         "mpdf/mpdf": "^6.1",
         "nwidart/laravel-modules": "^9.0",
         "pusher/pusher-php-server": "^7.0",
-        "razorpay/razorpay": "^2.8",
         "spatie/flysystem-dropbox": "^2.0",
         "spatie/laravel-activitylog": "^4.4",
         "spatie/laravel-backup": "^8.1",
@@ -48,7 +50,12 @@
     "autoload-dev": {
         "psr-4": {
             "Tests\\": "tests/"
-        }
+        },
+        "files": [
+
+            "app/Http/helpers.php"
+
+        ]
     },
     "scripts": {
         "post-autoload-dump": [

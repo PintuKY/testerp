@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Utils\ModuleUtil;
 use App\Utils\BusinessUtil;
+use Carbon\Carbon;
 
 class TransactionUtil extends Util
 {
@@ -726,7 +727,7 @@ class TransactionUtil extends Util
                     if (!empty($payment['paid_on'])) {
                         $paid_on = $uf_data ? $this->uf_date($payment['paid_on'], true) : $payment['paid_on'];
                     } else {
-                        $paid_on = \Carbon::now()->toDateTimeString();
+                        $paid_on = Carbon::now()->toDateTimeString();
                     }
 
                     $payment_data = [
@@ -1145,7 +1146,7 @@ class TransactionUtil extends Util
         if (blank($il->date_time_format)) {
             $output['invoice_date'] = $this->format_date($transaction->transaction_date, true, $business_details);
         } else {
-            $output['invoice_date'] = \Carbon::createFromFormat('Y-m-d H:i:s', $transaction->transaction_date)->format($il->date_time_format);
+            $output['invoice_date'] = Carbon::createFromFormat('Y-m-d H:i:s', $transaction->transaction_date)->format($il->date_time_format);
         }
 
         $output['hide_price'] = !empty($il->common_settings['hide_price']) ? true : false;
@@ -1157,7 +1158,7 @@ class TransactionUtil extends Util
                 if (blank($il->date_time_format)) {
                     $output['due_date'] = $this->format_date($due_date->toDateTimeString(), true, $business_details);
                 } else {
-                    $output['due_date'] = \Carbon::createFromFormat('Y-m-d H:i:s', $due_date->toDateTimeString())->format($il->date_time_format);
+                    $output['due_date'] = Carbon::createFromFormat('Y-m-d H:i:s', $due_date->toDateTimeString())->format($il->date_time_format);
                 }
             }
         }
@@ -1752,7 +1753,7 @@ class TransactionUtil extends Util
                 if (blank($il->date_time_format)) {
                     $sale_orders_invoice_date[] = $this->format_date($sale_order->transaction_date, true);
                 } else {
-                    $sale_orders_invoice_date[] = \Carbon::createFromFormat('Y-m-d H:i:s', $sale_order->transaction_date)->format($il->date_time_format);
+                    $sale_orders_invoice_date[] = Carbon::createFromFormat('Y-m-d H:i:s', $sale_order->transaction_date)->format($il->date_time_format);
                 }
             }
             $output['sale_orders_invoice_date'] = implode(', ', $sale_orders_invoice_date);
@@ -1800,8 +1801,8 @@ class TransactionUtil extends Util
         //$invoice_tax_amount = '15.00';
 
         $invoice_total_amount = round($invoice_total_amount, 2);
-        //$invoice_date = \Carbon::parse($invoice_date)->toIso8601ZuluString();
-        $invoice_date = \Carbon::parse($invoice_date)->toIso8601String();
+        //$invoice_date = Carbon::parse($invoice_date)->toIso8601ZuluString();
+        $invoice_date = Carbon::parse($invoice_date)->toIso8601String();
 
         $string .= $this->toHex(1).$this->toHex(strlen($seller)).($seller);
         $string .= $this->toHex(2).$this->toHex(strlen($tax_number)).($tax_number);
@@ -2627,7 +2628,7 @@ class TransactionUtil extends Util
                             ->where('transactions.business_id', $business_id)
                             ->where('transactions.type', 'sell')
                             ->where('transactions.status', 'final')
-                            ->whereBetween(DB::raw('date(transactions.transaction_date)'), [\Carbon::now()->subDays(30), \Carbon::now()]);
+                            ->whereBetween(DB::raw('date(transactions.transaction_date)'), [Carbon::now()->subDays(30), Carbon::now()]);
 
         //Check for permitted locations of a user
         $permitted_locations = auth()->user()->permitted_locations();
@@ -2646,7 +2647,6 @@ class TransactionUtil extends Util
             $query->groupBy('transactions.location_id');
         }
         $sells = $query->get();
-
         if (!$group_by_location) {
             $sells = $sells->pluck('total_sells', 'date');
         }
@@ -2893,7 +2893,7 @@ class TransactionUtil extends Util
                     $total_paid = $this->getTotalPaid($transaction->id);
                     $due = $transaction->final_total - $total_paid;
 
-                    $now = \Carbon::now()->toDateTimeString();
+                    $now = Carbon::now()->toDateTimeString();
 
                     $array = [
                             'transaction_id' => $transaction->id,
@@ -3019,7 +3019,7 @@ class TransactionUtil extends Util
             //If product expiry is enabled then check for on expiry conditions
             if ($stop_selling_expired && empty($purchase_line_id)) {
                 $stop_before = request()->session()->get('business')['stop_selling_before'];
-                $expiry_date = \Carbon::today()->addDays($stop_before)->toDateString();
+                $expiry_date = Carbon::today()->addDays($stop_before)->toDateString();
                 $query->where( function($q) use($expiry_date) {
                     $q->whereNull('PL.exp_date')
                         ->orWhereRaw('PL.exp_date > ?', [$expiry_date]);
@@ -3077,8 +3077,8 @@ class TransactionUtil extends Util
                             ['stock_adjustment_line_id' => $line->id,
                                 'purchase_line_id' => $row->purchase_lines_id,
                                 'quantity' => $qty_allocated,
-                                'created_at' => \Carbon::now(),
-                                'updated_at' => \Carbon::now()
+                                'created_at' => Carbon::now(),
+                                'updated_at' => Carbon::now()
                             ];
 
                         //Update purchase line
@@ -3091,8 +3091,8 @@ class TransactionUtil extends Util
                         $purchase_sell_map[] = ['sell_line_id' => $line->id,
                                 'purchase_line_id' => $row->purchase_lines_id,
                                 'quantity' => $qty_allocated,
-                                'created_at' => \Carbon::now(),
-                                'updated_at' => \Carbon::now()
+                                'created_at' =>  Carbon::now(),
+                                'updated_at' => Carbon::now()
                             ];
 
                         //Update purchase line
@@ -3105,8 +3105,8 @@ class TransactionUtil extends Util
                         $purchase_sell_map[] = ['sell_line_id' => $line->id,
                                 'purchase_line_id' => $row->purchase_lines_id,
                                 'quantity' => $qty_allocated,
-                                'created_at' => \Carbon::now(),
-                                'updated_at' => \Carbon::now()
+                                'created_at' => Carbon::now(),
+                                'updated_at' => Carbon::now()
                             ];
 
                         //Update purchase line
@@ -3162,8 +3162,8 @@ class TransactionUtil extends Util
                     $purchase_sell_map[] = ['sell_line_id' => $line->id,
                             'purchase_line_id' => 0,
                             'quantity' => $qty_selling,
-                            'created_at' => \Carbon::now(),
-                            'updated_at' => \Carbon::now()
+                            'created_at' => Carbon::now(),
+                            'updated_at' => Carbon::now()
                         ];
                 }
             }
@@ -3556,7 +3556,7 @@ class TransactionUtil extends Util
             return false;
         }
 
-        $date = \Carbon::parse($transaction->transaction_date)
+        $date = Carbon::parse($transaction->transaction_date)
                     ->addDays($edit_duration);
 
         $today = today();
@@ -3617,7 +3617,7 @@ class TransactionUtil extends Util
 
         //If opening
         if ($is_opening) {
-            $next_day = \Carbon::createFromFormat('Y-m-d', $date)->addDay()->format('Y-m-d');
+            $next_day = Carbon::createFromFormat('Y-m-d', $date)->addDay()->format('Y-m-d');
 
             $query->where(function ($query) use ($date, $next_day) {
                 $query->whereRaw("date(transaction_date) <= '$date'")
@@ -3934,7 +3934,7 @@ class TransactionUtil extends Util
                     'status' => 'final',
                     'payment_status' => 'due',
                     'contact_id' => $contact_id,
-                    'transaction_date' => \Carbon::now(),
+                    'transaction_date' => Carbon::now(),
                     'total_before_tax' => $final_amount,
                     'final_total' => $final_amount,
                     'created_by' => $created_by
@@ -4115,7 +4115,7 @@ class TransactionUtil extends Util
         $data['recur_interval_type'] = null;
         $data['recur_repetitions'] = 0;
         $data['recur_stopped_on'] = null;
-        $data['transaction_date'] = \Carbon::now();
+        $data['transaction_date'] = Carbon::now();
 
         if (isset($data['invoice_token'])) {
             $data['invoice_token'] = null;
@@ -4551,14 +4551,14 @@ class TransactionUtil extends Util
         $is_expired = false;
 
         if (!empty($business->rp_expiry_period)) {
-            $expiry_date = \Carbon::parse($date);
+            $expiry_date = Carbon::parse($date);
             if ($business->rp_expiry_type == 'month') {
                 $expiry_date = $expiry_date->addMonths($business->rp_expiry_period);
             } elseif ($business->rp_expiry_type == 'year') {
                 $expiry_date = $expiry_date->addYears($business->rp_expiry_period);
             }
 
-            if ($expiry_date->format('Y-m-d') >= \Carbon::now()->format('Y-m-d')) {
+            if ($expiry_date->format('Y-m-d') >= Carbon::now()->format('Y-m-d')) {
                 $is_expired = true;
             }
         }
@@ -5083,7 +5083,7 @@ class TransactionUtil extends Util
     public function getProfitLossDetails($business_id, $location_id, $start_date, $end_date, $user_id = null)
     {
         //For Opening stock date should be 1 day before
-        $day_before_start_date = \Carbon::createFromFormat('Y-m-d', $start_date)->subDay()->format('Y-m-d');
+        $day_before_start_date = Carbon::createFromFormat('Y-m-d', $start_date)->subDay()->format('Y-m-d');
 
         $filters = ['user_id' => $user_id];
         //Get Opening stock
@@ -5292,7 +5292,7 @@ class TransactionUtil extends Util
         $data['recur_interval_type'] = null;
         $data['recur_repetitions'] = 0;
         $data['recur_stopped_on'] = null;
-        $data['transaction_date'] = \Carbon::now();
+        $data['transaction_date'] = Carbon::now();
 
         if (isset($data['recurring_invoices'])) {
             unset($data['recurring_invoices']);
@@ -5329,7 +5329,7 @@ class TransactionUtil extends Util
         if ($request->has('transaction_date')) {
             $transaction_data['transaction_date'] = $format_data ? $this->uf_date($transaction_data['transaction_date'], true) : $transaction_data['transaction_date'];
         } else {
-            $transaction_data['transaction_date'] = \Carbon::now();
+            $transaction_data['transaction_date'] = Carbon::now();
         }
 
         if ($request->has('expense_sub_category_id')) {
@@ -5485,7 +5485,7 @@ class TransactionUtil extends Util
         if (!array_key_exists($inputs['method'], $payment_types)) {
             throw new \Exception("Payment method not found");
         }
-        $inputs['paid_on'] = $request->input('paid_on', \Carbon::now()->toDateTimeString());
+        $inputs['paid_on'] = $request->input('paid_on', Carbon::now()->toDateTimeString());
         if ($format_data) {
             $inputs['paid_on'] = $this->uf_date($inputs['paid_on'], true);
             $inputs['amount'] = $this->num_uf($inputs['amount']);
@@ -5593,7 +5593,7 @@ class TransactionUtil extends Util
         }
 
         if (empty($sell_return)) {
-            $sell_return_data['transaction_date'] = $sell_return_data['transaction_date'] ?? \Carbon::now();
+            $sell_return_data['transaction_date'] = $sell_return_data['transaction_date'] ?? Carbon::now();
             $sell_return_data['business_id'] = $business_id;
             $sell_return_data['location_id'] = $sell->location_id;
             $sell_return_data['contact_id'] = $sell->contact_id;

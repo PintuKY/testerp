@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Charts;
 
 use ConsoleTVs\Charts\Classes\Highcharts\Chart;

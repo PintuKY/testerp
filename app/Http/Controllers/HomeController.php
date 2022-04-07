@@ -20,6 +20,7 @@ use App\Utils\RestaurantUtil;
 use App\Models\User;
 use Illuminate\Notifications\DatabaseNotification;
 use App\Models\Media;
+use Carbon\Carbon;
 
 class HomeController extends Controller
 {
@@ -82,7 +83,7 @@ class HomeController extends Controller
         $all_sell_values = [];
         $dates = [];
         for ($i = 29; $i >= 0; $i--) {
-            $date = \Carbon::now()->subDays($i)->format('Y-m-d');
+            $date = Carbon::now()->subDays($i)->format('Y-m-d');
             $dates[] = $date;
 
             $labels[] = date('j M Y', strtotime($date));
@@ -151,7 +152,7 @@ class HomeController extends Controller
 
             $month_number = date('m', $date);
 
-            $labels[] = \Carbon::createFromFormat('m-Y', $month_year)
+            $labels[] = Carbon::createFromFormat('m-Y', $month_year)
                             ->format('M-Y');
             $date = strtotime('+1 month', $date);
 
@@ -356,7 +357,7 @@ class HomeController extends Controller
     {
         if (request()->ajax()) {
             $business_id = request()->session()->get('user.business_id');
-            $today = \Carbon::now()->format("Y-m-d H:i:s");
+            $today = Carbon::now()->format("Y-m-d H:i:s");
 
             $query = Transaction::join(
                 'contacts as c',
@@ -429,7 +430,7 @@ class HomeController extends Controller
     {
         if (request()->ajax()) {
             $business_id = request()->session()->get('user.business_id');
-            $today = \Carbon::now()->format("Y-m-d H:i:s");
+            $today = Carbon::now()->format("Y-m-d H:i:s");
 
             $query = Transaction::join(
                 'contacts as c',

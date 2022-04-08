@@ -11,7 +11,7 @@
         "automattic/woocommerce": "^3.1",
         "barryvdh/laravel-dompdf": "^1.0",
         "composer/semver": "^3.3",
-        "consoletvs/charts": "^7.3",
+        "consoletvs/charts": "6.5.6",
         "giggsey/libphonenumber-for-php": "^8.12",
         "guzzlehttp/guzzle": "^7.2",
         "laravel/framework": "^9.2",

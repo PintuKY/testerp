@@ -56,7 +56,7 @@ class Variation extends Model
      */
     public function group_prices()
     {
-        return $this->hasMany(\App\VariationGroupPrice::class, 'variation_id');
+        return $this->hasMany(\App\Models\VariationGroupPrice::class, 'variation_id');
     }
 
     public function media()

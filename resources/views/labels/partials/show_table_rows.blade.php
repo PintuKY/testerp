@@ -25,7 +25,7 @@
         @if(request()->session()->get('business.enable_product_expiry') == 1)
             <td>
                 <input type="text" class="form-control label-date-picker"
-                name="products[{{$loop->index + $index}}][exp_date]" value="@if(isset($product->exp_date)){{@format_date($product->exp_date)}}@endif">
+                name="products[{{$loop->index + $index}}][exp_date]" value="@if(isset($product->exp_date)){{format_date($product->exp_date)}}@endif">
             </td>
         @endif
         <td>

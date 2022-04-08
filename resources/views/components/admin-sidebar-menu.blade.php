@@ -22,8 +22,8 @@
                         </span>
                       </a>
                       <ul class="treeview-menu">
-                          <li><a href="https://rcgerp.com/contacts?type=supplier"><i class="fa fas fa-star"></i> <span>Suppliers</span></a></li>
-    <li><a href="https://rcgerp.com/contacts?type=customer"><i class="fa fas fa-star"></i> <span>Customers</span></a></li>
+                          <li><a href="{{route('contacts.index',['type' => 'supplier'])}}"><i class="fa fas fa-star"></i> <span>Suppliers</span></a></li>
+    <li><a href="{{route('contacts.index',['type' => 'customer'])}}"><i class="fa fas fa-star"></i> <span>Customers</span></a></li>
     <li><a href="{{route('customer-group.index')}}"><i class="fa fas fa-users"></i> <span>Customer Groups</span></a></li>
     <li><a href="{{route('contacts.import')}}"><i class="fa fas fa-download"></i> <span>Import Contacts</span></a></li>
 
@@ -41,11 +41,11 @@
     <li><a href="{{route('products.create')}}"><i class="fa fas fa-plus-circle"></i> <span>Add Product</span></a></li>
     <li><a href="https://rcgerp.com/labels/show"><i class="fa fas fa-barcode"></i> <span>Print Labels</span></a></li>
     <li><a href="{{route('variation-templates.index')}}"><i class="fa fas fa-circle"></i> <span>Variations</span></a></li>
-    <li><a href="https://rcgerp.com/import-products"><i class="fa fas fa-download"></i> <span>Import Products</span></a></li>
-    <li><a href="https://rcgerp.com/import-opening-stock"><i class="fa fas fa-download"></i> <span>Import Opening Stock</span></a></li>
+    <li><a href="{{route('products.import')}}"><i class="fa fas fa-download"></i> <span>Import Products</span></a></li>
+    <li><a href="{{route('opening.stock.import')}}"><i class="fa fas fa-download"></i> <span>Import Opening Stock</span></a></li>
     <li><a href="{{route('selling-price-group.index')}}"><i class="fa fas fa-circle"></i> <span>Selling Price Group</span></a></li>
     <li><a href="{{route('units.index')}}"><i class="fa fas fa-balance-scale"></i> <span>Units</span></a></li>
-    <li><a href="https://rcgerp.com/taxonomies?type=product"><i class="fa fas fa-tags"></i> <span>Categories</span></a></li>
+    <li><a href="{{route('taxonomies.index',['type' => 'product'])}}"><i class="fa fas fa-tags"></i> <span>Categories</span></a></li>
     <li><a href="{{route('brands.index')}}"><i class="fa fas fa-gem"></i> <span>Brands</span></a></li>
     <li><a href="{{route('warranties.index')}}"><i class="fa fas fa-shield-alt"></i> <span>Warranties</span></a></li>
 

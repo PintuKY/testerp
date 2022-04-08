@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Business;
 use App\Models\BusinessLocation;
 use App\Models\Contact;
-use App\CustomerGroup;
+use App\Models\CustomerGroup;
 use App\Notifications\CustomerNotification;
 use App\PurchaseLine;
 use App\Models\Transaction;
@@ -21,6 +21,7 @@ use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 use App\Models\TransactionPayment;
 use Spatie\Activitylog\Models\Activity;
+use Carbon\Carbon;
 
 class ContactController extends Controller
 {
@@ -325,7 +326,7 @@ class ContactController extends Controller
             (!$is_admin && auth()->user()->can('customer_with_no_sell_one_month')) ||
             ($has_no_sell_from == 'one_month' && (auth()->user()->can('customer_with_no_sell_one_month') || auth()->user()->can('customer_irrespective_of_sell')) )
             ) {
-            $from_transaction_date = \Carbon::now()->subDays(30)->format('Y-m-d');
+            $from_transaction_date = Carbon::now()->subDays(30)->format('Y-m-d');
             $query->havingRaw("max_transaction_date < '{$from_transaction_date}'")
                      ->orHavingRaw('transaction_date IS NULL');
         }
@@ -334,7 +335,7 @@ class ContactController extends Controller
             (!$is_admin && auth()->user()->can('customer_with_no_sell_three_month')) ||
             ($has_no_sell_from == 'three_months' && (auth()->user()->can('customer_with_no_sell_three_month') || auth()->user()->can('customer_irrespective_of_sell')) )
         ) {
-            $from_transaction_date = \Carbon::now()->subMonths(3)->format('Y-m-d');
+            $from_transaction_date = Carbon::now()->subMonths(3)->format('Y-m-d');
             $query->havingRaw("max_transaction_date < '{$from_transaction_date}'")
                      ->orHavingRaw('transaction_date IS NULL');
         }
@@ -343,7 +344,7 @@ class ContactController extends Controller
             (!$is_admin && auth()->user()->can('customer_with_no_sell_six_month')) ||
             ($has_no_sell_from == 'six_months' && (auth()->user()->can('customer_with_no_sell_six_month') || auth()->user()->can('customer_irrespective_of_sell')) )
         ) {
-            $from_transaction_date = \Carbon::now()->subMonths(6)->format('Y-m-d');
+            $from_transaction_date = Carbon::now()->subMonths(6)->format('Y-m-d');
             $query->havingRaw("max_transaction_date < '{$from_transaction_date}'")
                      ->orHavingRaw('transaction_date IS NULL');
         }
@@ -351,7 +352,7 @@ class ContactController extends Controller
         if ((!$is_admin && auth()->user()->can('customer_with_no_sell_one_year')) ||
             ($has_no_sell_from == 'one_year' && (auth()->user()->can('customer_with_no_sell_one_year') || auth()->user()->can('customer_irrespective_of_sell')) )
         ) {
-            $from_transaction_date = \Carbon::now()->subYear()->format('Y-m-d');
+            $from_transaction_date = Carbon::now()->subYear()->format('Y-m-d');
             $query->havingRaw("max_transaction_date < '{$from_transaction_date}'")
                      ->orHavingRaw('transaction_date IS NULL');
         }
@@ -747,7 +748,7 @@ class ContactController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
-    {
+    {   
         if (!auth()->user()->can('supplier.update') && !auth()->user()->can('customer.update') && !auth()->user()->can('customer.view_own') && !auth()->user()->can('supplier.view_own')) {
             abort(403, 'Unauthorized action.');
         }

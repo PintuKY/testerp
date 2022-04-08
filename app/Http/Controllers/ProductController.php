@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Brands;
+use App\Models\Brands;
 use App\Models\Business;
 use App\Models\BusinessLocation;
-use App\Category;
+use App\Models\Category;
 use App\Models\Media;
 use App\Models\Product;
 use App\Models\ProductVariation;
-use App\PurchaseLine;
+use App\Models\PurchaseLine;
 use App\Models\SellingPriceGroup;
-use App\TaxRate;
+use App\Models\TaxRate;
 use App\Models\Unit;
 use App\Utils\ModuleUtil;
 use App\Utils\ProductUtil;
@@ -19,7 +19,7 @@ use App\Models\Variation;
 use App\VariationGroupPrice;
 use App\Models\VariationLocationDetails;
 use App\VariationTemplate;
-use App\Warranty;
+use App\Models\Warranty;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;

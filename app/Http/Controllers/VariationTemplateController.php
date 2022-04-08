@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\VariationTemplate;
-use App\VariationValueTemplate;
+use App\Models\VariationTemplate;
+use App\Models\VariationValueTemplate;
 use App\Models\ProductVariation;
 use App\Models\Variation;
 

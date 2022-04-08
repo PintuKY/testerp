@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\SellingPriceGroup;
 use App\Utils\Util;
 use App\Models\Variation;
-use App\VariationGroupPrice;
+use App\Models\VariationGroupPrice;
 use DB;
 use Excel;
 use Illuminate\Http\Request;

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Warranty;
+use App\Models\Warranty;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 

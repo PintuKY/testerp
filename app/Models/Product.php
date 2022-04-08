@@ -94,7 +94,7 @@ class Product extends Model
      */
     public function product_tax()
     {
-        return $this->belongsTo(\App\TaxRate::class, 'tax', 'id');
+        return $this->belongsTo(\App\Models\TaxRate::class, 'tax', 'id');
     }
 
     /**
@@ -126,7 +126,8 @@ class Product extends Model
      */
     public function purchase_lines()
     {
-        return $this->hasMany(\App\PurchaseLine::class);
+        return $this->hasMany(\App\Models\PurchaseLine::class);
+        
     }
 
     /**

@@ -251,7 +251,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::resource('cash-register', 'CashRegisterController');
 
     //Import products
-    Route::get('/import-products', 'ImportProductsController@index');
+    Route::get('/import-products', 'ImportProductsController@index')->name('products.import');
     Route::post('/import-products/store', 'ImportProductsController@store');
 
     //Sales Commission Agent
@@ -269,7 +269,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::resource('customer-group', 'CustomerGroupController');
 
     //Import opening stock
-    Route::get('/import-opening-stock', 'ImportOpeningStockController@index');
+    Route::get('/import-opening-stock', 'ImportOpeningStockController@index')->name('opening.stock.import');
     Route::post('/import-opening-stock/store', 'ImportOpeningStockController@store');
 
     //Sell return

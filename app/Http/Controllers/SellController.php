@@ -6,20 +6,20 @@ use App\Models\Account;
 use App\Models\Business;
 use App\Models\BusinessLocation;
 use App\Models\Contact;
-use App\CustomerGroup;
-use App\InvoiceScheme;
+use App\Models\CustomerGroup;
+use App\Models\InvoiceScheme;
 use App\Models\SellingPriceGroup;
-use App\TaxRate;
+use App\Models\TaxRate;
 use App\Models\Transaction;
 use App\Models\TransactionSellLine;
-use App\TypesOfService;
+use App\Models\TypesOfService;
 use App\Models\User;
 use App\Utils\BusinessUtil;
 use App\Utils\ContactUtil;
 use App\Utils\ModuleUtil;
 use App\Utils\ProductUtil;
 use App\Utils\TransactionUtil;
-use App\Warranty;
+use App\Models\Warranty;
 use DB;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
@@ -72,7 +72,7 @@ class SellController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index()
-    {
+    {   
         $is_admin = $this->businessUtil->is_admin(auth()->user());
 
         if ( !$is_admin && !auth()->user()->hasAnyPermission(['sell.view', 'sell.create', 'direct_sell.access', 'direct_sell.view', 'view_own_sell_only', 'view_commission_agent_sell', 'access_shipping', 'access_own_shipping', 'access_commission_agent_shipping', 'so.view_all', 'so.view_own']) ) {
@@ -1165,7 +1165,7 @@ class SellController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function create()
-    {
+    {   
         $sale_type = request()->get('sale_type', '');
 
         if ($sale_type == 'sales_order') {

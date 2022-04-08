@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\BusinessLocation;
-use App\PurchaseLine;
-use App\TaxRate;
+use App\Models\PurchaseLine;
+use App\Models\TaxRate;
 use App\Models\Transaction;
 use App\Utils\ModuleUtil;
 use App\Utils\ProductUtil;

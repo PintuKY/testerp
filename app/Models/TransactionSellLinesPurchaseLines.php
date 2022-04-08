@@ -15,6 +15,6 @@ class TransactionSellLinesPurchaseLines extends Model
 
     public function purchase_line()
     {
-        return $this->belongsTo(\App\PurchaseLine::class, 'purchase_line_id');
+        return $this->belongsTo(\App\Models\PurchaseLine::class, 'purchase_line_id');
     }
 }

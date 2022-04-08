@@ -38,7 +38,7 @@ class Transaction extends Model
 
     public function purchase_lines()
     {
-        return $this->hasMany(\App\PurchaseLine::class);
+        return $this->hasMany(\App\Models\PurchaseLine::class);
     }
 
     public function sell_lines()

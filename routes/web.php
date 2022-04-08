@@ -123,16 +123,16 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::post('/sells/pos/get-types-of-service-details', 'SellPosController@getTypesOfServiceDetails');
     Route::get('/sells/subscriptions', 'SellPosController@listSubscriptions');
     Route::get('/sells/duplicate/{id}', 'SellController@duplicateSell');
-    Route::get('/sells/drafts', 'SellController@getDrafts');
+    Route::get('/sells/drafts', 'SellController@getDrafts')->name('sells.drafts');
     Route::get('/sells/convert-to-draft/{id}', 'SellPosController@convertToInvoice');
     Route::get('/sells/convert-to-proforma/{id}', 'SellPosController@convertToProforma');
-    Route::get('/sells/quotations', 'SellController@getQuotations');
+    Route::get('/sells/quotations', 'SellController@getQuotations')->name('sells.quotations');
     Route::get('/sells/draft-dt', 'SellController@getDraftDatables');
 
     Route::resource('sells', 'SellController')->except(['show']);
     Route::resource('masters', 'SellController@master');
 
-    Route::get('/import-sales', 'ImportSalesController@index');
+    Route::get('/import-sales', 'ImportSalesController@index')->name('sales.import');
     Route::post('/import-sales/preview', 'ImportSalesController@preview');
     Route::post('/import-sales', 'ImportSalesController@import');
     Route::get('/revert-sale-import/{batch}', 'ImportSalesController@revertSaleImport');
@@ -161,7 +161,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::resource('invoice-schemes', 'InvoiceSchemeController');
 
     //Print Labels
-    Route::get('/labels/show', 'LabelsController@show');
+    Route::get('/labels/show', 'LabelsController@show')->name("labels.show");
     Route::get('/labels/add-product-row', 'LabelsController@addProductRow');
     Route::get('/labels/preview', 'LabelsController@preview');
 
@@ -359,7 +359,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::resource('types-of-service', 'TypesOfServiceController');
     Route::get('sells/edit-shipping/{id}', 'SellController@editShipping');
     Route::put('sells/update-shipping/{id}', 'SellController@updateShipping');
-    Route::get('shipments', 'SellController@shipments');
+    Route::get('shipments', 'SellController@shipments')->name('shipments');
 
     Route::post('upload-module', 'Install\ModulesController@uploadModule');
     Route::resource('manage-modules', 'Install\ModulesController')

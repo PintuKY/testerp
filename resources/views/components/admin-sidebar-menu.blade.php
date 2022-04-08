@@ -39,7 +39,7 @@
                       <ul class="treeview-menu">
                           <li><a href="{{route('products.index')}}"><i class="fa fas fa-list"></i> <span>List Products</span></a></li>
     <li><a href="{{route('products.create')}}"><i class="fa fas fa-plus-circle"></i> <span>Add Product</span></a></li>
-    <li><a href="https://rcgerp.com/labels/show"><i class="fa fas fa-barcode"></i> <span>Print Labels</span></a></li>
+    <li><a href="{{route('labels.show')}}"><i class="fa fas fa-barcode"></i> <span>Print Labels</span></a></li>
     <li><a href="{{route('variation-templates.index')}}"><i class="fa fas fa-circle"></i> <span>Variations</span></a></li>
     <li><a href="{{route('products.import')}}"><i class="fa fas fa-download"></i> <span>Import Products</span></a></li>
     <li><a href="{{route('opening.stock.import')}}"><i class="fa fas fa-download"></i> <span>Import Opening Stock</span></a></li>
@@ -77,14 +77,14 @@
     <li><a href="{{route('sells.create')}}"><i class="fa fas fa-plus-circle"></i> <span>Add Sale</span></a></li>
     <li><a href="{{route('pos.index')}}"><i class="fa fas fa-list"></i> <span>List POS</span></a></li>
     <li><a href="{{route('pos.create')}}"><i class="fa fas fa-plus-circle"></i> <span>POS</span></a></li>
-    <li><a href="https://rcgerp.com/sells/create?status=draft"><i class="fa fas fa-plus-circle"></i> <span>Add Draft</span></a></li>
-    <li><a href="https://rcgerp.com/sells/drafts"><i class="fa fas fa-pen-square"></i> <span>List Drafts</span></a></li>
-    <li><a href="https://rcgerp.com/sells/create?status=quotation"><i class="fa fas fa-plus-circle"></i> <span>Add Quotation</span></a></li>
-    <li><a href="https://rcgerp.com/sells/quotations"><i class="fa fas fa-pen-square"></i> <span>List quotations</span></a></li>
+    <li><a href="{{route('sells.create',['status' => 'draft'])}}"><i class="fa fas fa-plus-circle"></i> <span>Add Draft</span></a></li>
+    <li><a href="{{route('sells.drafts')}}"><i class="fa fas fa-pen-square"></i> <span>List Drafts</span></a></li>
+    <li><a href="{{route('sells.create',['status' => 'quotation'])}}"><i class="fa fas fa-plus-circle"></i> <span>Add Quotation</span></a></li>
+    <li><a href="{{route('sells.quotations')}}"><i class="fa fas fa-pen-square"></i> <span>List quotations</span></a></li>
     <li><a href="{{route('sell-return.index')}}"><i class="fa fas fa-undo"></i> <span>List Sell Return</span></a></li>
-    <li><a href="https://rcgerp.com/shipments"><i class="fa fas fa-truck"></i> <span>Shipments</span></a></li>
+    <li><a href="{{route('shipments')}}"><i class="fa fas fa-truck"></i> <span>Shipments</span></a></li>
     <li><a href="{{route('discount.index')}}"><i class="fa fas fa-percent"></i> <span>Discounts</span></a></li>
-    <li><a href="https://rcgerp.com/import-sales"><i class="fa fas fa-file-import"></i> <span>Import Sales</span></a></li>
+    <li><a href="{{route('sales.import')}}"><i class="fa fas fa-file-import"></i> <span>Import Sales</span></a></li>
 
                       </ul>
                       </li>

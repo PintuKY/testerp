@@ -16,7 +16,7 @@ use App\Models\Unit;
 use App\Utils\ModuleUtil;
 use App\Utils\ProductUtil;
 use App\Models\Variation;
-use App\VariationGroupPrice;
+use App\Models\VariationGroupPrice;
 use App\Models\VariationLocationDetails;
 use App\VariationTemplate;
 use App\Models\Warranty;
@@ -24,6 +24,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Facades\DataTables;
+use Carbon\Carbon;
 
 class ProductController extends Controller
 {
@@ -1398,7 +1399,7 @@ class ProductController extends Controller
                 $user_id = $request->session()->get('user.id');
 
                 $transaction_date = $request->session()->get("financial_year.start");
-                $transaction_date = \Carbon::createFromFormat('Y-m-d', $transaction_date)->toDateTimeString();
+                $transaction_date = Carbon::createFromFormat('Y-m-d', $transaction_date)->toDateTimeString();
 
                 $this->productUtil->addSingleProductOpeningStock($business_id, $product, $request->input('opening_stock'), $transaction_date, $user_id);
             }

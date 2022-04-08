@@ -7,7 +7,7 @@ use App\Models\BusinessLocation;
 use App\Models\Contact;
 use App\Models\CustomerGroup;
 use App\Notifications\CustomerNotification;
-use App\PurchaseLine;
+use App\Models\PurchaseLine;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Utils\ContactUtil;

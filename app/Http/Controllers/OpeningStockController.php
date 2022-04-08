@@ -5,14 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\BusinessLocation;
 
 use App\Models\Product;
-use App\PurchaseLine;
+use App\Models\PurchaseLine;
 use App\Models\Transaction;
 use App\Utils\ProductUtil;
-
 use App\Utils\TransactionUtil;
 use Illuminate\Http\Request;
-
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class OpeningStockController extends Controller
 {
@@ -167,7 +166,7 @@ class OpeningStockController extends Controller
 
                 //Get start date for financial year.
                 $transaction_date = request()->session()->get("financial_year.start");
-                $transaction_date = \Carbon::createFromFormat('Y-m-d', $transaction_date)->toDateTimeString();
+                $transaction_date = Carbon::createFromFormat('Y-m-d', $transaction_date)->toDateTimeString();
 
                 DB::beginTransaction();
 

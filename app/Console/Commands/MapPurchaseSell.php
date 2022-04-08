@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Business;
 use App\Models\Transaction;
 use App\Models\TransactionSellLinesPurchaseLines;
-use App\PurchaseLine;
+use App\Models\PurchaseLine;
 
 use Illuminate\Console\Command;
 

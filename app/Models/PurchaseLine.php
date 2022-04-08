@@ -75,6 +75,6 @@ class PurchaseLine extends Model
 
     public function purchase_order_line()
     {
-        return $this->belongsTo(\App\PurchaseLine::class, 'purchase_order_line_id');
+        return $this->belongsTo(\App\Models\PurchaseLine::class, 'purchase_order_line_id');
     }
 }

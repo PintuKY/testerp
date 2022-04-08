@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Brands;
+use App\Models\Brands;
 use App\Models\BusinessLocation;
-use App\CashRegister;
-use App\Category;
+use App\Models\CashRegister;
+use App\Models\Category;
 
 use App\Charts\CommonChart;
 use App\Models\Contact;
@@ -13,7 +13,7 @@ use App\Models\Contact;
 use App\CustomerGroup;
 use App\Models\ExpenseCategory;
 use App\Models\Product;
-use App\PurchaseLine;
+use App\Models\PurchaseLine;
 use App\Restaurant\ResTable;
 use App\Models\SellingPriceGroup;
 use App\Models\Transaction;
@@ -31,7 +31,7 @@ use App\Models\VariationLocationDetails;
 use Datatables;
 use DB;
 use Illuminate\Http\Request;
-use App\TaxRate;
+use App\Models\TaxRate;
 use Spatie\Activitylog\Models\Activity;
 
 class ReportController extends Controller
@@ -220,7 +220,7 @@ class ReportController extends Controller
                 $contacts->whereIn('contacts.type', [$request->input('contact_type'), 'both']);
             }
 
-            return Datatables::of($contacts)
+            return datatables()::of($contacts)
                 ->editColumn('name', function ($row) {
                     $name = $row->name;
                     if (!empty($row->supplier_business_name)) {
@@ -336,7 +336,7 @@ class ReportController extends Controller
                 return view('product.partials.product_stock_details')->with(compact('product_stock_details'));
             }
 
-            $datatable =  Datatables::of($products)
+            $datatable =  datatables()::of($products)
                 ->editColumn('stock', function ($row) {
                     if ($row->enable_stock) {
                         $stock = $row->stock ? $row->stock : 0 ;
@@ -595,7 +595,7 @@ class ReportController extends Controller
                     $sells->whereDate('transactions.transaction_date', '>=', $start)
                                 ->whereDate('transactions.transaction_date', '<=', $end);
                 }
-                $datatable = Datatables::of($sells);
+                $datatable = datatables()::of($sells);
                 $raw_cols = ['total_before_tax', 'discount_amount', 'contact_name', 'payment_methods'];
                 $group_taxes_array = TaxRate::groupTaxes($business_id);
                 $group_taxes = [];
@@ -973,7 +973,7 @@ class ReportController extends Controller
                 $registers->whereDate('cash_registers.created_at', '>=', $start_date)
                         ->whereDate('cash_registers.created_at', '<=', $end_date);
             }
-            return Datatables::of($registers)
+            return datatables()::of($registers)
                 ->editColumn('total_card_payment', function ($row) {
                     return '<span data-orig-value="' . $row->total_card_payment . '" >' . $this->transactionUtil->num_f($row->total_card_payment, true) . ' (' . $row->total_card_slips . ')</span>';
                 })
@@ -1300,7 +1300,7 @@ class ReportController extends Controller
             ->groupBy('purchase_lines.exp_date')
             ->groupBy('purchase_lines.lot_number');
 
-            return Datatables::of($report)
+            return datatables()::of($report)
                 ->editColumn('product', function ($row) {
                     if ($row->product_type == 'variable') {
                         return $row->product . ' - ' .
@@ -1521,7 +1521,7 @@ class ReportController extends Controller
             }
 
 
-            return Datatables::of($query)
+            return datatables()::of($query)
                 ->editColumn('total_sell', function ($row) {
                     return '<span class="display_currency" data-currency_symbol = true>' . $row->total_sell . '</span>';
                 })
@@ -1610,7 +1610,7 @@ class ReportController extends Controller
                 $query->where('t.contact_id', $supplier_id);
             }
 
-            return Datatables::of($query)
+            return datatables()::of($query)
                 ->editColumn('product_name', function ($row) {
                     $product_name = $row->product_name;
                     if ($row->product_type == 'variable') {
@@ -1748,7 +1748,7 @@ class ReportController extends Controller
                 $query->where('p.brand_id', $brand_id);
             }
 
-            return Datatables::of($query)
+            return datatables()::of($query)
                 ->editColumn('product_name', function ($row) {
                     $product_name = $row->product_name;
                     if ($row->product_type == 'variable') {

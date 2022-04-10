@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BusinessLocation;
 use App\Models\SellingPriceGroup;
-use App\TypesOfService;
+use App\Models\TypesOfService;
 use App\Utils\Util;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
@@ -128,7 +128,7 @@ class TypesOfServiceController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\TypesOfService  $typesOfService
+     * @param  \App\Models\TypesOfService  $typesOfService
      * @return \Illuminate\Http\Response
      */
     public function show(TypesOfService $typesOfService)
@@ -139,7 +139,7 @@ class TypesOfServiceController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\TypesOfService  $typesOfService
+     * @param  \App\Models\TypesOfService  $typesOfService
      * @return \Illuminate\Http\Response
      */
     public function edit($id)
@@ -163,7 +163,7 @@ class TypesOfServiceController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\TypesOfService  $typesOfService
+     * @param  \App\Models\TypesOfService  $typesOfService
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
@@ -203,7 +203,7 @@ class TypesOfServiceController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\TypesOfService  $typesOfService
+     * @param  \App\Models\TypesOfService  $typesOfService
      * @return \Illuminate\Http\Response
      */
     public function destroy($id)

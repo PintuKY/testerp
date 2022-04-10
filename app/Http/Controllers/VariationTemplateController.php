@@ -106,7 +106,7 @@ class VariationTemplateController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\VariationTemplate  $variationTemplate
+     * @param  \App\Models\VariationTemplate  $variationTemplate
      * @return \Illuminate\Http\Response
      */
     public function show(VariationTemplate $variationTemplate)

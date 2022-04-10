@@ -6,8 +6,8 @@ use App\Models\Business;
 use App\Models\Variation;
 use App\Models\VariationLocationDetails;
 use App\Models\Product;
-use App\VariationTemplate;
-use App\VariationValueTemplate;
+use App\Models\VariationTemplate;
+use App\Models\VariationValueTemplate;
 
 use DB;
 use Illuminate\Database\QueryException;

@@ -27,6 +27,6 @@ class CashRegister extends Model
      */
     public function cash_register_transactions()
     {
-        return $this->hasMany(\App\CashRegisterTransaction::class);
+        return $this->hasMany(\App\Models\CashRegisterTransaction::class);
     }
 }

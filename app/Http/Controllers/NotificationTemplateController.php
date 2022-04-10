@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\NotificationTemplate;
+use App\Models\NotificationTemplate;
 use Illuminate\Http\Request;
 use App\Utils\ModuleUtil;
 

@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Account;
 use App\Models\BusinessLocation;
-use App\InvoiceLayout;
-use App\InvoiceScheme;
+use App\Models\InvoiceLayout;
+use App\Models\InvoiceScheme;
 use App\Models\SellingPriceGroup;
 use App\Utils\ModuleUtil;
 use App\Utils\Util;

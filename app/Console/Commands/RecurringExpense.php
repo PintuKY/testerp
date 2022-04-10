@@ -73,9 +73,9 @@ class RecurringExpense extends Command
                     $last_generated = $no_of_recurring_invoice_generated > 0 ? $transaction->recurring_invoices->max('transaction_date') : $transaction->transaction_date;
 
                     if (!empty($last_generated)) {
-                        $last_generated_string = \Carbon::parse($last_generated)->format('Y-m-d');
-                        $last_generated = \Carbon::parse($last_generated_string);
-                        $today = \Carbon::parse(\Carbon::now()->format('Y-m-d'));
+                        $last_generated_string = Carbon::parse($last_generated)->format('Y-m-d');
+                        $last_generated = Carbon::parse($last_generated_string);
+                        $today = Carbon::parse(Carbon::now()->format('Y-m-d'));
                         $diff_from_today = 0;
                         if ($transaction->recur_interval_type == 'days') {
                             $diff_from_today = $last_generated->diffInDays($today);
@@ -84,7 +84,7 @@ class RecurringExpense extends Command
                             //check repeat on date and set last generated date part to reapeat on date
                             if (!empty($transaction->subscription_repeat_on)) {
                                 $last_generated_string = $last_generated->format('Y-m');
-                                $last_generated = \Carbon::parse($last_generated_string . '-' . $transaction->subscription_repeat_on);
+                                $last_generated = Carbon::parse($last_generated_string . '-' . $transaction->subscription_repeat_on);
                             }
                             $diff_from_today = $last_generated->diffInMonths($today);
                         } elseif ($transaction->recur_interval_type == 'years') {

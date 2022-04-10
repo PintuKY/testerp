@@ -168,6 +168,7 @@ return [
          * Package Service Providers...
          */
         ConsoleTVs\Charts\ChartsServiceProvider::class,
+        Spatie\Permission\PermissionServiceProvider::class,
         /*
          * Application Service Providers...
          */
@@ -192,6 +193,8 @@ return [
 
     'aliases' => Facade::defaultAliases()->merge([
         // 'ExampleClass' => App\Example\ExampleClass::class,
+
+        'Datatables' => Yajra\DataTables\Facades\DataTables::class,
     ])->toArray(),
 
 ];

@@ -2,7 +2,7 @@
 
 namespace App\Utils;
 
-use App\AccountTransaction;
+use App\Models\AccountTransaction;
 use App\Models\Business;
 use App\Models\BusinessLocation;
 use App\Models\Contact;
@@ -12,7 +12,7 @@ use App\Events\TransactionPaymentDeleted;
 use App\Events\TransactionPaymentUpdated;
 use App\Exceptions\PurchaseSellMismatch;
 use App\Exceptions\AdvanceBalanceNotAvailable;
-use App\InvoiceScheme;
+use App\Models\InvoiceScheme;
 use App\Models\Product;
 use App\Models\PurchaseLine;
 use App\Restaurant\ResTable;
@@ -1606,7 +1606,7 @@ class TransactionUtil extends Util
                 $output['repair_warranty_label'] = $il->module_info['repair']['repair_warranty_label'];
                 $output['repair_warranty'] = '';
                 if (!empty($transaction->repair_warranty_id)) {
-                    $repair_warranty = \App\Warranty::find($transaction->repair_warranty_id);
+                    $repair_warranty = \App\Models\Warranty::find($transaction->repair_warranty_id);
                     $output['repair_warranty'] = $repair_warranty->name;
                 }
             }
@@ -1653,7 +1653,7 @@ class TransactionUtil extends Util
 
             if (!empty($il->module_info['repair']['show_device'])) {
                 $output['device_label'] = $il->module_info['repair']['device_label'];
-                $device = \App\Category::find($transaction->repair_device_id);
+                $device = \App\Models\Category::find($transaction->repair_device_id);
 
                 $output['repair_device'] = '';
                 if (!empty($device)) {
@@ -1663,7 +1663,7 @@ class TransactionUtil extends Util
 
             if (!empty($il->module_info['repair']['show_brand'])) {
                 $output['brand_label'] = $il->module_info['repair']['brand_label'];
-                $brand = \App\Brands::find($transaction->repair_brand_id);
+                $brand = \App\Models\Brands::find($transaction->repair_brand_id);
                 $output['repair_brand'] = '';
                 if (!empty($brand)) {
                     $output['repair_brand'] = $brand->name;

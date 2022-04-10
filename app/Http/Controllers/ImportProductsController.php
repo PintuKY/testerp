@@ -2,21 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Brands;
+use App\Models\Brands;
 use App\Models\Business;
 use App\Models\BusinessLocation;
-use App\Category;
+use App\Models\Category;
 use App\Models\Product;
-use App\TaxRate;
+use App\Models\TaxRate;
 use App\Models\Transaction;
 use App\Models\Unit;
 use App\Utils\ModuleUtil;
 use App\Utils\ProductUtil;
 use App\Models\Variation;
-use App\VariationValueTemplate;
+use App\Models\VariationValueTemplate;
 use DB;
 use Excel;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class ImportProductsController extends Controller
 {
@@ -417,7 +418,7 @@ class ImportProductsController extends Controller
 
                             //Stock expiry date
                             if (!empty($value[23])) {
-                                $product_array['opening_stock_details']['exp_date'] = \Carbon::createFromFormat('m-d-Y', trim($value[23]))->format('Y-m-d');
+                                $product_array['opening_stock_details']['exp_date'] = Carbon::createFromFormat('m-d-Y', trim($value[23]))->format('Y-m-d');
                             } else {
                                 $product_array['opening_stock_details']['exp_date'] = null;
                             }
@@ -594,7 +595,7 @@ class ImportProductsController extends Controller
                                 $product_array['variation']['variations'][$k]['opening_stock_exp_date'] = null;
 
                                 if (!empty($value[23])) {
-                                    $product_array['variation']['variations'][$k]['opening_stock_exp_date'] = \Carbon::createFromFormat('m-d-Y', trim($value[23]))->format('Y-m-d');
+                                    $product_array['variation']['variations'][$k]['opening_stock_exp_date'] = Carbon::createFromFormat('m-d-Y', trim($value[23]))->format('Y-m-d');
                                 } else {
                                     $product_array['variation']['variations'][$k]['opening_stock_exp_date'] = null;
                                 }
@@ -775,7 +776,7 @@ class ImportProductsController extends Controller
         $total_before_tax = $opening_stock['quantity'] * $variation->dpp_inc_tax;
 
         $transaction_date = request()->session()->get("financial_year.start");
-        $transaction_date = \Carbon::createFromFormat('Y-m-d', $transaction_date)->toDateTimeString();
+        $transaction_date = Carbon::createFromFormat('Y-m-d', $transaction_date)->toDateTimeString();
         //Add opening stock transaction
         $transaction = Transaction::create(
             [
@@ -834,7 +835,7 @@ class ImportProductsController extends Controller
         $user_id = request()->session()->get('user.id');
 
         $transaction_date = request()->session()->get("financial_year.start");
-        $transaction_date = \Carbon::createFromFormat('Y-m-d', $transaction_date)->toDateTimeString();
+        $transaction_date = Carbon::createFromFormat('Y-m-d', $transaction_date)->toDateTimeString();
 
         $total_before_tax = 0;
         $location_id = $variations['opening_stock_location'];

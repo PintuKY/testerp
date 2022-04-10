@@ -83,7 +83,7 @@ class Business extends Model
      */
     public function printers()
     {
-        return $this->hasMany(\App\Printer::class);
+        return $this->hasMany(\App\Models\Printer::class);
     }
 
     /**

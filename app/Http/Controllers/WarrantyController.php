@@ -68,7 +68,7 @@ class WarrantyController extends Controller
                     ];
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -80,7 +80,7 @@ class WarrantyController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Warranty  $warranty
+     * @param  \App\Models\Warranty  $warranty
      * @return \Illuminate\Http\Response
      */
     public function show(Warranty $warranty)
@@ -91,7 +91,7 @@ class WarrantyController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Warranty  $warranty
+     * @param  \App\Models\Warranty  $warranty
      * @return \Illuminate\Http\Response
      */
     public function edit($id)
@@ -110,13 +110,13 @@ class WarrantyController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Warranty  $warranty
+     * @param  \App\Models\Warranty  $warranty
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
     {
         $business_id = request()->session()->get('user.business_id');
-    
+
         if (request()->ajax()) {
             try {
                 $input = $request->only(['name', 'description', 'duration', 'duration_type']);
@@ -130,7 +130,7 @@ class WarrantyController extends Controller
                             ];
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
                 $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -143,7 +143,7 @@ class WarrantyController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Warranty  $warranty
+     * @param  \App\Models\Warranty  $warranty
      * @return \Illuminate\Http\Response
      */
     public function destroy(Warranty $warranty)

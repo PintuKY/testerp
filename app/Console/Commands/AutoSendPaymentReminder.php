@@ -8,7 +8,7 @@ use App\Models\Business;
 use App\Models\Transaction;
 use \Notification;
 use App\Notifications\CustomerNotification;
-use App\NotificationTemplate;
+use App\Models\NotificationTemplate;
 
 class AutoSendPaymentReminder extends Command
 {

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Printer;
+use App\Models\Printer;
 use Datatables;
 use Illuminate\Http\Request;
 
@@ -104,7 +104,7 @@ class PrinterController extends Controller
                         ];
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -179,7 +179,7 @@ class PrinterController extends Controller
                         ];
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-        
+
             $output = ['success' => false,
                         'msg' => __("messages.something_went_wrong")
                     ];
@@ -199,7 +199,7 @@ class PrinterController extends Controller
         if (!auth()->user()->can('access_printers')) {
              abort(403, 'Unauthorized action.');
         }
-        
+
         if (request()->ajax()) {
             try {
                 $business_id = request()->user()->business_id;
@@ -212,7 +212,7 @@ class PrinterController extends Controller
                             ];
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
                 $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];

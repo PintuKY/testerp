@@ -17,7 +17,7 @@ use Datatables;
 use DB;
 use Illuminate\Http\Request;
 use App\Exceptions\AdvanceBalanceNotAvailable;
-
+use Carbon\Carbon;
 class TransactionPaymentController extends Controller
 {
     protected $transactionUtil;
@@ -401,7 +401,7 @@ class TransactionPaymentController extends Controller
                 $payment_line = new TransactionPayment();
                 $payment_line->amount = $amount;
                 $payment_line->method = 'cash';
-                $payment_line->paid_on = \Carbon::now()->toDateTimeString();
+                $payment_line->paid_on = Carbon::now()->toDateTimeString();
 
                 //Accounts
                 $accounts = $this->moduleUtil->accountsDropdown($business_id, true, false, true);
@@ -511,7 +511,7 @@ class TransactionPaymentController extends Controller
             $contact_details->total_paid = empty($contact_details->total_paid) ? 0 : $contact_details->total_paid;
 
             $payment_line->method = 'cash';
-            $payment_line->paid_on = \Carbon::now()->toDateTimeString();
+            $payment_line->paid_on = Carbon::now()->toDateTimeString();
 
             $payment_types = $this->transactionUtil->payment_types(null, false, $business_id);
 

@@ -18,7 +18,7 @@ use App\Utils\ProductUtil;
 use App\Models\Variation;
 use App\Models\VariationGroupPrice;
 use App\Models\VariationLocationDetails;
-use App\VariationTemplate;
+use App\Models\VariationTemplate;
 use App\Models\Warranty;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;

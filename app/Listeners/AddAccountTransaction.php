@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 
-use App\AccountTransaction;
+use App\Models\AccountTransaction;
 
 use App\Events\TransactionPaymentAdded;
 

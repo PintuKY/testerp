@@ -125,6 +125,6 @@ class Account extends Model
 
     public function account_type()
     {
-        return $this->belongsTo(\App\AccountType::class, 'account_type_id');
+        return $this->belongsTo(\App\Models\AccountType::class, 'account_type_id');
     }
 }

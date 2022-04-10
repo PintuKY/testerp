@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Barcode;
+use App\Models\Barcode;
 use Illuminate\Http\Request;
 use Datatables;
 
@@ -108,7 +108,7 @@ class BarcodeController extends Controller
                         ];
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -120,7 +120,7 @@ class BarcodeController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Barcode  $barcode
+     * @param  \App\Models\Barcode  $barcode
      * @return \Illuminate\Http\Response
      */
     public function show(Barcode $barcode)
@@ -176,13 +176,13 @@ class BarcodeController extends Controller
             }
 
             $barcode = Barcode::where('id', $id)->update($input);
-            
+
             $output = ['success' => 1,
                           'msg' => __('barcode.updated_success')
                       ];
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => 0,
                            'msg' => __("messages.something_went_wrong")
                        ];
@@ -218,7 +218,7 @@ class BarcodeController extends Controller
                 }
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
                 $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -239,7 +239,7 @@ class BarcodeController extends Controller
         if (!auth()->user()->can('barcode_settings.access')) {
             abort(403, 'Unauthorized action.');
         }
-        
+
         if (request()->ajax()) {
             try {
                 //get_default
@@ -247,7 +247,7 @@ class BarcodeController extends Controller
                 $default = Barcode::where('business_id', $business_id)
                                 ->where('is_default', 1)
                                  ->update(['is_default' => 0 ]);
-                                 
+
                 $barcode = Barcode::find($id);
                 $barcode->is_default = 1;
                 $barcode->save();
@@ -257,7 +257,7 @@ class BarcodeController extends Controller
                         ];
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
                 $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];

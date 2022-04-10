@@ -7,7 +7,7 @@ use \Notification;
 use App\Models\Contact;
 use App\Notifications\CustomerNotification;
 use App\Notifications\SupplierNotification;
-use App\NotificationTemplate;
+use App\Models\NotificationTemplate;
 use App\Restaurant\Booking;
 
 use App\Models\Transaction;

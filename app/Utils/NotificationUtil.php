@@ -10,7 +10,7 @@ use App\Notifications\RecurringExpenseNotification;
 
 use App\Notifications\SupplierNotification;
 
-use App\NotificationTemplate;
+use App\Models\NotificationTemplate;
 use App\Restaurant\Booking;
 use App\Models\System;
 use App\Models\Transaction;

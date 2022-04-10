@@ -116,7 +116,7 @@ class CustomerGroupController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\CustomerGroup  $customerGroup
+     * @param  \App\Models\CustomerGroup  $customerGroup
      * @return \Illuminate\Http\Response
      */
     public function edit($id)

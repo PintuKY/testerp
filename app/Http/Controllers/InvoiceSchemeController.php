@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\InvoiceScheme;
-use App\InvoiceLayout;
+use App\Models\InvoiceScheme;
+use App\Models\InvoiceLayout;
 use Illuminate\Http\Request;
 use Datatables;
 
@@ -111,7 +111,7 @@ class InvoiceSchemeController extends Controller
                         ];
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -177,7 +177,7 @@ class InvoiceSchemeController extends Controller
                         ];
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -213,7 +213,7 @@ class InvoiceSchemeController extends Controller
                 }
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
                 $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -233,7 +233,7 @@ class InvoiceSchemeController extends Controller
         if (!auth()->user()->can('invoice_settings.access')) {
             abort(403, 'Unauthorized action.');
         }
-        
+
         if (request()->ajax()) {
             try {
                 //get_default
@@ -241,7 +241,7 @@ class InvoiceSchemeController extends Controller
                 $default = InvoiceScheme::where('business_id', $business_id)
                                 ->where('is_default', 1)
                                  ->update(['is_default' => 0 ]);
-                                 
+
                 $invoice = InvoiceScheme::find($id);
                 $invoice->is_default = 1;
                 $invoice->save();
@@ -251,7 +251,7 @@ class InvoiceSchemeController extends Controller
                         ];
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
                 $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];

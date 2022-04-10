@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class Warranty extends Model
 {
@@ -39,7 +40,7 @@ class Warranty extends Model
 
     public function getEndDate($date)
     {
-        $date_obj = \Carbon::parse($date);
+        $date_obj = Carbon::parse($date);
 
         if ($this->duration_type == 'days') {
             $date_obj->addDays($this->duration);

@@ -4,13 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Account;
 
-use App\AccountTransaction;
+use App\Models\AccountTransaction;
 use App\Models\TransactionPayment;
 use App\Utils\TransactionUtil;
 use DB;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 use App\Models\BusinessLocation;
+use Carbon\Carbon;
 
 class AccountReportsController extends Controller
 {
@@ -41,7 +42,7 @@ class AccountReportsController extends Controller
 
         $business_id = session()->get('user.business_id');
         if (request()->ajax()) {
-            $end_date = !empty(request()->input('end_date')) ? $this->transactionUtil->uf_date(request()->input('end_date')) : \Carbon::now()->format('Y-m-d');
+            $end_date = !empty(request()->input('end_date')) ? $this->transactionUtil->uf_date(request()->input('end_date')) : Carbon::now()->format('Y-m-d');
             $location_id = !empty(request()->input('location_id')) ? request()->input('location_id') : null;
 
             $purchase_details = $this->transactionUtil->getPurchaseTotals(
@@ -106,7 +107,7 @@ class AccountReportsController extends Controller
         $business_id = session()->get('user.business_id');
 
         if (request()->ajax()) {
-            $end_date = !empty(request()->input('end_date')) ? $this->transactionUtil->uf_date(request()->input('end_date')) : \Carbon::now()->format('Y-m-d');
+            $end_date = !empty(request()->input('end_date')) ? $this->transactionUtil->uf_date(request()->input('end_date')) : Carbon::now()->format('Y-m-d');
              $location_id = !empty(request()->input('location_id')) ? request()->input('location_id') : null;
 
             $purchase_details = $this->transactionUtil->getPurchaseTotals(

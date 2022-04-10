@@ -12,6 +12,7 @@ use App\Models\Variation;
 use DB;
 use Excel;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class ImportOpeningStockController extends Controller
 {
@@ -222,7 +223,7 @@ class ImportOpeningStockController extends Controller
         $user_id = request()->session()->get('user.id');
 
         $transaction_date = request()->session()->get("financial_year.start");
-        $transaction_date = \Carbon::createFromFormat('Y-m-d', $transaction_date)->toDateTimeString();
+        $transaction_date = Carbon::createFromFormat('Y-m-d', $transaction_date)->toDateTimeString();
 
         //Get product tax
         $tax_percent = !empty($product->tax_percent) ? $product->tax_percent : 0;

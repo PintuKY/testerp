@@ -151,7 +151,7 @@ class TaxonomyController extends Controller
                         ];
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -163,7 +163,7 @@ class TaxonomyController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Category  $category
+     * @param  \App\Models\Category  $category
      * @return \Illuminate\Http\Response
      */
     public function show(Category $category)
@@ -187,7 +187,7 @@ class TaxonomyController extends Controller
         if (request()->ajax()) {
             $business_id = request()->session()->get('user.business_id');
             $category = Category::where('business_id', $business_id)->find($id);
-            
+
             $module_category_data = $this->moduleUtil->getTaxonomyData($category_type);
 
             $parent_categories = Category::where('business_id', $business_id)
@@ -196,7 +196,7 @@ class TaxonomyController extends Controller
                                         ->where('id', '!=', $id)
                                         ->pluck('name', 'id');
             $is_parent = false;
-            
+
             if ($category->parent_id == 0) {
                 $is_parent = true;
                 $selected_parent = null;
@@ -233,7 +233,7 @@ class TaxonomyController extends Controller
                 $category->name = $input['name'];
                 $category->description = $input['description'];
                 $category->short_code = $request->input('short_code');
-                
+
                 if (!empty($request->input('add_as_sub_cat')) &&  $request->input('add_as_sub_cat') == 1 && !empty($request->input('parent_id'))) {
                     $category->parent_id = $request->input('parent_id');
                 } else {
@@ -246,7 +246,7 @@ class TaxonomyController extends Controller
                             ];
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
                 $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -282,7 +282,7 @@ class TaxonomyController extends Controller
                             ];
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
                 $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -298,11 +298,11 @@ class TaxonomyController extends Controller
             $api_token = request()->header('API-TOKEN');
 
             $api_settings = $this->moduleUtil->getApiSettings($api_token);
-            
+
             $categories = Category::catAndSubCategories($api_settings->business_id);
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             return $this->respondWentWrong($e);
         }
 

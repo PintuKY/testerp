@@ -2,20 +2,21 @@
 
 namespace App\Utils;
 
-use App\Barcode;
+use App\Models\Barcode;
 
 use App\Models\Business;
 use App\Models\BusinessLocation;
 use App\Models\Contact;
 use App\Models\Currency;
-use App\InvoiceLayout;
-use App\InvoiceScheme;
-use App\NotificationTemplate;
-use App\Printer;
+use App\Models\InvoiceLayout;
+use App\Models\InvoiceScheme;
+use App\Models\NotificationTemplate;
+use App\Models\Printer;
 use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
+use Carbon\Carbon;
 
 class BusinessUtil extends Util
 {
@@ -403,9 +404,9 @@ class BusinessUtil extends Util
     public function editTransactionDateRange($business_id, $edit_transaction_period)
     {
         if (is_numeric($edit_transaction_period)) {
-            return ['start' => \Carbon::today()
+            return ['start' => Carbon::today()
                                 ->subDays($edit_transaction_period),
-                    'end' => \Carbon::today()
+                    'end' => Carbon::today()
                 ];
         } elseif ($edit_transaction_period == 'fy') {
             //Editing allowed for current financial year

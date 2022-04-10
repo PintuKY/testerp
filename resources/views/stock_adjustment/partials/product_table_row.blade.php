@@ -33,7 +33,7 @@
 
                         $expiry_text = '';
                         if($exp_enabled == 1 && !empty($lot_number->exp_date)){
-                            if( \Carbon::now()->gt(\Carbon::createFromFormat('Y-m-d', $lot_number->exp_date)) ){
+                            if( \Carbon\Carbon::now()->gt(\Carbon\Carbon::createFromFormat('Y-m-d', $lot_number->exp_date)) ){
                                 $expiry_text = '(' . __('report.expired') . ')';
                             }
                         }
@@ -52,22 +52,22 @@
 
         <input type="hidden" name="products[{{$row_index}}][product_id]" class="form-control product_id" value="{{$product->product_id}}">
 
-        <input type="hidden" value="{{$product->variation_id}}" 
+        <input type="hidden" value="{{$product->variation_id}}"
             name="products[{{$row_index}}][variation_id]">
 
-        <input type="hidden" value="{{$product->enable_stock}}" 
+        <input type="hidden" value="{{$product->enable_stock}}"
             name="products[{{$row_index}}][enable_stock]">
-        
+
         @if(empty($product->quantity_ordered))
             @php
                 $product->quantity_ordered = 1;
             @endphp
         @endif
 
-        <input type="text" class="form-control product_quantity input_number input_quantity" value="{{@format_quantity($product->quantity_ordered)}}" name="products[{{$row_index}}][quantity]" 
+        <input type="text" class="form-control product_quantity input_number input_quantity" value="{{@format_quantity($product->quantity_ordered)}}" name="products[{{$row_index}}][quantity]"
         @if($product->unit_allow_decimal == 1) data-decimal=1 @else data-rule-abs_digit="true" data-msg-abs_digit="@lang('lang_v1.decimal_value_not_allowed')" data-decimal=0 @endif
         data-rule-required="true" data-msg-required="@lang('validation.custom-messages.this_field_is_required')" @if($product->enable_stock) data-rule-max-value="{{$product->qty_available}}" data-msg-max-value="@lang('validation.custom-messages.quantity_not_available', ['qty'=> $product->formatted_qty_available, 'unit' => $product->unit  ])"
-        data-qty_available="{{$product->qty_available}}" 
+        data-qty_available="{{$product->qty_available}}"
         data-msg_max_default="@lang('validation.custom-messages.quantity_not_available', ['qty'=> $product->formatted_qty_available, 'unit' => $product->unit  ])"
          @endif >
         {{$product->unit}}

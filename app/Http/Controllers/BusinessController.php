@@ -6,7 +6,7 @@ use App\Models\Business;
 use App\Models\Currency;
 use App\Notifications\TestEmailNotification;
 use App\Models\System;
-use App\TaxRate;
+use App\Models\TaxRate;
 use App\Models\Unit;
 use App\Models\User;
 use App\Utils\BusinessUtil;

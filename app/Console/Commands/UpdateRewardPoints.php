@@ -11,6 +11,7 @@ use App\Utils\ProductUtil;
 use App\Utils\TransactionUtil;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class UpdateRewardPoints extends Command
 {
@@ -61,7 +62,7 @@ class UpdateRewardPoints extends Command
                     continue;
                 }
 
-                $transaction_date_to_be_expired = \Carbon::now();
+                $transaction_date_to_be_expired = Carbon::now();
                 if ($business->rp_expiry_type == 'month') {
                     $transaction_date_to_be_expired = $transaction_date_to_be_expired->subMonths($business->rp_expiry_period);
                 } elseif ($business->rp_expiry_type == 'year') {

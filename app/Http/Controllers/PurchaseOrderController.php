@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Business;
 use App\Models\BusinessLocation;
 use App\Models\Contact;
-use App\CustomerGroup;
+use App\Models\CustomerGroup;
 use App\Models\PurchaseLine;
 use App\Models\TaxRate;
 use App\Models\Transaction;

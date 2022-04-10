@@ -149,7 +149,7 @@
                     {!! $widget !!}
                 @endforeach
             @endif
-        @endif 
+        @endif
         <!-- end is_admin check -->
          @if(auth()->user()->can('sell.view') || auth()->user()->can('direct_sell.view'))
             @if(!empty($all_locations))
@@ -278,7 +278,7 @@
                           @slot('title')
                             {{ __('home.stock_expiry_alert') }} @show_tooltip( __('tooltip.stock_expiry_alert', [ 'days' =>session('business.stock_expiry_alert_days', 30) ]) )
                           @endslot
-                          <input type="hidden" id="stock_expiry_alert_days" value="{{ \Carbon::now()->addDays(session('business.stock_expiry_alert_days', 30))->format('Y-m-d') }}">
+                          <input type="hidden" id="stock_expiry_alert_days" value="{{ \Carbon\Carbon::now()->addDays(session('business.stock_expiry_alert_days', 30))->format('Y-m-d') }}">
                           <table class="table table-bordered table-striped" id="stock_expiry_alert_table">
                             <thead>
                               <tr>
@@ -389,7 +389,7 @@
                             {!! Form::select('pending_shipments_location', $all_locations, null, ['class' => 'form-control select2', 'placeholder' => __('lang_v1.select_location'), 'id' => 'pending_shipments_location']); !!}
                         </div>
                     @endif
-                    <div class="col-md-12">  
+                    <div class="col-md-12">
                         <div class="table-responsive">
                             <table class="table table-bordered table-striped ajax_view" id="shipments_table">
                                 <thead>
@@ -432,7 +432,7 @@
                                 </thead>
                             </table>
                         </div>
-                    </div> 
+                    </div>
                 </div>
             @endcomponent
         @endif
@@ -447,11 +447,11 @@
    <!-- can('dashboard.data') end -->
 </section>
 <!-- /.content -->
-<div class="modal fade payment_modal" tabindex="-1" role="dialog" 
+<div class="modal fade payment_modal" tabindex="-1" role="dialog"
     aria-labelledby="gridSystemModalLabel">
 </div>
 <div class="modal fade edit_pso_status_modal" tabindex="-1" role="dialog"></div>
-<div class="modal fade edit_payment_modal" tabindex="-1" role="dialog" 
+<div class="modal fade edit_payment_modal" tabindex="-1" role="dialog"
     aria-labelledby="gridSystemModalLabel">
 </div>
 @stop

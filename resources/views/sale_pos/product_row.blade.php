@@ -14,8 +14,8 @@
 <tr class="product_row" data-row_index="{{$row_count}}" @if(!empty($so_line)) data-so_id="{{$so_line->transaction_id}}" @endif>
 	<td>
 		@if(!empty($so_line))
-			<input type="hidden" 
-			name="products[{{$row_count}}][so_line_id]" 
+			<input type="hidden"
+			name="products[{{$row_count}}][so_line_id]"
 			value="{{$so_line->id}}">
 		@endif
 		@php
@@ -34,9 +34,9 @@
 			{!! $product_name !!}
 		@endif
 		<input type="hidden" class="enable_sr_no" value="{{$product->enable_sr_no}}">
-		<input type="hidden" 
-			class="product_type" 
-			name="products[{{$row_count}}][product_type]" 
+		<input type="hidden"
+			class="product_type"
+			name="products[{{$row_count}}][product_type]"
 			value="{{$product->product_type}}">
 
 		@php
@@ -44,7 +44,7 @@
 	        if(session()->get('business.enable_inline_tax') == 1){
 	            $hide_tax = '';
 	        }
-	        
+
 			$tax_id = $product->tax_id;
 			$item_tax = !empty($product->item_tax) ? $product->item_tax : 0;
 			$unit_price_inc_tax = $product->sell_price_inc_tax;
@@ -61,7 +61,7 @@
 
 			$discount_type = !empty($product->line_discount_type) ? $product->line_discount_type : 'fixed';
 			$discount_amount = !empty($product->line_discount_amount) ? $product->line_discount_amount : 0;
-			
+
 			if(!empty($discount)) {
 				$discount_type = $discount->discount_type;
 				$discount_amount = $discount->discount_amount;
@@ -121,7 +121,7 @@
 					$formatted_max_quantity = $so_line->formatted_qty_available;
 				}
 			}
-			
+
 
 			$max_qty_rule = $max_quantity;
 			$max_qty_msg = __('validation.custom-messages.quantity_not_available', ['qty'=> $formatted_max_quantity, 'unit' => $product->unit  ]);
@@ -151,7 +151,7 @@
 
 						$expiry_text = '';
 						if($exp_enabled == 1 && !empty($lot_number->exp_date)){
-							if( \Carbon::now()->gt(\Carbon::createFromFormat('Y-m-d', $lot_number->exp_date)) ){
+							if( \Carbon\Carbon::now()->gt(\Carbon\Carbon::createFromFormat('Y-m-d', $lot_number->exp_date)) ){
 								$expiry_text = '(' . __('report.expired') . ')';
 							}
 						}
@@ -184,12 +184,12 @@
 
 		<input type="hidden" name="products[{{$row_count}}][product_id]" class="form-control product_id" value="{{$product->product_id}}">
 
-		<input type="hidden" value="{{$product->variation_id}}" 
+		<input type="hidden" value="{{$product->variation_id}}"
 			name="products[{{$row_count}}][variation_id]" class="row_variation_id">
 
-		<input type="hidden" value="{{$product->enable_stock}}" 
+		<input type="hidden" value="{{$product->enable_stock}}"
 			name="products[{{$row_count}}][enable_stock]">
-		
+
 		@if(empty($product->quantity_ordered))
 			@php
 				$product->quantity_ordered = 1;
@@ -221,26 +221,26 @@
         @endforeach
 		<div class="input-group input-number">
 			<span class="input-group-btn"><button type="button" class="btn btn-default btn-flat quantity-down"><i class="fa fa-minus text-danger"></i></button></span>
-		<input type="text" data-min="1" 
-			class="form-control pos_quantity input_number mousetrap input_quantity" 
-			value="{{@format_quantity($product->quantity_ordered)}}" name="products[{{$row_count}}][quantity]" data-allow-overselling="@if(empty($pos_settings['allow_overselling'])){{'false'}}@else{{'true'}}@endif" 
-			@if($allow_decimal) 
-				data-decimal=1 
-			@else 
-				data-decimal=0 
-				data-rule-abs_digit="true" 
-				data-msg-abs_digit="@lang('lang_v1.decimal_value_not_allowed')" 
+		<input type="text" data-min="1"
+			class="form-control pos_quantity input_number mousetrap input_quantity"
+			value="{{@format_quantity($product->quantity_ordered)}}" name="products[{{$row_count}}][quantity]" data-allow-overselling="@if(empty($pos_settings['allow_overselling'])){{'false'}}@else{{'true'}}@endif"
+			@if($allow_decimal)
+				data-decimal=1
+			@else
+				data-decimal=0
+				data-rule-abs_digit="true"
+				data-msg-abs_digit="@lang('lang_v1.decimal_value_not_allowed')"
 			@endif
-			data-rule-required="true" 
-			data-msg-required="@lang('validation.custom-messages.this_field_is_required')" 
+			data-rule-required="true"
+			data-msg-required="@lang('validation.custom-messages.this_field_is_required')"
 			@if($product->enable_stock && empty($pos_settings['allow_overselling']) && empty($is_sales_order) )
-				data-rule-max-value="{{$max_qty_rule}}" data-qty_available="{{$product->qty_available}}" data-msg-max-value="{{$max_qty_msg}}" 
-				data-msg_max_default="@lang('validation.custom-messages.quantity_not_available', ['qty'=> $product->formatted_qty_available, 'unit' => $product->unit  ])" 
-			@endif 
+				data-rule-max-value="{{$max_qty_rule}}" data-qty_available="{{$product->qty_available}}" data-msg-max-value="{{$max_qty_msg}}"
+				data-msg_max_default="@lang('validation.custom-messages.quantity_not_available', ['qty'=> $product->formatted_qty_available, 'unit' => $product->unit  ])"
+			@endif
 		>
 		<span class="input-group-btn"><button type="button" class="btn btn-default btn-flat quantity-up"><i class="fa fa-plus text-success"></i></button></span>
 		</div>
-		
+
 		<input type="hidden" name="products[{{$row_count}}][product_unit_id]" value="{{$product->unit_id}}">
 		@if(count($sub_units) > 0)
 			<br>
@@ -258,7 +258,7 @@
 		<input type="hidden" class="base_unit_multiplier" name="products[{{$row_count}}][base_unit_multiplier]" value="{{$multiplier}}">
 
 		<input type="hidden" class="hidden_base_unit_sell_price" value="{{$product->default_sell_price / $multiplier}}">
-		
+
 		{{-- Hidden fields for combo products --}}
 		@if($product->product_type == 'combo'&& !empty($product->combo_products))
 
@@ -276,22 +276,22 @@
 					@endphp
 				@endif
 
-				<input type="hidden" 
+				<input type="hidden"
 					name="products[{{$row_count}}][combo][{{$k}}][product_id]"
 					value="{{$combo_product['product_id']}}">
 
-					<input type="hidden" 
+					<input type="hidden"
 					name="products[{{$row_count}}][combo][{{$k}}][variation_id]"
 					value="{{$combo_product['variation_id']}}">
 
 					<input type="hidden"
-					class="combo_product_qty" 
+					class="combo_product_qty"
 					name="products[{{$row_count}}][combo][{{$k}}][quantity]"
 					data-unit_quantity="{{$combo_product['qty_required']}}"
 					value="{{$qty_total}}">
 
 					@if(isset($action) && $action == 'edit')
-						<input type="hidden" 
+						<input type="hidden"
 							name="products[{{$row_count}}][combo][{{$k}}][transaction_sell_lines_id]"
 							value="{{$combo_product['id']}}">
 					@endif
@@ -328,7 +328,7 @@
 		</td>
 		<td class="text-center {{$hide_tax}}">
 			{!! Form::hidden("products[$row_count][item_tax]", @num_format($item_tax), ['class' => 'item_tax']); !!}
-		
+
 			{!! Form::select("products[$row_count][tax_id]", $tax_dropdown['tax_rates'], $tax_id, ['placeholder' => 'Select', 'class' => 'form-control tax_id'], $tax_dropdown['attributes']); !!}
 		</td>
 

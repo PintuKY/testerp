@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Account;
 
-use App\AccountTransaction;
+use App\Models\AccountTransaction;
 use App\Models\BusinessLocation;
 use App\Models\ExpenseCategory;
-use App\TaxRate;
+use App\Models\TaxRate;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Utils\ModuleUtil;

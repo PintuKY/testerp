@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\TaxRate;
-use App\GroupSubTax;
+use App\Models\TaxRate;
+use App\Models\GroupSubTax;
 use Datatables;
 
 use Illuminate\Http\Request;
@@ -88,7 +88,7 @@ class GroupTaxController extends Controller
                         ];
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -150,7 +150,7 @@ class GroupTaxController extends Controller
                 foreach ($sub_taxes as $sub_tax) {
                     $amount += $sub_tax->amount ;
                 }
-           
+
                 $tax_rate = TaxRate::where('business_id', $business_id)->findOrFail($id);
                 $tax_rate->name = $request->input('name');
                 $tax_rate->amount = $amount;
@@ -162,7 +162,7 @@ class GroupTaxController extends Controller
                             ];
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
                 $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -192,7 +192,7 @@ class GroupTaxController extends Controller
                             ];
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
                 $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];

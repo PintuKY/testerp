@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class Transaction extends Model
 {
@@ -68,12 +69,12 @@ class Transaction extends Model
 
     public function tax()
     {
-        return $this->belongsTo(\App\TaxRate::class, 'tax_id');
+        return $this->belongsTo(\App\Models\TaxRate::class, 'tax_id');
     }
 
     public function stock_adjustment_lines()
     {
-        return $this->hasMany(\App\StockAdjustmentLine::class);
+        return $this->hasMany(\App\Models\StockAdjustmentLine::class);
     }
 
     public function sales_person()
@@ -123,7 +124,7 @@ class Transaction extends Model
 
     public function types_of_service()
     {
-        return $this->belongsTo(\App\TypesOfService::class, 'types_of_service_id');
+        return $this->belongsTo(\App\Models\TypesOfService::class, 'types_of_service_id');
     }
 
     /**
@@ -238,7 +239,7 @@ class Transaction extends Model
 
     public function cash_register_payments()
     {
-        return $this->hasMany(\App\CashRegisterTransaction::class);
+        return $this->hasMany(\App\Models\CashRegisterTransaction::class);
     }
 
     public function media()
@@ -288,9 +289,9 @@ class Transaction extends Model
         $payment_status = $transaction->payment_status;
 
         if (in_array($payment_status, ['partial', 'due']) && !empty($transaction->pay_term_number) && !empty($transaction->pay_term_type)) {
-            $transaction_date = \Carbon::parse($transaction->transaction_date);
+            $transaction_date = Carbon::parse($transaction->transaction_date);
             $due_date = $transaction->pay_term_type == 'days' ? $transaction_date->addDays($transaction->pay_term_number) : $transaction_date->addMonths($transaction->pay_term_number);
-            $now = \Carbon::now();
+            $now = Carbon::now();
             if ($now->gt($due_date)) {
                 $payment_status = $payment_status == 'due' ? 'overdue' : 'partial-overdue';
             }
@@ -304,7 +305,7 @@ class Transaction extends Model
      */
     public function getDueDateAttribute()
     {
-        $transaction_date = \Carbon::parse($this->transaction_date);
+        $transaction_date = Carbon::parse($this->transaction_date);
         if (!empty($this->pay_term_type) && !empty($this->pay_term_number)) {
             $due_date = $this->pay_term_type == 'days' ? $transaction_date->addDays($this->pay_term_number) : $transaction_date->addMonths($this->pay_term_number);
         } else {

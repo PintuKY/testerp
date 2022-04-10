@@ -18,8 +18,8 @@ use App\Models\Unit;
 use App\Models\Variation;
 use App\Models\VariationGroupPrice;
 use App\Models\VariationLocationDetails;
-use App\VariationTemplate;
-use App\VariationValueTemplate;
+use App\Models\VariationTemplate;
+use App\Models\VariationValueTemplate;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 

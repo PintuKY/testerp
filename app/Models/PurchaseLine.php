@@ -70,7 +70,7 @@ class PurchaseLine extends Model
 
     public function line_tax()
     {
-        return $this->belongsTo(\App\TaxRate::class, 'tax_id');
+        return $this->belongsTo(\App\Models\TaxRate::class, 'tax_id');
     }
 
     public function purchase_order_line()

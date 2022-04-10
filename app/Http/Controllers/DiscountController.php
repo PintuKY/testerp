@@ -181,7 +181,7 @@ class DiscountController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Discount  $discount
+     * @param  \App\Models\Discount  $discount
      * @return \Illuminate\Http\Response
      */
     public function edit($id)
@@ -225,7 +225,7 @@ class DiscountController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Discount  $discount
+     * @param  \App\Models\Discount  $discount
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
@@ -281,7 +281,7 @@ class DiscountController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Discount  $discount
+     * @param  \App\Models\Discount  $discount
      * @return \Illuminate\Http\Response
      */
     public function destroy($id)

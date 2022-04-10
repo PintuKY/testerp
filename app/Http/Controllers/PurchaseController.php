@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\AccountTransaction;
+use App\Models\AccountTransaction;
 use App\Models\Business;
 use App\Models\BusinessLocation;
 use App\Models\Contact;
-use App\CustomerGroup;
+use App\Models\CustomerGroup;
 use App\Models\Product;
 use App\Models\PurchaseLine;
 use App\Models\TaxRate;

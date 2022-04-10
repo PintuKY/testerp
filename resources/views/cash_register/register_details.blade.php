@@ -3,7 +3,7 @@
 
     <div class="modal-header">
       <button type="button" class="close no-print" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-      <h3 class="modal-title">@lang( 'cash_register.register_details' ) ( {{ \Carbon::createFromFormat('Y-m-d H:i:s', $register_details->open_time)->format('jS M, Y h:i A') }} -  {{\Carbon::createFromFormat('Y-m-d H:i:s', $close_time)->format('jS M, Y h:i A')}} )</h3>
+      <h3 class="modal-title">@lang( 'cash_register.register_details' ) ( {{ \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $register_details->open_time)->format('jS M, Y h:i A') }} -  {{\Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $close_time)->format('jS M, Y h:i A')}} )</h3>
     </div>
 
     <div class="modal-body">
@@ -52,7 +52,7 @@
           </div>
         </div>
       @endif
-      
+
       <div class="row">
         <div class="col-xs-6">
           <b>@lang('report.user'):</b> {{ $register_details->user_name}}<br>
@@ -69,13 +69,13 @@
     </div>
 
     <div class="modal-footer">
-      <button type="button" class="btn btn-primary no-print" 
-        aria-label="Print" 
+      <button type="button" class="btn btn-primary no-print"
+        aria-label="Print"
           onclick="$(this).closest('div.modal').printThis();">
         <i class="fa fa-print"></i> @lang( 'messages.print' )
       </button>
 
-      <button type="button" class="btn btn-default no-print" 
+      <button type="button" class="btn btn-default no-print"
         data-dismiss="modal">@lang( 'messages.cancel' )
       </button>
     </div>

@@ -56,7 +56,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Yajra\DataTables\Facades\DataTables;
-use App\InvoiceScheme;
+use App\Models\InvoiceScheme;
 use App\SalesOrderController;
 use Razorpay\Api\Api;
 use App\Models\TransactionPayment;

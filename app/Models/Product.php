@@ -64,7 +64,7 @@ class Product extends Model
      */
     public function brand()
     {
-        return $this->belongsTo(\App\Brands::class);
+        return $this->belongsTo(\App\Models\Brands::class);
     }
 
     /**
@@ -79,14 +79,14 @@ class Product extends Model
      */
     public function category()
     {
-        return $this->belongsTo(\App\Category::class);
+        return $this->belongsTo(\App\Models\Category::class);
     }
     /**
      * Get sub-category associated with the product.
      */
     public function sub_category()
     {
-        return $this->belongsTo(\App\Category::class, 'sub_category_id', 'id');
+        return $this->belongsTo(\App\Models\Category::class, 'sub_category_id', 'id');
     }
 
     /**
@@ -127,7 +127,7 @@ class Product extends Model
     public function purchase_lines()
     {
         return $this->hasMany(\App\Models\PurchaseLine::class);
-        
+
     }
 
     /**
@@ -199,7 +199,7 @@ class Product extends Model
      */
     public function warranty()
     {
-        return $this->belongsTo(\App\Warranty::class);
+        return $this->belongsTo(\App\Models\Warranty::class);
     }
 
     public function media()

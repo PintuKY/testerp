@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\TaxRate;
-use App\GroupSubTax;
+use App\Models\TaxRate;
+use App\Models\GroupSubTax;
 
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Http\Request;
@@ -110,7 +110,7 @@ class TaxRateController extends Controller
                         ];
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
             $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -178,7 +178,7 @@ class TaxRateController extends Controller
                 //update group tax amount
                 $group_taxes = GroupSubTax::where('tax_id', $id)
                                             ->get();
-                              
+
                 foreach ($group_taxes as $group_tax) {
                     $this->taxUtil->updateGroupTaxAmount($group_tax->group_tax_id);
                 }
@@ -188,7 +188,7 @@ class TaxRateController extends Controller
                             ];
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
                 $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];
@@ -231,7 +231,7 @@ class TaxRateController extends Controller
                 }
             } catch (\Exception $e) {
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
+
                 $output = ['success' => false,
                             'msg' => __("messages.something_went_wrong")
                         ];

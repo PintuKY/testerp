@@ -3,17 +3,17 @@
         <div class="modal-header">
             <button type="button" class="close no-print" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             <h4 class="modal-title no-print">
-                @lang( 'purchase.view_payments' ) 
+                @lang( 'purchase.view_payments' )
                 (
-                @if(in_array($transaction->type, ['purchase', 'expense', 'purchase_return', 'payroll']))    
-                    @lang('purchase.ref_no'): {{ $transaction->ref_no }} 
+                @if(in_array($transaction->type, ['purchase', 'expense', 'purchase_return', 'payroll']))
+                    @lang('purchase.ref_no'): {{ $transaction->ref_no }}
                 @elseif(in_array($transaction->type, ['sell', 'sell_return']))
                     @lang('sale.invoice_no'): {{ $transaction->invoice_no }}
                 @endif
-                )   
+                )
             </h4>
             <h4 class="modal-title visible-print-block">
-                @if(in_array($transaction->type, ['purchase', 'expense', 'purchase_return', 'payroll'])) 
+                @if(in_array($transaction->type, ['purchase', 'expense', 'purchase_return', 'payroll']))
                     @lang('purchase.ref_no'): {{ $transaction->ref_no }}
                 @elseif($transaction->type == 'sell')
                     @lang('sale.invoice_no'): {{ $transaction->invoice_no }}
@@ -92,7 +92,7 @@
                     <div class="col-sm-4 invoice-col">
                         <b>@lang('purchase.ref_no'):</b> #{{ $transaction->ref_no }}<br/>
                         @php
-                            $transaction_date = \Carbon::parse($transaction->transaction_date);
+                            $transaction_date = \Carbon\Carbon::parse($transaction->transaction_date);
                         @endphp
                         <b>@lang( 'essentials::lang.month_year' ):</b> {{ $transaction_date->format('F') }} {{ $transaction_date->format('Y') }}<br/>
                         <b>@lang('purchase.payment_status'):</b> {{ __('lang_v1.' . $transaction->payment_status) }}<br>
@@ -132,7 +132,7 @@
                 @if($transaction->type == 'purchase')
                     <div class="row no-print">
                         <div class="col-md-12 text-right">
-                            <button type="button" class="btn btn-info btn-modal btn-xs" 
+                            <button type="button" class="btn btn-info btn-modal btn-xs"
                             data-href="{{action('NotificationController@getTemplate', ['transaction_id' => $transaction->id,'template_for' => 'payment_paid'])}}" data-container=".view_modal"><i class="fa fa-envelope"></i> @lang('lang_v1.payment_paid_notification')</button>
                         </div>
                     </div>
@@ -141,9 +141,9 @@
                 @if($transaction->type == 'sell')
                     <div class="row no-print">
                         <div class="col-md-12 text-right">
-                            <button type="button" class="btn btn-info btn-modal btn-xs" 
+                            <button type="button" class="btn btn-info btn-modal btn-xs"
                             data-href="{{action('NotificationController@getTemplate', ['transaction_id' => $transaction->id,'template_for' => 'payment_received'])}}" data-container=".view_modal"><i class="fa fa-envelope"></i> @lang('lang_v1.payment_received_notification')</button>
-                          
+
                             @if($transaction->payment_status != 'paid')
                                 &nbsp;
                                 <button type="button" class="btn btn-warning btn-modal btn-xs" data-href="{{action('NotificationController@getTemplate', ['transaction_id' => $transaction->id,'template_for' => 'payment_reminder'])}}" data-container=".view_modal"><i class="fa fa-envelope"></i> @lang('lang_v1.send_payment_reminder')</button>
@@ -190,13 +190,13 @@
                               <td class="no-print" style="display: flex;">
                               @if((auth()->user()->can('edit_purchase_payment') && (in_array($transaction->type, ['purchase', 'purchase_return']))) || (auth()->user()->can('edit_sell_payment') && (in_array($transaction->type, ['sell', 'sell_return']))) || ((auth()->user()->can('all_expense.access') || auth()->user()->can('view_own_expense')) && $transaction->type == 'expense') )
                                     @if($payment->method != 'advance')
-                                        <button type="button" class="btn btn-info btn-xs edit_payment" 
+                                        <button type="button" class="btn btn-info btn-xs edit_payment"
                                     data-href="{{action('TransactionPaymentController@edit', [$payment->id]) }}"><i class="glyphicon glyphicon-edit"></i></button>
                                     @endif
                                 @endif
 
                                 @if((auth()->user()->can('delete_purchase_payment') && (in_array($transaction->type, ['purchase', 'purchase_return']))) || (auth()->user()->can('delete_sell_payment') && (in_array($transaction->type, ['sell', 'sell_return']))) || ((auth()->user()->can('all_expense.access') || auth()->user()->can('view_own_expense')) && $transaction->type == 'expense') )
-                                    &nbsp; <button type="button" class="btn btn-danger btn-xs delete_payment" 
+                                    &nbsp; <button type="button" class="btn btn-danger btn-xs delete_payment"
                                     data-href="{{ action('TransactionPaymentController@destroy', [$payment->id]) }}"
                                     ><i class="fa fa-trash" aria-hidden="true"></i></button>
                                 @endif
@@ -227,8 +227,8 @@
         </div>
 
         <div class="modal-footer">
-            <button type="button" class="btn btn-primary no-print" 
-              aria-label="Print" 
+            <button type="button" class="btn btn-primary no-print"
+              aria-label="Print"
                 onclick="$(this).closest('div.modal').printThis();">
                 <i class="fa fa-print"></i> @lang( 'messages.print' )
             </button>

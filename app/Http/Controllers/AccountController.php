@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Account;
-use App\AccountTransaction;
-use App\AccountType;
+use App\Models\AccountTransaction;
+use App\Models\AccountType;
 use App\Models\TransactionPayment;
 use App\Utils\Util;
 use DB;
@@ -14,6 +14,7 @@ use Yajra\DataTables\Facades\DataTables;
 use App\Models\Media;
 use App\Models\BusinessLocation;
 use App\Utils\ModuleUtil;
+use Carbon\Carbon;
 
 class AccountController extends Controller
 {
@@ -235,7 +236,7 @@ class AccountController extends Controller
                         'account_id' => $account->id,
                         'type' => 'credit',
                         'sub_type' => 'opening_balance',
-                        'operation_date' => \Carbon::now(),
+                        'operation_date' => Carbon::now(),
                         'created_by' => $user_id
                     ];
 

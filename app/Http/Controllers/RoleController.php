@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use Yajra\DataTables\Facades\DataTables;
 use Spatie\Permission\Models\Permission;
+use Carbon\Carbon;
 
 class RoleController extends Controller
 {
@@ -356,7 +357,7 @@ class RoleController extends Controller
 
         if (!empty($non_existing_permissions)) {
             foreach ($non_existing_permissions as $new_permission) {
-                $time_stamp = \Carbon::now()->toDateTimeString();
+                $time_stamp = Carbon::now()->toDateTimeString();
                 Permission::create([
                     'name' => $new_permission,
                     'guard_name' => 'web'

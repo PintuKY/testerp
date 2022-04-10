@@ -2,8 +2,8 @@
 
 namespace App\Utils;
 
-use App\TaxRate;
-use App\AccountTransaction;
+use App\Models\TaxRate;
+use App\Models\AccountTransaction;
 
 class AccountTransactionUtil extends Util
 {

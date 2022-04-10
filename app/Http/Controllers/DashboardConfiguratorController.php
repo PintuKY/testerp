@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\DashboardConfiguration;
+use App\Models\DashboardConfiguration;
 
 class DashboardConfiguratorController extends Controller
-{    
+{
     /**
      * Display a listing of the resource.
      *
@@ -62,7 +62,7 @@ class DashboardConfiguratorController extends Controller
         //get the configuration.
         $dashboard = DashboardConfiguration::where('business_id', $business_id)->findorfail($id);
         $dashboard->configuration = json_decode($dashboard->configuration, true);
-        
+
         //Get all widgets
         $available_widgets = [
             'widget1' => ['title' => 'Widget 1'],
@@ -99,7 +99,7 @@ class DashboardConfiguratorController extends Controller
                         ];
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-        
+
             $output = ['success' => false,
                         'msg' => __("messages.something_went_wrong")
                     ];

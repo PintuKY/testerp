@@ -10,7 +10,7 @@ use App\Models\Category;
 use App\Charts\CommonChart;
 use App\Models\Contact;
 
-use App\CustomerGroup;
+use App\Models\CustomerGroup;
 use App\Models\ExpenseCategory;
 use App\Models\Product;
 use App\Models\PurchaseLine;
@@ -33,6 +33,7 @@ use DB;
 use Illuminate\Http\Request;
 use App\Models\TaxRate;
 use Spatie\Activitylog\Models\Activity;
+use Carbon\Carbon;
 
 class ReportController extends Controller
 {
@@ -66,7 +67,7 @@ class ReportController extends Controller
         $end_date = $request->get('end_date');
         $location_id = $request->get('location_id');
 
-        $day_before_start_date = \Carbon::createFromFormat('Y-m-d', $start_date)->subDay()->format('Y-m-d');
+        $day_before_start_date = Carbon::createFromFormat('Y-m-d', $start_date)->subDay()->format('Y-m-d');
 
         $opening_stock_by_sp = $this->transactionUtil->getOpeningClosingStock($business_id, $day_before_start_date, $location_id, true, true);
 
@@ -827,8 +828,8 @@ class ReportController extends Controller
             $filters['start_date'] = $this->transactionUtil->uf_date(trim($date_range_array[0]));
             $filters['end_date'] = $this->transactionUtil->uf_date(trim($date_range_array[1]));
         } else {
-            $filters['start_date'] = \Carbon::now()->startOfMonth()->format('Y-m-d');
-            $filters['end_date'] = \Carbon::now()->endOfMonth()->format('Y-m-d');
+            $filters['start_date'] = Carbon::now()->startOfMonth()->format('Y-m-d');
+            $filters['end_date'] = Carbon::now()->endOfMonth()->format('Y-m-d');
         }
 
         $expenses = $this->transactionUtil->getExpenseReport($business_id, $filters);
@@ -1318,8 +1319,8 @@ class ReportController extends Controller
                 })
                 // ->editColumn('exp_date', function ($row) {
                 //     if (!empty($row->exp_date)) {
-                //         $carbon_exp = \Carbon::createFromFormat('Y-m-d', $row->exp_date);
-                //         $carbon_now = \Carbon::now();
+                //         $carbon_exp = Carbon::createFromFormat('Y-m-d', $row->exp_date);
+                //         $carbon_now = Carbon::now();
                 //         if ($carbon_now->diffInDays($carbon_exp, false) >= 0) {
                 //             return $this->productUtil->format_date($row->exp_date) . '<br><small>( <span class="time-to-now">' . $row->exp_date . '</span> )</small>';
                 //         } else {
@@ -1341,8 +1342,8 @@ class ReportController extends Controller
                     '</button>';
 
                     if (!empty($row->exp_date)) {
-                        $carbon_exp = \Carbon::createFromFormat('Y-m-d', $row->exp_date);
-                        $carbon_now = \Carbon::now();
+                        $carbon_exp = Carbon::createFromFormat('Y-m-d', $row->exp_date);
+                        $carbon_now = Carbon::now();
                         if ($carbon_now->diffInDays($carbon_exp, false) < 0) {
                             $html .=  ' <button type="button" class="btn btn-warning btn-xs remove_from_stock_btn" data-href="' . action('StockAdjustmentController@removeExpiredStock', [$row->purchase_line_id]) . '"> <i class="fa fa-trash"></i> ' . __("lang_v1.remove_from_stock") .
                             '</button>';
@@ -1361,13 +1362,13 @@ class ReportController extends Controller
                             ->pluck('short_name', 'id');
         $business_locations = BusinessLocation::forDropdown($business_id, true);
         $view_stock_filter = [
-            \Carbon::now()->subDay()->format('Y-m-d') => __('report.expired'),
-            \Carbon::now()->addWeek()->format('Y-m-d') => __('report.expiring_in_1_week'),
-            \Carbon::now()->addDays(15)->format('Y-m-d') => __('report.expiring_in_15_days'),
-            \Carbon::now()->addMonth()->format('Y-m-d') => __('report.expiring_in_1_month'),
-            \Carbon::now()->addMonths(3)->format('Y-m-d') => __('report.expiring_in_3_months'),
-            \Carbon::now()->addMonths(6)->format('Y-m-d') => __('report.expiring_in_6_months'),
-            \Carbon::now()->addYear()->format('Y-m-d') => __('report.expiring_in_1_year')
+            Carbon::now()->subDay()->format('Y-m-d') => __('report.expired'),
+            Carbon::now()->addWeek()->format('Y-m-d') => __('report.expiring_in_1_week'),
+            Carbon::now()->addDays(15)->format('Y-m-d') => __('report.expiring_in_15_days'),
+            Carbon::now()->addMonth()->format('Y-m-d') => __('report.expiring_in_1_month'),
+            Carbon::now()->addMonths(3)->format('Y-m-d') => __('report.expiring_in_3_months'),
+            Carbon::now()->addMonths(6)->format('Y-m-d') => __('report.expiring_in_6_months'),
+            Carbon::now()->addYear()->format('Y-m-d') => __('report.expiring_in_1_year')
         ];
 
         return view('report.stock_expiry_report')
@@ -2071,8 +2072,8 @@ class ReportController extends Controller
                 })
                 ->editColumn('exp_date', function ($row) {
                     if (!empty($row->exp_date)) {
-                        $carbon_exp = \Carbon::createFromFormat('Y-m-d', $row->exp_date);
-                        $carbon_now = \Carbon::now();
+                        $carbon_exp = Carbon::createFromFormat('Y-m-d', $row->exp_date);
+                        $carbon_now = Carbon::now();
                         if ($carbon_now->diffInDays($carbon_exp, false) >= 0) {
                             return $this->productUtil->format_date($row->exp_date) . '<br><small>( <span class="time-to-now">' . $row->exp_date . '</span> )</small>';
                         } else {
@@ -3396,14 +3397,14 @@ class ReportController extends Controller
                 ->addColumn('payment_year_month', function ($row) {
                     $year_month = '';
                     if (!empty($row->payment_lines->first())) {
-                        $year_month = \Carbon::parse($row->payment_lines->first()->paid_on)->format('Y/m');
+                        $year_month = Carbon::parse($row->payment_lines->first()->paid_on)->format('Y/m');
                     }
                     return $year_month;
                 })
                 ->addColumn('payment_day', function ($row) {
                     $payment_day = '';
                     if (!empty($row->payment_lines->first())) {
-                        $payment_day = \Carbon::parse($row->payment_lines->first()->paid_on)->format('d');
+                        $payment_day = Carbon::parse($row->payment_lines->first()->paid_on)->format('d');
                     }
                     return $payment_day;
                 })
@@ -3468,7 +3469,7 @@ class ReportController extends Controller
     public function getStockValue()
     {
         $business_id = request()->session()->get('user.business_id');
-        $end_date = \Carbon::now()->format('Y-m-d');
+        $end_date = Carbon::now()->format('Y-m-d');
         $location_id = request()->input('location_id');
         $filters = request()->only(['category_id', 'sub_category_id', 'brand_id', 'unit_id']);
         //Get Closing stock

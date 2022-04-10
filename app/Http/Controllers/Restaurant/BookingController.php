@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Restaurant;
 
 use App\Models\BusinessLocation;
 use App\Models\Contact;
-use App\CustomerGroup;
+use App\Models\CustomerGroup;
 use App\Restaurant\Booking;
 use App\Models\User;
 use App\Utils\Util;
@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Yajra\DataTables\Facades\DataTables;
 use App\Utils\RestaurantUtil;
+use Carbon\Carbon;
 
 class BookingController extends Controller
 {
@@ -272,7 +273,7 @@ class BookingController extends Controller
         if (request()->ajax()) {
             $business_id = request()->session()->get('user.business_id');
             $user_id = request()->session()->get('user.id');
-            $today = \Carbon::now()->format('Y-m-d');
+            $today = Carbon::now()->format('Y-m-d');
             $query = Booking::where('business_id', $business_id)
                         ->where('booking_status', 'booked')
                         ->whereDate('booking_start', $today)

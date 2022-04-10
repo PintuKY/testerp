@@ -11,12 +11,13 @@ use App\Utils\ProductUtil;
 use App\Utils\TransactionUtil;
 use App\Models\Variation;
 use App\Models\Product;
-use App\TaxRate;
+use App\Models\TaxRate;
 use App\Models\Transaction;
 use App\Models\Contact;
 use App\Utils\ModuleUtil;
-use App\TypesOfService;
+use App\Models\TypesOfService;
 use App\Models\Unit;
+use Carbon\Carbon;
 
 class ImportSalesController extends Controller
 {
@@ -219,7 +220,7 @@ class ImportSalesController extends Controller
     		$import_batch = $import_batch + 1;
     	}
 
-    	$now = \Carbon::now()->toDateTimeString();
+    	$now = Carbon::now()->toDateTimeString();
     	$row_index = 2;
     	foreach ($formated_data as $data) {
 

@@ -5,7 +5,7 @@ namespace App\Listeners;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-use App\AccountTransaction;
+use App\Models\AccountTransaction;
 
 use App\Utils\ModuleUtil;
 

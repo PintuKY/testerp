@@ -3,10 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\BusinessLocation;
-use App\CashRegister;
+use App\Models\CashRegister;
 use App\Utils\CashRegisterUtil;
 use App\Utils\ModuleUtil;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class CashRegisterController extends Controller
 {
@@ -83,7 +84,7 @@ class CashRegisterController extends Controller
                         'user_id' => $user_id,
                         'status' => 'open',
                         'location_id' => $request->input('location_id'),
-                        'created_at' => \Carbon::now()->format('Y-m-d H:i:00')
+                        'created_at' => Carbon::now()->format('Y-m-d H:i:00')
                     ]);
             if (!empty($initial_amount)) {
                 $register->cash_register_transactions()->create([
@@ -104,7 +105,7 @@ class CashRegisterController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\CashRegister  $cashRegister
+     * @param  \App\Models\CashRegister  $cashRegister
      * @return \Illuminate\Http\Response
      */
     public function show($id)
@@ -118,7 +119,7 @@ class CashRegisterController extends Controller
         $register_details =  $this->cashRegisterUtil->getRegisterDetails($id);
         $user_id = $register_details->user_id;
         $open_time = $register_details['open_time'];
-        $close_time = !empty($register_details['closed_at']) ? $register_details['closed_at'] : \Carbon::now()->toDateTimeString();
+        $close_time = !empty($register_details['closed_at']) ? $register_details['closed_at'] : Carbon::now()->toDateTimeString();
         $details = $this->cashRegisterUtil->getRegisterTransactionDetails($user_id, $open_time, $close_time);
 
         $payment_types = $this->cashRegisterUtil->payment_types(null, false, $business_id);
@@ -145,7 +146,7 @@ class CashRegisterController extends Controller
 
         $user_id = auth()->user()->id;
         $open_time = $register_details['open_time'];
-        $close_time = \Carbon::now()->toDateTimeString();
+        $close_time = Carbon::now()->toDateTimeString();
 
         $is_types_of_service_enabled = $this->moduleUtil->isModuleEnabled('types_of_service');
 
@@ -174,7 +175,7 @@ class CashRegisterController extends Controller
 
         $user_id = $register_details->user_id;
         $open_time = $register_details['open_time'];
-        $close_time = \Carbon::now()->toDateTimeString();
+        $close_time = Carbon::now()->toDateTimeString();
 
         $is_types_of_service_enabled = $this->moduleUtil->isModuleEnabled('types_of_service');
 
@@ -212,7 +213,7 @@ class CashRegisterController extends Controller
             $input = $request->only(['closing_amount', 'total_card_slips', 'total_cheques', 'closing_note']);
             $input['closing_amount'] = $this->cashRegisterUtil->num_uf($input['closing_amount']);
             $user_id = $request->input('user_id');
-            $input['closed_at'] = \Carbon::now()->format('Y-m-d H:i:s');
+            $input['closed_at'] = Carbon::now()->format('Y-m-d H:i:s');
             $input['status'] = 'close';
             $input['denominations'] = !empty(request()->input('denominations')) ? json_encode(request()->input('denominations')) : null;
 

@@ -20,6 +20,6 @@ class ProductVariation extends Model
 
     public function variation_template()
     {
-        return $this->belongsTo(\App\VariationTemplate::class);
+        return $this->belongsTo(\App\Models\VariationTemplate::class);
     }
 }

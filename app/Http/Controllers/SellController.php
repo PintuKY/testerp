@@ -27,6 +27,7 @@ use App\Models\Product;
 use App\Models\Media;
 use Spatie\Activitylog\Models\Activity;
 use Illuminate\Support\Facades\Artisan;
+use Carbon\Carbon;
 
 class SellController extends Controller
 {
@@ -72,7 +73,7 @@ class SellController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index()
-    {   
+    {
         $is_admin = $this->businessUtil->is_admin(auth()->user());
 
         if ( !$is_admin && !auth()->user()->hasAnyPermission(['sell.view', 'sell.create', 'direct_sell.access', 'direct_sell.view', 'view_own_sell_only', 'view_commission_agent_sell', 'access_shipping', 'access_own_shipping', 'access_commission_agent_shipping', 'so.view_all', 'so.view_own']) ) {
@@ -1165,7 +1166,7 @@ class SellController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function create()
-    {   
+    {
         $sale_type = request()->get('sale_type', '');
 
         if ($sale_type == 'sales_order') {
@@ -1990,7 +1991,7 @@ class SellController extends Controller
             }
             $duplicate_transaction_data['status'] = 'draft';
             $duplicate_transaction_data['payment_status'] = null;
-            $duplicate_transaction_data['transaction_date'] =  \Carbon::now();
+            $duplicate_transaction_data['transaction_date'] =  Carbon::now();
             $duplicate_transaction_data['created_by'] = $user_id;
             $duplicate_transaction_data['invoice_token'] = null;
 

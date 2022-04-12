@@ -387,6 +387,13 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::put('update-sales-orders/{id}/status', 'SalesOrderController@postEditSalesOrderStatus');
     Route::get('reports/activity-log', 'ReportController@activityLog');
     Route::get('user-location/{latlng}', 'HomeController@getUserLocation');
+
+    // supplier modules
+    Route::resource('supplier', 'SupplierController');
+    Route::post('/supplier/check-supplier-id', 'SupplierController@checkSupplierId');
+    Route::post('/supplier/check-mobile', 'SupplierController@checkMobile');
+    Route::get('/supplier/update-status/{id}', 'SupplierController@updateStatus');
+
 });
 
 

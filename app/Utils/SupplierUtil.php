@@ -12,89 +12,35 @@ class SupplierUtil extends Util
 {
 
     /**
-     * Returns Walk In Customer for a Business
+     * Returns the supplier info
      *
      * @param int $business_id
-     *
-     * @return array/false
-     */
-    public function getWalkInCustomer($business_id, $array = true)
-    {
-        $contact = Supplier::whereIn('type', ['customer', 'both'])
-                    ->where('contacts.business_id', $business_id)
-                    ->where('contacts.is_default', 1)
-                    ->leftjoin('customer_groups as cg', 'cg.id', '=', 'contacts.customer_group_id')
-                    ->select('contacts.*',
-                        'cg.amount as discount_percent',
-                        'cg.price_calculation_type',
-                        'cg.selling_price_group_id'
-                    )
-                    ->first();
-
-        if (!empty($contact)) {
-            $contact->contact_address = $contact->contact_address;
-            $output = $array ? $contact->toArray() : $contact;
-            return $output;
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Returns the customer group
-     *
-     * @param int $business_id
-     * @param int $customer_id
-     *
-     * @return array
-     */
-    // public function getCustomerGroup($business_id, $customer_id)
-    // {
-    //     $cg = [];
-
-    //     if (empty($customer_id)) {
-    //         return $cg;
-    //     }
-
-    //     $contact = Supplier::leftjoin('customer_groups as CG', 'contacts.customer_group_id', 'CG.id')
-    //         ->where('contacts.id', $customer_id)
-    //         ->where('contacts.business_id', $business_id)
-    //         ->select('CG.*')
-    //         ->first();
-
-    //     return $contact;
-    // }
-
-    /**
-     * Returns the contact info
-     *
-     * @param int $business_id
-     * @param int $contact_id
+     * @param int $supplier_id
      *
      * @return array
      */
     public function getSupplierInfo($business_id, $supplier_id)
     {
-        $contact = Supplier::where('supplier.id', $supplier_id)
+        $supplier = Supplier::where('supplier.id', $supplier_id)
                     ->where('supplier.business_id', $business_id)
-                    ->leftjoin('supplier_transactions AS t', 'supplier.id', '=', 't.supplier')
+                    ->leftjoin('supplier_transactions AS t', 'supplier.id', '=', 't.supplier_id')
                     ->with(['business'])
                     ->select(
                         DB::raw("SUM(IF(t.type = 'purchase', final_total, 0)) as total_purchase"),
                         DB::raw("SUM(IF(t.type = 'sell' AND t.status = 'final', final_total, 0)) as total_invoice"),
-                        DB::raw("SUM(IF(t.type = 'purchase', (SELECT SUM(amount) FROM transaction_payments WHERE transaction_payments.transaction_id=t.id), 0)) as purchase_paid"),
-                        DB::raw("SUM(IF(t.type = 'sell' AND t.status = 'final', (SELECT SUM(IF(is_return = 1,-1*amount,amount)) FROM transaction_payments WHERE transaction_payments.transaction_id=t.id), 0)) as invoice_received"),
+                        DB::raw("SUM(IF(t.type = 'purchase', (SELECT SUM(amount) FROM supplier_transaction_payments WHERE supplier_transaction_payments.supplier_transaction_id=t.id), 0)) as purchase_paid"),
+                        DB::raw("SUM(IF(t.type = 'sell' AND t.status = 'final', (SELECT SUM(IF(is_return = 1,-1*amount,amount)) FROM supplier_transaction_payments WHERE supplier_transaction_payments.supplier_transaction_id=t.id), 0)) as invoice_received"),
                         DB::raw("SUM(IF(t.type = 'opening_balance', final_total, 0)) as opening_balance"),
-                        DB::raw("SUM(IF(t.type = 'opening_balance', (SELECT SUM(amount) FROM transaction_payments WHERE transaction_payments.transaction_id=t.id), 0)) as opening_balance_paid"),
+                        DB::raw("SUM(IF(t.type = 'opening_balance', (SELECT SUM(amount) FROM supplier_transaction_payments WHERE supplier_transaction_payments.supplier_transaction_id=t.id), 0)) as opening_balance_paid"),
                         'supplier.*'
                     )->first();
 
-        return $contact;
+        return $supplier;
     }
 
     public function createNewSupplier($input)
     {
-        //Check Contact id
+        //Check Supplier Id
         $count = 0;
         if (!empty($input['contact_id'])) {
             $count = Supplier::where('business_id', $input['business_id'])
@@ -136,7 +82,7 @@ class SupplierUtil extends Util
     public function updateSupplier($input, $id, $business_id)
     {
         $count = 0;
-        //Check Contact id
+        //Check Supplier Id
         if (!empty($input['supplier_id'])) {
             $count = Supplier::where('business_id', $business_id)
                     ->where('supplier_id', $input['supplier_id'])

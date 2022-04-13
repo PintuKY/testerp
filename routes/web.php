@@ -393,6 +393,10 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::post('/supplier/check-supplier-id', 'SupplierController@checkSupplierId');
     Route::post('/supplier/check-mobile', 'SupplierController@checkMobile');
     Route::get('/supplier/update-status/{id}', 'SupplierController@updateStatus');
+    Route::get('/supplier/stock-report/{supplier_id}', 'SupplierController@getSupplierStockReport');
+    Route::get('/suppliers/ledger', 'SupplierController@getLedger');
+    Route::get('/supplier/payments/{supplier_id}', 'SupplierController@getSupplierPayments');
+    Route::get('/supplier/payments/{supplier_id}', 'SupplierController@getSupplierPayments');
 
 });
 

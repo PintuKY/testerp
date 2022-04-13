@@ -17,6 +17,8 @@ return new class extends Migration
             $table->id();
             $table->integer('business_id')->unsigned();
             $table->foreign('business_id')->references('id')->on('business')->onDelete('cascade');
+            $table->integer('location_id')->unsigned();
+            $table->foreign('location_id')->references('id')->on('business_locations');
             $table->enum('type', ['purchase','sell', 'expense', 'stock_adjustment', 'sell_transfer', 'purchase_transfer', 'opening_stock', 'sell_return', 'opening_balance']);
             $table->enum('status', ['received', 'pending', 'ordered', 'draft', 'final']);
             $table->enum('payment_status', ['paid', 'due']);
@@ -26,7 +28,7 @@ return new class extends Migration
             $table->string('ref_no')->nullable();
             $table->integer('pay_term_number')->nullable();
             $table->enum('pay_term_type', ['days', 'months'])->nullable();
-            $table->dateTime('transaction_date')->nullable();;
+            $table->dateTime('transaction_date')->nullable();
             $table->decimal('total_before_tax', 22, 4)->default(0)->comment('Total before the purchase/invoice tax, this includeds the indivisual product tax');
             $table->integer('tax_id')->unsigned()->nullable();
             $table->foreign('tax_id')->references('id')->on('tax_rates')->onDelete('cascade');
@@ -48,6 +50,7 @@ return new class extends Migration
             $table->index('supplier_id');
             $table->index('transaction_date');
             $table->index('created_by');
+            $table->index('location_id');
 
         });
     }

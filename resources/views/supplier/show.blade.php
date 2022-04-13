@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', __('contact.view_contact'))
+@section('title', __('supplier.view_supplier'))
 
 @section('content')
 
@@ -7,10 +7,10 @@
 <section class="content no-print">
     <div class="row no-print">
         <div class="col-md-4">
-            <h3>@lang('contact.view_contact')</h3>
+            <h3>@lang('supplier.view_supplier')</h3>
         </div>
         <div class="col-md-4 col-xs-12 mt-15 pull-right">
-            {!! Form::select('contact_id', $contact_dropdown, $contact->id , ['class' => 'form-control select2', 'id' => 'contact_id']); !!}
+            {!! Form::select('$supplier_id', $supplier_dropdown, $supplier->id , ['class' => 'form-control select2', 'id' => 'supplier_id']); !!}
         </div>
     </div>
     <div class="hide print_table_part">
@@ -24,29 +24,24 @@
         </style>
         <div style="width: 100%;">
             <div class="info_col">
-                @include('contact.contact_basic_info')
+                @include('supplier.supplier_basic_info')
             </div>
             <div class="info_col">
-                @include('contact.contact_more_info')
+                @include('supplier.supplier_tax_info')
             </div>
-            @if( $contact->type != 'customer')
-                <div class="info_col">
-                    @include('contact.contact_tax_info')
-                </div>
-            @endif
             <div class="info_col">
-                @include('contact.contact_payment_info')
+                @include('supplier.supplier_payment_info')
             </div>
         </div>
     </div>
-    <input type="hidden" id="sell_list_filter_customer_id" value="{{$contact->id}}">
-    <input type="hidden" id="purchase_list_filter_supplier_id" value="{{$contact->id}}">
+    <input type="hidden" id="sell_list_filter_customer_id" value="{{$supplier->id}}">
+    <input type="hidden" id="purchase_list_filter_supplier_id" value="{{$supplier->id}}">
     <br>
     <div class="row">
         <div class="col-md-12">
             <div class="box box-solid">
                 <div class="box-body">
-                    @include('contact.partials.contact_info_tab')
+                    @include('supplier.partials.supplier_info_tab')
                 </div>
             </div>
         </div>
@@ -63,44 +58,23 @@
                             @endif">
                         <a href="#ledger_tab" data-toggle="tab" aria-expanded="true"><i class="fas fa-scroll" aria-hidden="true"></i> @lang('lang_v1.ledger')</a>
                     </li>
-                    @if(in_array($contact->type, ['both', 'supplier']))
-                        <li class="
-                            @if(!empty($view_type) &&  $view_type == 'purchase')
-                                active
-                            @else
-                                ''
-                            @endif">
-                            <a href="#purchases_tab" data-toggle="tab" aria-expanded="true"><i class="fas fa-arrow-circle-down" aria-hidden="true"></i> @lang( 'purchase.purchases')</a>
-                        </li>
-                        <li class="
-                            @if(!empty($view_type) &&  $view_type == 'stock_report')
-                                active
-                            @else
-                                ''
-                            @endif">
-                            <a href="#stock_report_tab" data-toggle="tab" aria-expanded="true"><i class="fas fa-hourglass-half" aria-hidden="true"></i> @lang( 'report.stock_report')</a>
-                        </li>
-                    @endif
-                    @if(in_array($contact->type, ['both', 'customer']))
-                        <li class="
-                            @if(!empty($view_type) &&  $view_type == 'sales')
-                                active
-                            @else
-                                ''
-                            @endif">
-                            <a href="#sales_tab" data-toggle="tab" aria-expanded="true"><i class="fas fa-arrow-circle-up" aria-hidden="true"></i> @lang( 'sale.sells')</a>
-                        </li>
-                        @if(in_array('subscription', $enabled_modules))
-                            <li class="
-                                @if(!empty($view_type) &&  $view_type == 'subscriptions')
-                                    active
-                                @else
-                                    ''
-                                @endif">
-                                <a href="#subscriptions_tab" data-toggle="tab" aria-expanded="true"><i class="fas fa-recycle" aria-hidden="true"></i> @lang( 'lang_v1.subscriptions')</a>
-                            </li>
-                        @endif
-                    @endif
+                    
+                    <li class="
+                        @if(!empty($view_type) &&  $view_type == 'purchase')
+                            active
+                        @else
+                            ''
+                        @endif">
+                        <a href="#purchases_tab" data-toggle="tab" aria-expanded="true"><i class="fas fa-arrow-circle-down" aria-hidden="true"></i> @lang( 'purchase.purchases')</a>
+                    </li>
+                    <li class="
+                        @if(!empty($view_type) &&  $view_type == 'stock_report')
+                            active
+                        @else
+                            ''
+                        @endif">
+                        <a href="#stock_report_tab" data-toggle="tab" aria-expanded="true"><i class="fas fa-hourglass-half" aria-hidden="true"></i> @lang( 'report.stock_report')</a>
+                    </li>
                     <li class="
                             @if(!empty($view_type) &&  $view_type == 'documents_and_notes')
                                 active
@@ -119,7 +93,7 @@
                         <a href="#payments_tab" data-toggle="tab" aria-expanded="true"><i class="fas fa-money-bill-alt" aria-hidden="true"></i> @lang('sale.payments')</a>
                     </li>
 
-                    @if( in_array($contact->type, ['customer', 'both']) && session('business.enable_rp'))
+                    {{-- @if( in_array($supplier->type, ['customer', 'both']) && session('business.enable_rp'))
                         <li class="
                             @if(!empty($view_type) &&  $view_type == 'reward_point')
                                 active
@@ -128,7 +102,7 @@
                             @endif">
                             <a href="#reward_point_tab" data-toggle="tab" aria-expanded="true"><i class="fas fa-gift" aria-hidden="true"></i> {{ session('business.rp_name') ?? __( 'lang_v1.reward_points')}}</a>
                         </li>
-                    @endif
+                    @endif --}}
 
                     <li class="
                         @if(!empty($view_type) &&  $view_type == 'activities')
@@ -139,8 +113,8 @@
                         <a href="#activities_tab" data-toggle="tab" aria-expanded="true"><i class="fas fa-pen-square" aria-hidden="true"></i> @lang('lang_v1.activities')</a>
                         </li>
 
-                    @if(!empty($contact_view_tabs))
-                        @foreach($contact_view_tabs as $key => $tabs)
+                    @if(!empty($supplier_view_tabs))
+                        @foreach($supplier_view_tabs as $key => $tabs)
                             @foreach ($tabs as $index => $value)
                                 @if(!empty($value['tab_menu_path']))
                                     @php
@@ -162,9 +136,9 @@
                                     ''
                                 @endif"
                             id="ledger_tab">
-                        @include('contact.partials.ledger_tab')
+                        @include('supplier.partials.ledger_tab')
                     </div>
-                    @if(in_array($contact->type, ['both', 'supplier']))
+                    @if(in_array($supplier->type, ['both', 'supplier']))
                         <div class="tab-pane
                             @if(!empty($view_type) &&  $view_type == 'purchase')
                                 active
@@ -190,10 +164,10 @@
                             @else
                                 ''
                             @endif" id="stock_report_tab">
-                            @include('contact.partials.stock_report_tab')
+                            @include('supplier.partials.stock_report_tab')
                         </div>
                     @endif
-                    @if(in_array($contact->type, ['both', 'customer']))
+                    @if(in_array($supplier->type, ['both', 'customer']))
                         <div class="tab-pane 
                             @if(!empty($view_type) &&  $view_type == 'sales')
                                 active
@@ -215,7 +189,7 @@
                             </div>
                         </div>
                         @if(in_array('subscription', $enabled_modules))
-                            @include('contact.partials.subscriptions')
+                            @include('supplier.partials.subscriptions')
                         @endif
                     @endif
                     <div class="tab-pane
@@ -225,7 +199,7 @@
                                 ''
                             @endif"
                         id="documents_and_notes_tab">
-                        @include('contact.partials.documents_and_notes_tab')
+                        @include('supplier.partials.documents_and_notes_tab')
                     </div>
                     <div class="tab-pane 
                         @if(!empty($view_type) &&  $view_type == 'payments')
@@ -233,9 +207,9 @@
                         @else
                             ''
                         @endif" id="payments_tab">
-                        <div id="contact_payments_div" style="height: 500px;overflow-y: scroll;"></div>
+                        <div id="supplier_payments_div" style="height: 500px;overflow-y: scroll;"></div>
                     </div>
-                    @if( in_array($contact->type, ['customer', 'both']) && session('business.enable_rp'))
+                    @if( in_array($supplier->type, ['customer', 'both']) && session('business.enable_rp'))
                         <div class="tab-pane
                             @if(!empty($view_type) &&  $view_type == 'reward_point')
                                 active
@@ -252,7 +226,7 @@
 
                                         <div class="info-box-content">
                                           <span class="info-box-text">{{session('business.rp_name')}}</span>
-                                          <span class="info-box-number">{{$contact->total_rp ?? 0}}</span>
+                                          <span class="info-box-number">{{$supplier->total_rp ?? 0}}</span>
                                         </div>
                                         <!-- /.info-box-content -->
                                     </div>
@@ -282,8 +256,8 @@
                         @include('activity_log.activities')
                     </div>
 
-                    @if(!empty($contact_view_tabs))
-                        @foreach($contact_view_tabs as $key => $tabs)
+                    @if(!empty($supplier_view_tabs))
+                        @foreach($supplier_view_tabs as $key => $tabs)
                             @foreach ($tabs as $index => $value)
                                 @if(!empty($value['tab_content_path']))
                                     @php
@@ -319,15 +293,15 @@ $(document).ready( function(){
         }
     );
     $('#ledger_date_range').change( function(){
-        get_contact_ledger();
+        get_supplier_ledger();
     });
-    get_contact_ledger();
+    get_supplier_ledger();
 
     rp_log_table = $('#rp_log_table').DataTable({
         processing: true,
         serverSide: true,
         aaSorting: [[0, 'desc']],
-        ajax: '/sells?customer_id={{ $contact->id }}&rewards_only=true',
+        ajax: '/sells?customer_id={{ $supplier->id }}&rewards_only=true',
         columns: [
             { data: 'transaction_date', name: 'transactions.transaction_date'  },
             { data: 'invoice_no', name: 'transactions.invoice_no'},
@@ -340,7 +314,7 @@ $(document).ready( function(){
         processing: true,
         serverSide: true,
         'ajax': {
-            url: "{{action('ContactController@getSupplierStockReport', [$contact->id])}}",
+            url: "{{action('SupplierController@getSupplierStockReport', [$supplier->id])}}",
             data: function (d) {
                 d.location_id = $('#sr_location_id').val();
             }
@@ -363,9 +337,9 @@ $(document).ready( function(){
         supplier_stock_report_table.ajax.reload();
     });
 
-    $('#contact_id').change( function() {
+    $('#supplier_id').change( function() {
         if ($(this).val()) {
-            window.location = "{{url('/contacts')}}/" + $(this).val();
+            window.location = "{{url('/supplier')}}/" + $(this).val();
         }
     });
 
@@ -375,35 +349,35 @@ $(document).ready( function(){
 });
 
 $("input.transaction_types, input#show_payments").on('ifChanged', function (e) {
-    get_contact_ledger();
+    get_supplier_ledger();
 });
 
 $(document).one('shown.bs.tab', 'a[href="#payments_tab"]', function(){
-    get_contact_payments();
+    get_supplier_payments();
 })
 
 $(document).on('click', '#contact_payments_pagination a', function(e){
     e.preventDefault();
-    get_contact_payments($(this).attr('href'));
+    get_supplier_payments($(this).attr('href'));
 })
 
-function get_contact_payments(url = null) {
+function get_supplier_payments(url = null) {
     if (!url) {
-        url = "{{action('ContactController@getContactPayments', [$contact->id])}}";
+        url = "{{action('SupplierController@getSupplierPayments', [$supplier->id])}}";
     }
     $.ajax({
         url: url,
         dataType: 'html',
         success: function(result) {
-            $('#contact_payments_div').fadeOut(400, function(){
-                $('#contact_payments_div')
+            $('#supplier_payments_div').fadeOut(400, function(){
+                $('#supplier_payments_div')
                 .html(result).fadeIn(400);
             });
         },
     });
 }
 
-function get_contact_ledger() {
+function get_supplier_ledger() {
 
     var start_date = '';
     var end_date = '';
@@ -415,12 +389,12 @@ function get_contact_ledger() {
         end_date = $('#ledger_date_range').data('daterangepicker').endDate.format('YYYY-MM-DD');
     }
     $.ajax({
-        url: '/contacts/ledger?contact_id={{$contact->id}}&start_date=' + start_date + '&transaction_types=' + transaction_types + '&show_payments=' + show_payments + '&end_date=' + end_date,
+        url: '/suppliers/ledger?supplier_id={{$supplier->id}}&start_date=' + start_date + '&transaction_types=' + transaction_types + '&show_payments=' + show_payments + '&end_date=' + end_date,
         dataType: 'html',
         success: function(result) {
-            $('#contact_ledger_div')
+            $('#supplier_ledger_div')
                 .html(result);
-            __currency_convert_recursively($('#contact_ledger_div'));
+            __currency_convert_recursively($('#supplier_ledger_div'));
 
             $('#ledger_table').DataTable({
                 searching: false,
@@ -436,7 +410,7 @@ $(document).on('click', '#send_ledger', function() {
     var start_date = $('#ledger_date_range').data('daterangepicker').startDate.format('YYYY-MM-DD');
     var end_date = $('#ledger_date_range').data('daterangepicker').endDate.format('YYYY-MM-DD');
 
-    var url = "{{action('NotificationController@getTemplate', [$contact->id, 'send_ledger'])}}" + '?start_date=' + start_date + '&end_date=' + end_date;
+    var url = "{{action('NotificationController@getTemplate', [$supplier->id, 'send_ledger'])}}" + '?start_date=' + start_date + '&end_date=' + end_date;
 
     $.ajax({
         url: url,
@@ -460,14 +434,14 @@ $(document).on('click', '#print_ledger_pdf', function() {
 </script>
 @include('sale_pos.partials.sale_table_javascript')
 <script src="{{ asset('js/payment.js?v=' . $asset_v) }}"></script>
-@if(in_array($contact->type, ['both', 'supplier']))
+@if(in_array($supplier->type, ['both', 'supplier']))
     <script src="{{ asset('js/purchase.js?v=' . $asset_v) }}"></script>
 @endif
 
 <!-- document & note.js -->
 @include('documents_and_notes.document_and_note_js')
-@if(!empty($contact_view_tabs))
-    @foreach($contact_view_tabs as $key => $tabs)
+@if(!empty($supplier_view_tabs))
+    @foreach($supplier_view_tabs as $key => $tabs)
         @foreach ($tabs as $index => $value)
             @if(!empty($value['module_js_path']))
                 @include($value['module_js_path'])
@@ -491,5 +465,5 @@ $(document).on('click', '#print_ledger_pdf', function() {
         });
     });
 </script>
-@include('sale_pos.partials.subscriptions_table_javascript', ['contact_id' => $contact->id])
+@include('sale_pos.partials.subscriptions_table_javascript', ['supplier_id' => $supplier->id])
 @endsection

@@ -945,7 +945,7 @@ $('.supplier_modal').on('shown.bs.modal', function(e) {
                     success: function(result) {
                         if (result.success == true) {
                             toastr.success(result.msg);
-                            contact_table.ajax.reload();
+                            supplier_table.ajax.reload();
                         } else {
                             toastr.error(result.msg);
                         }
@@ -3120,8 +3120,8 @@ function submitSupplierForm(form) {
                 $('div.supplier_modal').modal('hide');
                 toastr.success(result.msg);
 
-                if (typeof(contact_table) != 'undefined') {
-                    contact_table.ajax.reload();
+                if (typeof(supplier_table) != 'undefined') {
+                    supplier_table.ajax.reload();
                 }
 
                 var lead_view = urlSearchParam('lead_view');

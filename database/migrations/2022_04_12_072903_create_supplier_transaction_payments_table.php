@@ -41,6 +41,7 @@ return new class extends Migration
             $table->string('document')->nullable();
             $table->boolean('paid_through_link')->default(0);
             $table->string('gateway')->nullable();
+            $table->tinyInteger('is_advance')->default(0);
             $table->timestamps();
 
             //Indexing

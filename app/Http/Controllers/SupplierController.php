@@ -3,15 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\BusinessLocation;
-use App\Models\CustomerGroup;
+use App\Models\Contact;
 use App\Models\Supplier;
 use App\Models\SupplierTransaction;
+use App\Models\SupplierTransactionPayments;
 use Illuminate\Http\Request;
 use App\Utils\ModuleUtil;
 use App\Utils\NotificationUtil;
 use App\Utils\SupplierTransactionUtil;
 use App\Utils\SupplierUtil;
-use App\Utils\TransactionUtil;
 use App\Utils\Util;
 use Yajra\DataTables\Facades\DataTables;
 use Spatie\Activitylog\Models\Activity;
@@ -179,7 +179,40 @@ class SupplierController extends Controller
      */
     public function show(Supplier $supplier)
     {
-        dd('I am working on that.');
+        if (!auth()->user()->can('supplier.view') && !auth()->user()->can('customer.view') && !auth()->user()->can('customer.view_own') && !auth()->user()->can('supplier.view_own')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $business_id = request()->session()->get('user.business_id');
+        $supplier = $this->supplierUtil->getSupplierInfo($business_id, $supplier->id);
+
+        if (!auth()->user()->can('supplier.view') && auth()->user()->can('supplier.view_own')) {
+            if ($supplier->created_by != auth()->user()->id) {
+                abort(403, 'Unauthorized action.');
+            }
+        }
+        
+        $reward_enabled = (request()->session()->get('business.enable_rp') == 1 && in_array($supplier->type, ['customer', 'both'])) ? true : false;
+
+        $supplier_dropdown = Supplier::suppliersDropdown($business_id, false, false);
+
+        $business_locations = BusinessLocation::forDropdown($business_id, true);
+
+        //get contact view type : ledger, notes etc.
+        $view_type = request()->get('view');
+        if (is_null($view_type)) {
+            $view_type = 'ledger';
+        }
+
+        $supplier_view_tabs = $this->moduleUtil->getModuleData('get_contact_view_tabs');
+
+        $activities = Activity::forSubject($supplier)
+           ->with(['causer', 'subject'])
+           ->latest()
+           ->get();
+
+        return view('supplier.show')
+             ->with(compact('supplier', 'reward_enabled', 'supplier_dropdown' ,'business_locations', 'view_type', 'supplier_view_tabs', 'activities'));
     }
 
     /**
@@ -735,6 +768,190 @@ class SupplierController extends Controller
                                 'msg' => __("supplier.updated_success")
                                 ];
             return $output;
+        }
+    }
+
+    /**
+     * Display contact locations on map
+     *
+     */
+    public function supplierMap()
+    {
+        if (!auth()->user()->can('supplier.view')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $business_id = request()->session()->get('user.business_id');
+
+        $query = Supplier::where('business_id', $business_id)
+                        ->active()
+                        ->whereNotNull('position');
+
+        if (!empty(request()->input('supplier'))) {
+            $query->whereIn('id', request()->input('supplier'));
+        }
+        $suppliers = $query->get();
+
+        $all_suppliers = Supplier::where('business_id', $business_id)
+                        ->active()
+                        ->get();
+
+        return view('supplier.supplier_map')
+             ->with(compact('supplier', 'all_suppliers'));
+    }
+
+    /**
+     * Shows ledger for contacts
+     *
+     * @param  \Illuminate\Http\Request
+     * @return \Illuminate\Http\Response
+     */
+    public function getLedger()
+    {   
+        if (!auth()->user()->can('supplier.view') && !auth()->user()->can('supplier.view_own')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $business_id = request()->session()->get('user.business_id');
+        $supplier_id = request()->input('supplier_id');
+
+        $start_date = request()->start_date;
+        $end_date =  request()->end_date;
+
+        $supplier = Supplier::find($supplier_id);
+
+        if (!auth()->user()->can('supplier.view') && auth()->user()->can('supplier.view_own')) {
+            if ($supplier->created_by != auth()->user()->id) {
+                abort(403, 'Unauthorized action.');
+            }
+        }
+       
+        $ledger_details = $this->supplierTransactionUtil->getLedgerDetails($supplier_id, $start_date, $end_date);
+
+        if (request()->input('action') == 'pdf') {
+            $for_pdf = true;
+            $html = view('supplier.ledger')
+             ->with(compact('ledger_details', 'supplier', 'for_pdf'))->render();
+            $mpdf = $this->getMpdf();
+            $mpdf->WriteHTML($html);
+            $mpdf->Output();
+        }
+
+        return view('supplier.ledger')
+             ->with(compact('ledger_details', 'supplier'));
+    }
+
+    public function getSupplierStockReport($supplier_id)
+    {   
+        dd('demo');
+        $pl_query_string = $this->commonUtil->get_pl_quantity_sum_string();
+        $query = PurchaseLine::join('transactions as t', 't.id', '=', 'purchase_lines.transaction_id')
+                        ->join('products as p', 'p.id', '=', 'purchase_lines.product_id')
+                        ->join('variations as v', 'v.id', '=', 'purchase_lines.variation_id')
+                        ->join('product_variations as pv', 'v.product_variation_id', '=', 'pv.id')
+                        ->join('units as u', 'p.unit_id', '=', 'u.id')
+                        ->whereIn('t.type', ['purchase', 'purchase_return'])
+                        ->where('t.contact_id', $supplier_id)
+                        ->select(
+                            'p.name as product_name',
+                            'v.name as variation_name',
+                            'pv.name as product_variation_name',
+                            'p.type as product_type',
+                            'u.short_name as product_unit',
+                            'v.sub_sku',
+                            DB::raw('SUM(quantity) as purchase_quantity'),
+                            DB::raw('SUM(quantity_returned) as total_quantity_returned'),
+                            DB::raw('SUM(quantity_sold) as total_quantity_sold'),
+                            DB::raw("SUM( COALESCE(quantity - ($pl_query_string), 0) * purchase_price_inc_tax) as stock_price"),
+                            DB::raw("SUM( COALESCE(quantity - ($pl_query_string), 0)) as current_stock")
+                        )->groupBy('purchase_lines.variation_id');
+
+        if (!empty(request()->location_id)) {
+            $query->where('t.location_id', request()->location_id);
+        }
+
+        $product_stocks =  Datatables::of($query)
+                            ->editColumn('product_name', function ($row) {
+                                $name = $row->product_name;
+                                if ($row->product_type == 'variable') {
+                                    $name .= ' - ' . $row->product_variation_name . '-' . $row->variation_name;
+                                }
+                                return $name . ' (' . $row->sub_sku . ')';
+                            })
+                            ->editColumn('purchase_quantity', function ($row) {
+                                $purchase_quantity = 0;
+                                if ($row->purchase_quantity) {
+                                    $purchase_quantity =  (float)$row->purchase_quantity;
+                                }
+
+                                return '<span data-is_quantity="true" class="display_currency" data-currency_symbol=false  data-orig-value="' . $purchase_quantity . '" data-unit="' . $row->product_unit . '" >' . $purchase_quantity . '</span> ' . $row->product_unit;
+                            })
+                            ->editColumn('total_quantity_sold', function ($row) {
+                                $total_quantity_sold = 0;
+                                if ($row->total_quantity_sold) {
+                                    $total_quantity_sold =  (float)$row->total_quantity_sold;
+                                }
+
+                                return '<span data-is_quantity="true" class="display_currency" data-currency_symbol=false  data-orig-value="' . $total_quantity_sold . '" data-unit="' . $row->product_unit . '" >' . $total_quantity_sold . '</span> ' . $row->product_unit;
+                            })
+                            ->editColumn('stock_price', function ($row) {
+                                $stock_price = 0;
+                                if ($row->stock_price) {
+                                    $stock_price =  (float)$row->stock_price;
+                                }
+
+                                return '<span class="display_currency" data-currency_symbol=true >' . $stock_price . '</span> ';
+                            })
+                            ->editColumn('current_stock', function ($row) {
+                                $current_stock = 0;
+                                if ($row->current_stock) {
+                                    $current_stock =  (float)$row->current_stock;
+                                }
+
+                                return '<span data-is_quantity="true" class="display_currency" data-currency_symbol=false  data-orig-value="' . $current_stock . '" data-unit="' . $row->product_unit . '" >' . $current_stock . '</span> ' . $row->product_unit;
+                            });
+
+        return $product_stocks->rawColumns(['current_stock', 'stock_price', 'total_quantity_sold', 'purchase_quantity'])->make(true);
+    }
+
+    public function getSupplierPayments($supplier_id)
+    {
+        $business_id = request()->session()->get('user.business_id');
+        if (request()->ajax()) {
+
+            $payments = SupplierTransactionPayments::leftjoin('supplier_transactions as t', 'supplier_transaction_payments.supplier_transaction_id', '=', 't.id')
+            ->leftjoin('supplier_transaction_payments as parent_payment', 'supplier_transaction_payments.parent_id', '=', 'parent_payment.id')
+            ->where('supplier_transaction_payments.business_id', $business_id)
+            ->whereNull('supplier_transaction_payments.parent_id')
+            ->with(['child_payments', 'child_payments.transaction'])
+            ->where('supplier_transaction_payments.payment_for', $supplier_id)
+                ->select(
+                    'supplier_transaction_payments.id',
+                    'supplier_transaction_payments.amount',
+                    'supplier_transaction_payments.is_return',
+                    'supplier_transaction_payments.method',
+                    'supplier_transaction_payments.paid_on',
+                    'supplier_transaction_payments.payment_ref_no',
+                    'supplier_transaction_payments.parent_id',
+                    'supplier_transaction_payments.transaction_no',
+                    't.invoice_no',
+                    't.ref_no',
+                    't.type as transaction_type',
+                    't.id as supplier_transactions_id',
+                    'supplier_transaction_payments.cheque_number',
+                    'supplier_transaction_payments.card_transaction_number',
+                    'supplier_transaction_payments.bank_account_number',
+                    'supplier_transaction_payments.id as DT_RowId',
+                    'parent_payment.payment_ref_no as parent_payment_ref_no'
+                )
+                ->groupBy('supplier_transaction_payments.id')
+                ->orderByDesc('supplier_transaction_payments.paid_on')
+                ->paginate();
+
+            $payment_types = $this->supplierTransactionUtil->payment_types(null, true, $business_id);
+
+            return view('supplier.partials.supplier_payments_tab')
+                    ->with(compact('payments', 'payment_types'));
         }
     }
 }

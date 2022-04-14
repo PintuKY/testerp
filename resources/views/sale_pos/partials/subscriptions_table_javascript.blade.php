@@ -23,6 +23,9 @@ $(document).ready( function(){
                 @if(!empty($contact_id))
                     d.contact_id = {{$contact_id}};
                 @endif
+                @if(!empty($supplier_id))
+                    d.supplier_id = {{$supplier_id}};
+                @endif
             }
         },
         columnDefs: [ {

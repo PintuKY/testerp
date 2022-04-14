@@ -2958,6 +2958,23 @@ $(document).on('click', 'a.update_contact_status', function(e){
     });
 });
 
+$(document).on('click', 'a.update_supplier_status', function(e){
+    e.preventDefault();
+    var href = $(this).attr('href');
+    $.ajax({
+        url: href,
+        dataType: 'json',
+        success: function(data) {
+            if (data.success == true) {
+                toastr.success(data.msg);
+                supplier_table.ajax.reload();
+            } else {
+                toastr.error(data.msg);
+            }
+        },
+    });
+});
+
 $(document).on('shown.bs.modal', '.contact_modal', function(e) {
     $('.dob-date-picker').datepicker({
       autoclose: true,

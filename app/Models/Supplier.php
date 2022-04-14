@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
 
 class Supplier extends Model
 {
@@ -32,18 +33,26 @@ class Supplier extends Model
 
     public static function suppliersDropdown($business_id, $prepend_none = true, $append_id = true)
     {
-        $all_supplier = SUpplier::where('business_id', $business_id)->active();
-
+        $all_supplier = Supplier::where('business_id', $business_id)->active();
+     
         if ($append_id) {
-            $all_supplier->select('id',DB::raw("CONCAT(name, ' (', supplier_business_name, ')') as supplier"));
+            $all_supplier->select(
+                DB::raw("IF(supplier_id IS NULL OR supplier_id='', name, CONCAT(name, ' - ', COALESCE(supplier_business_name, ''), '(', supplier_id, ')')) AS supplier"),
+                'id'
+                    );
+        } else {
+            $all_supplier->select(
+                'id',
+                DB::raw("CONCAT(name, ' (', supplier_business_name, ')') as supplier")
+                );
         }
 
         if (auth()->check() && !auth()->user()->can('supplier.view') && auth()->user()->can('supplier.view_own')) {
             $all_supplier->where('supplier.created_by', auth()->user()->id);
         }
-
-        $suppliers = $all_supplier->pluck('supplier_id', 'id');
-
+        
+        $suppliers = $all_supplier->select('supplier_id', 'id');
+        
         //Prepend none
         if ($prepend_none) {
             $suppliers = $suppliers->prepend(__('lang_v1.none'), '');

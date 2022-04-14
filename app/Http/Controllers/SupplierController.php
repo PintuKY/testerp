@@ -471,7 +471,7 @@ class SupplierController extends Controller
                     if (auth()->user()->can('supplier.update')) {
                         $html .= '<li><a href="' . action('SupplierController@updateStatus', [$row->id]) . '"class="update_supplier_status"><i class="fas fa-power-off"></i>';
 
-                        if ($row->contact_status == "active") {
+                        if ($row->supplier_status == "active") {
                             $html .= __("messages.deactivate");
                         } else {
                             $html .= __("messages.activate");
@@ -480,48 +480,48 @@ class SupplierController extends Controller
                         $html .= "</a></li>";
                     }
 
-                    // $html .= '<li class="divider"></li>';
-                    // if (auth()->user()->can('supplier.view')) {
-                    //     $html .= '
-                    //             <li>
-                    //                 <a href="' . action('SupplierController@show', [$row->id]). '?view=ledger">
-                    //                     <i class="fas fa-scroll" aria-hidden="true"></i>
-                    //                     ' . __("lang_v1.ledger") . '
-                    //                 </a>
-                    //             </li>';
+                    $html .= '<li class="divider"></li>';
+                    if (auth()->user()->can('supplier.view')) {
+                        $html .= '
+                                <li>
+                                    <a href="' . action('SupplierController@show', [$row->id]). '?view=ledger">
+                                        <i class="fas fa-scroll" aria-hidden="true"></i>
+                                        ' . __("lang_v1.ledger") . '
+                                    </a>
+                                </li>';
 
-                    //     if (in_array($row->type, ["both", "supplier"])) {
-                    //         $html .= '<li>
-                    //             <a href="' . action('ContactController@show', [$row->id]) . '?view=purchase">
-                    //                 <i class="fas fa-arrow-circle-down" aria-hidden="true"></i>
-                    //                 ' . __("purchase.purchases") . '
-                    //             </a>
-                    //         </li>
-                    //         <li>
-                    //             <a href="' . action('ContactController@show', [$row->id]) . '?view=stock_report">
-                    //                 <i class="fas fa-hourglass-half" aria-hidden="true"></i>
-                    //                 ' . __("report.stock_report") . '
-                    //             </a>
-                    //         </li>';
-                    //     }
+                        
+                        $html .= '<li>
+                            <a href="' . action('SupplierController@show', [$row->id]) . '?view=purchase">
+                                <i class="fas fa-arrow-circle-down" aria-hidden="true"></i>
+                                ' . __("purchase.purchases") . '
+                            </a>
+                        </li>
+                        <li>
+                            <a href="' . action('SupplierController@show', [$row->id]) . '?view=stock_report">
+                                <i class="fas fa-hourglass-half" aria-hidden="true"></i>
+                                ' . __("report.stock_report") . '
+                            </a>
+                        </li>';
+                        
 
-                    //     if (in_array($row->type, ["both", "customer"])) {
-                    //         $html .=  '<li>
-                    //             <a href="' . action('ContactController@show', [$row->id]). '?view=sales">
-                    //                 <i class="fas fa-arrow-circle-up" aria-hidden="true"></i>
-                    //                 ' . __("sale.sells") . '
-                    //             </a>
-                    //         </li>';
-                    //     }
+                        // if (in_array($row->type, ["both", "customer"])) {
+                        //     $html .=  '<li>
+                        //         <a href="' . action('ContactController@show', [$row->id]). '?view=sales">
+                        //             <i class="fas fa-arrow-circle-up" aria-hidden="true"></i>
+                        //             ' . __("sale.sells") . '
+                        //         </a>
+                        //     </li>';
+                        // }
 
-                    //     $html .= '<li>
-                    //             <a href="' . action('SupplierController@show', [$row->id]) . '?view=documents_and_notes">
-                    //                 <i class="fas fa-paperclip" aria-hidden="true"></i>
-                    //                  ' . __("lang_v1.documents_and_notes") . '
-                    //             </a>
-                    //         </li>';
-                    // }
-                    // $html .= '</ul></div>';
+                        $html .= '<li>
+                                <a href="' . action('SupplierController@show', [$row->id]) . '?view=documents_and_notes">
+                                    <i class="fas fa-paperclip" aria-hidden="true"></i>
+                                     ' . __("lang_v1.documents_and_notes") . '
+                                </a>
+                            </li>';
+                    }
+                    $html .= '</ul></div>';
 
                     return $html;
                 }
@@ -568,143 +568,6 @@ class SupplierController extends Controller
                 });
             })
             ->rawColumns(['action', 'opening_balance', 'pay_term', 'due', 'return_due', 'name', 'balance'])
-            ->make(true);
-
-        if (!auth()->user()->can('supplier.view') && !auth()->user()->can('supplier.view_own')) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        $business_id = request()->session()->get('user.business_id');
-
-        $supplier = $this->supplierUtil->getSupplierQuery($business_id);
-
-        if (request()->has('has_purchase_due')) {
-           $supplier->havingRaw('(total_purchase - purchase_paid) > 0');
-        }
-
-        if (request()->has('has_purchase_return')) {
-           $supplier->havingRaw('total_purchase_return > 0');
-        }
-
-        if (request()->has('has_advance_balance')) {
-           $supplier->where('balance', '>', 0);
-        }
-
-        if (!empty(request()->input('contact_status'))) {
-            $supplier->where('supplier.supplier_status', request()->input('supplier_status'));
-        }
-
-        // $is_admin = $this->supplierUtil->is_admin(auth()->user());
-        // if (!$is_admin) {
-        //     $user_id = auth()->user()->id;
-        //     $selected_contacts = User::isSelectedContacts($user_id);
-        //     if ($selected_contacts) {
-        //         $supplier->join('user_contact_access AS uca', 'supplier.id', 'uca.contact_id')
-        //         ->where('uca.user_id', $user_id);
-        //     }
-        // }
-
-        return DataTables::of($supplier)
-            ->addColumn('address', '{{implode(", ", array_filter([$address_line_1, $address_line_2, $city, $state, $country, $zip_code]))}}')
-            ->addColumn(
-                'due',
-                '<span class="supplier_due" data-orig-value="{{$total_purchase - $purchase_paid}}" data-highlight=false>@format_currency($total_purchase - $purchase_paid)</span>'
-            )
-            ->addColumn(
-                'return_due',
-                '<span class="return_due" data-orig-value="{{$total_purchase_return - $purchase_return_paid}}" data-highlight=false>@format_currency($total_purchase_return - $purchase_return_paid)'
-            )
-            ->addColumn(
-                'action',
-                function ($row) {
-                    $html = '<div class="btn-group">
-                    <button type="button" class="btn btn-info dropdown-toggle btn-xs"
-                        data-toggle="dropdown" aria-expanded="false">' .
-                        __("messages.actions") .
-                        '<span class="caret"></span><span class="sr-only">Toggle Dropdown
-                        </span>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-left" role="menu">';
-
-                    if (auth()->user()->can('supplier.view') || auth()->user()->can('supplier.view_own')) {
-                        $html .= '<li><a href="' . action('SupplierController@show', [$row->id]) . '"><i class="fas fa-eye" aria-hidden="true"></i>' . __("messages.view") . '</a></li>';
-                    }
-                    if (auth()->user()->can('supplier.update')) {
-                        $html .= '<li><a href="' . action('SupplierController@edit', [$row->id]) . '" class="edit_supplier_button"><i class="glyphicon glyphicon-edit"></i>' .  __("messages.edit") . '</a></li>';
-                    }
-                    if (auth()->user()->can('supplier.delete')) {
-                        $html .= '<li><a href="' . action('SupplierController@destroy', [$row->id]) . '" class="delete_supplier_button"><i class="glyphicon glyphicon-trash"></i>' . __("messages.delete") . '</a></li>';
-                    }
-                    if (auth()->user()->can('customer.update')) {
-                        $html .= '<li><a href="' . action('SupplierController@updateStatus', [$row->id]) . '"class="update_supplier_status"><i class="fas fa-power-off"></i>';
-
-                        if ($row->contact_status == "active") {
-                            $html .= __("messages.deactivate");
-                        } else {
-                            $html .= __("messages.activate");
-                        }
-
-                        $html .= "</a></li>";
-                    }
-                    $html .= '<li class="divider"></li>';
-                    if (auth()->user()->can('supplier.view')) {
-                        $html .= '
-                                <li>
-                                    <a href="' . action('SupplierController@show', [$row->id]). '?view=ledger">
-                                        <i class="fas fa-scroll" aria-hidden="true"></i>
-                                        ' . __("lang_v1.ledger") . '
-                                    </a>
-                                </li>';
-                        $html .= '<li>
-                                <a href="' . action('SupplierController@show', [$row->id]) . '?view=documents_and_notes">
-                                    <i class="fas fa-paperclip" aria-hidden="true"></i>
-                                     ' . __("lang_v1.documents_and_notes") . '
-                                </a>
-                            </li>';
-                    }
-                    $html .= '</ul></div>';
-
-                    return $html;
-                }
-            )
-            
-            ->editColumn('balance', function ($row) {
-                $html = '<span data-orig-value="' . $row->balance . '">' . $this->transactionUtil->num_f($row->balance, true) . '</span>';
-
-                return $html;
-            })
-            ->editColumn('pay_term', '
-                @if(!empty($pay_term_type) && !empty($pay_term_number))
-                    {{$pay_term_number}}
-                    @lang("lang_v1.".$pay_term_type)
-                @endif
-            ')
-            ->editColumn('name', function ($row) {
-                if ($row->supplier_status == 'inactive') {
-                    return $row->name . ' <small class="label pull-right bg-red no-print">' . __("lang_v1.inactive") . '</small>';
-                } else {
-                    return $row->name;
-                }
-            })
-            ->editColumn('created_at', '{{@format_date($created_at)}}')
-            ->removeColumn('type')
-            ->removeColumn('id')
-            ->removeColumn('total_purchase')
-            ->removeColumn('purchase_paid')
-            ->removeColumn('total_purchase_return')
-            ->removeColumn('purchase_return_paid')
-            ->filterColumn('address', function ($query, $keyword) {
-                $query->where( function($q) use ($keyword){
-                    $q->where('address_line_1', 'like', "%{$keyword}%")
-                    ->orWhere('address_line_2', 'like', "%{$keyword}%")
-                    ->orWhere('city', 'like', "%{$keyword}%")
-                    ->orWhere('state', 'like', "%{$keyword}%")
-                    ->orWhere('country', 'like', "%{$keyword}%")
-                    ->orWhere('zip_code', 'like', "%{$keyword}%")
-                    ->orWhereRaw("CONCAT(COALESCE(address_line_1, ''), ', ', COALESCE(address_line_2, ''), ', ', COALESCE(city, ''), ', ', COALESCE(state, ''), ', ', COALESCE(country, '') ) like ?", ["%{$keyword}%"]);
-                });
-            })
-            ->rawColumns(['action', 'pay_term', 'due', 'return_due', 'name', 'balance'])
             ->make(true);
     }
 
@@ -753,7 +616,7 @@ class SupplierController extends Controller
     }
 
     public function updateStatus($id)
-    {
+    {   
         if (!auth()->user()->can('supplier.update')) {
             abort(403, 'Unauthorized action.');
         }
@@ -845,7 +708,7 @@ class SupplierController extends Controller
     {   
         dd('demo');
         $pl_query_string = $this->commonUtil->get_pl_quantity_sum_string();
-        $query = PurchaseLine::join('transactions as t', 't.id', '=', 'purchase_lines.transaction_id')
+        $query = PurchaseLine::join('supplier_transactions as t', 't.id', '=', 'purchase_lines.transaction_id')
                         ->join('products as p', 'p.id', '=', 'purchase_lines.product_id')
                         ->join('variations as v', 'v.id', '=', 'purchase_lines.variation_id')
                         ->join('product_variations as pv', 'v.product_variation_id', '=', 'pv.id')
@@ -954,4 +817,6 @@ class SupplierController extends Controller
                     ->with(compact('payments', 'payment_types'));
         }
     }
+
+    
 }

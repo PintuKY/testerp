@@ -62,6 +62,18 @@
                           <li><a href="{{route('supplier.index')}}"><i class="fa fas fa-star"></i> <span>Lists Suppliers</span></a></li>
                         </ul>
                       </li>
+                      <li class="treeview" id="tour_step6">
+                        <a href="#">
+                          <i class="fa fas fa-arrow-circle-down"></i> <span>Supplier Purchases</span>
+                          <span class="pull-right-container">
+                            <i class="fa fa-angle-left pull-right"></i>
+                          </span>
+                        </a>
+                        <ul class="treeview-menu">
+                          <li><a href="{{route('supplier-purchases.index')}}"><i class="fa fas fa-list"></i> <span>List Supplier Purchases</span></a></li>
+                          <li><a href="{{route('supplier-purchases.create')}}"><i class="fa fas fa-plus-circle"></i> <span>Add Supplier Purchase</span></a></li>
+                        </ul>
+                      </li>
     <li class="treeview" id="tour_step6">
                       <a href="#">
                         <i class="fa fas fa-arrow-circle-down"></i> <span>Purchases</span>

@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreign('business_id')->references('id')->on('business')->onDelete('cascade');
             $table->integer('location_id')->unsigned();
             $table->foreign('location_id')->references('id')->on('business_locations');
-            $table->enum('type', ['purchase','sell', 'expense', 'stock_adjustment', 'sell_transfer', 'purchase_transfer', 'opening_stock', 'sell_return', 'opening_balance']);
+            $table->enum('type', ['purchase','sell', 'expense', 'stock_adjustment', 'sell_transfer', 'purchase_transfer', 'opening_stock', 'sell_return', 'opening_balance', 'purchase_return'],"DEFAULT NULL");
             $table->enum('status', ['received', 'pending', 'ordered', 'draft', 'final']);
             $table->enum('payment_status', ['paid', 'due']);
             $table->integer('supplier_id')->unsigned();
@@ -40,6 +40,18 @@ return new class extends Migration
             $table->text('additional_notes')->nullable();
             $table->text('staff_note')->nullable();
             $table->decimal('final_total', 22, 4)->default(0);
+            $table->boolean('is_recurring')->default(0);
+            $table->float('recur_interval', 22, 4)->nullable();
+            $table->enum('recur_interval_type', ['days', 'months', 'years'])->nullable();
+            $table->integer('recur_repetitions')->nullable();
+            $table->dateTime('recur_stopped_on')->nullable();
+            $table->integer('recur_parent_id')->nullable();
+            $table->integer('return_parent_id')->nullable();
+            $table->enum('res_order_status', ['received', 'cooked', 'served'])->nullable();
+            $table->integer('transfer_parent_id')->nullable();
+            $table->integer('opening_stock_product_id')->nullable();
+            $table->boolean('is_direct_sale')->default(0);
+            $table->string('document')->nullable();
             $table->integer('created_by')->unsigned();
             $table->foreign('created_by')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();

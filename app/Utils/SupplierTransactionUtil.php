@@ -4,6 +4,7 @@ namespace App\Utils;
 
 use App\Models\Business;
 use App\Models\BusinessLocation;
+use App\Models\Currency;
 use App\Models\ReferenceCount;
 use App\Models\Supplier;
 use App\Models\SupplierTransaction;
@@ -24,8 +25,7 @@ class SupplierTransactionUtil extends Util
      */
     public function createOpeningBalanceTransaction($business_id, $supplier_id, $amount, $created_by, $uf_data = true)
     {
-        $business_location = BusinessLocation::where('business_id', $business_id)
-                                                        ->first();
+        $business_location = BusinessLocation::where('business_id', $business_id)->first();
         $final_amount = $uf_data ? $this->num_uf($amount) : $amount;
         $ob_data = [
                     'business_id' => $business_id,
@@ -418,5 +418,86 @@ class SupplierTransactionUtil extends Util
         }
 
         return $query;
+    }
+
+    public function getListPurchases($business_id)
+    {
+        $purchases = SupplierTransaction::leftJoin('supplier', 'supplier_transactions.supplier_id', '=', 'supplier.id')
+                    ->join(
+                        'business_locations AS BS',
+                        'supplier_transactions.location_id',
+                        '=',
+                        'BS.id'
+                    )
+                    ->leftJoin(
+                        'supplier_transaction_payments AS TP',
+                        'supplier_transactions.id',
+                        '=',
+                        'TP.supplier_transaction_id'
+                    )
+                    ->leftJoin(
+                        'supplier_transactions AS PR',
+                        'supplier_transactions.id',
+                        '=',
+                        'PR.return_parent_id'
+                    )
+                    ->leftJoin('users as u', 'supplier_transactions.created_by', '=', 'u.id')
+                    ->where('supplier_transactions.business_id', $business_id)
+                    ->where('supplier_transactions.type', 'purchase')
+                    ->select(
+                        'supplier_transactions.id',
+                        'supplier_transactions.document',
+                        'supplier_transactions.transaction_date',
+                        'supplier_transactions.ref_no',
+                        'supplier.name',
+                        'supplier.supplier_business_name',
+                        'supplier_transactions.status',
+                        'supplier_transactions.payment_status',
+                        'supplier_transactions.final_total',
+                        'BS.name as location_name',
+                        'supplier_transactions.pay_term_number',
+                        'supplier_transactions.pay_term_type',
+                        'PR.id as return_supplier_transaction_id',
+                        DB::raw('SUM(TP.amount) as amount_paid'),
+                        DB::raw('(SELECT SUM(TP2.amount) FROM supplier_transaction_payments AS TP2 WHERE TP2.supplier_transaction_id=PR.id ) as return_paid'),
+                        DB::raw('COUNT(PR.id) as return_exists'),
+                        DB::raw('COALESCE(PR.final_total, 0) as amount_return'),
+                        DB::raw("CONCAT(COALESCE(u.surname, ''),' ',COALESCE(u.first_name, ''),' ',COALESCE(u.last_name,'')) as added_by")
+                    )
+                    ->groupBy('supplier_transactions.id');
+
+        return $purchases;
+    }
+
+    public function purchaseCurrencyDetails($business_id)
+    {
+        $business = Business::find($business_id);
+        $output = ['purchase_in_diff_currency' => false,
+                    'p_exchange_rate' => 1,
+                    'decimal_seperator' => '.',
+                    'thousand_seperator' => ',',
+                    'symbol' => '',
+                ];
+
+        //Check if diff currency is used or not.
+        if ($business->purchase_in_diff_currency == 1) {
+            $output['purchase_in_diff_currency'] = true;
+            $output['p_exchange_rate'] = $business->p_exchange_rate;
+
+            $currency_id = $business->purchase_currency_id;
+        } else {
+            $output['purchase_in_diff_currency'] = false;
+            $output['p_exchange_rate'] = 1;
+            $currency_id = $business->currency_id;
+        }
+
+        $currency = Currency::find($currency_id);
+        $output['thousand_separator'] = $currency->thousand_separator;
+        $output['decimal_separator'] = $currency->decimal_separator;
+        $output['symbol'] = $currency->symbol;
+        $output['code'] = $currency->code;
+        $output['name'] = $currency->currency;
+
+        return (object)$output;
     }
 }

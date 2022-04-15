@@ -5,10 +5,14 @@ namespace App\Utils;
 use App\Models\Business;
 use App\Models\BusinessLocation;
 use App\Models\Currency;
+use App\Models\Product;
 use App\Models\ReferenceCount;
 use App\Models\Supplier;
+use App\Models\SupplierPurchaseLine;
 use App\Models\SupplierTransaction;
 use App\Models\SupplierTransactionPayments;
+use App\Models\SupplierTransactionSellLinesPurchaseLines;
+use App\Models\Variation;
 use Carbon\Carbon;
 use DB;
 
@@ -422,7 +426,7 @@ class SupplierTransactionUtil extends Util
 
     public function getListPurchases($business_id)
     {
-        $purchases = SupplierTransaction::leftJoin('supplier', 'supplier_transactions.supplier_id', '=', 'supplier.id')
+        $supplierPurchases = SupplierTransaction::leftJoin('supplier', 'supplier_transactions.supplier_id', '=', 'supplier.id')
                     ->join(
                         'business_locations AS BS',
                         'supplier_transactions.location_id',
@@ -466,8 +470,16 @@ class SupplierTransactionUtil extends Util
                     )
                     ->groupBy('supplier_transactions.id');
 
-        return $purchases;
+        return $supplierPurchases;
     }
+
+    /**
+     * Purchase currency details
+     *
+     * @param int $business_id
+     *
+     * @return object
+     */
 
     public function purchaseCurrencyDetails($business_id)
     {
@@ -499,5 +511,613 @@ class SupplierTransactionUtil extends Util
         $output['name'] = $currency->currency;
 
         return (object)$output;
+    }
+
+    public function updatePurchaseOrderStatus($purchase_order_ids = [])
+    {
+        foreach ($purchase_order_ids as $purchase_order_id) {
+            $purchase_order = SupplierTransaction::with(['supplierPurchaseLines'])->find($purchase_order_id);
+
+            if (empty($purchase_order)) {
+                continue;
+            }
+            $total_ordered = $purchase_order->supplierPurchaseLines->sum('quantity');
+            $total_received = $purchase_order->supplierPurchaseLines->sum('po_quantity_purchased');
+
+            $status = $total_received == 0 ? 'ordered' : 'partial';
+            if ($total_ordered == $total_received) {
+                $status = 'completed';
+            }
+            $purchase_order->status = $status;
+            $purchase_order->save();
+        }
+    }
+
+    /**
+     * Add supplier line for payment
+     *
+     * @param object/int $Supplier transaction
+     * @param array $payments
+     *
+     * @return boolean
+     */
+
+    public function createOrUpdateSupplierPaymentLines($supplier_transaction, $payments, $business_id = null, $user_id = null, $uf_data = true)
+    {
+        $payments_formatted = [];
+        $edit_ids = [0];
+        $account_transactions = [];
+
+        if (!is_object($supplier_transaction)) {
+            $supplier_transaction = SupplierTransaction::findOrFail($supplier_transaction);
+        }
+
+        //If status is draft don't add payment
+        if ($supplier_transaction->status == 'draft') {
+            return true;
+        }
+        $c = 0;
+        $prefix_type = 'sell_payment';
+        if ($supplier_transaction->type == 'purchase') {
+            $prefix_type = 'purchase_payment';
+        }
+        $contact_balance = Supplier::where('id', $supplier_transaction->supplier_id)->value('balance');
+        foreach ($payments as $payment) {
+            //Check if transaction_sell_lines_id is set.
+            if (!empty($payment['payment_id'])) {
+                $edit_ids[] = $payment['payment_id'];
+                $this->editPaymentLine($payment, $supplier_transaction, $uf_data);
+            } else {
+                $payment_amount = $uf_data ? $this->num_uf($payment['amount']) : $payment['amount'];
+                if ($payment['method'] == 'advance' && $payment_amount > $contact_balance) {
+                    throw new AdvanceBalanceNotAvailable(__('lang_v1.required_advance_balance_not_available'));
+                }
+                //If amount is 0 then skip.
+                if ($payment_amount != 0) {
+                    $prefix_type = 'sell_payment';
+                    if ($supplier_transaction->type == 'purchase') {
+                        $prefix_type = 'purchase_payment';
+                    }
+                    $ref_count = $this->setAndGetReferenceCount($prefix_type, $business_id);
+                    //Generate reference number
+                    $payment_ref_no = $this->generateReferenceNumber($prefix_type, $ref_count, $business_id);
+
+                    //If change return then set account id same as the first payment line account id
+                    if (isset($payment['is_return']) && $payment['is_return'] == 1) {
+                        $payment['account_id'] = !empty($payments[0]['account_id']) ? $payments[0]['account_id'] : null;
+                    }
+
+                    if (!empty($payment['paid_on'])) {
+                        $paid_on = $uf_data ? $this->uf_date($payment['paid_on'], true) : $payment['paid_on'];
+                    } else {
+                        $paid_on = Carbon::now()->toDateTimeString();
+                    }
+
+                    $payment_data = [
+                        'amount' => $payment_amount,
+                        'method' => $payment['method'],
+                        'business_id' => $supplier_transaction->business_id,
+                        'is_return' => isset($payment['is_return']) ? $payment['is_return'] : 0,
+                        'card_transaction_number' => isset($payment['card_transaction_number']) ? $payment['card_transaction_number'] : null,
+                        'card_number' => isset($payment['card_number']) ? $payment['card_number'] : null,
+                        'card_type' => isset($payment['card_type']) ? $payment['card_type'] : null,
+                        'card_holder_name' => isset($payment['card_holder_name']) ? $payment['card_holder_name'] : null,
+                        'card_month' => isset($payment['card_month']) ? $payment['card_month'] : null,
+                        'card_security' => isset($payment['card_security']) ? $payment['card_security'] : null,
+                        'cheque_number' => isset($payment['cheque_number']) ? $payment['cheque_number'] : null,
+                        'bank_account_number' => isset($payment['bank_account_number']) ? $payment['bank_account_number'] : null,
+                        'note' => isset($payment['note']) ? $payment['note'] : null,
+                        'paid_on' => $paid_on,
+                        'created_by' => empty($user_id) ? auth()->user()->id : $user_id,
+                        'payment_for' => $supplier_transaction->supplier_id,
+                        'payment_ref_no' => $payment_ref_no,
+                        'account_id' => !empty($payment['account_id']) && $payment['method'] != 'advance' ? $payment['account_id'] : null
+                    ];
+
+                    for ($i=1; $i<8; $i++) {
+                        if ($payment['method'] == 'custom_pay_' . $i) {
+                            $payment_data['transaction_no'] = $payment["transaction_no_{$i}"];
+                        }
+                    }
+
+                    $payments_formatted[] = new SupplierTransactionPayments($payment_data);
+
+                    $account_transactions[$c] = [];
+
+                    //create account transaction
+                    $payment_data['transaction_type'] = $supplier_transaction->type;
+                    $account_transactions[$c] = $payment_data;
+
+                    $c++;
+                }
+            }
+        }
+
+        //Delete the payment lines removed.
+        if (!empty($edit_ids)) {
+            $deleted_transaction_payments = $supplier_transaction->paymentLines()->whereNotIn('id', $edit_ids)->get();
+
+            $supplier_transaction->paymentLines()->whereNotIn('id', $edit_ids)->delete();
+
+            //Fire delete transaction payment event
+            foreach ($deleted_transaction_payments as $deleted_transaction_payment) {
+                event(new TransactionPaymentDeleted($deleted_transaction_payment));
+            }
+        }
+
+        if (!empty($payments_formatted)) {
+            $supplier_transaction->paymentLines()->saveMany($payments_formatted);
+
+            foreach ($supplier_transaction->paymentLines as $key => $value) {
+                if (!empty($account_transactions[$key])) {
+                    event(new TransactionPaymentAdded($value, $account_transactions[$key]));
+                }
+            }
+        }
+
+        return true;
+    }
+
+    public function editPaymentLine($payment, $transaction = null, $uf_data = true)
+    {
+        $payment_id = $payment['payment_id'];
+        unset($payment['payment_id']);
+
+        for ($i=1; $i<8; $i++) {
+            if ($payment['method'] == 'custom_pay_' . $i) {
+                $payment['transaction_no'] = $payment["transaction_no_{$i}"];
+            }
+            unset($payment["transaction_no_{$i}"]);
+        }
+
+        if (!empty($payment['paid_on'])) {
+            $payment['paid_on'] = $uf_data ? $this->uf_date($payment['paid_on'], true) : $payment['paid_on'];
+        }
+
+        $payment['amount'] = $uf_data ? $this->num_uf($payment['amount']) : $payment['amount'];
+
+        $tp = SupplierTransactionPayments::where('id', $payment_id)
+                            ->first();
+
+        $transaction_type = !empty($transaction->type) ? $transaction->type : null;
+
+        $tp->update($payment);
+
+        //event
+        event(new TransactionPaymentUpdated($tp, $transaction->type));
+
+        return true;
+    }
+
+    /**
+     * Check if transaction can be edited based on business     transaction_edit_days
+     *
+     * @param  int/object $transaction
+     * @param  int $edit_duration
+     *
+     * @return boolean
+     */
+
+    public function canBeEdited($transaction, $edit_duration)
+    {
+        if (!is_object($transaction)) {
+            $transaction = SupplierTransaction::find($transaction);
+        }
+        if (empty($transaction)) {
+            return false;
+        }
+
+        $date = Carbon::parse($transaction->transaction_date)
+                    ->addDays($edit_duration);
+
+        $today = today();
+
+        if ($date->gte($today)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Check if return exist for a particular purchase or sell
+     * @param id $transacion_id
+     *
+     * @return boolean
+     */
+    public function isReturnExist($transacion_id)
+    {
+        return SupplierTransaction::where('return_parent_id', $transacion_id)->exists();
+    }
+
+    /**
+     * Adjust the existing mapping between purchase & sell on edit of
+     * purchase
+     *
+     * @param  string $before_status
+     * @param  object $transaction
+     * @param  object $delete_purchase_lines
+     *
+     * @return void
+     */
+    public function adjustMappingSupplierPurchaseSellAfterEditingSupplierPurchase($before_status, $transaction, $delete_purchase_lines)
+    {
+        if ($before_status == 'received' && $transaction->status == 'received') {
+            //Check if there is some irregularities between purchase & sell and make appropiate adjustment.
+
+            //Get all purchase line having irregularities.
+            $purchase_lines = SupplierTransaction::join(
+                'supplier_purchase_lines AS SPL',
+                'supplier_transactions.id',
+                '=',
+                'SPL.supplier_transactions_id'
+            )
+                    ->join(
+                        'supplier_transaction_sell_lines_purchase_lines AS STSPL',
+                        'SPL.id',
+                        '=',
+                        'STSPL.purchase_line_id'
+                    )
+                    ->groupBy('STSPL.purchase_line_id')
+                    ->where('supplier_transactions.id', $transaction->id)
+                    ->havingRaw('SUM(STSPL.quantity) > MAX(SPL.quantity)')
+                    ->select(['STSPL.purchase_line_id AS id',
+                            DB::raw('SUM(STSPL.quantity) AS tspl_quantity'),
+                            DB::raw('MAX(SPL.quantity) AS pl_quantity')
+                        ])
+                    ->get()
+                    ->toArray();
+        } elseif ($before_status == 'received' && $transaction->status != 'received') {
+            //Delete sell for those & add new sell or throw error.
+            $purchase_lines = SupplierTransaction::join(
+                'supplier_purchase_lines AS SPL',
+                'supplier_transactions.id',
+                '=',
+                'SPL.supplier_transactions_id'
+            )
+                    ->join(
+                        'supplier_transaction_sell_lines_purchase_lines AS STSPL',
+                        'SPL.id',
+                        '=',
+                        'STSPL.purchase_line_id'
+                    )
+                    ->groupBy('STSPL.purchase_line_id')
+                    ->where('supplier_transactions.id', $transaction->id)
+                    ->select(['STSPL.purchase_line_id AS id',
+                        DB::raw('MAX(SPL.quantity) AS pl_quantity')
+                    ])
+                    ->get()
+                    ->toArray();
+        } else {
+            return true;
+        }
+
+        //Get detail of purchase lines deleted
+        if (!empty($delete_purchase_lines)) {
+            $purchase_lines = $delete_purchase_lines->toArray() + $purchase_lines;
+        }
+
+        //All sell lines & Stock adjustment lines.
+        $sell_lines = [];
+        $stock_adjustment_lines = [];
+        foreach ($purchase_lines as $purchase_line) {
+            $tspl_quantity = isset($purchase_line['tspl_quantity']) ? $purchase_line['tspl_quantity'] : 0;
+            $pl_quantity = isset($purchase_line['pl_quantity']) ? $purchase_line['pl_quantity'] : $purchase_line['quantity'];
+
+
+            $extra_sold = abs($tspl_quantity - $pl_quantity);
+
+            //Decrease the quantity from transaction_sell_lines_purchase_lines or delete it if zero
+            $tspl = SupplierTransactionSellLinesPurchaseLines::where('purchase_line_id', $purchase_line['id'])
+                ->leftjoin(
+                    'supplier_transaction_sell_lines AS SL',
+                    'supplier_transaction_sell_lines_purchase_lines.sell_line_id',
+                    '=',
+                    'SL.id'
+                )
+                ->leftjoin(
+                    'supplier_stock_adjustment_lines AS SAL',
+                    'supplier_transaction_sell_lines_purchase_lines.stock_adjustment_line_id',
+                    '=',
+                    'SAL.id'
+                )
+                ->orderBy('supplier_transaction_sell_lines_purchase_lines.id', 'desc')
+                ->select(['SL.product_id AS sell_product_id',
+                        'SL.variation_id AS sell_variation_id',
+                        'SL.id AS sell_line_id',
+                        'SAL.product_id AS adjust_product_id',
+                        'SAL.variation_id AS adjust_variation_id',
+                        'SAL.id AS adjust_line_id',
+                        'supplier_transaction_sell_lines_purchase_lines.quantity',
+                        'supplier_transaction_sell_lines_purchase_lines.purchase_line_id', 'supplier_transaction_sell_lines_purchase_lines.id as tslpl_id'])
+                ->get();
+
+            foreach ($tspl as $row) {
+                if ($row->quantity <= $extra_sold) {
+                    if (!empty($row->sell_line_id)) {
+                        $sell_lines[] = (object)['id' => $row->sell_line_id,
+                                'quantity' => $row->quantity,
+                                'product_id' => $row->sell_product_id,
+                                'variation_id' => $row->sell_variation_id,
+                            ];
+                        SupplierPurchaseLine::where('id', $row->purchase_line_id)
+                            ->decrement('quantity_sold', $row->quantity);
+                    } else {
+                        $stock_adjustment_lines[] =
+                            (object)['id' => $row->adjust_line_id,
+                                'quantity' => $row->quantity,
+                                'product_id' => $row->adjust_product_id,
+                                'variation_id' => $row->adjust_variation_id,
+                            ];
+                        SupplierPurchaseLine::where('id', $row->purchase_line_id)
+                            ->decrement('quantity_adjusted', $row->quantity);
+                    }
+
+                    $extra_sold = $extra_sold - $row->quantity;
+                    SupplierTransactionSellLinesPurchaseLines::where('id', $row->tslpl_id)->delete();
+                } else {
+                    if (!empty($row->sell_line_id)) {
+                        $sell_lines[] = (object)['id' => $row->sell_line_id,
+                                'quantity' => $extra_sold,
+                                'product_id' => $row->sell_product_id,
+                                'variation_id' => $row->sell_variation_id,
+                            ];
+                        SupplierPurchaseLine::where('id', $row->purchase_line_id)
+                            ->decrement('quantity_sold', $extra_sold);
+                    } else {
+                        $stock_adjustment_lines[] =
+                            (object)['id' => $row->adjust_line_id,
+                                'quantity' => $extra_sold,
+                                'product_id' => $row->adjust_product_id,
+                                'variation_id' => $row->adjust_variation_id,
+                            ];
+
+                        SupplierPurchaseLine::where('id', $row->purchase_line_id)
+                            ->decrement('quantity_adjusted', $extra_sold);
+                    }
+
+                    SupplierTransactionSellLinesPurchaseLines::where('id', $row->tslpl_id)->update(['quantity' => $row->quantity - $extra_sold]);
+
+                    $extra_sold = 0;
+                }
+
+                if ($extra_sold == 0) {
+                    break;
+                }
+            }
+        }
+
+        $business = Business::find($transaction->business_id)->toArray();
+        $business['location_id'] = $transaction->location_id;
+
+        //Allocate the sold lines to purchases.
+        if (!empty($sell_lines)) {
+            $sell_lines = (object)$sell_lines;
+            $this->mapPurchaseSell($business, $sell_lines, 'purchase');
+        }
+
+        //Allocate the stock adjustment lines to purchases.
+        if (!empty($stock_adjustment_lines)) {
+            $stock_adjustment_lines = (object)$stock_adjustment_lines;
+            $this->mapPurchaseSell($business, $stock_adjustment_lines, 'stock_adjustment');
+        }
+    }
+    
+    /**
+     * Add a mapping between purchase & sell lines.
+     * NOTE: Don't use request variable here, request variable don't exist while adding
+     * dummybusiness via command line
+     *
+     * @param array $business
+     * @param array $transaction_lines
+     * @param string $mapping_type = purchase (purchase or stock_adjustment)
+     * @param boolean $check_expiry = true
+     * @param int $purchase_line_id (default: null)
+     *
+     * @return object
+     */
+    public function mapPurchaseSell($business, $transaction_lines, $mapping_type = 'purchase', $check_expiry = true, $purchase_line_id = null)
+    {
+        if (empty($transaction_lines)) {
+            return false;
+        }
+
+        if (!empty($business['pos_settings']) && !is_array($business['pos_settings'])) {
+            $business['pos_settings'] = json_decode($business['pos_settings'], true);
+        }
+        $allow_overselling = !empty($business['pos_settings']['allow_overselling']) ?
+                            true : false;
+
+        //Set flag to check for expired items during SELLING only.
+        $stop_selling_expired = false;
+        if ($check_expiry) {
+            if (session()->has('business') && request()->session()->get('business')['enable_product_expiry'] == 1 && request()->session()->get('business')['on_product_expiry'] == 'stop_selling') {
+                if ($mapping_type == 'purchase') {
+                    $stop_selling_expired = true;
+                }
+            }
+        }
+
+        $qty_selling = null;
+        foreach ($transaction_lines as $line) {
+            //Check if stock is not enabled then no need to assign purchase & sell
+            $product = Product::find($line->product_id);
+            if ($product->enable_stock != 1) {
+                continue;
+            }
+
+            $qty_sum_query = $this->get_pl_quantity_sum_string('PL');
+
+            //Get purchase lines, only for products with enable stock.
+            $query = SupplierTransaction::join('supplier_purchase_lines AS SPL', 'supplier_transactions.id', '=', 'SPL.supplier_transactions_id')
+                ->where('supplier_transactions.business_id', $business['id'])
+                ->where('supplier_transactions.location_id', $business['location_id'])
+                ->whereIn('supplier_transactions.type', ['purchase', 'purchase_transfer',
+                    'opening_stock', 'production_purchase'])
+                ->where('supplier_transactions.status', 'received')
+                ->whereRaw("( $qty_sum_query ) < SPL.quantity")
+                ->where('SPL.product_id', $line->product_id)
+                ->where('SPL.variation_id', $line->variation_id);
+
+            //If product expiry is enabled then check for on expiry conditions
+            if ($stop_selling_expired && empty($purchase_line_id)) {
+                $stop_before = request()->session()->get('business')['stop_selling_before'];
+                $expiry_date = Carbon::today()->addDays($stop_before)->toDateString();
+                $query->where( function($q) use($expiry_date) {
+                    $q->whereNull('SPL.exp_date')
+                        ->orWhereRaw('SPL.exp_date > ?', [$expiry_date]);
+                });
+            }
+
+            //If lot number present consider only lot number purchase line
+            if (!empty($line->lot_no_line_id)) {
+                $query->where('SPL.id', $line->lot_no_line_id);
+            }
+
+            //If purchase_line_id is given consider only that purchase line
+            if (!empty($purchase_line_id)) {
+                $query->where('SPL.id', $purchase_line_id);
+            }
+
+            //Sort according to LIFO or FIFO
+            if ($business['accounting_method'] == 'lifo') {
+                $query = $query->orderBy('transaction_date', 'desc');
+            } else {
+                $query = $query->orderBy('transaction_date', 'asc');
+            }
+
+            $rows = $query->select(
+                'SPL.id as purchase_lines_id',
+                DB::raw("(SPL.quantity - ( $qty_sum_query )) AS quantity_available"),
+                'SPL.quantity_sold as quantity_sold',
+                'SPL.quantity_adjusted as quantity_adjusted',
+                'SPL.quantity_returned as quantity_returned',
+                'SPL.mfg_quantity_used as mfg_quantity_used',
+                'supplier_transactions.invoice_no'
+                    )->get();
+
+            $purchase_sell_map = [];
+
+            //Iterate over the rows, assign the purchase line to sell lines.
+            $qty_selling = $line->quantity;
+            foreach ($rows as $k => $row) {
+                $qty_allocated = 0;
+
+                //Check if qty_available is more or equal
+                if ($qty_selling <= $row->quantity_available) {
+                    $qty_allocated = $qty_selling;
+                    $qty_selling = 0;
+                } else {
+                    $qty_selling = $qty_selling - $row->quantity_available;
+                    $qty_allocated = $row->quantity_available;
+                }
+
+                //Check for sell mapping or stock adjsutment mapping
+                if ($mapping_type == 'stock_adjustment') {
+                    //Mapping of stock adjustment
+                    if ($qty_allocated != 0) {
+                        $purchase_adjustment_map[] =
+                            ['stock_adjustment_line_id' => $line->id,
+                                'purchase_line_id' => $row->purchase_lines_id,
+                                'quantity' => $qty_allocated,
+                                'created_at' => Carbon::now(),
+                                'updated_at' => Carbon::now()
+                            ];
+
+                        //Update purchase line
+                        SupplierPurchaseLine::where('id', $row->purchase_lines_id)
+                            ->update(['quantity_adjusted' => $row->quantity_adjusted + $qty_allocated]);
+                    }
+                } elseif ($mapping_type == 'purchase') {
+                    //Mapping of purchase
+                    if ($qty_allocated != 0) {
+                        $purchase_sell_map[] = ['sell_line_id' => $line->id,
+                                'purchase_line_id' => $row->purchase_lines_id,
+                                'quantity' => $qty_allocated,
+                                'created_at' =>  Carbon::now(),
+                                'updated_at' => Carbon::now()
+                            ];
+
+                        //Update purchase line
+                        SupplierPurchaseLine::where('id', $row->purchase_lines_id)
+                            ->update(['quantity_sold' => $row->quantity_sold + $qty_allocated]);
+                    }
+                } elseif ($mapping_type == 'production_purchase') {
+                    //Mapping of purchase
+                    if ($qty_allocated != 0) {
+                        $purchase_sell_map[] = ['sell_line_id' => $line->id,
+                                'purchase_line_id' => $row->purchase_lines_id,
+                                'quantity' => $qty_allocated,
+                                'created_at' => Carbon::now(),
+                                'updated_at' => Carbon::now()
+                            ];
+
+                        //Update purchase line
+                        SupplierPurchaseLine::where('id', $row->purchase_lines_id)
+                            ->update(['mfg_quantity_used' => $row->mfg_quantity_used + $qty_allocated]);
+                    }
+                }
+
+                if ($qty_selling == 0) {
+                    break;
+                }
+            }
+
+            if (! ($qty_selling == 0 || is_null($qty_selling))) {
+                //If overselling not allowed through exception else create mapping with blank purchase_line_id
+                if (!$allow_overselling) {
+                    $variation = Variation::find($line->variation_id);
+                    $mismatch_name = $product->name;
+                    if (!empty($variation->sub_sku)) {
+                        $mismatch_name .= ' ' . 'SKU: ' . $variation->sub_sku;
+                    }
+                    if (!empty($qty_selling)) {
+                        $mismatch_name .= ' ' . 'Quantity: ' . abs($qty_selling);
+                    }
+
+                    if ($mapping_type == 'purchase') {
+                        $mismatch_error = trans(
+                            "messages.purchase_sell_mismatch_exception",
+                            ['product' => $mismatch_name]
+                        );
+
+                        if ($stop_selling_expired) {
+                            $mismatch_error .= __('lang_v1.available_stock_expired');
+                        }
+                    } elseif ($mapping_type == 'stock_adjustment') {
+                        $mismatch_error = trans(
+                            "messages.purchase_stock_adjustment_mismatch_exception",
+                            ['product' => $mismatch_name]
+                        );
+                    } else {
+                        $mismatch_error = trans(
+                            "lang_v1.quantity_mismatch_exception",
+                            ['product' => $mismatch_name]
+                        );
+                    }
+
+                    $business_name = optional(Business::find($business['id']))->name;
+                    $location_name = optional(BusinessLocation::find($business['location_id']))->name;
+                    \Log::emergency($mismatch_error . ' Business: ' . $business_name . ' Location: ' . $location_name);
+                    throw new PurchaseSellMismatch($mismatch_error);
+                } else {
+                    //Mapping with no purchase line
+                    $purchase_sell_map[] = ['sell_line_id' => $line->id,
+                            'purchase_line_id' => 0,
+                            'quantity' => $qty_selling,
+                            'created_at' => Carbon::now(),
+                            'updated_at' => Carbon::now()
+                        ];
+                }
+            }
+
+            //Insert the mapping
+            if (!empty($purchase_adjustment_map)) {
+                SupplierTransactionSellLinesPurchaseLines::insert($purchase_adjustment_map);
+            }
+            if (!empty($purchase_sell_map)) {
+                SupplierTransactionSellLinesPurchaseLines::insert($purchase_sell_map);
+            }
+        }
     }
 }

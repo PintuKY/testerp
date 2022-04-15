@@ -51,7 +51,7 @@ class Supplier extends Model
             $all_supplier->where('supplier.created_by', auth()->user()->id);
         }
         
-        $suppliers = $all_supplier->select('supplier_id', 'id');
+        $suppliers = $all_supplier->pluck('supplier', 'id');
         
         //Prepend none
         if ($prepend_none) {

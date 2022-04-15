@@ -987,7 +987,7 @@ $(document).on('click', 'button#submit_purchase_form', function(e) {
         return false;
     }
 
-    $('form#add_purchase_form').validate({
+    $('form#add_supplier_purchase_form').validate({
         rules: {
             ref_no: {
                 remote: {
@@ -1042,9 +1042,9 @@ $(document).on('click', 'button#submit_purchase_form', function(e) {
         }    
     }
 
-    if ($('form#add_purchase_form').valid()) {
+    if ($('form#add_supplier_purchase_form').valid()) {
         $(this).attr('disabled', true);
-        $('form#add_purchase_form').submit();
+        $('form#add_supplier_purchase_form').submit();
     }
 });
 

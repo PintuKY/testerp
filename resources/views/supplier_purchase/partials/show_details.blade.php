@@ -17,15 +17,15 @@
     <div class="col-sm-4 invoice-col">
       @lang('purchase.supplier'):
       <address>
-        {!! $purchase->contact->contact_address !!}
-        @if(!empty($purchase->contact->tax_number))
-          <br>@lang('contact.tax_no'): {{$purchase->contact->tax_number}}
+        {!! $purchase->supplier->supplier_address !!}
+        @if(!empty($purchase->supplier->tax_number))
+          <br>@lang('supplier.tax_no'): {{$purchase->supplier->tax_number}}
         @endif
-        @if(!empty($purchase->contact->mobile))
-          <br>@lang('contact.mobile'): {{$purchase->contact->mobile}}
+        @if(!empty($purchase->supplier->mobile))
+          <br>@lang('supplier.mobile'): {{$purchase->supplier->mobile}}
         @endif
-        @if(!empty($purchase->contact->email))
-          <br>@lang('business.email'): {{$purchase->contact->email}}
+        @if(!empty($purchase->supplier->email))
+          <br>@lang('business.email'): {{$purchase->supplier->email}}
         @endif
       </address>
       @if($purchase->document_path)
@@ -174,7 +174,7 @@
           @php 
             $total_before_tax = 0.00;
           @endphp
-          @foreach($purchase->purchase_lines as $purchase_line)
+          @foreach($purchase->supplierPurchaseLines as $purchase_line)
             <tr>
               <td>{{ $loop->iteration }}</td>
               <td>
@@ -259,7 +259,7 @@
           @php
             $total_paid = 0;
           @endphp
-          @forelse($purchase->payment_lines as $payment_line)
+          @forelse($purchase->paymentLines as $payment_line)
             @php
               $total_paid += $payment_line->amount;
             @endphp

@@ -1299,18 +1299,19 @@ class ProductUtil extends Util
 
             $new_quantity_f = $this->num_f($new_quantity);
             $old_qty = 0;
-            //update existing purchase line
+            //update existing supplier purchase line
             if (isset($data['purchase_line_id'])) {
-                $purchase_line = PurchaseLine::findOrFail($data['purchase_line_id']);
-                $updated_purchase_line_ids[] = $purchase_line->id;
-                $old_qty = $purchase_line->quantity;
+                $supplier_purchase_line = SupplierPurchaseLine::findOrFail($data['purchase_line_id']);
+                $updated_purchase_line_ids[] = $supplier_purchase_line->id;
+                $old_qty = $supplier_purchase_line->quantity;
 
-                $this->updateProductStock($before_status, $supplier_transaction, $data['product_id'], $data['variation_id'], $new_quantity, $purchase_line->quantity, $currency_details);
+                $this->updateProductStock($before_status, $supplier_transaction, $data['product_id'], $data['variation_id'], $new_quantity, $supplier_purchase_line->quantity, $currency_details);
             } else {
-                //create newly added purchase lines
-                $purchase_line = new SupplierPurchaseLine();
-                $purchase_line->product_id = $data['product_id'];
-                $purchase_line->variation_id = $data['variation_id'];
+                //create newly added supplier purchase lines
+                $supplier_purchase_line = new SupplierPurchaseLine();
+                
+                $supplier_purchase_line->product_id = $data['product_id'];
+                $supplier_purchase_line->variation_id = $data['variation_id'];
 
                 //Increase quantity only if status is received
                 if ($supplier_transaction->status == 'received') {
@@ -1318,20 +1319,20 @@ class ProductUtil extends Util
                 }
             }
 
-            $purchase_line->quantity = $new_quantity;
-            $purchase_line->pp_without_discount = ($this->num_uf($data['pp_without_discount'], $currency_details)*$exchange_rate) / $multiplier;
-            $purchase_line->discount_percent = $this->num_uf($data['discount_percent'], $currency_details);
-            $purchase_line->purchase_price = ($this->num_uf($data['purchase_price'], $currency_details)*$exchange_rate) / $multiplier;
-            $purchase_line->purchase_price_inc_tax = ($this->num_uf($data['purchase_price_inc_tax'], $currency_details)*$exchange_rate) / $multiplier;
-            $purchase_line->item_tax = ($this->num_uf($data['item_tax'], $currency_details)*$exchange_rate) / $multiplier;
-            $purchase_line->tax_id = $data['purchase_line_tax_id'];
-            $purchase_line->lot_number = !empty($data['lot_number']) ? $data['lot_number'] : null;
-            $purchase_line->mfg_date = !empty($data['mfg_date']) ? $this->uf_date($data['mfg_date']) : null;
-            $purchase_line->exp_date = !empty($data['exp_date']) ? $this->uf_date($data['exp_date']) : null;
-            $purchase_line->sub_unit_id = !empty($data['sub_unit_id']) ? $data['sub_unit_id'] : null;
-            $purchase_line->purchase_order_line_id = !empty($data['purchase_order_line_id']) ? $data['purchase_order_line_id'] : null;
+            $supplier_purchase_line->quantity = $new_quantity;
+            $supplier_purchase_line->pp_without_discount = ($this->num_uf($data['pp_without_discount'], $currency_details)*$exchange_rate) / $multiplier;
+            $supplier_purchase_line->discount_percent = $this->num_uf($data['discount_percent'], $currency_details);
+            $supplier_purchase_line->purchase_price = ($this->num_uf($data['purchase_price'], $currency_details)*$exchange_rate) / $multiplier;
+            $supplier_purchase_line->purchase_price_inc_tax = ($this->num_uf($data['purchase_price_inc_tax'], $currency_details)*$exchange_rate) / $multiplier;
+            $supplier_purchase_line->item_tax = ($this->num_uf($data['item_tax'], $currency_details)*$exchange_rate) / $multiplier;
+            $supplier_purchase_line->tax_id = $data['purchase_line_tax_id'];
+            $supplier_purchase_line->lot_number = !empty($data['lot_number']) ? $data['lot_number'] : null;
+            $supplier_purchase_line->mfg_date = !empty($data['mfg_date']) ? $this->uf_date($data['mfg_date']) : null;
+            $supplier_purchase_line->exp_date = !empty($data['exp_date']) ? $this->uf_date($data['exp_date']) : null;
+            $supplier_purchase_line->sub_unit_id = !empty($data['sub_unit_id']) ? $data['sub_unit_id'] : null;
+            $supplier_purchase_line->purchase_order_line_id = !empty($data['purchase_order_line_id']) ? $data['purchase_order_line_id'] : null;
 
-            $updated_purchase_lines[] = $purchase_line;
+            $updated_purchase_lines[] = $supplier_purchase_line;
 
             //Edit product price
             if ($enable_product_editing == 1) {
@@ -1339,21 +1340,21 @@ class ProductUtil extends Util
                     $variation_data['sell_price_inc_tax'] = ($this->num_uf($data['default_sell_price'], $currency_details)) / $multiplier;
                 }
                 $variation_data['pp_without_discount'] = ($this->num_uf($data['pp_without_discount'], $currency_details)*$exchange_rate) / $multiplier;
-                $variation_data['variation_id'] = $purchase_line->variation_id;
-                $variation_data['purchase_price'] = $purchase_line->purchase_price;
+                $variation_data['variation_id'] = $supplier_purchase_line->variation_id;
+                $variation_data['purchase_price'] = $supplier_purchase_line->purchase_price;
 
                 $this->updateProductFromPurchase($variation_data);
             }
 
             //Update purchase order line quantity received
-            $this->updatePurchaseOrderLine($purchase_line->purchase_order_line_id, $purchase_line->quantity, $old_qty);
+            $this->updateSupplierPurchaseOrderLine($supplier_purchase_line->purchase_order_line_id, $supplier_purchase_line->quantity, $old_qty);
         }
 
         //unset deleted purchase lines
         $delete_purchase_line_ids = [];
         $delete_purchase_lines = null;
         if (!empty($updated_purchase_line_ids)) {
-            $delete_purchase_lines = SupplierPurchaseLine::where('supplier_transaction_id', $supplier_transaction->id)
+            $delete_purchase_lines = SupplierPurchaseLine::where('supplier_transactions_id', $supplier_transaction->id)
                     ->whereNotIn('id', $updated_purchase_line_ids)
                     ->get();
 
@@ -1373,7 +1374,7 @@ class ProductUtil extends Util
 
                     //If purchase order line set decrease quntity
                     if (!empty($delete_purchase_line->purchase_order_line_id)) {
-                        $this->updatePurchaseOrderLine($delete_purchase_line->purchase_order_line_id, 0, $delete_purchase_line->quantity);
+                        $this->updateSupplierPurchaseOrderLine($delete_purchase_line->purchase_order_line_id, 0, $delete_purchase_line->quantity);
                     }
                 }
 
@@ -1384,7 +1385,7 @@ class ProductUtil extends Util
                 }
 
                 //Delete deleted purchase lines
-                SupplierPurchaseLine::where('supplier_transaction_id', $supplier_transaction->id)
+                SupplierPurchaseLine::where('supplier_transactions_id', $supplier_transaction->id)
                         ->whereIn('id', $delete_purchase_line_ids)
                         ->delete();
             }
@@ -1392,7 +1393,7 @@ class ProductUtil extends Util
 
         //update purchase lines
         if (!empty($updated_purchase_lines)) {
-            $supplier_transaction->purchase_lines()->saveMany($updated_purchase_lines);
+            $supplier_transaction->supplierPurchaseLines()->saveMany($updated_purchase_lines);
         }
 
         return $delete_purchase_lines;
@@ -1403,6 +1404,16 @@ class ProductUtil extends Util
         $diff = $new_qty - $old_qty;
         if (!empty($purchase_order_line_id) && !empty($diff)) {
             $purchase_order_line = PurchaseLine::find($purchase_order_line_id);
+            $purchase_order_line->po_quantity_purchased += ($diff);
+            $purchase_order_line->save();
+        }
+    }
+
+    public function updateSupplierPurchaseOrderLine($purchase_order_line_id, $new_qty, $old_qty = 0)
+    {
+        $diff = $new_qty - $old_qty;
+        if (!empty($purchase_order_line_id) && !empty($diff)) {
+            $purchase_order_line = SupplierPurchaseLine::find($purchase_order_line_id);
             $purchase_order_line->po_quantity_purchased += ($diff);
             $purchase_order_line->save();
         }

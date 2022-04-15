@@ -120,7 +120,7 @@ class SupplierPurchaseController extends Controller
                         $html .= '<li><a href="#" class="print-invoice" data-href="' . action('PurchaseController@printInvoice', [$row->id]) . '"><i class="fas fa-print" aria-hidden="true"></i>'. __("messages.print") .'</a></li>';
                     }
                     if (auth()->user()->can("purchase.update")) {
-                        $html .= '<li><a href="' . action('PurchaseController@edit', [$row->id]) . '"><i class="fas fa-edit"></i>' . __("messages.edit") . '</a></li>';
+                        $html .= '<li><a href="' . action('SupplierPurchaseController@edit', [$row->id]) . '"><i class="fas fa-edit"></i>' . __("messages.edit") . '</a></li>';
                     }
                     if (auth()->user()->can("purchase.delete")) {
                         $html .= '<li><a href="' . action('PurchaseController@destroy', [$row->id]) . '" class="delete-purchase"><i class="fas fa-trash"></i>' . __("messages.delete") . '</a></li>';
@@ -188,13 +188,13 @@ class SupplierPurchaseController extends Controller
                 ->editColumn(
                     'payment_status',
                     function ($row) {
-                        $payment_status = Transaction::getPaymentStatus($row);
+                        $payment_status = SupplierTransaction::getPaymentStatus($row);
                         return (string) view('sell.partials.payment_status', ['payment_status' => $payment_status, 'id' => $row->id, 'for_purchase' => true]);
                     }
                 )
                 ->addColumn('payment_due', function ($row) {
                     $due = $row->final_total - $row->amount_paid;
-                    $due_html = '<strong>' . __('lang_v1.purchase') .':</strong> <span class="payment_due" data-orig-value="' . $due . '">' . $this->transactionUtil->num_f($due, true) . '</span>';
+                    $due_html = '<strong>' . __('lang_v1.purchase') .':</strong> <span class="payment_due" data-orig-value="' . $due . '">' . $this->supplierTransactionUtil->num_f($due, true) . '</span>';
 
                     if (!empty($row->return_exists)) {
                         $return_due = $row->amount_return - $row->return_paid;
@@ -216,6 +216,7 @@ class SupplierPurchaseController extends Controller
 
         $business_locations = BusinessLocation::forDropdown($business_id);
         $suppliers = Supplier::suppliersDropdown($business_id, false);
+        
         $orderStatuses = $this->productUtil->orderStatuses();
 
         return view('supplier_purchase.index')
@@ -306,7 +307,7 @@ class SupplierPurchaseController extends Controller
 
             //TODO: Check for "Undefined index: total_before_tax" issue
             //Adding temporary fix by validating
-            dd($request->all());
+            
             $request->validate([
                 'status' => 'required',
                 'supplier_id' => 'required',
@@ -395,22 +396,22 @@ class SupplierPurchaseController extends Controller
             $purchase_lines = [];
             $purchases = $request->input('purchases');
 
-            $this->productUtil->createOrUpdateSupplierPurchaseLines($supplier_transaction, $purchases, $currency_details, $enable_product_editing);
-
+           $this->productUtil->createOrUpdateSupplierPurchaseLines($supplier_transaction, $purchases, $currency_details, $enable_product_editing);
+            
             //Add Purchase payments
-            // $this->transactionUtil->createOrUpdatePaymentLines($transaction, $request->input('payment'));
+            $this->supplierTransactionUtil->createOrUpdateSupplierPaymentLines($supplier_transaction, $request->input('payment'));
 
             //update payment status
             // $this->transactionUtil->updatePaymentStatus($transaction->id, $transaction->final_total);
 
-            if (!empty($supplier_transaction->purchase_order_ids)) {
-                $this->transactionUtil->updatePurchaseOrderStatus($transaction->purchase_order_ids);
-            }
+            // if (!empty($supplier_transaction->purchase_order_ids)) {
+            //     $this->supplierTransactionUtil->updatePurchaseOrderStatus($supplier_transaction->purchase_order_ids);
+            // }
 
             //Adjust stock over selling if found
-            $this->productUtil->adjustStockOverSelling($transaction);
+            $this->productUtil->adjustStockOverSelling($supplier_transaction);
 
-            $this->transactionUtil->activityLog($supplier_transaction, 'added');
+            $this->supplierTransactionUtil->activityLog($supplier_transaction, 'added');
 
             DB::commit();
 
@@ -424,6 +425,261 @@ class SupplierPurchaseController extends Controller
             $output = ['success' => 0,
                             'msg' => __('messages.something_went_wrong')
                         ];
+        }
+
+        return redirect('supplier-purchases')->with('status', $output);
+    }
+
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
+    {
+        if (!auth()->user()->can('purchase.update')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $business_id = request()->session()->get('user.business_id');
+
+        //Check if subscribed or not
+        if (!$this->moduleUtil->isSubscribed($business_id)) {
+            return $this->moduleUtil->expiredResponse(action('PurchaseController@index'));
+        }
+
+        //Check if the transaction can be edited or not.
+        $edit_days = request()->session()->get('business.transaction_edit_days');
+        if (!$this->supplierTransactionUtil->canBeEdited($id, $edit_days)) {
+            return back()
+                ->with('status', ['success' => 0,
+                    'msg' => __('messages.transaction_edit_not_allowed', ['days' => $edit_days])]);
+        }
+
+        //Check if return exist then not allowed
+        if ($this->supplierTransactionUtil->isReturnExist($id)) {
+            return back()->with('status', ['success' => 0,
+                    'msg' => __('lang_v1.return_exist')]);
+        }
+
+        $business = Business::find($business_id);
+
+        $currency_details = $this->supplierTransactionUtil->purchaseCurrencyDetails($business_id);
+
+        $taxes = TaxRate::where('business_id', $business_id)
+                            ->ExcludeForTaxGroup()
+                            ->get();
+        $purchase = SupplierTransaction::where('business_id', $business_id)
+                    ->where('id', $id)
+                    ->with(
+                        'supplier',
+                        'supplierPurchaseLines',
+                        'supplierPurchaseLines.product',
+                        'supplierPurchaseLines.product.unit',
+                        //'purchase_lines.product.unit.sub_units',
+                        'supplierPurchaseLines.variations',
+                        'supplierPurchaseLines.variations.product_variation',
+                        'location',
+                        'supplierPurchaseLines.subUnit',
+                        'supplierPurchaseLines.purchaseOrderLine'
+                    )
+                    ->first();
+
+        foreach ($purchase->supplierPurchaseLines as $key => $value) {
+            if (!empty($value->sub_unit_id)) {
+                $formated_purchase_line = $this->productUtil->changePurchaseLineUnit($value, $business_id);
+                $purchase->supplierPurchaseLines[$key] = $formated_purchase_line;
+            }
+        }
+
+        $orderStatuses = $this->productUtil->orderStatuses();
+
+        $business_locations = BusinessLocation::forDropdown($business_id);
+
+        $default_purchase_status = null;
+        if (request()->session()->get('business.enable_purchase_status') != 1) {
+            $default_purchase_status = 'received';
+        }
+
+        $types = [];
+        // if (auth()->user()->can('supplier.create')) {
+        //     $types['supplier'] = __('report.supplier');
+        // }
+        // if (auth()->user()->can('customer.create')) {
+        //     $types['customer'] = __('report.customer');
+        // }
+
+        $customer_groups = CustomerGroup::forDropdown($business_id);
+
+        $business_details = $this->businessUtil->getDetails($business_id);
+        $shortcuts = json_decode($business_details->keyboard_shortcuts, true);
+
+        $common_settings = !empty(session('business.common_settings')) ? session('business.common_settings') : [];
+
+        $purchase_orders = null;
+        if(!empty($common_settings['enable_purchase_order'])) {
+            $purchase_orders = SupplierTransaction::where('business_id', $business_id)
+                                        ->where('type', 'purchase_order')
+                                        ->where('supplier_id', $purchase->supplier_id)
+                                        ->where( function($q) use($purchase){
+                                            $q->where('status', '!=', 'completed');
+
+                                            if (!empty($purchase->purchase_order_ids)) {
+                                                $q->orWhereIn('id', $purchase->purchase_order_ids);
+                                            }
+                                        })
+                                        ->pluck('ref_no', 'id');
+        }
+
+        return view('supplier_purchase.edit')
+            ->with(compact(
+                'taxes',
+                'purchase',
+                'orderStatuses',
+                'business_locations',
+                'business',
+                'currency_details',
+                'default_purchase_status',
+                'customer_groups',
+                'types',
+                'shortcuts',
+                'purchase_orders',
+                'common_settings'
+            ));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
+    {
+        if (!auth()->user()->can('purchase.update')) {
+            abort(403, 'Unauthorized action.');
+        }
+        
+        try {
+            // $transaction = SupplierTransaction::findOrFail($id);
+
+            //Validate document size
+            $request->validate([
+                'document' => 'file|max:'. (config('constants.document_size_limit') / 1000)
+            ]);
+
+            $transaction = SupplierTransaction::findOrFail($id);
+            $before_status = $transaction->status;
+            $business_id = request()->session()->get('user.business_id');
+            $enable_product_editing = $request->session()->get('business.enable_editing_product_from_purchase');
+
+            $transaction_before = $transaction->replicate();
+
+            $currency_details = $this->supplierTransactionUtil->purchaseCurrencyDetails($business_id);
+
+            $update_data = $request->only([ 'ref_no', 'status', 'supplier_id',
+                            'transaction_date', 'total_before_tax',
+                            'discount_type', 'discount_amount', 'tax_id',
+                            'tax_amount', 'shipping_details',
+                            'shipping_charges', 'final_total',
+                            'additional_notes', 'exchange_rate', 'pay_term_number', 'pay_term_type', 'purchase_order_ids']);
+
+            $exchange_rate = $update_data['exchange_rate'];
+
+            //Reverse exchage rate and save
+            //$update_data['exchange_rate'] = number_format(1 / $update_data['exchange_rate'], 2);
+
+            $update_data['transaction_date'] = $this->productUtil->uf_date($update_data['transaction_date'], true);
+
+            //unformat input values
+            $update_data['total_before_tax'] = $this->productUtil->num_uf($update_data['total_before_tax'], $currency_details) * $exchange_rate;
+
+            // If discount type is fixed them multiply by exchange rate, else don't
+            if ($update_data['discount_type'] == 'fixed') {
+                $update_data['discount_amount'] = $this->productUtil->num_uf($update_data['discount_amount'], $currency_details) * $exchange_rate;
+            } elseif ($update_data['discount_type'] == 'percentage') {
+                $update_data['discount_amount'] = $this->productUtil->num_uf($update_data['discount_amount'], $currency_details);
+            } else {
+                $update_data['discount_amount'] = 0;
+            }
+
+            $update_data['tax_amount'] = $this->productUtil->num_uf($update_data['tax_amount'], $currency_details) * $exchange_rate;
+            $update_data['shipping_charges'] = $this->productUtil->num_uf($update_data['shipping_charges'], $currency_details) * $exchange_rate;
+            $update_data['final_total'] = $this->productUtil->num_uf($update_data['final_total'], $currency_details) * $exchange_rate;
+            //unformat input values ends
+
+            $update_data['custom_field_1'] = $request->input('custom_field_1', null);
+            $update_data['custom_field_2'] = $request->input('custom_field_2', null);
+            $update_data['custom_field_3'] = $request->input('custom_field_3', null);
+            $update_data['custom_field_4'] = $request->input('custom_field_4', null);
+
+            $update_data['shipping_custom_field_1'] = $request->input('shipping_custom_field_1', null);
+            $update_data['shipping_custom_field_2'] = $request->input('shipping_custom_field_2', null);
+            $update_data['shipping_custom_field_3'] = $request->input('shipping_custom_field_3', null);
+            $update_data['shipping_custom_field_4'] = $request->input('shipping_custom_field_4', null);
+            $update_data['shipping_custom_field_5'] = $request->input('shipping_custom_field_5', null);
+
+            //upload document
+            $document_name = $this->supplierTransactionUtil->uploadFile($request, 'document', 'documents');
+            if (!empty($document_name)) {
+                $update_data['document'] = $document_name;
+            }
+
+            $purchase_order_ids = $transaction->purchase_order_ids ?? [];
+
+            $update_data['additional_expense_key_1'] = $request->input('additional_expense_key_1');
+            $update_data['additional_expense_key_2'] = $request->input('additional_expense_key_2');
+            $update_data['additional_expense_key_3'] = $request->input('additional_expense_key_3');
+            $update_data['additional_expense_key_4'] = $request->input('additional_expense_key_4');
+
+            $update_data['additional_expense_value_1'] = $request->input('additional_expense_value_1') != '' ? $this->productUtil->num_uf($request->input('additional_expense_value_1'), $currency_details) * $exchange_rate : 0;
+            $update_data['additional_expense_value_2'] = $request->input('additional_expense_value_2') != '' ? $this->productUtil->num_uf($request->input('additional_expense_value_2'), $currency_details) * $exchange_rate: 0;
+            $update_data['additional_expense_value_3'] = $request->input('additional_expense_value_3') != '' ? $this->productUtil->num_uf($request->input('additional_expense_value_3'), $currency_details) * $exchange_rate : 0;
+            $update_data['additional_expense_value_4'] = $request->input('additional_expense_value_4') != '' ? $this->productUtil->num_uf($request->input('additional_expense_value_4'), $currency_details) * $exchange_rate : 0;
+
+            DB::beginTransaction();
+
+            //update transaction
+            $transaction->update($update_data);
+
+            //Update transaction payment status
+            $payment_status = $this->supplierTransactionUtil->updatePaymentStatus($transaction->id);
+            $transaction->payment_status = $payment_status;
+
+            $purchases = $request->input('purchases');
+
+            $delete_purchase_lines = $this->productUtil->createOrUpdateSupplierPurchaseLines($transaction, $purchases, $currency_details, $enable_product_editing, $before_status);
+
+            //Update mapping of purchase & Sell.
+            $this->supplierTransactionUtil->adjustMappingSupplierPurchaseSellAfterEditingSupplierPurchase($before_status, $transaction, $delete_purchase_lines);
+
+            //Adjust stock over selling if found
+            $this->productUtil->adjustStockOverSelling($transaction);
+
+            $new_purchase_order_ids = $transaction->purchase_order_ids ?? [];
+            $purchase_order_ids = array_merge($purchase_order_ids, $new_purchase_order_ids);
+            if (!empty($purchase_order_ids)) {
+                $this->transactionUtil->updatePurchaseOrderStatus($purchase_order_ids);
+            }
+
+            $this->supplierTransactionUtil->activityLog($transaction, 'edited', $transaction_before);
+
+            DB::commit();
+
+            $output = ['success' => 1,
+                            'msg' => __('purchase.purchase_update_success')
+                        ];
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+
+            $output = ['success' => 0,
+                            'msg' => $e->getMessage()
+                        ];
+            return back()->with('status', $output);
         }
 
         return redirect('purchases')->with('status', $output);

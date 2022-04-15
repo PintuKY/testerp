@@ -22,7 +22,7 @@
 
   @include('layouts.partials.error')
 
-  {!! Form::open(['url' =>  action('PurchaseController@update' , [$purchase->id] ), 'method' => 'PUT', 'id' => 'add_purchase_form', 'files' => true ]) !!}
+  {!! Form::open(['url' =>  action('SupplierPurchaseController@update' , [$purchase->id] ), 'method' => 'PUT', 'id' => 'add_supplier_purchase_form', 'files' => true ]) !!}
 
   @php
     $currency_precision = config('constants.currency_precision', 2);
@@ -39,7 +39,7 @@
                   <span class="input-group-addon">
                     <i class="fa fa-user"></i>
                   </span>
-                  {!! Form::select('contact_id', [ $purchase->contact_id => $purchase->contact->name], $purchase->contact_id, ['class' => 'form-control', 'placeholder' => __('messages.please_select') , 'required', 'id' => 'supplier_id']); !!}
+                  {!! Form::select('supplier_id', [ $purchase->supplier_id => $purchase->supplier->name], $purchase->supplier_id, ['class' => 'form-control', 'placeholder' => __('messages.please_select') , 'required', 'id' => 'supplier_id']); !!}
                   <span class="input-group-btn">
                     <button type="button" class="btn btn-default bg-white btn-flat add_new_supplier" data-name=""><i class="fa fa-plus-circle text-primary fa-lg"></i></button>
                   </span>
@@ -49,7 +49,7 @@
                 @lang('business.address'):
               </strong>
               <div id="supplier_address_div">
-                {!! $purchase->contact->contact_address !!}
+                {!! $purchase->supplier->supplier_address !!}
               </div>
             </div>
 
@@ -108,7 +108,7 @@
             <div class="col-md-3">
                 <div class="form-group">
                   <div class="multi-input">
-                    {!! Form::label('pay_term_number', __('contact.pay_term') . ':') !!} @show_tooltip(__('tooltip.pay_term'))
+                    {!! Form::label('pay_term_number', __('supplier.pay_term') . ':') !!} @show_tooltip(__('tooltip.pay_term'))
                     <br/>
                     {!! Form::number('pay_term_number', $purchase->pay_term_number, ['class' => 'form-control width-40 pull-left', 'placeholder' => __('contact.pay_term')]); !!}
 
@@ -246,7 +246,7 @@
 
         <div class="row">
             <div class="col-sm-12">
-              @include('purchase.partials.edit_purchase_entry_row')
+              @include('supplier_purchase.partials.edit_purchase_entry_row')
 
               <hr/>
               <div class="pull-right col-md-5">
@@ -529,14 +529,14 @@
 <!-- /.content -->
 <!-- quick product modal -->
 <div class="modal fade quick_add_product_modal" tabindex="-1" role="dialog" aria-labelledby="modalTitle"></div>
-<div class="modal fade contact_modal" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel">
-  @include('contact.create', ['quick_add' => true])
+<div class="modal fade supplier_modal" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel">
+  @include('supplier.create', ['quick_add' => true])
 </div>
 @include('purchase.partials.import_purchase_products_modal')
 @endsection
 
 @section('javascript')
-  <script src="{{ asset('js/purchase.js?v=' . $asset_v) }}"></script>
+  <script src="{{ asset('js/supplier_purchase.js?v=' . $asset_v) }}"></script>
   <script src="{{ asset('js/product.js?v=' . $asset_v) }}"></script>
   <script type="text/javascript">
     $(document).ready( function(){

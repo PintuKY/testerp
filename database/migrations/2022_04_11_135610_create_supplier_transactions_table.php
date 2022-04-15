@@ -52,6 +52,7 @@ return new class extends Migration
             $table->integer('opening_stock_product_id')->nullable();
             $table->boolean('is_direct_sale')->default(0);
             $table->string('document')->nullable();
+            $table->decimal('exchange_rate', 8, 3)->default(1);
             $table->integer('created_by')->unsigned();
             $table->foreign('created_by')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();

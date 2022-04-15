@@ -38,6 +38,7 @@ return new class extends Migration
             $table->decimal('mfg_quantity_used', 22, 4)->default(0);
             $table->integer('purchase_order_line_id')->nullable();
             $table->decimal('po_quantity_purchased', 22, 4)->default(0);
+            $table->string('lot_number')->nullable();
             $table->timestamps();
         });
     }

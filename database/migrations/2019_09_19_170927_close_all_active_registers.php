@@ -1,8 +1,8 @@
 <?php
 
-use App\CashRegister;
+use App\Models\CashRegister;
 use Illuminate\Database\Migrations\Migration;
-
+use Carbon\Carbon;
 class CloseAllActiveRegisters extends Migration
 {
     /**
@@ -15,7 +15,7 @@ class CloseAllActiveRegisters extends Migration
         CashRegister::where('status', 'open')
                 ->whereNull('location_id')
                 ->update([
-                    'closed_at' => \Carbon::now()->format('Y-m-d H:i:s'),
+                    'closed_at' => Carbon::now()->format('Y-m-d H:i:s'),
                     'status' => 'close'
                 ]);
     }

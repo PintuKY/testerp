@@ -3,8 +3,8 @@
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
-use App\BusinessLocation;
-use App\InvoiceLayout;
+use App\Models\BusinessLocation;
+use App\Models\InvoiceLayout;
 use Illuminate\Support\Facades\DB;
 
 class ModifyBusinessLocationTableForInvoiceLayout extends Migration

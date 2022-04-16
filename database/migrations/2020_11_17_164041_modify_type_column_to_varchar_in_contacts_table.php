@@ -1,7 +1,8 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use App\Contact;
+use App\Models\Contact;
+use Illuminate\Support\Facades\DB;
 
 class ModifyTypeColumnToVarcharInContactsTable extends Migration
 {
@@ -13,7 +14,7 @@ class ModifyTypeColumnToVarcharInContactsTable extends Migration
     public function up()
     {
         DB::statement("ALTER TABLE contacts MODIFY COLUMN `type` VARCHAR(191) NOT NULL");
-        
+
         Contact::where('type', '=', '')
                  ->orWhereNull('type')
                 ->update(['type' => 'lead']);

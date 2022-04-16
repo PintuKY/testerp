@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
-use App\Transaction;
+use App\Models\Transaction;
 
 class ChangeCompletedStockTransferStatusToFinal extends Migration
 {

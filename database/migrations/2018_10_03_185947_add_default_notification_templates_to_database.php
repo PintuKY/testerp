@@ -3,8 +3,8 @@
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
-use App\Business;
-use App\NotificationTemplate;
+use App\Models\Business;
+use App\Models\NotificationTemplate;
 
 class AddDefaultNotificationTemplatesToDatabase extends Migration
 {

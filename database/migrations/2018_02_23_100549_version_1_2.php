@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 use Spatie\Permission\Models\Permission;
+use Carbon\Carbon;
 
 class Version12 extends Migration
 {
@@ -14,7 +15,7 @@ class Version12 extends Migration
      */
     public function up()
     {
-        $now = \Carbon::now()->toDateTimeString();
+        $now = Carbon::now()->toDateTimeString();
         Permission::insert([
                 [
                     'name' => 'profit_loss_report.view',

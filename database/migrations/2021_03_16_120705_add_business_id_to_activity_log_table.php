@@ -15,6 +15,7 @@ class AddBusinessIdToActivityLogTable extends Migration
     public function up()
     {
         Schema::table('activity_log', function (Blueprint $table) {
+            $table->uuid('batch_uuid')->nullable();
             $table->integer('business_id')->after('subject_type')->nullable();
         });
 

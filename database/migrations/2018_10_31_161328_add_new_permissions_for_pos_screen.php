@@ -3,8 +3,9 @@
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Spatie\Permission\Models\Permission;
 
-class CreatePasswordResetsTable extends Migration
+class AddNewPermissionsForPosScreen extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +14,8 @@ class CreatePasswordResetsTable extends Migration
      */
     public function up()
     {
-        Schema::create('password_resets', function (Blueprint $table) {
-            $table->string('email')->index();
-            $table->string('token');
-            $table->timestamp('created_at')->nullable();
-        });
+        Permission::create(['name' => 'edit_product_price_from_sale_screen']);
+        Permission::create(['name' => 'edit_product_discount_from_sale_screen']);
     }
 
     /**
@@ -27,6 +25,6 @@ class CreatePasswordResetsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('password_resets');
+        //
     }
 }

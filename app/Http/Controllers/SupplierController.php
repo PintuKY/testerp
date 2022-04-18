@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\BusinessLocation;
 use App\Models\Contact;
 use App\Models\Supplier;
+use App\Models\SupplierPurchaseLine;
 use App\Models\SupplierTransaction;
 use App\Models\SupplierTransactionPayments;
 use Illuminate\Http\Request;
@@ -13,6 +14,7 @@ use App\Utils\NotificationUtil;
 use App\Utils\SupplierTransactionUtil;
 use App\Utils\SupplierUtil;
 use App\Utils\Util;
+use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
 use Spatie\Activitylog\Models\Activity;
 
@@ -59,12 +61,6 @@ class SupplierController extends Controller
         }
 
         $reward_enabled = (request()->session()->get('business.enable_rp') == 1 ) ? true : false;
-
-        // $customer_groups = [];
-
-        // if ($type == 'customer') {
-        //     $customer_groups = CustomerGroup::forDropdown($business_id);
-        // }
 
         return view('supplier.index')
             ->with(compact('reward_enabled'));
@@ -203,9 +199,9 @@ class SupplierController extends Controller
         if (is_null($view_type)) {
             $view_type = 'ledger';
         }
-
-        $supplier_view_tabs = $this->moduleUtil->getModuleData('get_contact_view_tabs');
-
+        
+        $supplier_view_tabs = $this->moduleUtil->getModuleData('get_supplier_view_tabs');
+        
         $activities = Activity::forSubject($supplier)
            ->with(['causer', 'subject'])
            ->latest()
@@ -706,15 +702,14 @@ class SupplierController extends Controller
 
     public function getSupplierStockReport($supplier_id)
     {   
-        dd('demo');
         $pl_query_string = $this->commonUtil->get_pl_quantity_sum_string();
-        $query = PurchaseLine::join('supplier_transactions as t', 't.id', '=', 'purchase_lines.transaction_id')
-                        ->join('products as p', 'p.id', '=', 'purchase_lines.product_id')
-                        ->join('variations as v', 'v.id', '=', 'purchase_lines.variation_id')
+        $query = SupplierPurchaseLine::join('supplier_transactions as t', 't.id', '=', 'supplier_purchase_lines.supplier_transactions_id')
+                        ->join('products as p', 'p.id', '=', 'supplier_purchase_lines.product_id')
+                        ->join('variations as v', 'v.id', '=', 'supplier_purchase_lines.variation_id')
                         ->join('product_variations as pv', 'v.product_variation_id', '=', 'pv.id')
                         ->join('units as u', 'p.unit_id', '=', 'u.id')
                         ->whereIn('t.type', ['purchase', 'purchase_return'])
-                        ->where('t.contact_id', $supplier_id)
+                        ->where('t.supplier_id', $supplier_id)
                         ->select(
                             'p.name as product_name',
                             'v.name as variation_name',
@@ -727,7 +722,7 @@ class SupplierController extends Controller
                             DB::raw('SUM(quantity_sold) as total_quantity_sold'),
                             DB::raw("SUM( COALESCE(quantity - ($pl_query_string), 0) * purchase_price_inc_tax) as stock_price"),
                             DB::raw("SUM( COALESCE(quantity - ($pl_query_string), 0)) as current_stock")
-                        )->groupBy('purchase_lines.variation_id');
+                        )->groupBy('supplier_purchase_lines.variation_id');
 
         if (!empty(request()->location_id)) {
             $query->where('t.location_id', request()->location_id);

@@ -2,15 +2,15 @@
 
 namespace App\Events;
 
+use App\Models\SupplierTransactionPayments;
 use Illuminate\Queue\SerializesModels;
-
 use App\Models\TransactionPayment;
 
 class TransactionPaymentUpdated
 {
     use SerializesModels;
 
-    public $transactionPayment;
+    public $supplierTransactionPayments;
 
     public $transactionType;
 
@@ -19,9 +19,9 @@ class TransactionPaymentUpdated
      *
      * @return void
      */
-    public function __construct(TransactionPayment $transactionPayment, $transactionType)
+    public function __construct(SupplierTransactionPayments $supplierTransactionPayments, $transactionType)
     {
-        $this->transactionPayment = $transactionPayment;
+        $this->supplierTransactionPayments = $supplierTransactionPayments;
         $this->transactionType = $transactionType;
     }
 }

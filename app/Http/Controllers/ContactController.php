@@ -677,9 +677,9 @@ class ContactController extends Controller
         if (is_null($view_type)) {
             $view_type = 'ledger';
         }
-
+        
         $contact_view_tabs = $this->moduleUtil->getModuleData('get_contact_view_tabs');
-
+       
         $activities = Activity::forSubject($contact)
            ->with(['causer', 'subject'])
            ->latest()

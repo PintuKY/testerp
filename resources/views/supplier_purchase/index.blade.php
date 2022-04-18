@@ -58,7 +58,7 @@
                 </div>
             @endslot
         @endcan
-        @include('purchase.partials.purchase_table')
+        @include('supplier_purchase.partials.purchase_table')
     @endcomponent
 
     <div class="modal fade product_modal" tabindex="-1" role="dialog" 
@@ -73,7 +73,7 @@
         aria-labelledby="gridSystemModalLabel">
     </div>
 
-    @include('purchase.partials.update_purchase_status_modal')
+    @include('supplier_purchase.partials.update_purchase_status_modal')
 
 </section>
 
@@ -100,16 +100,16 @@
 
     $(document).on('click', '.update_status', function(e){
         e.preventDefault();
-        $('#update_purchase_status_form').find('#status').val($(this).data('status'));
-        $('#update_purchase_status_form').find('#purchase_id').val($(this).data('purchase_id'));
+        $('#update_supplier_purchase_status_form').find('#status').val($(this).data('status'));
+        $('#update_supplier_purchase_status_form').find('#purchase_id').val($(this).attr('data-purchase-id'));
         $('#update_purchase_status_modal').modal('show');
     });
 
-    $(document).on('submit', '#update_purchase_status_form', function(e){
+    $(document).on('submit', '#update_supplier_purchase_status_form', function(e){
         e.preventDefault();
         var form = $(this);
         var data = form.serialize();
-
+        console.log(data);
         $.ajax({
             method: 'POST',
             url: $(this).attr('action'),
@@ -127,7 +127,11 @@
                         .find('button[type="submit"]')
                         .attr('disabled', false);
                 } else {
+                    console.log('deo23');
                     toastr.error(result.msg);
+                    $('#update_purchase_status_form')
+                        .find('button[type="submit"]')
+                        .attr('enable', false);
                 }
             },
         });

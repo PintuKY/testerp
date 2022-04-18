@@ -2,6 +2,8 @@
 
 namespace App\Utils;
 
+use App\Events\TransactionPaymentAdded;
+use App\Events\TransactionPaymentDeleted;
 use App\Models\Business;
 use App\Models\BusinessLocation;
 use App\Models\Currency;
@@ -11,6 +13,7 @@ use App\Models\Supplier;
 use App\Models\SupplierPurchaseLine;
 use App\Models\SupplierTransaction;
 use App\Models\SupplierTransactionPayments;
+use App\Models\SupplierTransactionSellLine;
 use App\Models\SupplierTransactionSellLinesPurchaseLines;
 use App\Models\Variation;
 use Carbon\Carbon;
@@ -707,8 +710,7 @@ class SupplierTransactionUtil extends Util
             return false;
         }
 
-        $date = Carbon::parse($transaction->transaction_date)
-                    ->addDays($edit_duration);
+        $date = Carbon::parse($transaction->transaction_date)->addDays($edit_duration);
 
         $today = today();
 
@@ -1119,5 +1121,45 @@ class SupplierTransactionUtil extends Util
                 SupplierTransactionSellLinesPurchaseLines::insert($purchase_sell_map);
             }
         }
+    }
+
+    /**
+     * Check if lot number is used in any sell
+     * @param obj $transaction
+     *
+     * @return boolean
+     */
+    public function isLotUsed($transaction)
+    {
+        foreach ($transaction->purchase_lines as $purchase_line) {
+            $exists = SupplierTransactionSellLine::where('lot_no_line_id', $purchase_line->id)->exists();
+            if ($exists) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Updates contact balance
+     * @param obj $supplier
+     * @param float $amount
+     * @param string $type [add, deduct]
+     *
+     * @return obj $recurring_invoice
+     */
+    public function updateSupplierBalance($supplier, $amount, $type = 'add')
+    {
+        if (!is_object($supplier)) {
+            $supplierData = Supplier::findOrFail($supplier);
+        }
+
+        if ($type == 'add') {
+           $supplierData->balance += $amount;
+        } elseif ($type == 'deduct') {
+            $supplierData->balance -= $amount;
+        }
+        $supplierData->save();
     }
 }

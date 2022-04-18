@@ -154,7 +154,7 @@ $(document).ready(function() {
             .autocomplete({
                 source: function(request, response) {
                     $.getJSON(
-                        '/purchases/get_products',
+                        '/supplier-purchases/get_products',
                         { location_id: $('#location_id').val(), term: request.term },
                         response
                     );
@@ -513,12 +513,13 @@ $(document).ready(function() {
         ajax: {
             url: '/supplier-purchases',
             data: function(d) {
+                console.log('demo13');
                 if ($('#purchase_list_filter_location_id').length) {
                     d.location_id = $('#purchase_list_filter_location_id').val();
                 }
-                // if ($('#purchase_list_filter_supplier_id').length) {
-                //     d.supplier_id = $('#purchase_list_filter_supplier_id').val();
-                // }
+                if ($('#purchase_list_filter_supplier_id').length) {
+                    d.supplier_id = $('#purchase_list_filter_supplier_id').val();
+                }
                 if ($('#purchase_list_filter_payment_status').length) {
                     d.payment_status = $('#purchase_list_filter_payment_status').val();
                 }

@@ -10,8 +10,7 @@ use Illuminate\Support\Facades\DB;
 
 class Supplier extends Model
 {
-    use Notifiable;
-    use SoftDeletes;
+    use Notifiable; use SoftDeletes;
 
     protected $table = 'supplier';
     protected $guarded = ['id'];

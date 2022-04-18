@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class SupplierPurchaseLine extends Model
 {
-    use HasFactory;
+    use HasFactory; use SoftDeletes;
 
     protected $table = 'supplier_purchase_lines';
     protected $guarded = ['id'];

@@ -10,6 +10,7 @@ use App\Models\CustomerGroup;
 use App\Models\Product;
 use App\Models\PurchaseLine;
 use App\Models\Supplier;
+use App\Models\SupplierPurchaseLine;
 use App\Models\SupplierTransaction;
 use App\Models\TaxRate;
 use App\Models\Transaction;
@@ -113,9 +114,9 @@ class SupplierPurchaseController extends Controller
                                 </span>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-left" role="menu">';
-                    if (auth()->user()->can("purchase.view")) {
-                        $html .= '<li><a href="#" data-href="' . action('PurchaseController@show', [$row->id]) . '" class="btn-modal" data-container=".view_modal"><i class="fas fa-eye" aria-hidden="true"></i>' . __("messages.view") . '</a></li>';
-                    }
+                    // if (auth()->user()->can("purchase.view")) {
+                    //     $html .= '<li><a href="#" data-href="' . action('SupplierPurchaseController@show', [$row->id]) . '" class="btn-modal" data-container=".view_modal"><i class="fas fa-eye" aria-hidden="true"></i>' . __("messages.view") . '</a></li>';
+                    // }
                     if (auth()->user()->can("purchase.view")) {
                         $html .= '<li><a href="#" class="print-invoice" data-href="' . action('PurchaseController@printInvoice', [$row->id]) . '"><i class="fas fa-print" aria-hidden="true"></i>'. __("messages.print") .'</a></li>';
                     }
@@ -123,7 +124,7 @@ class SupplierPurchaseController extends Controller
                         $html .= '<li><a href="' . action('SupplierPurchaseController@edit', [$row->id]) . '"><i class="fas fa-edit"></i>' . __("messages.edit") . '</a></li>';
                     }
                     if (auth()->user()->can("purchase.delete")) {
-                        $html .= '<li><a href="' . action('PurchaseController@destroy', [$row->id]) . '" class="delete-purchase"><i class="fas fa-trash"></i>' . __("messages.delete") . '</a></li>';
+                        $html .= '<li><a href="' . action('SupplierPurchaseController@destroy', [$row->id]) . '" class="delete-purchase"><i class="fas fa-trash"></i>' . __("messages.delete") . '</a></li>';
                     }
 
                     $html .= '<li><a href="' . action('LabelsController@show') . '?purchase_id=' . $row->id . '" data-toggle="tooltip" title="' . __('lang_v1.label_help') . '"><i class="fas fa-barcode"></i>' . __('barcode.labels') . '</a></li>';
@@ -155,7 +156,7 @@ class SupplierPurchaseController extends Controller
                     }
 
                     if (auth()->user()->can("purchase.update") || auth()->user()->can("purchase.update_status")) {
-                        $html .= '<li><a href="#" data-purchase_id="' . $row->id .
+                        $html .= '<li><a href="#" data-purchase-id="'.$row->id.
                         '" data-status="' . $row->status . '" class="update_status"><i class="fas fa-edit" aria-hidden="true" ></i>' . __("lang_v1.update_status") . '</a></li>';
                     }
 
@@ -409,7 +410,7 @@ class SupplierPurchaseController extends Controller
             // }
 
             //Adjust stock over selling if found
-            $this->productUtil->adjustStockOverSelling($supplier_transaction);
+            $this->productUtil->adjustSupplierStockOverSelling($supplier_transaction);
 
             $this->supplierTransactionUtil->activityLog($supplier_transaction, 'added');
 
@@ -657,7 +658,7 @@ class SupplierPurchaseController extends Controller
             $this->supplierTransactionUtil->adjustMappingSupplierPurchaseSellAfterEditingSupplierPurchase($before_status, $transaction, $delete_purchase_lines);
 
             //Adjust stock over selling if found
-            $this->productUtil->adjustStockOverSelling($transaction);
+            $this->productUtil->adjustSupplierStockOverSelling($transaction);
 
             $new_purchase_order_ids = $transaction->purchase_order_ids ?? [];
             $purchase_order_ids = array_merge($purchase_order_ids, $new_purchase_order_ids);
@@ -682,7 +683,104 @@ class SupplierPurchaseController extends Controller
             return back()->with('status', $output);
         }
 
-        return redirect('purchases')->with('status', $output);
+        return redirect('supplier-purchases')->with('status', $output);
+    }
+
+
+     /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {   
+       
+        if (!auth()->user()->can('purchase.delete')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        try {
+            if (request()->ajax()) {
+                $business_id = request()->session()->get('user.business_id');
+
+                //Check if return exist then not allowed
+                if ($this->supplierTransactionUtil->isReturnExist($id)) {
+                    $output = [
+                        'success' => false,
+                        'msg' => __('lang_v1.return_exist')
+                    ];
+                    return $output;
+                }
+
+                $transaction = SupplierTransaction::where('id', $id)
+                                ->where('business_id', $business_id)
+                                ->with(['supplierPurchaseLines'])
+                                ->first();
+
+                //Check if lot numbers from the purchase is selected in sale
+                if (request()->session()->get('business.enable_lot_number') == 1 && $this->supplierTransactionUtil->isLotUsed($transaction)) {
+                    $output = [
+                        'success' => false,
+                        'msg' => __('lang_v1.lot_numbers_are_used_in_sale')
+                    ];
+                    return $output;
+                }
+
+                $delete_purchase_lines = $transaction->supplierPurchaseLines;
+                DB::beginTransaction();
+
+                $log_properities = [
+                    'id' => $transaction->id,
+                    'ref_no' => $transaction->ref_no
+                ];
+                $this->supplierTransactionUtil->activityLog($transaction, 'purchase_deleted', $log_properities);
+
+                $transaction_status = $transaction->status;
+                if ($transaction_status != 'received') {
+                    $transaction->delete();
+                } else {
+                    //Delete purchase lines first
+                    $delete_purchase_line_ids = [];
+                    foreach ($delete_purchase_lines as $purchase_line) {
+                        $delete_purchase_line_ids[] = $purchase_line->id;
+                        $this->productUtil->decreaseProductQuantity(
+                            $purchase_line->product_id,
+                            $purchase_line->variation_id,
+                            $transaction->location_id,
+                            $purchase_line->quantity
+                        );
+                    }
+                    SupplierPurchaseLine::where('supplier_transactions_id', $transaction->id)
+                                ->whereIn('id', $delete_purchase_line_ids)
+                                ->delete();
+
+                    //Update mapping of purchase & Sell.
+                    $this->supplierTransactionUtil->adjustMappingSupplierPurchaseSellAfterEditingSupplierPurchase($transaction_status, $transaction, $delete_purchase_lines);
+                }
+
+                //Delete Transaction
+                $transaction->delete();
+
+                //Delete account transactions
+                AccountTransaction::where('transaction_id', $id)->delete();
+
+                DB::commit();
+
+                $output = ['success' => true,
+                            'msg' => __('lang_v1.purchase_delete_success')
+                        ];
+            }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+
+            $output = ['success' => false,
+                            'msg' => $e->getMessage()
+                        ];
+        }
+
+        return $output;
     }
 
     /**
@@ -837,5 +935,54 @@ class SupplierPurchaseController extends Controller
 
             return json_encode($result);
         }
+    }
+
+    /**
+     * Update purchase status.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function updateStatus(Request $request)
+    {   
+        if (!auth()->user()->can('purchase.update') && !auth()->user()->can('purchase.update_status')) {
+            abort(403, 'Unauthorized action.');
+        }
+        try {
+            $business_id = request()->session()->get('user.business_id');
+            $transaction = SupplierTransaction::where('business_id', $business_id)
+                                ->where('type', 'purchase')
+                                ->findOrFail($request->input('purchase_id'));
+            
+            $before_status = $transaction->status;
+            $update_data['status'] = $request->input('status');
+            DB::beginTransaction();
+
+            //update transaction
+            $transaction->update($update_data);
+            $currency_details = $this->supplierTransactionUtil->purchaseCurrencyDetails($business_id);
+            foreach ($transaction->supplierPurchaseLines as $purchase_line) {
+                $this->productUtil->updateProductStock($before_status, $transaction, $purchase_line->product_id, $purchase_line->variation_id, $purchase_line->quantity, $purchase_line->quantity, $currency_details);
+            }
+
+            //Update mapping of purchase & Sell.
+            $this->supplierTransactionUtil->adjustMappingSupplierPurchaseSellAfterEditingSupplierPurchase($before_status, $transaction, null);
+
+            //Adjust stock over selling if found
+            $this->productUtil->adjustSupplierStockOverSelling($transaction);
+            DB::commit();
+            $output = ['success' => 1,
+                            'msg' => __('purchase.purchase_update_success')
+                        ];
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
+
+            $output = ['success' => 0,
+                            'msg' => $e->getMessage()
+                        ];
+        }
+
+        return $output;
     }
 }

@@ -138,14 +138,14 @@
                             id="ledger_tab">
                         @include('supplier.partials.ledger_tab')
                     </div>
-                    @if(in_array($supplier->type, ['both', 'supplier']))
-                        <div class="tab-pane
+                    
+                        <div class="tab-pane demo
                             @if(!empty($view_type) &&  $view_type == 'purchase')
                                 active
                             @else
                                 ''
                             @endif"
-                        id="purchases_tab">
+                        id="purchases_tab" >
                             <div class="row">
                                 <div class="col-md-3">
                                     <div class="form-group">
@@ -154,7 +154,7 @@
                                     </div>
                                 </div>
                                 <div class="col-md-12">
-                                    @include('purchase.partials.purchase_table')
+                                    @include('supplier_purchase.partials.purchase_table')
                                 </div>
                             </div>
                         </div>
@@ -166,8 +166,8 @@
                             @endif" id="stock_report_tab">
                             @include('supplier.partials.stock_report_tab')
                         </div>
-                    @endif
-                    @if(in_array($supplier->type, ['both', 'customer']))
+                   
+                    
                         <div class="tab-pane 
                             @if(!empty($view_type) &&  $view_type == 'sales')
                                 active
@@ -191,7 +191,7 @@
                         @if(in_array('subscription', $enabled_modules))
                             @include('supplier.partials.subscriptions')
                         @endif
-                    @endif
+                    
                     <div class="tab-pane
                             @if(!empty($view_type) &&  $view_type == 'documents_and_notes')
                                 active
@@ -433,10 +433,9 @@ $(document).on('click', '#print_ledger_pdf', function() {
 
 </script>
 @include('sale_pos.partials.sale_table_javascript')
+<script src="{{ asset('js/supplier_purchase.js?v=' . $asset_v) }}"></script>
 <script src="{{ asset('js/payment.js?v=' . $asset_v) }}"></script>
-@if(in_array($supplier->type, ['both', 'supplier']))
-    <script src="{{ asset('js/purchase.js?v=' . $asset_v) }}"></script>
-@endif
+
 
 <!-- document & note.js -->
 @include('documents_and_notes.document_and_note_js')

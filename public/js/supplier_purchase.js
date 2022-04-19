@@ -513,7 +513,6 @@ $(document).ready(function() {
         ajax: {
             url: '/supplier-purchases',
             data: function(d) {
-                console.log('demo13');
                 if ($('#purchase_list_filter_location_id').length) {
                     d.location_id = $('#purchase_list_filter_location_id').val();
                 }

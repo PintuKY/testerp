@@ -114,9 +114,9 @@ class SupplierPurchaseController extends Controller
                                 </span>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-left" role="menu">';
-                    // if (auth()->user()->can("purchase.view")) {
-                    //     $html .= '<li><a href="#" data-href="' . action('SupplierPurchaseController@show', [$row->id]) . '" class="btn-modal" data-container=".view_modal"><i class="fas fa-eye" aria-hidden="true"></i>' . __("messages.view") . '</a></li>';
-                    // }
+                    if (auth()->user()->can("purchase.view")) {
+                        $html .= '<li><a href="#" data-href="' . route('supplier-purchases.show', [$row->id]) . '" class="btn-modal" data-container=".view_modal"><i class="fas fa-eye" aria-hidden="true"></i>' . __("messages.view") . '</a></li>';
+                    }
                     if (auth()->user()->can("purchase.view")) {
                         $html .= '<li><a href="#" class="print-invoice" data-href="' . action('PurchaseController@printInvoice', [$row->id]) . '"><i class="fas fa-print" aria-hidden="true"></i>'. __("messages.print") .'</a></li>';
                     }
@@ -143,10 +143,10 @@ class SupplierPurchaseController extends Controller
 
                         $html .= '<li class="divider"></li>';
                         if ($row->payment_status != 'paid') {
-                            $html .= '<li><a href="' . action('TransactionPaymentController@addPayment', [$row->id]) . '" class="add_payment_modal"><i class="fas fa-money-bill-alt" aria-hidden="true"></i>' . __("purchase.add_payment") . '</a></li>';
+                            $html .= '<li><a href="' . action('SupplierTransactionPaymentController@addPayment', [$row->id]) . '" class="add_payment_modal"><i class="fas fa-money-bill-alt" aria-hidden="true"></i>' . __("purchase.add_payment") . '</a></li>';
                         }
 
-                        $html .= '<li><a href="' . action('TransactionPaymentController@show', [$row->id]) .
+                        $html .= '<li><a href="' . action('SupplierTransactionPaymentController@show', [$row->id]) .
                         '" class="view_payment_modal"><i class="fas fa-money-bill-alt" aria-hidden="true" ></i>' . __("purchase.view_payments") . '</a></li>';
                     }
 
@@ -206,7 +206,7 @@ class SupplierPurchaseController extends Controller
                 ->setRowAttr([
                     'data-href' => function ($row) {
                         if (auth()->user()->can("purchase.view")) {
-                            return  action('PurchaseController@show', [$row->id]) ;
+                            return  action('SupplierPurchaseController@show', $row->id) ;
                         } else {
                             return '';
                         }
@@ -262,7 +262,7 @@ class SupplierPurchaseController extends Controller
             $types['supplier'] = __('report.supplier');
         }
        
-        $customer_groups = CustomerGroup::forDropdown($business_id);
+        // $customer_groups = CustomerGroup::forDropdown($business_id);
 
         $business_details = $this->businessUtil->getDetails($business_id);
         $shortcuts = json_decode($business_details->keyboard_shortcuts, true);
@@ -276,7 +276,7 @@ class SupplierPurchaseController extends Controller
         $common_settings = !empty(session('business.common_settings')) ? session('business.common_settings') : [];
 
         return view('supplier_purchase.create')
-            ->with(compact('taxes', 'orderStatuses', 'business_locations', 'currency_details', 'default_purchase_status', 'customer_groups', 'types', 'shortcuts', 'payment_line', 'payment_types', 'accounts', 'bl_attributes', 'common_settings'));
+            ->with(compact('taxes', 'orderStatuses', 'business_locations', 'currency_details', 'default_purchase_status', 'types', 'shortcuts', 'payment_line', 'payment_types', 'accounts', 'bl_attributes', 'common_settings'));
     }
 
     /**
@@ -431,6 +431,78 @@ class SupplierPurchaseController extends Controller
         return redirect('supplier-purchases')->with('status', $output);
     }
 
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        // if (!auth()->user()->can('purchase.view')) {
+        //     abort(403, 'Unauthorized action.');
+        // }
+        
+        $business_id = request()->session()->get('user.business_id');
+        $taxes = TaxRate::where('business_id', $business_id)
+                            ->pluck('name', 'id');
+        $purchase = SupplierTransaction::where('business_id', $business_id)
+                                ->where('id', $id)
+                                ->with(
+                                    'supplier',
+                                    'supplierPurchaseLines',
+                                    'supplierPurchaseLines.product',
+                                    'supplierPurchaseLines.product.unit',
+                                    'supplierPurchaseLines.variations',
+                                    'supplierPurchaseLines.variations.product_variation',
+                                    'supplierPurchaseLines.subUnit',
+                                    'location',
+                                    'paymentLines',
+                                    'tax'
+                                )
+                                ->firstOrFail();
+        foreach ($purchase->supplierPurchaseLines as $key => $value) {
+            if (!empty($value->sub_unit_id)) {
+                $formated_purchase_line = $this->productUtil->changePurchaseLineUnit($value, $business_id);
+                $purchase->supplierPurchaseLines[$key] = $formated_purchase_line;
+            }
+        }
+
+        $payment_methods = $this->productUtil->payment_types($purchase->location_id, true);
+
+        $purchase_taxes = [];
+        if (!empty($purchase->tax)) {
+            if ($purchase->tax->is_tax_group) {
+                $purchase_taxes = $this->supplierTransactionUtil->sumGroupTaxDetails($this->transactionUtil->groupTaxDetails($purchase->tax, $purchase->tax_amount));
+            } else {
+                $purchase_taxes[$purchase->tax->name] = $purchase->tax_amount;
+            }
+        }
+
+        //Purchase orders
+        $purchase_order_nos = '';
+        $purchase_order_dates = '';
+        if (!empty($purchase->purchase_order_ids)) {
+            $purchase_orders = SupplierTransaction::find($purchase->purchase_order_ids);
+
+            $purchase_order_nos = implode(', ', $purchase_orders->pluck('ref_no')->toArray());
+            $order_dates = [];
+            foreach ($purchase_orders as $purchase_order) {
+                $order_dates[] = $this->supplierTransactionUtil->format_date($purchase_order->transaction_date, true);
+            }
+            $purchase_order_dates = implode(', ', $order_dates);
+        }
+
+        $activities = Activity::forSubject($purchase)
+           ->with(['causer', 'subject'])
+           ->latest()
+           ->get();
+
+        $statuses = $this->productUtil->orderStatuses();
+
+        return view('supplier_purchase.show')
+                ->with(compact('taxes', 'purchase', 'payment_methods', 'purchase_taxes', 'activities', 'statuses', 'purchase_order_nos', 'purchase_order_dates'));
+    }
 
     /**
      * Show the form for editing the specified resource.
@@ -512,7 +584,7 @@ class SupplierPurchaseController extends Controller
         //     $types['customer'] = __('report.customer');
         // }
 
-        $customer_groups = CustomerGroup::forDropdown($business_id);
+        // $customer_groups = CustomerGroup::forDropdown($business_id);
 
         $business_details = $this->businessUtil->getDetails($business_id);
         $shortcuts = json_decode($business_details->keyboard_shortcuts, true);
@@ -543,7 +615,6 @@ class SupplierPurchaseController extends Controller
                 'business',
                 'currency_details',
                 'default_purchase_status',
-                'customer_groups',
                 'types',
                 'shortcuts',
                 'purchase_orders',

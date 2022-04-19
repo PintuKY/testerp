@@ -113,6 +113,7 @@ $(document).ready(function(){
     // view docs & note
     $(document).on('click', '.view_a_docs_note', function() {
         var url  = $(this).data('href');
+        console.log(url);
         $.ajax({
             method: "GET",
             dataType: "html",
@@ -143,6 +144,7 @@ function getDocAndNoteIndexPage() {
 }
 
 function initializeDocumentAndNoteDataTable() {
+    
     documents_and_notes_data_table = $('#documents_and_notes_table').DataTable({
         processing: true,
         serverSide: true,

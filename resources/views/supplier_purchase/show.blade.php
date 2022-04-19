@@ -1,6 +1,6 @@
 <div class="modal-dialog modal-xl" role="document">
   <div class="modal-content">
-    @include('purchase.partials.show_details')
+    @include('supplier_purchase.partials.show_details')
     <div class="modal-footer">
       <button type="button" class="btn btn-primary no-print" aria-label="Print" 
       onclick="$(this).closest('div.modal-content').printThis();"><i class="fa fa-print"></i> @lang( 'messages.print' )

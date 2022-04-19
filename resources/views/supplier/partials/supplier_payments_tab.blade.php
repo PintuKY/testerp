@@ -15,7 +15,7 @@ id="supplier_payments_table">
             @php
                 $count_child_payments = count($payment->child_payments);
             @endphp
-            @include('contact.partials.payment_row', compact('payment', 'count_child_payments', 'payment_types'))
+            @include('supplier.partials.payment_row', compact('payment', 'count_child_payments', 'payment_types'))
 
             @if($count_child_payments > 0)
                 @foreach($payment->child_payments as $child_payment)

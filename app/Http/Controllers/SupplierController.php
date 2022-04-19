@@ -190,7 +190,7 @@ class SupplierController extends Controller
         
         $reward_enabled = (request()->session()->get('business.enable_rp') == 1 && in_array($supplier->type, ['customer', 'both'])) ? true : false;
 
-        $supplier_dropdown = Supplier::suppliersDropdown($business_id, false, false);
+        $supplier_dropdown = Supplier::suppliersDropdown($business_id, false, true);
 
         $business_locations = BusinessLocation::forDropdown($business_id, true);
 
@@ -773,7 +773,8 @@ class SupplierController extends Controller
     }
 
     public function getSupplierPayments($supplier_id)
-    {
+    {   
+      
         $business_id = request()->session()->get('user.business_id');
         if (request()->ajax()) {
 
@@ -805,7 +806,7 @@ class SupplierController extends Controller
                 ->groupBy('supplier_transaction_payments.id')
                 ->orderByDesc('supplier_transaction_payments.paid_on')
                 ->paginate();
-
+    
             $payment_types = $this->supplierTransactionUtil->payment_types(null, true, $business_id);
 
             return view('supplier.partials.supplier_payments_tab')

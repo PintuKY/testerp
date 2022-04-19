@@ -209,7 +209,7 @@
                         @endif" id="payments_tab">
                         <div id="supplier_payments_div" style="height: 500px;overflow-y: scroll;"></div>
                     </div>
-                    @if( in_array($supplier->type, ['customer', 'both']) && session('business.enable_rp'))
+                    {{-- @if( in_array($supplier->type, ['customer', 'both']) && session('business.enable_rp'))
                         <div class="tab-pane
                             @if(!empty($view_type) &&  $view_type == 'reward_point')
                                 active
@@ -249,7 +249,7 @@
                             </div>
                         </div>
                         </div>
-                    @endif
+                    @endif --}}
 
                     <div class="tab-pane"
                         id="activities_tab">

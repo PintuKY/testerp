@@ -1162,4 +1162,18 @@ class SupplierTransactionUtil extends Util
         }
         $supplierData->save();
     }
+
+    public function sumGroupTaxDetails($group_tax_details)
+    {
+        $output = [];
+
+        foreach ($group_tax_details as $group_tax_detail) {
+            if (!isset($output[$group_tax_detail['name']])) {
+                $output[$group_tax_detail['name']] = 0;
+            }
+            $output[$group_tax_detail['name']] += $group_tax_detail['calculated_tax'];
+        }
+
+        return $output;
+    }
 }

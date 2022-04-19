@@ -27,6 +27,11 @@ class SupplierTransaction extends Model
             ];
     }
 
+    public function business()
+    {
+        return $this->belongsTo(\App\Models\Business::class, 'business_id');
+    }
+    
     public function location()
     {
         return $this->belongsTo(\App\Models\BusinessLocation::class, 'location_id');
@@ -61,5 +66,15 @@ class SupplierTransaction extends Model
     public function paymentLines()
     {
         return $this->hasMany(\App\Models\SupplierTransactionPayments::class, 'supplier_transaction_id');
+    }
+
+    public function transactionFor()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'expense_for');
+    }
+
+    public function tax()
+    {
+        return $this->belongsTo(\App\Models\TaxRate::class, 'tax_id');
     }
 }

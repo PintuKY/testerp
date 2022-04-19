@@ -396,7 +396,6 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/supplier/stock-report/{supplier_id}', 'SupplierController@getSupplierStockReport');
     Route::get('/suppliers/ledger', 'SupplierController@getLedger');
     Route::get('/supplier/payments/{supplier_id}', 'SupplierController@getSupplierPayments');
-    Route::get('/supplier/payments/{supplier_id}', 'SupplierController@getSupplierPayments');
 
     // supplier purchases modules
     Route::post('/supplier-purchases/update-status', 'SupplierPurchaseController@updateStatus');
@@ -404,7 +403,17 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/suppliers-purchases/get_suppliers', 'SupplierPurchaseController@getSuppliers');
     // Route::post('/supplier-purchases/get_purchase_entry_row', 'SupplierPurchaseController@getPurchaseEntryRow');
     // Route::post('/supplier-purchases/check_ref_number', 'SupplierPurchaseController@checkRefNumber');
-    Route::resource('/supplier-purchases', 'SupplierPurchaseController')->except(['show']);
+    Route::resource('/supplier-purchases', 'SupplierPurchaseController');
+
+
+    //Supplier Transaction payments...
+    // Route::get('/payments/opening-balance/{contact_id}', 'TransactionPaymentController@getOpeningBalancePayments');
+    Route::get('/supplier/payments/show-child-payments/{payment_id}', 'SupplierTransactionPaymentController@showChildPayments');
+    Route::get('/supplier/payments/view-payment/{payment_id}', 'SupplierTransactionPaymentController@viewPayment');
+    Route::get('/supplier/payments/add_payment/{transaction_id}', 'SupplierTransactionPaymentController@addPayment');
+    Route::get('/supplier/payments/pay-contact-due/{contact_id}', 'SupplierTransactionPaymentController@getPayContactDue');
+    Route::post('/supplier/payments/pay-contact-due', 'SupplierTransactionPaymentController@postPayContactDue');
+    Route::resource('supplier/payments', 'SupplierTransactionPaymentController');
 
 
 });

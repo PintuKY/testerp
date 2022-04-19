@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Events\TransactionPaymentDeleted;
+use App\Events\TransactionPaymentUpdated;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -47,7 +49,7 @@ class SupplierTransactionPayments extends Model
      */
     public function child_payments()
     {
-        return $this->hasMany(\App\Models\SupplierTransactionPayment::class, 'parent_id');
+        return $this->hasMany(\App\Models\SupplierTransactionPayments::class, 'parent_id');
     }
 
     /**
@@ -73,7 +75,7 @@ class SupplierTransactionPayments extends Model
     {
         //Update parent payment if exists
         if (!empty($payment->parent_id)) {
-            $parent_payment = TransactionPayment::find($payment->parent_id);
+            $parent_payment = SupplierTransactionPayments::find($payment->parent_id);
             $parent_payment->amount -= $payment->amount;
 
             if ($parent_payment->amount <= 0) {
@@ -88,25 +90,26 @@ class SupplierTransactionPayments extends Model
 
         $payment->delete();
 
-        $transactionUtil = new \App\Utils\TransactionUtil();
+        $supplierTransactionUtil = new \App\Utils\SupplierTransactionUtil();
 
-        if(!empty($payment->transaction_id)) {
+        if(!empty($payment->supplier_transaction_id)) {
             //update payment status
             $transaction = $payment->load('transaction')->transaction;
+            
             $transaction_before = $transaction->replicate();
 
-            $payment_status = $transactionUtil->updatePaymentStatus($payment->transaction_id);
+            $payment_status = $supplierTransactionUtil->updatePaymentStatus($payment->supplier_transaction_id);
 
             $transaction->payment_status = $payment_status;
 
-            $transactionUtil->activityLog($transaction, 'payment_edited', $transaction_before);
+            $supplierTransactionUtil->activityLog($transaction, 'payment_edited', $transaction_before);
         }
 
         $log_properities = [
             'id' => $payment->id,
             'ref_no' => $payment->payment_ref_no
         ];
-        $transactionUtil->activityLog($payment, 'payment_deleted', null, $log_properities);
+        $supplierTransactionUtil->activityLog($payment, 'payment_deleted', null, $log_properities);
 
         //Add event to delete account transaction
         event(new TransactionPaymentDeleted($payment));

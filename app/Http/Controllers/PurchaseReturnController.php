@@ -11,6 +11,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
 use App\Models\BusinessLocation;
+use App\Models\SupplierPurchaseLine;
+use App\Models\SupplierTransaction;
+use App\Utils\SupplierTransactionUtil;
 use Spatie\Activitylog\Models\Activity;
 use Carbon\Carbon;
 
@@ -20,7 +23,7 @@ class PurchaseReturnController extends Controller
      * All Utils instance.
      *
      */
-    protected $transactionUtil;
+    protected $supplierTransactionUtil;
     protected $productUtil;
 
     /**
@@ -29,9 +32,9 @@ class PurchaseReturnController extends Controller
      * @param TransactionUtil $transactionUtil
      * @return void
      */
-    public function __construct(TransactionUtil $transactionUtil, ProductUtil $productUtil)
+    public function __construct(SupplierTransactionUtil $supplierTransactionUtil, ProductUtil $productUtil)
     {
-        $this->transactionUtil = $transactionUtil;
+        $this->supplierTransactionUtil = $supplierTransactionUtil;
         $this->productUtil = $productUtil;
     }
 
@@ -49,61 +52,61 @@ class PurchaseReturnController extends Controller
         $business_id = request()->session()->get('user.business_id');
 
         if (request()->ajax()) {
-            $purchases_returns = Transaction::leftJoin('contacts', 'transactions.contact_id', '=', 'contacts.id')
+            $purchases_returns = SupplierTransaction::leftJoin('supplier', 'supplier_transactions.supplier_id', '=', 'supplier.id')
                     ->join(
                         'business_locations AS BS',
-                        'transactions.location_id',
+                        'supplier_transactions.location_id',
                         '=',
                         'BS.id'
                     )
                     ->leftJoin(
-                        'transactions AS T',
-                        'transactions.return_parent_id',
+                        'supplier_transactions AS ST',
+                        'supplier_transactions.return_parent_id',
                         '=',
-                        'T.id'
+                        'ST.id'
                     )
                     ->leftJoin(
-                        'transaction_payments AS TP',
-                        'transactions.id',
+                        'supplier_transaction_payments AS STP',
+                        'supplier_transactions.id',
                         '=',
-                        'TP.transaction_id'
+                        'STP.supplier_transaction_id'
                     )
-                    ->where('transactions.business_id', $business_id)
-                    ->where('transactions.type', 'purchase_return')
+                    ->where('supplier_transactions.business_id', $business_id)
+                    ->where('supplier_transactions.type', 'purchase_return')
                     ->select(
-                        'transactions.id',
-                        'transactions.transaction_date',
-                        'transactions.ref_no',
-                        'contacts.name',
-                        'contacts.supplier_business_name',
-                        'transactions.status',
-                        'transactions.payment_status',
-                        'transactions.final_total',
-                        'transactions.return_parent_id',
+                        'supplier_transactions.id',
+                        'supplier_transactions.transaction_date',
+                        'supplier_transactions.ref_no',
+                        'supplier.name',
+                        'supplier.supplier_business_name',
+                        'supplier_transactions.status',
+                        'supplier_transactions.payment_status',
+                        'supplier_transactions.final_total',
+                        'supplier_transactions.return_parent_id',
                         'BS.name as location_name',
-                        'T.ref_no as parent_purchase',
-                        DB::raw('SUM(TP.amount) as amount_paid')
+                        'ST.ref_no as parent_purchase',
+                        DB::raw('SUM(STP.amount) as amount_paid')
                     )
-                    ->groupBy('transactions.id');
+                    ->groupBy('supplier_transactions.id');
 
             $permitted_locations = auth()->user()->permitted_locations();
             if ($permitted_locations != 'all') {
-                $purchases_returns->whereIn('transactions.location_id', $permitted_locations);
+                $purchases_returns->whereIn('supplier_transactions.location_id', $permitted_locations);
             }
 
             if (!empty(request()->location_id)) {
-                $purchases_returns->where('transactions.location_id', request()->location_id);
+                $purchases_returns->where('supplier_transactions.location_id', request()->location_id);
             }
 
             if (!empty(request()->supplier_id)) {
                 $supplier_id = request()->supplier_id;
-                $purchases_returns->where('contacts.id', $supplier_id);
+                $purchases_returns->where('supplier.id', $supplier_id);
             }
             if (!empty(request()->start_date) && !empty(request()->end_date)) {
                 $start = request()->start_date;
                 $end =  request()->end_date;
-                $purchases_returns->whereDate('transactions.transaction_date', '>=', $start)
-                            ->whereDate('transactions.transaction_date', '<=', $end);
+                $purchases_returns->whereDate('supplier_transactions.transaction_date', '>=', $start)
+                            ->whereDate('supplier_transactions.transaction_date', '<=', $end);
             }
             return Datatables::of($purchases_returns)
                 ->addColumn('action', function ($row) {
@@ -126,10 +129,10 @@ class PurchaseReturnController extends Controller
                     }
 
                     if ($row->payment_status != "paid") {
-                        $html .= '<li><a href="' . action('TransactionPaymentController@addPayment', [$row->id]) . '" class="add_payment_modal"><i class="fas fa-money-bill-alt"></i>' . __("purchase.add_payment") . '</a></li>';
+                        $html .= '<li><a href="' . action('SupplierTransactionPaymentController@addPayment', [$row->id]) . '" class="add_payment_modal"><i class="fas fa-money-bill-alt"></i>' . __("purchase.add_payment") . '</a></li>';
                     }
 
-                    $html .= '<li><a href="' . action('TransactionPaymentController@show', [$row->id]) . '" class="view_payment_modal"><i class="fas fa-money-bill-alt"></i>' . __("purchase.view_payments") . '</a></li>';
+                    $html .= '<li><a href="' . action('SupplierTransactionPaymentController@show', [$row->id]) . '" class="view_payment_modal"><i class="fas fa-money-bill-alt"></i>' . __("purchase.view_payments") . '</a></li>';
 
                     $html .= '<li><a href="' . action('PurchaseReturnController@destroy', $row->id) . '" class="delete_purchase_return" ><i class="fa fa-trash"></i>' .
                                 __("messages.delete") .
@@ -152,13 +155,13 @@ class PurchaseReturnController extends Controller
                 })
                 ->editColumn(
                     'payment_status',
-                    '<a href="{{ action("TransactionPaymentController@show", [$id])}}" class="view_payment_modal payment-status payment-status-label" data-orig-value="{{$payment_status}}" data-status-name="@if($payment_status != "paid"){{__(\'lang_v1.\' . $payment_status)}}@else{{__("lang_v1.received")}}@endif"><span class="label @payment_status($payment_status)">@if($payment_status != "paid"){{__(\'lang_v1.\' . $payment_status)}} @else {{__("lang_v1.received")}} @endif
+                    '<a href="{{ action("SupplierTransactionPaymentController@show", [$id])}}" class="view_payment_modal payment-status payment-status-label" data-orig-value="{{$payment_status}}" data-status-name="@if($payment_status != "paid"){{__(\'lang_v1.\' . $payment_status)}}@else{{__("lang_v1.received")}}@endif"><span class="label @payment_status($payment_status)">@if($payment_status != "paid"){{__(\'lang_v1.\' . $payment_status)}} @else {{__("lang_v1.received")}} @endif
                         </span></a>'
                 )
                 ->editColumn('parent_purchase', function ($row) {
                     $html = '';
                     if (!empty($row->parent_purchase)) {
-                        $html = '<a href="#" data-href="' . action('PurchaseController@show', [$row->return_parent_id]) . '" class="btn-modal" data-container=".view_modal">' . $row->parent_purchase . '</a>';
+                        $html = '<a href="#" data-href="' . action('SupplierPurchaseController@show', [$row->return_parent_id]) . '" class="btn-modal" data-container=".view_modal">' . $row->parent_purchase . '</a>';
                     }
                     return $html;
                 })
@@ -196,22 +199,22 @@ class PurchaseReturnController extends Controller
         }
         $business_id = request()->session()->get('user.business_id');
 
-        $purchase = Transaction::where('business_id', $business_id)
+        $purchase = SupplierTransaction::where('business_id', $business_id)
                         ->where('type', 'purchase')
-                        ->with(['purchase_lines', 'contact', 'tax', 'return_parent', 'purchase_lines.sub_unit', 'purchase_lines.product', 'purchase_lines.product.unit'])
+                        ->with(['supplierPurchaseLines', 'supplier', 'tax', 'returnParent', 'supplierPurchaseLines.subUnit', 'supplierPurchaseLines.product', 'supplierPurchaseLines.product.unit'])
                         ->find($id);
 
-        foreach ($purchase->purchase_lines as $key => $value) {
+        foreach ($purchase->supplierPurchaseLines as $key => $value) {
             if (!empty($value->sub_unit_id)) {
                 $formated_purchase_line = $this->productUtil->changePurchaseLineUnit($value, $business_id);
                 $purchase->purchase_lines[$key] = $formated_purchase_line;
             }
         }
 
-        foreach ($purchase->purchase_lines as $key => $value) {
+        foreach ($purchase->supplierPurchaseLines as $key => $value) {
             $qty_available = $value->quantity - $value->quantity_sold - $value->quantity_adjusted;
 
-            $purchase->purchase_lines[$key]->formatted_qty_available = $this->transactionUtil->num_f($qty_available);
+            $purchase->supplierPurchaseLines[$key]->formatted_qty_available = $this->supplierTransactionUtil->num_f($qty_available);
         }
 
         return view('purchase_return.add')
@@ -229,28 +232,28 @@ class PurchaseReturnController extends Controller
         if (!auth()->user()->can('purchase.update')) {
             abort(403, 'Unauthorized action.');
         }
-
+        
         try {
             $business_id = request()->session()->get('user.business_id');
 
-            $purchase = Transaction::where('business_id', $business_id)
+            $purchase = SupplierTransaction::where('business_id', $business_id)
                         ->where('type', 'purchase')
-                        ->with(['purchase_lines', 'purchase_lines.sub_unit'])
-                        ->findOrFail($request->input('transaction_id'));
+                        ->with(['supplierPurchaseLines', 'supplierPurchaseLines.subUnit'])
+                        ->findOrFail($request->input('supplier_transaction_id'));
 
             $return_quantities = $request->input('returns');
             $return_total = 0;
 
             DB::beginTransaction();
 
-            foreach ($purchase->purchase_lines as $purchase_line) {
+            foreach ($purchase->supplierPurchaseLines as $purchase_line) {
                 $old_return_qty = $purchase_line->quantity_returned;
 
                 $return_quantity = !empty($return_quantities[$purchase_line->id]) ? $this->productUtil->num_uf($return_quantities[$purchase_line->id]) : 0;
 
                 $multiplier = 1;
-                if (!empty($purchase_line->sub_unit->base_unit_multiplier)) {
-                    $multiplier = $purchase_line->sub_unit->base_unit_multiplier;
+                if (!empty($purchase_line->subUnit->base_unit_multiplier)) {
+                    $multiplier = $purchase_line->subUnit->base_unit_multiplier;
                     $return_quantity = $return_quantity * $multiplier;
                 }
 
@@ -280,11 +283,11 @@ class PurchaseReturnController extends Controller
 
             if (empty($request->input('ref_no'))) {
                 //Update reference count
-                $ref_count = $this->transactionUtil->setAndGetReferenceCount('purchase_return');
-                $return_transaction_data['ref_no'] = $this->transactionUtil->generateReferenceNumber('purchase_return', $ref_count);
+                $ref_count = $this->supplierTransactionUtil->setAndGetReferenceCount('purchase_return');
+                $return_transaction_data['ref_no'] = $this->supplierTransactionUtil->generateReferenceNumber('purchase_return', $ref_count);
             }
 
-            $return_transaction = Transaction::where('business_id', $business_id)
+            $return_transaction = SupplierTransaction::where('business_id', $business_id)
                                             ->where('type', 'purchase_return')
                                             ->where('return_parent_id', $purchase->id)
                                             ->first();
@@ -294,24 +297,24 @@ class PurchaseReturnController extends Controller
 
                 $return_transaction->update($return_transaction_data);
 
-                $this->transactionUtil->activityLog($return_transaction, 'edited', $return_transaction_before);
+                $this->supplierTransactionUtil->activityLog($return_transaction, 'edited', $return_transaction_before);
             } else {
                 $return_transaction_data['business_id'] = $business_id;
                 $return_transaction_data['location_id'] = $purchase->location_id;
                 $return_transaction_data['type'] = 'purchase_return';
                 $return_transaction_data['status'] = 'final';
-                $return_transaction_data['contact_id'] = $purchase->contact_id;
+                $return_transaction_data['supplier_id'] = $purchase->supplier_id;
                 $return_transaction_data['transaction_date'] = Carbon::now();
                 $return_transaction_data['created_by'] = request()->session()->get('user.id');
                 $return_transaction_data['return_parent_id'] = $purchase->id;
 
-                $return_transaction = Transaction::create($return_transaction_data);
+                $return_transaction = SupplierTransaction::create($return_transaction_data);
 
-                $this->transactionUtil->activityLog($return_transaction, 'added');
+                $this->supplierTransactionUtil->activityLog($return_transaction, 'added');
             }
 
             //update payment status
-            $this->transactionUtil->updatePaymentStatus($return_transaction->id, $return_transaction->final_total);
+            $this->supplierTransactionUtil->updatePaymentStatus($return_transaction->id, $return_transaction->final_total);
 
             $output = ['success' => 1,
                             'msg' => __('lang_v1.purchase_return_added_success')
@@ -399,32 +402,32 @@ class PurchaseReturnController extends Controller
                 $business_id = request()->session()->get('user.business_id');
 
 
-                $purchase_return = Transaction::where('id', $id)
+                $purchase_return = SupplierTransaction::where('id', $id)
                                 ->where('business_id', $business_id)
                                 ->where('type', 'purchase_return')
-                                ->with(['purchase_lines'])
+                                ->with(['supplierPurchaseLines'])
                                 ->first();
 
                 DB::beginTransaction();
 
                 if (empty($purchase_return->return_parent_id)) {
-                    $delete_purchase_lines = $purchase_return->purchase_lines;
+                    $delete_purchase_lines = $purchase_return->supplierPurchaseLines;
                     $delete_purchase_line_ids = [];
                     foreach ($delete_purchase_lines as $purchase_line) {
                         $delete_purchase_line_ids[] = $purchase_line->id;
                         $this->productUtil->updateProductQuantity($purchase_return->location_id, $purchase_line->product_id, $purchase_line->variation_id, $purchase_line->quantity_returned, 0, null, false);
                     }
-                    PurchaseLine::where('transaction_id', $purchase_return->id)
+                    SupplierPurchaseLine::where('supplier_transactions_id', $purchase_return->id)
                                 ->whereIn('id', $delete_purchase_line_ids)
                                 ->delete();
                 } else {
-                    $parent_purchase = Transaction::where('id', $purchase_return->return_parent_id)
+                    $parent_purchase = SupplierTransaction::where('id', $purchase_return->return_parent_id)
                                 ->where('business_id', $business_id)
                                 ->where('type', 'purchase')
-                                ->with(['purchase_lines'])
+                                ->with(['supplierPurchaseLines'])
                                 ->first();
 
-                    $updated_purchase_lines = $parent_purchase->purchase_lines;
+                    $updated_purchase_lines = $parent_purchase->supplierPurchaseLines;
                     foreach ($updated_purchase_lines as $purchase_line) {
                         $this->productUtil->updateProductQuantity($parent_purchase->location_id, $purchase_line->product_id, $purchase_line->variation_id, $purchase_line->quantity_returned, 0, null, false);
                         $purchase_line->quantity_returned = 0;

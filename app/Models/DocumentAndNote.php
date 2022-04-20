@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 class DocumentAndNote extends Model
 {
-    use LogsActivity;
+    // use LogsActivity;
 
     /**
      * The attributes that aren't mass assignable.
@@ -16,9 +17,17 @@ class DocumentAndNote extends Model
      */
     protected $guarded = ['id'];
 
-    protected static $logUnguarded = true;
-    protected static $logOnlyDirty = true;
+    // protected static $logUnguarded = true;
+    // protected static $logOnlyDirty = true;
 
+    /** 
+     * Chain fluent methods for configuration options
+     * 
+     */
+    // public function getActivitylogOptions(): LogOptions
+    // {
+    //     return LogOptions::defaults();
+    // }
 
     /**
     * Get all of the owning notable models.

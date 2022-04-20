@@ -2,7 +2,7 @@ $(document).ready(function() {
     //get suppliers
     $('#supplier_id').select2({
         ajax: {
-            url: '/purchases/get_suppliers',
+            url: '/suppliers-purchases/get_suppliers',
             dataType: 'json',
             delay: 250,
             data: function(params) {

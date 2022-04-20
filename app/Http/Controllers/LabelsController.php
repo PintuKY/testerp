@@ -9,6 +9,7 @@ use App\Utils\TransactionUtil;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\SellingPriceGroup;
+use App\Utils\SupplierTransactionUtil;
 
 class LabelsController extends Controller
 {
@@ -17,6 +18,7 @@ class LabelsController extends Controller
      *
      */
     protected $transactionUtil;
+    protected $supplierTransactionUtil;
     protected $productUtil;
 
     /**
@@ -25,9 +27,10 @@ class LabelsController extends Controller
      * @param TransactionUtil $TransactionUtil
      * @return void
      */
-    public function __construct(TransactionUtil $transactionUtil, ProductUtil $productUtil)
+    public function __construct(TransactionUtil $transactionUtil, SupplierTransactionUtil $supplierTransactionUtil, ProductUtil $productUtil)
     {
         $this->transactionUtil = $transactionUtil;
+        $this->supplierTransactionUtil = $supplierTransactionUtil;
         $this->productUtil = $productUtil;
     }
 
@@ -46,6 +49,36 @@ class LabelsController extends Controller
         $products = [];
         if ($purchase_id) {
             $products = $this->transactionUtil->getPurchaseProducts($business_id, $purchase_id);
+        } elseif ($product_id) {
+            $products = $this->productUtil->getDetailsFromProduct($business_id, $product_id);
+        }
+
+        $barcode_settings = Barcode::where('business_id', $business_id)
+                                ->orWhereNull('business_id')
+                                ->select(DB::raw('CONCAT(name, ", ", COALESCE(description, "")) as name, id, is_default'))
+                                ->get();
+        $default = $barcode_settings->where('is_default', 1)->first();
+        $barcode_settings = $barcode_settings->pluck('name', 'id');
+
+        return view('labels.show')
+            ->with(compact('products', 'barcode_settings', 'default'));
+    }
+
+    /**
+     * Display Supplier Purchase labels
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function supplierPurchaseShow(Request $request)
+    {   
+        $business_id = $request->session()->get('user.business_id');
+        $purchase_id = $request->get('purchase_id', false);
+        $product_id = $request->get('product_id', false);
+
+        //Get products for the business
+        $products = [];
+        if ($purchase_id) {
+            $products = $this->supplierTransactionUtil->getSupplierPurchaseProducts($business_id, $purchase_id);
         } elseif ($product_id) {
             $products = $this->productUtil->getDetailsFromProduct($business_id, $product_id);
         }

@@ -51,6 +51,30 @@
 
                       </ul>
                       </li>
+                      <li class="treeview" id="tour_step4">
+                        <a href="#">
+                          <i class="fa fas fa-address-book"></i> <span>Supplier</span>
+                          <span class="pull-right-container">
+                            <i class="fa fa-angle-left pull-right"></i>
+                          </span>
+                        </a>
+                        <ul class="treeview-menu">
+                          <li><a href="{{route('supplier.index')}}"><i class="fa fas fa-star"></i> <span>Lists Suppliers</span></a></li>
+                        </ul>
+                      </li>
+                      <li class="treeview" id="tour_step6">
+                        <a href="#">
+                          <i class="fa fas fa-arrow-circle-down"></i> <span>Supplier Purchases</span>
+                          <span class="pull-right-container">
+                            <i class="fa fa-angle-left pull-right"></i>
+                          </span>
+                        </a>
+                        <ul class="treeview-menu">
+                          <li><a href="{{route('supplier-purchases.index')}}"><i class="fa fas fa-list"></i> <span>List Supplier Purchases</span></a></li>
+                          <li><a href="{{route('supplier-purchases.create')}}"><i class="fa fas fa-plus-circle"></i> <span>Add Supplier Purchase</span></a></li>
+                          <li><a href="{{route('purchase-return.index')}}"><i class="fa fas fa-undo"></i> <span>List Purchase Return</span></a></li>
+                        </ul>
+                      </li>
     <li class="treeview" id="tour_step6">
                       <a href="#">
                         <i class="fa fas fa-arrow-circle-down"></i> <span>Purchases</span>
@@ -61,7 +85,7 @@
                       <ul class="treeview-menu">
                           <li><a href="{{route('purchases.index')}}"><i class="fa fas fa-list"></i> <span>List Purchases</span></a></li>
     <li><a href="{{route('purchases.create')}}"><i class="fa fas fa-plus-circle"></i> <span>Add Purchase</span></a></li>
-    <li><a href="https://rcgerp.com/purchase-return"><i class="fa fas fa-undo"></i> <span>List Purchase Return</span></a></li>
+    <!-- <li><a href="https://rcgerp.com/purchase-return"><i class="fa fas fa-undo"></i> <span>List Purchase Return</span></a></li> -->
 
                       </ul>
                       </li>

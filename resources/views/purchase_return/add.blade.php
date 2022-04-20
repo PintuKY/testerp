@@ -11,7 +11,7 @@
 <!-- Main content -->
 <section class="content">
 	{!! Form::open(['url' => action('PurchaseReturnController@store'), 'method' => 'post', 'id' => 'purchase_return_form' ]) !!}
-	{!! Form::hidden('transaction_id', $purchase->id); !!}
+	{!! Form::hidden('supplier_transaction_id', $purchase->id); !!}
 
 	@component('components.widget', ['class' => 'box-primary', 'title' => __('lang_v1.parent_purchase')])
 		<div class="row">
@@ -20,7 +20,7 @@
 				<strong>@lang('messages.date'):</strong> {{@format_date($purchase->transaction_date)}}
 			</div>
 			<div class="col-sm-4">
-				<strong>@lang('purchase.supplier'):</strong> {{ $purchase->contact->name }} <br>
+				<strong>@lang('purchase.supplier'):</strong> {{ $purchase->supplier->name }} <br>
 				<strong>@lang('purchase.business_location'):</strong> {{ $purchase->location->name }}
 			</div>
 		</div>
@@ -31,7 +31,7 @@
 			<div class="col-sm-4">
 				<div class="form-group">
 					{!! Form::label('ref_no', __('purchase.ref_no').':') !!}
-					{!! Form::text('ref_no', !empty($purchase->return_parent->ref_no) ? $purchase->return_parent->ref_no : null, ['class' => 'form-control']); !!}
+					{!! Form::text('ref_no', !empty($purchase->returnParent->ref_no) ? $purchase->returnParent->ref_no : null, ['class' => 'form-control']); !!}
 				</div>
 			</div>
 			<div class="clearfix"></div>
@@ -50,7 +50,7 @@
 			            </tr>
 			        </thead>
 			        <tbody>
-			          	@foreach($purchase->purchase_lines as $purchase_line)
+			          	@foreach($purchase->supplierPurchaseLines as $purchase_line)
 			          	@php
 			          		$unit_name = $purchase_line->product->unit->short_name;
 

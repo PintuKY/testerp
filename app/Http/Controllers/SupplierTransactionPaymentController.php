@@ -66,7 +66,7 @@ class SupplierTransactionPaymentController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
-    {
+    {   
         try {
             $business_id = $request->session()->get('user.business_id');
             $transaction_id = $request->input('transaction_id');
@@ -166,28 +166,28 @@ class SupplierTransactionPaymentController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id)
-    {
+    {   
         if (!(auth()->user()->can('sell.payments') || auth()->user()->can('purchase.payments'))) {
             abort(403, 'Unauthorized action.');
         }
 
         if (request()->ajax()) {
-            $transaction = Transaction::where('id', $id)
-                                        ->with(['contact', 'business', 'transaction_for'])
+            $transaction = SupplierTransaction::where('id', $id)
+                                        ->with(['supplier', 'business', 'transactionFor'])
                                         ->first();
-            $payments_query = TransactionPayment::where('transaction_id', $id);
+            $payments_query = SupplierTransactionPayments::where('supplier_transaction_id', $id);
 
             $accounts_enabled = false;
             if ($this->moduleUtil->isModuleEnabled('account')) {
                 $accounts_enabled = true;
-                $payments_query->with(['payment_account']);
+                $payments_query->with(['paymentAccount']);
             }
 
             $payments = $payments_query->get();
             $location_id = !empty($transaction->location_id) ? $transaction->location_id : null;
-            $payment_types = $this->transactionUtil->payment_types($location_id, true);
+            $payment_types = $this->supplierTransactionUtil->payment_types($location_id, true);
 
-            return view('transaction_payment.show_payments')
+            return view('supplier_transaction_payment.show_payments')
                     ->with(compact('transaction', 'payments', 'payment_types', 'accounts_enabled'));
         }
     }
@@ -383,7 +383,7 @@ class SupplierTransactionPaymentController extends Controller
         if (!auth()->user()->can('purchase.payments') && !auth()->user()->can('sell.payments') && !auth()->user()->can('all_expense.access') && !auth()->user()->can('view_own_expense')) {
             abort(403, 'Unauthorized action.');
         }
-
+        
         if (request()->ajax()) {
             $business_id = request()->session()->get('user.business_id');
 

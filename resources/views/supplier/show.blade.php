@@ -363,7 +363,7 @@ $(document).on('click', '#contact_payments_pagination a', function(e){
 
 function get_supplier_payments(url = null) {
     if (!url) {
-        url = "{{action('SupplierController@getSupplierPayments', [$supplier->id])}}";
+        url = "{{route('supplier.payments', [$supplier->id])}}";
     }
     $.ajax({
         url: url,

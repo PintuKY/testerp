@@ -166,7 +166,7 @@ class TransactionPaymentController extends Controller
         if (!(auth()->user()->can('sell.payments') || auth()->user()->can('purchase.payments'))) {
             abort(403, 'Unauthorized action.');
         }
-
+        
         if (request()->ajax()) {
             $transaction = Transaction::where('id', $id)
                                         ->with(['contact', 'business', 'transaction_for'])

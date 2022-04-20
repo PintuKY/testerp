@@ -77,4 +77,9 @@ class SupplierTransaction extends Model
     {
         return $this->belongsTo(\App\Models\TaxRate::class, 'tax_id');
     }
+
+    public function returnParent()
+    {
+        return $this->hasOne(\App\Models\SupplierTransaction::class, 'return_parent_id');
+    }
 }

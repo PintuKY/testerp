@@ -1176,4 +1176,17 @@ class SupplierTransactionUtil extends Util
 
         return $output;
     }
+
+    public function getSupplierPurchaseProducts($business_id, $transaction_id)
+    {
+        $products = SupplierTransaction::join('supplier_purchase_lines as Spl', 'supplier_transactions.id', '=', 'Spl.supplier_transactions_id')
+                            ->leftjoin('products as p', 'Spl.product_id', '=', 'p.id')
+                            ->leftjoin('variations as v', 'Spl.variation_id', '=', 'v.id')
+                            ->where('supplier_transactions.business_id', $business_id)
+                            ->where('supplier_transactions.id', $transaction_id)
+                            ->where('supplier_transactions.type', 'purchase')
+                            ->select('p.id as product_id', 'p.name as product_name', 'v.id as variation_id', 'v.name as variation_name', 'Spl.quantity as quantity', 'Spl.exp_date', 'Spl.lot_number')
+                            ->get();
+        return $products;
+    }
 }

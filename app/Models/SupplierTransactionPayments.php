@@ -23,7 +23,7 @@ class SupplierTransactionPayments extends Model
      /**
      * Get the phone record associated with the user.
      */
-    public function payment_account()
+    public function paymentAccount()
     {
         return $this->belongsTo(\App\Models\Account::class, 'account_id');
     }

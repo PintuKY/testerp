@@ -774,7 +774,6 @@ class SupplierController extends Controller
 
     public function getSupplierPayments($supplier_id)
     {   
-      
         $business_id = request()->session()->get('user.business_id');
         if (request()->ajax()) {
 

@@ -1,15 +1,15 @@
 @lang('purchase.supplier'):
 <address>
-    <strong>{{ $transaction->contact->supplier_business_name }}</strong>
-    {{ $transaction->contact->name }}
-    {!! $transaction->contact->contact_address !!}
-    @if(!empty($transaction->contact->tax_number))
-        <br>@lang('contact.tax_no'): {{$transaction->contact->tax_number}}
+    <strong>{{ $transaction->supplier->supplier_business_name }}</strong>
+    {{ $transaction->supplier->name }}
+    {!! $transaction->supplier->supplier_address !!}
+    @if(!empty($transaction->supplier->tax_number))
+        <br>@lang('supplier.tax_no'): {{$transaction->supplier->tax_number}}
     @endif
-    @if(!empty($transaction->contact->mobile))
-        <br>@lang('contact.mobile'): {{$transaction->contact->mobile}}
+    @if(!empty($transaction->supplier->mobile))
+        <br>@lang('supplier.mobile'): {{$transaction->supplier->mobile}}
     @endif
-    @if(!empty($transaction->contact->email))
-        <br>Email: {{$transaction->contact->email}}
+    @if(!empty($transaction->supplier->email))
+        <br>Email: {{$transaction->supplier->email}}
     @endif
 </address>

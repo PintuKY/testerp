@@ -25,10 +25,10 @@
             @if(in_array($transaction->type, ['purchase', 'purchase_return']))
                 <div class="row invoice-info">
                     <div class="col-sm-4 invoice-col">
-                        @include('transaction_payment.transaction_supplier_details')
+                        @include('supplier_transaction_payment.transaction_supplier_details')
                     </div>
                     <div class="col-md-4 invoice-col">
-                        @include('transaction_payment.payment_business_details')
+                        @include('supplier_transaction_payment.payment_business_details')
                     </div>
 
                     <div class="col-sm-4 invoice-col">
@@ -40,27 +40,27 @@
                 </div>
             @elseif(in_array($transaction->type, ['expense', 'expense_refund']))
                 <div class="row invoice-info">
-                    @if(!empty($transaction->contact))
+                    @if(!empty($transaction->supplier))
                         <div class="col-sm-4 invoice-col">
                             @lang('expense.expense_for'):
                             <address>
-                                <strong>{{ $transaction->contact->supplier_business_name }}</strong>
-                                {{ $transaction->contact->name }}
-                                {!! $transaction->contact->contact_address !!}
+                                <strong>{{ $transaction->supplier->supplier_business_name }}</strong>
+                                {{ $transaction->supplier->name }}
+                                {!! $transaction->supplier->supplier_address !!}
                                 @if(!empty($transaction->contact->tax_number))
-                                    <br>@lang('contact.tax_no'): {{$transaction->contact->tax_number}}
+                                    <br>@lang('supplier.tax_no'): {{$transaction->supplier->tax_number}}
                                 @endif
-                                @if(!empty($transaction->contact->mobile))
-                                    <br>@lang('contact.mobile'): {{$transaction->contact->mobile}}
+                                @if(!empty($transaction->supplier->mobile))
+                                    <br>@lang('supplier.mobile'): {{$transaction->supplier->mobile}}
                                 @endif
-                                @if(!empty($transaction->contact->email))
-                                    <br>@lang('business.email'): {{$transaction->contact->email}}
+                                @if(!empty($transaction->supplier->email))
+                                    <br>@lang('business.email'): {{$transaction->supplier->email}}
                                 @endif
                             </address>
                         </div>
                     @endif
                     <div class="col-md-4 invoice-col">
-                        @include('transaction_payment.payment_business_details')
+                        @include('supplier_transaction_payment.payment_business_details')
                     </div>
 
                     <div class="col-sm-4 invoice-col">
@@ -74,20 +74,20 @@
                     <div class="col-sm-4 invoice-col">
                         @lang('essentials::lang.payroll_for'):
                         <address>
-                            <strong>{{ $transaction->transaction_for->user_full_name }}</strong>
-                            @if(!empty($transaction->transaction_for->address))
-                                <br>{{$transaction->transaction_for->address}}
+                            <strong>{{ $transaction->transactionFor->user_full_name }}</strong>
+                            @if(!empty($transaction->transactionFor->address))
+                                <br>{{$transaction->transactionFor->address}}
                             @endif
-                            @if(!empty($transaction->transaction_for->contact_number))
-                                <br>@lang('contact.mobile'): {{$transaction->transaction_for->contact_number}}
+                            @if(!empty($transaction->transactionFor->contact_number))
+                                <br>@lang('contact.mobile'): {{$transaction->transactionFor->contact_number}}
                             @endif
-                            @if(!empty($transaction->transaction_for->email))
-                                <br>@lang('business.email'): {{$transaction->transaction_for->email}}
+                            @if(!empty($transaction->transactionFor->email))
+                                <br>@lang('business.email'): {{$transaction->transactionFor->email}}
                             @endif
                         </address>
                     </div>
                     <div class="col-md-4 invoice-col">
-                        @include('transaction_payment.payment_business_details')
+                        @include('supplier_transaction_payment.payment_business_details')
                     </div>
                     <div class="col-sm-4 invoice-col">
                         <b>@lang('purchase.ref_no'):</b> #{{ $transaction->ref_no }}<br/>
@@ -103,22 +103,22 @@
                     <div class="col-sm-4 invoice-col">
                         @lang('contact.customer'):
                         <address>
-                            <strong>{{ $transaction->contact->name }}</strong>
+                            <strong>{{ $transaction->supplier->name }}</strong>
 
-                            {!! $transaction->contact->contact_address !!}
-                            @if(!empty($transaction->contact->tax_number))
-                                <br>@lang('contact.tax_no'): {{$transaction->contact->tax_number}}
+                            {!! $transaction->supplier->supplier_address !!}
+                            @if(!empty($transaction->supplier->tax_number))
+                                <br>@lang('supplier.tax_no'): {{$transaction->supplier->tax_number}}
                             @endif
-                            @if(!empty($transaction->contact->mobile))
-                                <br>@lang('contact.mobile'): {{$transaction->contact->mobile}}
+                            @if(!empty($transaction->supplier->mobile))
+                                <br>@lang('supplier.mobile'): {{$transaction->supplier->mobile}}
                             @endif
-                            @if(!empty($transaction->contact->email))
-                                <br>@lang('business.email'): {{$transaction->contact->email}}
+                            @if(!empty($transaction->supplier->email))
+                                <br>@lang('business.email'): {{$transaction->supplier->email}}
                             @endif
                         </address>
                     </div>
                     <div class="col-md-4 invoice-col">
-                        @include('transaction_payment.payment_business_details')
+                        @include('supplier_transaction_payment.payment_business_details')
                     </div>
                     <div class="col-sm-4 invoice-col">
                         <b>@lang('sale.invoice_no'):</b> #{{ $transaction->invoice_no }}<br/>

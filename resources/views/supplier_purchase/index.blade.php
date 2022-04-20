@@ -109,7 +109,6 @@
         e.preventDefault();
         var form = $(this);
         var data = form.serialize();
-        console.log(data);
         $.ajax({
             method: 'POST',
             url: $(this).attr('action'),
@@ -127,7 +126,6 @@
                         .find('button[type="submit"]')
                         .attr('disabled', false);
                 } else {
-                    console.log('deo23');
                     toastr.error(result.msg);
                     $('#update_purchase_status_form')
                         .find('button[type="submit"]')

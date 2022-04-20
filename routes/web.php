@@ -162,6 +162,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
 
     //Print Labels
     Route::get('/labels/show', 'LabelsController@show')->name("labels.show");
+    Route::get('/supplier/purchase/labels/show', 'LabelsController@supplierPurchaseShow')->name("labels.show");
     Route::get('/labels/add-product-row', 'LabelsController@addProductRow');
     Route::get('/labels/preview', 'LabelsController@preview');
 
@@ -395,7 +396,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/supplier/update-status/{id}', 'SupplierController@updateStatus');
     Route::get('/supplier/stock-report/{supplier_id}', 'SupplierController@getSupplierStockReport');
     Route::get('/suppliers/ledger', 'SupplierController@getLedger');
-    Route::get('/supplier/payments/{supplier_id}', 'SupplierController@getSupplierPayments');
+    Route::get('/supplier/payments/{supplier_id}', 'SupplierController@getSupplierPayments')->name('supplier.payments');
 
     // supplier purchases modules
     Route::post('/supplier-purchases/update-status', 'SupplierPurchaseController@updateStatus');
@@ -413,7 +414,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/supplier/payments/add_payment/{transaction_id}', 'SupplierTransactionPaymentController@addPayment');
     Route::get('/supplier/payments/pay-contact-due/{contact_id}', 'SupplierTransactionPaymentController@getPayContactDue');
     Route::post('/supplier/payments/pay-contact-due', 'SupplierTransactionPaymentController@postPayContactDue');
-    Route::resource('supplier/payments', 'SupplierTransactionPaymentController');
+    Route::resource('/suppliers/payments', 'SupplierTransactionPaymentController');
 
 
 });

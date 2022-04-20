@@ -117,9 +117,9 @@ class SupplierPurchaseController extends Controller
                     if (auth()->user()->can("purchase.view")) {
                         $html .= '<li><a href="#" data-href="' . route('supplier-purchases.show', [$row->id]) . '" class="btn-modal" data-container=".view_modal"><i class="fas fa-eye" aria-hidden="true"></i>' . __("messages.view") . '</a></li>';
                     }
-                    if (auth()->user()->can("purchase.view")) {
-                        $html .= '<li><a href="#" class="print-invoice" data-href="' . action('PurchaseController@printInvoice', [$row->id]) . '"><i class="fas fa-print" aria-hidden="true"></i>'. __("messages.print") .'</a></li>';
-                    }
+                    // if (auth()->user()->can("purchase.view")) {
+                    //     $html .= '<li><a href="#" class="print-invoice" data-href="' . action('PurchaseController@printInvoice', [$row->id]) . '"><i class="fas fa-print" aria-hidden="true"></i>'. __("messages.print") .'</a></li>';
+                    // }
                     if (auth()->user()->can("purchase.update")) {
                         $html .= '<li><a href="' . action('SupplierPurchaseController@edit', [$row->id]) . '"><i class="fas fa-edit"></i>' . __("messages.edit") . '</a></li>';
                     }
@@ -127,7 +127,7 @@ class SupplierPurchaseController extends Controller
                         $html .= '<li><a href="' . action('SupplierPurchaseController@destroy', [$row->id]) . '" class="delete-purchase"><i class="fas fa-trash"></i>' . __("messages.delete") . '</a></li>';
                     }
 
-                    $html .= '<li><a href="' . action('LabelsController@show') . '?purchase_id=' . $row->id . '" data-toggle="tooltip" title="' . __('lang_v1.label_help') . '"><i class="fas fa-barcode"></i>' . __('barcode.labels') . '</a></li>';
+                    $html .= '<li><a href="' . action('LabelsController@supplierPurchaseShow') . '?purchase_id=' . $row->id . '" data-toggle="tooltip" title="' . __('lang_v1.label_help') . '"><i class="fas fa-barcode"></i>' . __('barcode.labels') . '</a></li>';
 
                     if (auth()->user()->can("purchase.view") && !empty($row->document)) {
                         $document_name = !empty(explode("_", $row->document, 2)[1]) ? explode("_", $row->document, 2)[1] : $row->document ;
@@ -146,7 +146,7 @@ class SupplierPurchaseController extends Controller
                             $html .= '<li><a href="' . action('SupplierTransactionPaymentController@addPayment', [$row->id]) . '" class="add_payment_modal"><i class="fas fa-money-bill-alt" aria-hidden="true"></i>' . __("purchase.add_payment") . '</a></li>';
                         }
 
-                        $html .= '<li><a href="' . action('SupplierTransactionPaymentController@show', [$row->id]) .
+                        $html .= '<li><a href="' . action('SupplierTransactionPaymentController@show', $row->id) .
                         '" class="view_payment_modal"><i class="fas fa-money-bill-alt" aria-hidden="true" ></i>' . __("purchase.view_payments") . '</a></li>';
                     }
 
@@ -156,8 +156,7 @@ class SupplierPurchaseController extends Controller
                     }
 
                     if (auth()->user()->can("purchase.update") || auth()->user()->can("purchase.update_status")) {
-                        $html .= '<li><a href="#" data-purchase-id="'.$row->id.
-                        '" data-status="' . $row->status . '" class="update_status"><i class="fas fa-edit" aria-hidden="true" ></i>' . __("lang_v1.update_status") . '</a></li>';
+                        $html .= '<li><a href="#" data-purchase-id="'.$row->id.'" data-status="' . $row->status . '" class="update_status"><i class="fas fa-edit" aria-hidden="true" ></i>' . __("lang_v1.update_status") . '</a></li>';
                     }
 
                     if ($row->status == 'ordered') {
@@ -183,7 +182,7 @@ class SupplierPurchaseController extends Controller
                 ->editColumn('name', '@if(!empty($supplier_business_name)) {{$supplier_business_name}}, <br> @endif {{$name}}')
                 ->editColumn(
                     'status',
-                    '<a href="#" @if(auth()->user()->can("purchase.update") || auth()->user()->can("purchase.update_status")) class="update_status no-print" data-purchase_id="{{$id}}" data-status="{{$status}}" @endif><span class="label @transaction_status($status) status-label" data-status-name="{{__(\'lang_v1.\' . $status)}}" data-orig-value="{{$status}}">{{__(\'lang_v1.\' . $status)}}
+                    '<a href="#" @if(auth()->user()->can("purchase.update") || auth()->user()->can("purchase.update_status")) class="update_status no-print" data-purchase-id="{{$id}}" data-status="{{$status}}" @endif><span class="label @transaction_status($status) status-label" data-status-name="{{__(\'lang_v1.\' . $status)}}" data-orig-value="{{$status}}">{{__(\'lang_v1.\' . $status)}}
                         </span></a>'
                 )
                 ->editColumn(
@@ -197,10 +196,10 @@ class SupplierPurchaseController extends Controller
                     $due = $row->final_total - $row->amount_paid;
                     $due_html = '<strong>' . __('lang_v1.purchase') .':</strong> <span class="payment_due" data-orig-value="' . $due . '">' . $this->supplierTransactionUtil->num_f($due, true) . '</span>';
 
-                    if (!empty($row->return_exists)) {
-                        $return_due = $row->amount_return - $row->return_paid;
-                        $due_html .= '<br><strong>' . __('lang_v1.purchase_return') .':</strong> <a href="' . action("TransactionPaymentController@show", [$row->return_transaction_id]) . '" class="view_purchase_return_payment_modal"><span class="purchase_return" data-orig-value="' . $return_due . '">' . $this->transactionUtil->num_f($return_due, true) . '</span></a>';
-                    }
+                    // if (!empty($row->return_exists)) {
+                    //     $return_due = $row->amount_return - $row->return_paid;
+                    //     $due_html .= '<br><strong>' . __('lang_v1.purchase_return') .':</strong> <a href="' . action("SupplierTransactionPaymentController@show", [$row->return_transaction_id]) . '" class="view_purchase_return_payment_modal"><span class="purchase_return" data-orig-value="' . $return_due . '">' . $this->transactionUtil->num_f($return_due, true) . '</span></a>';
+                    // }
                     return $due_html;
                 })
                 ->setRowAttr([
@@ -1019,6 +1018,7 @@ class SupplierPurchaseController extends Controller
         if (!auth()->user()->can('purchase.update') && !auth()->user()->can('purchase.update_status')) {
             abort(403, 'Unauthorized action.');
         }
+        
         try {
             $business_id = request()->session()->get('user.business_id');
             $transaction = SupplierTransaction::where('business_id', $business_id)

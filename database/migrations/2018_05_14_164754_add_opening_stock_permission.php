@@ -3,8 +3,9 @@
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Spatie\Permission\Models\Permission;
 
-class CreatePasswordResetsTable extends Migration
+class AddOpeningStockPermission extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +14,11 @@ class CreatePasswordResetsTable extends Migration
      */
     public function up()
     {
-        Schema::create('password_resets', function (Blueprint $table) {
-            $table->string('email')->index();
-            $table->string('token');
-            $table->timestamp('created_at')->nullable();
-        });
+        $insert_data = ['name' => 'product.opening_stock',
+                        'guard_name' => 'web'
+                    ];
+        
+        Permission::create($insert_data);
     }
 
     /**
@@ -27,6 +28,6 @@ class CreatePasswordResetsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('password_resets');
+        //
     }
 }

@@ -3,8 +3,9 @@
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use App\Models\Transaction;
 
-class CreatePasswordResetsTable extends Migration
+class AddSubStatusColumnToTransactionsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +14,11 @@ class CreatePasswordResetsTable extends Migration
      */
     public function up()
     {
-        Schema::create('password_resets', function (Blueprint $table) {
-            $table->string('email')->index();
-            $table->string('token');
-            $table->timestamp('created_at')->nullable();
+        Schema::table('transactions', function (Blueprint $table) {
+            $table->string('sub_status')->after('status')->nullable()->index();
         });
+
+        Transaction::where('is_quotation', 1)->update(['sub_status' => 'quotation']);
     }
 
     /**
@@ -27,6 +28,6 @@ class CreatePasswordResetsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('password_resets');
+
     }
 }

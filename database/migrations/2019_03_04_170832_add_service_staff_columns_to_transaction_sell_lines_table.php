@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreatePasswordResetsTable extends Migration
+class AddServiceStaffColumnsToTransactionSellLinesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,10 +13,9 @@ class CreatePasswordResetsTable extends Migration
      */
     public function up()
     {
-        Schema::create('password_resets', function (Blueprint $table) {
-            $table->string('email')->index();
-            $table->string('token');
-            $table->timestamp('created_at')->nullable();
+        Schema::table('transaction_sell_lines', function (Blueprint $table) {
+            $table->integer('res_service_staff_id')->nullable()->after('sell_line_note');
+            $table->string('res_line_order_status')->nullable()->after('res_service_staff_id');
         });
     }
 
@@ -27,6 +26,5 @@ class CreatePasswordResetsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('password_resets');
     }
 }

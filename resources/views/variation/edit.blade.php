@@ -16,12 +16,16 @@
           {!! Form::text('name', $variation->name, ['class' => 'form-control', 'required', 'placeholder' => __('lang_v1.variation_name')]); !!}
         </div>
       </div>
-      <div class="form-group">
-        <label class="col-sm-3 control-label">@lang('lang_v1.add_variation_values'):*</label>
+      <div class="form-group row variations_values_componets">
         @foreach( $variation->values as $attr)
           @if( $loop->first )
-            <div class="col-sm-7">
+            <div class="col-sm-5">
+              <label class="control-label">@lang('lang_v1.add_variation_values'):*</label>
               {!! Form::text('edit_variation_values[' . $attr->id . ']', $attr->name, ['class' => 'form-control', 'required']); !!}
+            </div>
+            <div class="col-sm-5">
+            <label class="control-label">@lang('price'):*</label>
+              {!! Form::text('edit_variation_values_price[' . $attr->id . ']', $attr->value, ['class' => 'form-control input_number input-sm dpp valid', 'required']); !!}
             </div>
           @endif
         @endforeach
@@ -33,8 +37,11 @@
         @foreach( $variation->values as $attr)
           @if( !$loop->first )
             <div class="form-group">
-              <div class="col-sm-7 col-sm-offset-3">
+              <div class="col-sm-5">
                 {!! Form::text('edit_variation_values[' . $attr->id . ']', $attr->name, ['class' => 'form-control', 'required']); !!}
+              </div>
+              <div class="col-sm-5">
+                {!! Form::text('edit_variation_values[' . $attr->id . ']', $attr->value, ['class' => 'form-control', 'required']); !!}
               </div>
             </div>
           @endif

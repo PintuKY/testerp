@@ -1419,4 +1419,6 @@ return [
     'exp_date_instructions' => 'Only if Product Expiry is enabled. You can enable Product expiry from <br><code>Business Settings > Product > Enable Product Expiry</code>',
     'supplier_id' => 'Supplier ID',
     'you_cannot_delete_this_supplier' => "Cannot delete the supplier - Transactions already exist for the supplier.",
+    'driver_mobile_already_registered' => ':mobile Already registered for :Driver',
+    'driver_email_already_registered' => ':email Already registered for :Driver',
 ];

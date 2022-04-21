@@ -418,6 +418,8 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
 
     //Driver module...
     Route::resource('driver', 'DriverController');
+    Route::post('/driver/check-mobile', 'DriverController@checkMobile');
+    Route::post('/driver/check-email', 'DriverController@checkEmail');
 
 
 });

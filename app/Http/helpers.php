@@ -154,3 +154,15 @@ function variationTypes(){
     ];
     return $data;
 }
+
+
+// Delivery Days lists
+function deliveryDays(){
+    $data = [
+        '7' => '7',
+        '10' => '10',
+        '20' => '20',
+        '30' => '30'
+    ];
+    return $data;
+}

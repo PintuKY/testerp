@@ -83,7 +83,22 @@
                 </div>
               </div>
             </div>
+            
+            <div class="col-sm-4">
+              <div class="form-group">
+                <label for="brand_id">Delivery Days:*</label>
+                <div class="form-group">
+                  
+                  <select class="form-control select2" id="delivery_days" name="delivery_days">
+                    <option selected>Not Applicable</option>
+                    @foreach(deliveryDays() as $key => $deliveryDays)
+                      <option value="{{$key}}" {{ $product->delivery_days == $key ? 'selected' : ''}} >{{ $deliveryDays }}</option>
+                    @endforeach
+                  </select>
 
+                </div>
+              </div>
+            </div>
             
 
             <div class="clearfix"></div>

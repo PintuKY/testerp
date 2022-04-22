@@ -75,12 +75,11 @@
             <label for="brand_id">Delivery Days:</label>
             <div class="form-group">
               
-              <select class="form-control select2" id="role" name="role">
+              <select class="form-control select2" id="delivery_days" name="delivery_days">
                 <option selected>Not Applicable</option>
-                <option value="1">7</option>
-                <option value="1">10</option>
-                <option value="2">20</option>
-                <option value="2">30</option>
+                @foreach(deliveryDays() as $key => $deliveryDays)
+                  <option value="{{$key}}">{{ $deliveryDays }}</option>
+                @endforeach
               </select>
 
             </div>
@@ -91,7 +90,7 @@
 
         <div class="col-sm-4 @if(!session('business.enable_category')) hide @endif">
           <div class="form-group">
-            {!! Form::label('category_id', __('product.category') . ':') !!}
+            {!! Form::label('category_id', __('product.category') . ':*') !!}
               {!! Form::select('category_id', $categories, !empty($duplicate_product->category_id) ? $duplicate_product->category_id : null, ['placeholder' => __('messages.please_select'), 'class' => 'form-control select2']); !!}
           </div>
         </div>
@@ -112,7 +111,7 @@
         <div class="col-sm-4">
           <div class="form-group">
             {!! Form::label('product_locations', __('business.business_locations') . ':') !!} @show_tooltip(__('lang_v1.product_location_help'))
-              {!! Form::select('product_locations[]', $business_locations, $default_location, ['class' => 'form-control select2', 'multiple', 'id' => 'product_locations']); !!}
+              {!! Form::select('product_locations[]', $business_locations, $default_location, ['class' => 'form-control select2', 'id' => 'product_locations']); !!}
           </div>
         </div>
 
@@ -123,11 +122,11 @@
           <div class="form-group">
           <br>
             <label>
-              {!! Form::checkbox('enable_stock', 1, !empty($duplicate_product) ? $duplicate_product->enable_stock : true, ['class' => 'input-icheck', 'id' => 'enable_stock']); !!} <strong>@lang('product.manage_stock')</strong>
+              {!! Form::checkbox('enable_stock', 1, !empty($duplicate_product) ? $duplicate_product->enable_stock : false, ['class' => 'input-icheck', 'id' => 'enable_stock']); !!} <strong>@lang('product.manage_stock')</strong>
             </label>@show_tooltip(__('tooltip.enable_stock')) <p class="help-block"><i>@lang('product.enable_stock_help')</i></p>
           </div>
         </div>
-        <div class="col-sm-4 @if(!empty($duplicate_product) && $duplicate_product->enable_stock == 0) hide @endif" id="alert_quantity_div">
+        <div class="col-sm-4 print_section @if(!empty($duplicate_product) && ($duplicate_product->enable_stock == 0)) hide @endif" id="alert_quantity_div">
           <div class="form-group">
             {!! Form::label('alert_quantity',  __('product.alert_quantity') . ':') !!} @show_tooltip(__('tooltip.alert_quantity'))
             {!! Form::text('alert_quantity', !empty($duplicate_product->alert_quantity) ? @format_quantity($duplicate_product->alert_quantity) : null , ['class' => 'form-control input_number',

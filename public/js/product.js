@@ -2,6 +2,7 @@
 
 $(document).ready(function() {
     $(document).on('ifChecked', 'input#enable_stock', function() {
+        
         $('div#alert_quantity_div').show();
         $('div#quick_product_opening_stock_div').show();
 
@@ -15,6 +16,7 @@ $(document).ready(function() {
         }
     });
     $(document).on('ifUnchecked', 'input#enable_stock', function() {
+        
         $('div#alert_quantity_div').hide();
         $('div#quick_product_opening_stock_div').hide();
         $('input#alert_quantity').val(0);
@@ -187,6 +189,8 @@ $(document).ready(function() {
                         },
                     },
                 },
+                category_id:{required: true},
+                delivery_days:{required: true},
                 expiry_period: {
                     required: {
                         depends: function(element) {
@@ -210,6 +214,7 @@ $(document).ready(function() {
     $(document).on('click', '.submit_product_form', function(e) {
         e.preventDefault();
         var submit_type = $(this).attr('value');
+        console.log(submit_type);
         $('#submit_type').val(submit_type);
         if ($('form#product_add_form').valid()) {
             $('form#product_add_form').submit();

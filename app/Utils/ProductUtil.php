@@ -132,7 +132,7 @@ class ProductUtil extends Util
                     $sub_sku = empty($v['sub_sku'])? $this->generateSubSku($product->sku, $c, $product->barcode_type) :$v['sub_sku'];
                     $variation_value_id = !empty($v['variation_value_id']) ? $v['variation_value_id'] : null;
                     $variation_value_name = !empty($v['value']) ? $v['value'] : null;
-
+                    $variation_value_price = !empty($v['price']) ? $v['price'] : null;
                     if (!empty($variation_value_id)) {
                         $variation_value = $variation_template->values->filter(function ($item) use ($variation_value_id) {
                             return $item->id == $variation_value_id;
@@ -146,19 +146,23 @@ class ProductUtil extends Util
                             if (empty($variation_value)) {
                                 $variation_value =  VariationValueTemplate::create([
                                     'name' => $variation_value_name,
+                                    'value' => $variation_value_price,
                                     'variation_template_id' => $variation_template->id
                                 ]);
                             }
                             $variation_value_id = $variation_value->id;
                             $variation_value_name = $variation_value->name;
+                            $variation_value_price = $variation_value->value;
                         } else {
                             $variation_value_id = null;
                             $variation_value_name = $variation_value_name;
+                            $variation_value_price = $variation_value_price;
                         }
                     }
 
                     $variation_data[] = [
                       'name' => $variation_value_name,
+                      'price' => $variation_value_price,
                       'variation_value_id' => $variation_value_id,
                       'product_id' => $product->id,
                       'sub_sku' => $sub_sku,

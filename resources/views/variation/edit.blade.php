@@ -41,7 +41,7 @@
                 {!! Form::text('edit_variation_values[' . $attr->id . ']', $attr->name, ['class' => 'form-control', 'required']); !!}
               </div>
               <div class="col-sm-5">
-                {!! Form::text('edit_variation_values[' . $attr->id . ']', $attr->value, ['class' => 'form-control', 'required']); !!}
+                {!! Form::text('edit_variation_values_price[' . $attr->id . ']', $attr->value, ['class' => 'form-control', 'required']); !!}
               </div>
             </div>
           @endif

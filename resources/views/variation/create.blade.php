@@ -22,12 +22,9 @@
         <div class="col-sm-9">
           <select class="form-control select2" style="width: 100%;" id="role" name="role">
             <option selected></option>
-            <option value="1">Datepicker</option>
-            <option value="2">DateTimepicker</option>
-            <option value="2">Text</option>
-            <option value="2">Select</option>
-            <option value="2">Checkbox</option>
-            <option value="2">Radio Button</option>
+            @foreach(variationTypes() as $key => $variationTypes)
+            <option value="{{$key}}">{{$variationTypes}}</option>
+            @endforeach
           </select>
         </div>
         </div>

@@ -143,3 +143,14 @@ if (! function_exists('str_ordinal')) {
         return number_format($number) . $suffix;
     }
 }
+
+// Variations types lists
+function variationTypes(){
+    $data = [
+        '1' => 'Text',
+        '2' => 'Select',
+        '3' => 'Checkbox',
+        '4' => 'Radio Button'
+    ];
+    return $data;
+}

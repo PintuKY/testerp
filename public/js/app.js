@@ -981,7 +981,7 @@ $('.supplier_modal').on('shown.bs.modal', function(e) {
     });
     $(document).on('click', '#add_variation_values', function() {
         var html =
-            '<div class="form-group"><div class="col-sm-7 col-sm-offset-3"><input type="text" name="variation_values[]" class="form-control" required></div><div class="col-sm-2"><button type="button" class="btn btn-danger delete_variation_value">-</button></div></div>';
+            '<div class="form-group"><div class="col-sm-5"><input type="text" name="variation_values[]" class="form-control" required></div><div class="col-sm-5"><input type="text" name="variation_values_price[]" class="form-control input-sm dpp input_number valid" required></div><div class="col-sm-2"><button type="button" class="btn btn-danger delete_variation_value">-</button></div></div>';
         $('#variation_values').append(html);
     });
     $(document).on('click', '.delete_variation_value', function() {

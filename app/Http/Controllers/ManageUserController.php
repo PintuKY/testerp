@@ -33,7 +33,7 @@ class ManageUserController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index()
-    {
+    {   
         if (!auth()->user()->can('user.view') && !auth()->user()->can('user.create')) {
             abort(403, 'Unauthorized action.');
         }

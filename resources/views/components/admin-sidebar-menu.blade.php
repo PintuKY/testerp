@@ -100,6 +100,18 @@
 
                       </ul>
                       </li>
+                        <li class="treeview" id="tour_step6">
+                          <a href="#">
+                            <i class="fa fas fa-truck"></i> <span>Drivers</span>
+                            <span class="pull-right-container">
+                              <i class="fa fa-angle-left pull-right"></i>
+                            </span>
+                          </a>
+                          <ul class="treeview-menu">
+                            <li><a href="{{route('driver.index')}}"><i class="fa fas fa-star"></i> <span>Lists Drivers</span></a></li>
+                          </ul>
+                        </li>
+                      </li>
     <li class="treeview">
                       <a href="#">
                         <i class="fa fas fa-truck"></i> <span>Stock Transfers</span>

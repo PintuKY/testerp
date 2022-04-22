@@ -986,3 +986,8 @@ table.table-text-center td, table.table-text-center th{
 .mb-40 {
     margin-bottom: 40px !important;
 }
+
+.variations_values_componets{
+  display: flex;
+  align-items: flex-end;
+}

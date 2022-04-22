@@ -33,14 +33,19 @@
         </div>
 
 
-      <div class="form-group">
-        <label class="col-sm-3 control-label">@lang('lang_v1.add_variation_values'):*</label>
-        <div class="col-sm-7">
-           {!! Form::text('variation_values[]', null, ['class' => 'form-control', 'required']); !!}
-        </div>
-        <div class="col-sm-2">
-          <button type="button" class="btn btn-primary" id="add_variation_values">+</button>
-        </div>
+      <div class="form-group row variations_values_componets">
+        
+          <div class="col-sm-5">
+          <label class=" control-label">@lang('lang_v1.add_variation_values'):*</label>
+          {!! Form::text('variation_values[]', null, ['class' => 'form-control', 'required']); !!}
+          </div>
+          <div class="col-sm-5">
+          <label class="control-label">@lang('price'):*</label>
+            {!! Form::text('variation_values_price[]', null, ['class' => 'form-control input_number input-sm dpp valid','required']); !!}
+          </div>
+          <div class="col-sm-2">
+            <button type="button" class="btn btn-primary" id="add_variation_values">+</button>
+          </div>
       </div>
       <div id="variation_values"></div>
     </div>

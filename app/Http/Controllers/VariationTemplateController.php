@@ -70,7 +70,8 @@ class VariationTemplateController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
-    {
+    {   
+        
         try {
             $input = $request->only(['name']);
             $input['business_id'] = $request->session()->get('user.business_id');
@@ -80,9 +81,9 @@ class VariationTemplateController extends Controller
             if (!empty($request->input('variation_values'))) {
                 $values = $request->input('variation_values');
                 $data = [];
-                foreach ($values as $value) {
+                foreach ($values as $key => $value) {
                     if (!empty($value)) {
-                        $data[] = [ 'name' => $value];
+                        $data[] = [ 'name' => $value, 'value' => $request->input('variation_values_price')[$key]];
                     }
                 }
                 $variation->values()->createMany($data);
@@ -176,9 +177,9 @@ class VariationTemplateController extends Controller
                 }
                 if (!empty($request->input('variation_values'))) {
                     $values = $request->input('variation_values');
-                    foreach ($values as $value) {
+                    foreach ($values as $key => $value) {
                         if (!empty($value)) {
-                            $data[] = new VariationValueTemplate([ 'name' => $value]);
+                            $data[] = new VariationValueTemplate([ 'name' => $value, 'value' => $request->input('edit_variation_values_price')[$key]]);
                         }
                     }
                 }

@@ -171,24 +171,6 @@ $(document).ready(function() {
     if ($('#product_add_form').length) {
         $('form#product_add_form').validate({
             rules: {
-                sku: {
-                    remote: {
-                        url: '/products/check_product_sku',
-                        type: 'post',
-                        data: {
-                            sku: function() {
-                                return $('#sku').val();
-                            },
-                            product_id: function() {
-                                if ($('#product_id').length > 0) {
-                                    return $('#product_id').val();
-                                } else {
-                                    return '';
-                                }
-                            },
-                        },
-                    },
-                },
                 category_id:{required: true},
                 delivery_days:{required: true},
                 expiry_period: {
@@ -203,18 +185,12 @@ $(document).ready(function() {
                     },
                 },
             },
-            messages: {
-                sku: {
-                    remote: LANG.sku_already_exists,
-                },
-            },
         });
     }
 
     $(document).on('click', '.submit_product_form', function(e) {
         e.preventDefault();
         var submit_type = $(this).attr('value');
-        console.log(submit_type);
         $('#submit_type').val(submit_type);
         if ($('form#product_add_form').valid()) {
             $('form#product_add_form').submit();
@@ -406,27 +382,6 @@ $(document).ready(function() {
                             .find('table.variation_value_table')
                             .find('tbody')
                             .html(result);
-
-                        tr_obj.find('table.variation_value_table').find('tbody')
-                        .find('tr').each( function(){
-                            var tr = $(this);
-                            var element = tr.find('.input_sub_sku');
-                            element.rules( "add", {
-                                remote: {
-                                    url: '/products/check_product_sku',
-                                    type: 'post',
-                                    data: {
-                                        sku: function() {
-                                            return element.val();
-                                        }
-                                    },
-                                },
-                                messages: {
-                                    remote: LANG.sku_already_exists,
-                                }
-                            });
-                        });
-
                         toggle_dsp_input();
                     }
                 },

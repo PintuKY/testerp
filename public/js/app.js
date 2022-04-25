@@ -2468,21 +2468,21 @@ function show_product_type_form() {
                             if ($(this).closest('tr').find('.row_variation_id')) {
                                 row_variation_id = $(this).closest('tr').find('.row_variation_id').val();
                             }
-                            element.rules( "add", {
-                                remote: {
-                                    url: '/products/check_product_sku',
-                                    type: 'post',
-                                    data: {
-                                        sku: function() {
-                                            return element.val();
-                                        },
-                                        variation_id: row_variation_id
-                                    },
-                                },
-                                messages: {
-                                    remote: LANG.sku_already_exists,
-                                }
-                            });
+                            // element.rules( "add", {
+                            //     remote: {
+                            //         url: '/products/check_product_sku',
+                            //         type: 'post',
+                            //         data: {
+                            //             sku: function() {
+                            //                 return element.val();
+                            //             },
+                            //             variation_id: row_variation_id
+                            //         },
+                            //     },
+                            //     messages: {
+                            //         remote: LANG.sku_already_exists,
+                            //     }
+                            // });
                         });
 
                 toggle_dsp_input();

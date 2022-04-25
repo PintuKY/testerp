@@ -28,13 +28,13 @@
         <input type="hidden" class="row_index" value="@if($action == 'edit'){{$row_index}}@else{{$loop->index}}@endif">
         <input type="hidden" class="row_edit" value="edit">
     </td>
-
     <td>
         <table class="table table-condensed table-bordered blue-header variation_value_table">
             <thead>
             <tr>
                 <th>@lang('product.sku') @show_tooltip(__('tooltip.sub_sku'))</th>
                 <th>@lang('product.value')</th>
+                <th>@lang('product.price')</th>
                 <th class="{{$class}}">@lang('product.default_purchase_price') 
                     <br/>
                     <span class="pull-left"><small><i>@lang('product.exc_of_tax')</i></small></span>
@@ -73,6 +73,15 @@
                         {!! Form::text($array_name . '[' . $row_index .'][' . $variation_array_name . '][' . $variation_row_index . '][value]', $variation->name, ['class' => 'form-control input-sm variation_value_name', 'required', 'readonly']); !!}
 
                         {!! Form::hidden($array_name . '[' . $row_index .'][' . $variation_array_name . '][' . $variation_row_index . '][variation_value_id]', $variation->variation_value_id); !!}
+                    </td>
+                    <td>
+                    @forelse($product_variation->variation_template->values as $variation_template)
+                        @if($variation_template->id == $variation->variation_value_id)
+                        
+                            {!! Form::text($array_name . '[' . $row_index .'][' . $variation_array_name . '][' . $variation_row_index . '][price]', $variation_template->value, ['class' => 'form-control input-sm variation_value_price', 'required']); !!}
+                        @endif
+                    @empty
+                    @endforelse
                     </td>
                     <td class="{{$class}}">
                         <div class="col-sm-6">

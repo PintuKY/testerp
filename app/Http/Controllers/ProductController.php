@@ -1022,20 +1022,20 @@ class ProductController extends Controller
             $action = $request->input('action');
             if ($request->input('type') == 'single') {
                 $product_deatails = ProductVariation::where('product_id', $product_id)
-                    ->with(['variations', 'variations.media'])
+                    ->with(['variations', 'variations.media','variation_template.values'])
                     ->first();
 
                 return view('product.partials.edit_single_product_form_part')
                             ->with(compact('product_deatails', 'action'));
             } elseif ($request->input('type') == 'variable') {
                 $product_variations = ProductVariation::where('product_id', $product_id)
-                        ->with(['variations', 'variations.media'])
+                        ->with(['variations', 'variations.media','variation_template.values'])
                         ->get();
                 return view('product.partials.variable_product_form_part')
                         ->with(compact('product_variations', 'profit_percent', 'action'));
             } elseif ($request->input('type') == 'combo') {
                 $product_deatails = ProductVariation::where('product_id', $product_id)
-                    ->with(['variations', 'variations.media'])
+                    ->with(['variations', 'variations.media','variation_template.values'])
                     ->first();
                 $combo_variations = $this->productUtil->__getComboProductDetails($product_deatails['variations'][0]->combo_variations, $business_id);
 

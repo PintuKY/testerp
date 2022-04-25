@@ -509,15 +509,15 @@ $(document).ready(function() {
     //On display of add contact modal
     $('.contact_modal').on('shown.bs.modal', function(e) {
         
-        $('input[type=radio][name="contact_type_radio"]').on('change', function() {
-            if (this.value == 'individual') {
-                $('div.individual').show();
-                $('div.business').hide();
-            } else if (this.value == 'business') {
-                $('div.individual').hide();
-                $('div.business').show();
-            }
-        });
+        // $('input[type=radio][name="contact_type_radio"]').on('change', function() {
+        //     if (this.value == 'individual') {
+        //         $('div.individual').show();
+        //         $('div.business').hide();
+        //     } else if (this.value == 'business') {
+        //         $('div.individual').hide();
+        //         $('div.business').show();
+        //     }
+        // });
         if ($('#is_customer_export').is(':checked')) {
             $('div.export_div').show();
         }
@@ -534,20 +534,20 @@ $(document).ready(function() {
         });
         $('div.lead_additional_div').hide();
 
-        if ($('select#contact_type').val() == 'customer') {
-            $('div.supplier_fields').hide();
-            $('div.customer_fields').show();
-        } else if ($('select#contact_type').val() == 'supplier') {
-            $('div.supplier_fields').show();
-            $('div.customer_fields').hide();
-        }  else if ($('select#contact_type').val() == 'lead') {
-            $('div.supplier_fields').hide();
-            $('div.customer_fields').hide();
-            $('div.opening_balance').hide();
-            $('div.pay_term').hide();
-            $('div.lead_additional_div').show();
-            $('div.shipping_addr_div').hide();
-        }
+        // if ($('select#contact_type').val() == 'customer') {
+        //     $('div.supplier_fields').hide();
+        //     $('div.customer_fields').show();
+        // } else if ($('select#contact_type').val() == 'supplier') {
+        //     $('div.supplier_fields').show();
+        //     $('div.customer_fields').hide();
+        // }  else if ($('select#contact_type').val() == 'lead') {
+        //     $('div.supplier_fields').hide();
+        //     $('div.customer_fields').hide();
+        //     $('div.opening_balance').hide();
+        //     $('div.pay_term').hide();
+        //     $('div.lead_additional_div').show();
+        //     $('div.shipping_addr_div').hide();
+        // }
 
         $('select#contact_type').change(function() {
             var t = $(this).val();
@@ -581,6 +581,15 @@ $(document).ready(function() {
             })
             .validate({
                 rules: {
+                    city:{
+                        required: true,
+                    },
+                    state:{
+                        required: true,
+                    },
+                    country:{
+                        required: true,
+                    },
                     contact_id: {
                         remote: {
                             url: '/contacts/check-contacts-id',

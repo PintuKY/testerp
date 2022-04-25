@@ -27,28 +27,6 @@
     <div class="modal-body">
 
       <div class="row">
-
-        <div class="col-md-4">
-          <div class="form-group">
-              {!! Form::label('type', __('contact.contact_type') . ':*' ) !!}
-              <div class="input-group">
-                  <span class="input-group-addon">
-                      <i class="fa fa-user"></i>
-                  </span>
-                  {!! Form::select('type', $types, $contact->type, ['class' => 'form-control', 'id' => 'contact_type','placeholder' => __('messages.please_select'), 'required']); !!}
-              </div>
-          </div>
-        </div>
-        <div class="col-md-4 mt-15">
-            <label class="radio-inline">
-                <input type="radio" name="contact_type_radio" id="inlineRadio1" value="individual">
-                @lang('lang_v1.individual')
-            </label>
-            <label class="radio-inline">
-                <input type="radio" name="contact_type_radio" id="inlineRadio2" value="business">
-                @lang('business.business')
-            </label>
-        </div>
         <div class="col-md-4">
           <div class="form-group">
               {!! Form::label('contact_id', __('lang_v1.contact_id') . ':') !!}
@@ -75,7 +53,6 @@
               </div>
           </div>
         </div>
-        <div class="clearfix customer_fields"></div>
         <div class="col-md-4 business">
           <div class="form-group">
               {!! Form::label('supplier_business_name', __('business.business_name') . ':') !!}
@@ -109,8 +86,8 @@
             </div>
             <div class="col-md-3 individual">
                 <div class="form-group">
-                    {!! Form::label('last_name', __( 'business.last_name' ) . ':') !!}
-                    {!! Form::text('last_name', $contact->last_name, ['class' => 'form-control', 'placeholder' => __( 'business.last_name' ) ]); !!}
+                    {!! Form::label('last_name', __( 'business.last_name' ) . ':*') !!}
+                    {!! Form::text('last_name', $contact->last_name, ['class' => 'form-control','required' ,'placeholder' => __( 'business.last_name' ) ]); !!}
                 </div>
             </div>
             <div class="clearfix"></div>
@@ -150,12 +127,12 @@
       </div>
       <div class="col-md-3">
             <div class="form-group">
-                {!! Form::label('email', __('business.email') . ':') !!}
+                {!! Form::label('email', __('business.email') . ':*') !!}
                 <div class="input-group">
                     <span class="input-group-addon">
                         <i class="fa fa-envelope"></i>
                     </span>
-                    {!! Form::email('email', $contact->email, ['class' => 'form-control','placeholder' => __('business.email')]); !!}
+                    {!! Form::email('email', $contact->email, ['class' => 'form-control','required','placeholder' => __('business.email')]); !!}
                 </div>
             </div>
         </div>
@@ -270,11 +247,12 @@
       <div class="col-md-12">
         <hr/>
       </div>
-      
+      <div class="clearfix"></div>
+        <h4 class="modal-title mb-10 ml-15">@lang('contact.billing_adress')</h4>
       <div class="col-md-6">
         <div class="form-group">
-            {!! Form::label('address_line_1', __('lang_v1.address_line_1') . ':') !!}
-            {!! Form::text('address_line_1', $contact->address_line_1, ['class' => 'form-control', 'placeholder' => __('lang_v1.address_line_1'), 'rows' => 3]); !!}
+            {!! Form::label('address_line_1', __('lang_v1.address_line_1') . ':*') !!}
+            {!! Form::text('address_line_1', $contact->address_line_1, ['class' => 'form-control','required' ,'placeholder' => __('lang_v1.address_line_1'), 'rows' => 3]); !!}
         </div>
       </div>
       <div class="col-md-6">
@@ -287,34 +265,34 @@
       <div class="clearfix"></div>
       <div class="col-md-3">
         <div class="form-group">
-            {!! Form::label('city', __('business.city') . ':') !!}
+            {!! Form::label('city', __('business.city') . ':*') !!}
             <div class="input-group">
                 <span class="input-group-addon">
                     <i class="fa fa-map-marker"></i>
                 </span>
-                {!! Form::text('city', $contact->city, ['class' => 'form-control', 'placeholder' => __('business.city')]); !!}
+                {!! Form::select('city', city(), $contact->city, ['class' => 'form-control','required']); !!}
             </div>
         </div>
       </div>
       <div class="col-md-3">
         <div class="form-group">
-            {!! Form::label('state', __('business.state') . ':') !!}
+            {!! Form::label('state', __('business.state') . ':*') !!}
             <div class="input-group">
                 <span class="input-group-addon">
                     <i class="fa fa-map-marker"></i>
                 </span>
-                {!! Form::text('state', $contact->state, ['class' => 'form-control', 'placeholder' => __('business.state')]); !!}
+                {!! Form::select('city', state(), $contact->state, ['class' => 'form-control','required']); !!}
             </div>
         </div>
       </div>
       <div class="col-md-3">
         <div class="form-group">
-            {!! Form::label('country', __('business.country') . ':') !!}
+            {!! Form::label('country', __('business.country') . ':*') !!}
             <div class="input-group">
                 <span class="input-group-addon">
                     <i class="fa fa-globe"></i>
                 </span>
-                {!! Form::text('country', $contact->country, ['class' => 'form-control', 'placeholder' => __('business.country')]); !!}
+                {!! Form::select('country', country(), $contact->country, ['class' => 'form-control','required']); !!}
             </div>
         </div>
       </div>
@@ -419,7 +397,7 @@
       </div>
       <div class="clearfix"></div>
       <div class="col-md-12 shipping_addr_div"><hr></div>
-      <div class="col-md-8 col-md-offset-2 shipping_addr_div mb-10" >
+      <!-- <div class="col-md-8 col-md-offset-2 shipping_addr_div mb-10" >
           <strong>{{__('lang_v1.shipping_address')}}</strong><br>
           {!! Form::text('shipping_address', $contact->shipping_address, ['class' => 'form-control', 
                 'placeholder' => __('lang_v1.search_address'), 'id' => 'shipping_address']); !!}
@@ -520,7 +498,67 @@
                 </div>
             @endfor
         @endif
-    </div>
+    </div> -->
+        <div class="clearfix"></div>
+        <h4 class="modal-title mb-10 ml-15">@lang('contact.shipping_adress')</h4>
+        <div class="col-md-6">
+            <div class="form-group">
+                {!! Form::label('address_line_1', __('lang_v1.address_line_1') . ':*') !!}
+                {!! Form::text('shipping_address_1', $contact->shipping_address_1, ['class' => 'form-control','required' ,'placeholder' => __('lang_v1.address_line_1'), 'rows' => 3]); !!}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                {!! Form::label('address_line_2', __('lang_v1.address_line_2') . ':') !!}
+                {!! Form::text('shipping_address_2', $contact->shipping_address_2, ['class' => 'form-control', 'placeholder' => __('lang_v1.address_line_2'), 'rows' => 3]); !!}
+            </div>
+        </div>
+        <div class="clearfix"></div>
+        <div class="col-md-3">
+            <div class="form-group">
+                {!! Form::label('city', __('business.city') . ':*') !!}
+                <div class="input-group">
+                    <span class="input-group-addon">
+                        <i class="fa fa-map-marker"></i>
+                    </span>
+                    {!! Form::select('shipping_city', city(), $contact->shipping_city, ['class' => 'form-control','required']); !!}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                {!! Form::label('state', __('business.state') . ':*') !!}
+                <div class="input-group">
+                    <span class="input-group-addon">
+                        <i class="fa fa-map-marker"></i>
+                    </span>
+                    {!! Form::select('shipping_state', state(), $contact->shipping_state, ['class' => 'form-control','required']); !!}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                {!! Form::label('country', __('business.country') . ':*') !!}
+                <div class="input-group">
+                    <span class="input-group-addon">
+                        <i class="fa fa-globe"></i>
+                    </span>
+                    {!! Form::select('shipping_country', country(), $contact->shipping_country, ['class' => 'form-control','required']); !!}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                {!! Form::label('zip_code', __('business.zip_code') . ':') !!}
+                <div class="input-group">
+                    <span class="input-group-addon">
+                        <i class="fa fa-map-marker"></i>
+                    </span>
+                    {!! Form::text('shipping_zipcode', $contact->shipping_zipcode, ['class' => 'form-control', 
+                    'placeholder' => __('business.zip_code_placeholder')]); !!}
+                </div>
+            </div>
+        </div>
 </div>
     </div>
 

@@ -166,3 +166,30 @@ function deliveryDays(){
     ];
     return $data;
 }
+
+// City lists
+function city(){
+    $data = [
+        'singapore' => 'Singapore',
+        'demo' => "Demo",
+    ];
+    return $data;
+}
+
+// State lists
+function state(){
+    $data = [
+        'singapore' => 'Singapore',
+        "demo" => 'Demo',
+    ];
+    return $data;
+}
+
+// Country lists
+function country(){
+    $data = [
+        'singapore' => 'Singapore',
+        "demo" => 'Demo',
+    ];
+    return $data;
+}

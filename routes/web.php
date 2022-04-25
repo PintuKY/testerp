@@ -219,6 +219,9 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::post('business-location/check-location-id', 'BusinessLocationController@checkLocationId');
     Route::resource('business-location', 'BusinessLocationController');
 
+    // APi Setting...
+    Route::resource('api-setting', 'ApiController');
+
     //Invoice layouts..
     Route::resource('invoice-layouts', 'InvoiceLayoutController');
 

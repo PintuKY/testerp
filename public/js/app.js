@@ -149,6 +149,121 @@ $(document).ready(function() {
         });
     });
 
+
+    //Start: CRUD for Api setting
+    //Api setting table
+    $(document).on('submit', 'form#api_add_form', function(e) {
+        e.preventDefault();
+        var form = $(this);
+        var data = form.serialize();
+
+        $.ajax({
+            method: 'POST',
+            url: $(this).attr('action'),
+            dataType: 'json',
+            data: data,
+            beforeSend: function(xhr) {
+                __disable_submit_button(form.find('button[type="submit"]'));
+            },
+            success: function(result) {
+                if (result.success == true) {
+                    $('div.api_modal').modal('hide');
+                    toastr.success(result.msg);
+                    apisetting_table.ajax.reload();
+                } else {
+                    toastr.error(result.msg);
+                }
+            },
+        });
+    });
+
+    var apisetting_table = $('#apisetting_table').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: '/api-setting',
+        columnDefs: [
+            {
+                targets: [0, 6],
+                orderable: false,
+                searchable: false,
+            },
+        ],
+
+        columns: [
+            { data: 'checkbox', name: 'checkbox', orderable: false, searchable: false},
+            { data: 'consumer_key', name: 'consumer_key' },
+            { data: 'consumer_secret', name: 'consumer_secret' },
+            { data: 'url', name: 'url' },
+            { data: 'business_locations_id', name: 'business_locations_id' },
+            { data: 'status', name: 'status' },
+            { data: 'action', name: 'action' },
+        ],
+
+    });
+
+
+    $(document).on('click', 'button.edit_api_button', function() {
+        $('div.api_modal').load($(this).data('href'), function() {
+            $(this).modal('show');
+
+            $('form#api_edit_form').submit(function(e) {
+                e.preventDefault();
+                var form = $(this);
+                var data = form.serialize();
+
+                $.ajax({
+                    method: 'POST',
+                    url: $(this).attr('action'),
+                    dataType: 'json',
+                    data: data,
+                    beforeSend: function(xhr) {
+                        __disable_submit_button(form.find('button[type="submit"]'));
+                    },
+                    success: function(result) {
+                        if (result.success == true) {
+                            $('div.api_modal').modal('hide');
+                            toastr.success(result.msg);
+                            apisetting_table.ajax.reload();
+                        } else {
+                            toastr.error(result.msg);
+                        }
+                    },
+                });
+            });
+        });
+    });
+
+    $(document).on('click', 'button.delete_api_button', function() {
+        swal({
+            title: LANG.sure,
+            text: LANG.confirm_delete_api,
+            icon: 'warning',
+            buttons: true,
+            dangerMode: true,
+        }).then(willDelete => {
+            if (willDelete) {
+                var href = $(this).data('href');
+                var data = $(this).serialize();
+
+                $.ajax({
+                    method: 'DELETE',
+                    url: href,
+                    dataType: 'json',
+                    data: data,
+                    success: function(result) {
+                        if (result.success == true) {
+                            toastr.success(result.msg);
+                            apisetting_table.ajax.reload();
+                        } else {
+                            toastr.error(result.msg);
+                        }
+                    },
+                });
+            }
+        });
+    });
+
+
     //Start: CRUD for tax Rate
 
     //Tax Rates table
@@ -427,7 +542,7 @@ $(document).ready(function() {
             { data: 'custom_field10', name: 'custom_field10'},
             ]);
     }
-    
+
     contact_table = $('#contact_table').DataTable({
         processing: true,
         serverSide: true,
@@ -486,10 +601,10 @@ $(document).ready(function() {
             var total_due = 0;
             var total_return_due = 0;
             for (var r in data){
-                total_due += $(data[r].due).data('orig-value') ? 
+                total_due += $(data[r].due).data('orig-value') ?
                 parseFloat($(data[r].due).data('orig-value')) : 0;
 
-                total_return_due += $(data[r].return_due).data('orig-value') ? 
+                total_return_due += $(data[r].return_due).data('orig-value') ?
                 parseFloat($(data[r].return_due).data('orig-value')) : 0;
             }
             $('.footer_contact_due').html(__currency_trans_from_en(total_due));
@@ -508,7 +623,7 @@ $(document).ready(function() {
 
     //On display of add contact modal
     $('.contact_modal').on('shown.bs.modal', function(e) {
-        
+
         $('input[type=radio][name="contact_type_radio"]').on('change', function() {
             if (this.value == 'individual') {
                 $('div.individual').show();
@@ -637,7 +752,7 @@ $(document).ready(function() {
                                         $('#mobile').select();
                                     }
                                 });
-                                
+
                             } else {
                                 submitContactForm(form);
                             }
@@ -764,10 +879,10 @@ $(document).ready(function() {
             var total_due = 0;
             var total_return_due = 0;
             for (var r in data){
-                total_due += $(data[r].due).data('orig-value') ? 
+                total_due += $(data[r].due).data('orig-value') ?
                 parseFloat($(data[r].due).data('orig-value')) : 0;
 
-                total_return_due += $(data[r].return_due).data('orig-value') ? 
+                total_return_due += $(data[r].return_due).data('orig-value') ?
                 parseFloat($(data[r].return_due).data('orig-value')) : 0;
             }
             $('.footer_supplier_due').html(__currency_trans_from_en(total_due));
@@ -905,7 +1020,7 @@ $('.supplier_modal').on('shown.bs.modal', function(e) {
                                     $('#mobile').select();
                                 }
                             });
-                            
+
                         } else {
                             submitSupplierForm(form);
                         }
@@ -1684,7 +1799,7 @@ $('.supplier_modal').on('shown.bs.modal', function(e) {
     //date filter for expense table
     if ($('#expense_date_range').length == 1) {
         $('#expense_date_range').daterangepicker(
-            dateRangeSettings, 
+            dateRangeSettings,
             function(start, end) {
                 $('#expense_date_range').val(
                     start.format(moment_date_format) + ' ~ ' + end.format(moment_date_format)
@@ -2276,8 +2391,8 @@ $('.supplier_modal').on('shown.bs.modal', function(e) {
             scrollTop: label.offset().top - 100
         }, 500);
         label.css('background-color', 'yellow');
-        setTimeout(function(){ 
-            label.css('background-color', ''); 
+        setTimeout(function(){
+            label.css('background-color', '');
         }, 3000);
     });
     $('#add_invoice_layout_form #design').change( function(){
@@ -2450,7 +2565,7 @@ function show_product_type_form() {
         $('#enable_stock').iCheck('uncheck');
         $('input[name="woocommerce_disable_sync"]').iCheck('check');
     }
-    
+
     var action = $('#type').attr('data-action');
     var product_id = $('#type').attr('data-product_id');
     $.ajax({
@@ -3046,10 +3161,10 @@ $(document).on('click', '.delete-media', function () {
                     if (result.success == true) {
                         if (thumbnail) {
                             thumbnail.remove();
-                        } 
+                        }
                         if (tr) {
                             tr.remove();
-                        }   
+                        }
                         toastr.success(result.msg);
                     } else {
                         toastr.error(result.msg);
@@ -3117,7 +3232,7 @@ function submitContactForm(form) {
                 } else if(lead_view == 'list_view' && typeof(leads_datatable) != 'undefined') {
                     leads_datatable.ajax.reload();
                 }
-                
+
             } else {
                 toastr.error(result.msg);
             }
@@ -3147,7 +3262,7 @@ function submitSupplierForm(form) {
                 } else if(lead_view == 'list_view' && typeof(leads_datatable) != 'undefined') {
                     leads_datatable.ajax.reload();
                 }
-                
+
             } else {
                 toastr.error(result.msg);
             }

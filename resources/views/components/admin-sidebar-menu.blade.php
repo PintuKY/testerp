@@ -190,7 +190,9 @@
                       </a>
                       <ul class="treeview-menu">
                           <li><a href="{{route('business.getBusinessSettings')}}" id="tour_step2"><i class="fa fas fa-cogs"></i> <span>Business Settings</span></a></li>
+                          <li><a href="{{route('api-setting.index')}}"><i class="fa fas fa-map-marker"></i> <span>Api Setting</span></a></li>
     <li><a href="{{route('business-location.index')}}"><i class="fa fas fa-map-marker"></i> <span>Business Locations</span></a></li>
+    <li><a href="{{route('kitchen-location.index')}}"><i class="fa fas fa-plus-circle"></i> <span>Kitchen Location</span></a></li>
     <li><a href="{{route('invoice-schemes.index')}}"><i class="fa fas fa-file"></i> <span>Invoice Settings</span></a></li>
     <li><a href="{{route('barcodes.index')}}"><i class="fa fas fa-barcode"></i> <span>Barcode Settings</span></a></li>
     <li><a href="{{route('printers.index')}}"><i class="fa fas fa-share-alt"></i> <span>Receipt Printers</span></a></li>

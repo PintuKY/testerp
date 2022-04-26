@@ -44,4 +44,5 @@ return [
     'price' => 'Price',
     'activate' => 'Activate',
     'deactivate' => 'Deactivate',
+    'sync' => 'Sync',
 ];

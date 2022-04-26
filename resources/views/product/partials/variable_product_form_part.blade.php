@@ -15,13 +15,11 @@
             @if($action == 'add')
                 @include('product.partials.product_variation_row', ['row_index' => 0])
             @else
-
                 @forelse ($product_variations as $product_variation)
                     @include('product.partials.edit_product_variation_row', ['row_index' => $action == 'edit' ? $product_variation->id : $loop->index])
                 @empty
                     @include('product.partials.product_variation_row', ['row_index' => 0])
                 @endforelse
-
             @endif
             
         </tbody>

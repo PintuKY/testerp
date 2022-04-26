@@ -40,4 +40,6 @@ return [
     'total_sale_paid' => 'Total Sale Payment',
     'total_sale_due' => 'Total Sale Due',
     'customer' => 'Customer',
+    'billing_adress' => 'Billing Address',
+    'shipping_adress' => 'Shipping Address',
 ];

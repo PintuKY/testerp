@@ -38,6 +38,9 @@
 .mb-10 {
   margin-bottom: 10px;
 }
+.ml-15{
+  margin-left: 15px;
+}
 .discount-badge {
   position: absolute;
   top: 6px;

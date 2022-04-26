@@ -132,12 +132,14 @@ class ProductUtil extends Util
                     $sub_sku = empty($v['sub_sku'])? $this->generateSubSku($product->sku, $c, $product->barcode_type) :$v['sub_sku'];
                     $variation_value_id = !empty($v['variation_value_id']) ? $v['variation_value_id'] : null;
                     $variation_value_name = !empty($v['value']) ? $v['value'] : null;
-
+                    $variation_value_price = !empty($v['price']) ? $v['price'] : null;
                     if (!empty($variation_value_id)) {
                         $variation_value = $variation_template->values->filter(function ($item) use ($variation_value_id) {
                             return $item->id == $variation_value_id;
                         })->first();
                         $variation_value_name = $variation_value->name;
+                        $variation_value->value = $variation_value_price;
+                        $variation_value->save();
                     } else {
                         if (!empty($variation_template)) {
                             $variation_value =  VariationValueTemplate::where('variation_template_id', $variation_template->id)
@@ -146,19 +148,23 @@ class ProductUtil extends Util
                             if (empty($variation_value)) {
                                 $variation_value =  VariationValueTemplate::create([
                                     'name' => $variation_value_name,
+                                    'value' => $variation_value_price,
                                     'variation_template_id' => $variation_template->id
                                 ]);
                             }
                             $variation_value_id = $variation_value->id;
                             $variation_value_name = $variation_value->name;
+                            $variation_value_price = $variation_value->value;
                         } else {
                             $variation_value_id = null;
                             $variation_value_name = $variation_value_name;
+                            $variation_value_price = $variation_value_price;
                         }
                     }
 
                     $variation_data[] = [
                       'name' => $variation_value_name,
+                      'price' => $variation_value_price,
                       'variation_value_id' => $variation_value_id,
                       'product_id' => $product->id,
                       'sub_sku' => $sub_sku,
@@ -171,6 +177,7 @@ class ProductUtil extends Util
                     $c++;
                     $images[] = 'variation_images_' . $key . '_' . $k;
                 }
+                
                 $variations = $product_variation->variations()->createMany($variation_data);
 
                 $i = 0;
@@ -197,7 +204,7 @@ class ProductUtil extends Util
         //Update product variations
         $product_variation_ids = [];
         $variations_ids = [];
-
+        
         foreach ($input_variations_edit as $key => $value) {
             $product_variation_ids[] = $key;
 
@@ -210,6 +217,7 @@ class ProductUtil extends Util
                 foreach ($value['variations_edit'] as $k => $v) {
                     $data = [
                         'name' => $v['value'],
+                        'price' => $v['price'],
                         'default_purchase_price' => $this->num_uf($v['default_purchase_price']),
                         'dpp_inc_tax' => $this->num_uf($v['dpp_inc_tax']),
                         'profit_percent' => $this->num_uf($v['profit_percent']),
@@ -222,17 +230,19 @@ class ProductUtil extends Util
                     $variation = Variation::where('id', $k)
                             ->where('product_variation_id', $key)
                             ->first();
-
+                    $variation_value_templates = VariationValueTemplate::where('id','=',$v['variation_value_id'])->first();
+                    $variation_value_templates->value = $v['price'];
+                    $variation_value_templates->save();
                     $variation->update($data);
-
                     Media::uploadMedia($product->business_id, $variation, request(), 'edit_variation_images_' . $key . '_' . $k);
 
                     $variations_ids[] = $k;
                 }
             }
-
+            
             //Add new variations
             if (!empty($value['variations'])) {
+                echo "demo1";
                 $variation_data = [];
                 $c = Variation::withTrashed()
                                 ->where('product_id', $product->id)
@@ -242,15 +252,18 @@ class ProductUtil extends Util
                     $sub_sku = empty($v['sub_sku'])? $this->generateSubSku($product->sku, $c, $product->barcode_type) :$v['sub_sku'];
 
                     $variation_value_name = !empty($v['value'])? $v['value'] : null;
+                    $variation_value_price = !empty($v['price'])? $v['price'] : null;
                     $variation_value_id = null;
-
                     if (!empty($product_variation->variation_template_id)) {
                         $variation_value =  VariationValueTemplate::where('variation_template_id', $product_variation->variation_template_id)
                                 ->whereRaw('LOWER(name)="' . $v['value'] . '"')
                                 ->first();
+                        $variation_value->value = $variation_value_price;
+                        $variation_value->save();
                         if (empty($variation_value)) {
                             $variation_value =  VariationValueTemplate::create([
                                 'name' => $v['value'],
+                                'value' => $v['price'],
                                 'variation_template_id' => $product_variation->variation_template_id
                             ]);
                         }
@@ -282,7 +295,7 @@ class ProductUtil extends Util
                 }
             }
         }
-
+        
         //Check if purchase or sell exist for the deletable variations
         $count_purchase = PurchaseLine::join(
             'transactions as T',

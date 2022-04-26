@@ -164,4 +164,9 @@ class BusinessLocation extends Model
 
         return $address;
     }
+    public function kitchenLocation()
+    {
+        return $this->belongsTo(KitchenLocation::class , 'kitchen_location_id', 'id');
+
+    }
 }

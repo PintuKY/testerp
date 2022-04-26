@@ -10,6 +10,9 @@ return [
     | The following language lines are used during registration of a business.
     |
     */
+    'select'=>'Select Pelase' ,
+    'kitchen_location_id'=>'Kitchen Location Id',
+    'kitchen_location_name'=>'Kitchen Location Name',
     'register_and_get_started_in_minutes' => 'Register and Get Started in minutes',
     'business_name' => 'Business Name',
     'start_date' => 'Start Date',

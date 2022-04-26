@@ -273,7 +273,7 @@
                             <span class="input-group-addon">
                                 <i class="fa fa-map-marker"></i>
                             </span>
-                            {!! Form::select('city', city(), 'null', ['class' => 'form-control','required']); !!}
+                            {!! Form::select('city', city(), 'null', ['class' => 'form-control select2','required','placeholder' => __('messages.please_select')]); !!}
                         </div>
                     </div>
                 </div>
@@ -284,7 +284,7 @@
                             <span class="input-group-addon">
                                 <i class="fa fa-map-marker"></i>
                             </span>
-                            {!! Form::select('state', state(), 'null', ['class' => 'form-control','required']); !!}
+                            {!! Form::select('state', state(), 'null', ['class' => 'form-control select2','required','placeholder' => __('messages.please_select')]); !!}
                         </div>
                     </div>
                 </div>
@@ -295,7 +295,7 @@
                         <span class="input-group-addon">
                             <i class="fa fa-globe"></i>
                         </span>
-                            {!! Form::select('country', country(), 'null', ['class' => 'form-control','required']); !!}
+                            {!! Form::select('country', country(), 'null', ['class' => 'form-control select2','required','placeholder' => __('messages.please_select')]); !!}
                         </div>
                     </div>
                 </div>
@@ -521,7 +521,7 @@
                     <span class="input-group-addon">
                         <i class="fa fa-map-marker"></i>
                     </span>
-                    {!! Form::select('shipping_city', city(), 'null', ['class' => 'form-control','required']); !!}
+                    {!! Form::select('shipping_city', city(), 'null', ['class' => 'form-control select2','required','placeholder' => __('messages.please_select')]); !!}
                 </div>
             </div>
         </div>
@@ -532,7 +532,7 @@
                     <span class="input-group-addon">
                         <i class="fa fa-map-marker"></i>
                     </span>
-                    {!! Form::select('shipping_state', state(), 'null', ['class' => 'form-control','required']); !!}
+                    {!! Form::select('shipping_state', state(), 'null', ['class' => 'form-control select2','required','placeholder' => __('messages.please_select')]); !!}
                 </div>
             </div>
         </div>
@@ -543,7 +543,7 @@
                     <span class="input-group-addon">
                         <i class="fa fa-globe"></i>
                     </span>
-                    {!! Form::select('shipping_country', country(), 'null', ['class' => 'form-control','required']); !!}
+                    {!! Form::select('shipping_country', country(), 'null', ['class' => 'form-control select2','required','placeholder' => __('messages.please_select')]); !!}
                 </div>
             </div>
         </div>

@@ -171,7 +171,6 @@ function deliveryDays(){
 function city(){
     $data = [
         'singapore' => 'Singapore',
-        'demo' => "Demo",
     ];
     return $data;
 }
@@ -180,7 +179,6 @@ function city(){
 function state(){
     $data = [
         'singapore' => 'Singapore',
-        "demo" => 'Demo',
     ];
     return $data;
 }
@@ -189,7 +187,6 @@ function state(){
 function country(){
     $data = [
         'singapore' => 'Singapore',
-        "demo" => 'Demo',
     ];
     return $data;
 }

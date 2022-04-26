@@ -270,7 +270,7 @@
                 <span class="input-group-addon">
                     <i class="fa fa-map-marker"></i>
                 </span>
-                {!! Form::select('city', city(), $contact->city, ['class' => 'form-control','required']); !!}
+                {!! Form::select('city', city(), $contact->city, ['class' => 'form-control select2','required','placeholder' => __('messages.please_select')]); !!}
             </div>
         </div>
       </div>
@@ -281,7 +281,7 @@
                 <span class="input-group-addon">
                     <i class="fa fa-map-marker"></i>
                 </span>
-                {!! Form::select('city', state(), $contact->state, ['class' => 'form-control','required']); !!}
+                {!! Form::select('city', state(), $contact->state, ['class' => 'form-control select2','required','placeholder' => __('messages.please_select')]); !!}
             </div>
         </div>
       </div>
@@ -292,7 +292,7 @@
                 <span class="input-group-addon">
                     <i class="fa fa-globe"></i>
                 </span>
-                {!! Form::select('country', country(), $contact->country, ['class' => 'form-control','required']); !!}
+                {!! Form::select('country', country(), $contact->country, ['class' => 'form-control select2','required','placeholder' => __('messages.please_select')]); !!}
             </div>
         </div>
       </div>
@@ -521,7 +521,7 @@
                     <span class="input-group-addon">
                         <i class="fa fa-map-marker"></i>
                     </span>
-                    {!! Form::select('shipping_city', city(), $contact->shipping_city, ['class' => 'form-control','required']); !!}
+                    {!! Form::select('shipping_city', city(), $contact->shipping_city, ['class' => 'form-control select2','required','placeholder' => __('messages.please_select')]); !!}
                 </div>
             </div>
         </div>
@@ -532,7 +532,7 @@
                     <span class="input-group-addon">
                         <i class="fa fa-map-marker"></i>
                     </span>
-                    {!! Form::select('shipping_state', state(), $contact->shipping_state, ['class' => 'form-control','required']); !!}
+                    {!! Form::select('shipping_state', state(), $contact->shipping_state, ['class' => 'form-control select2','required','placeholder' => __('messages.please_select')]); !!}
                 </div>
             </div>
         </div>
@@ -543,7 +543,7 @@
                     <span class="input-group-addon">
                         <i class="fa fa-globe"></i>
                     </span>
-                    {!! Form::select('shipping_country', country(), $contact->shipping_country, ['class' => 'form-control','required']); !!}
+                    {!! Form::select('shipping_country', country(), $contact->shipping_country, ['class' => 'form-control select2','required','placeholder' => __('messages.please_select')]); !!}
                 </div>
             </div>
         </div>

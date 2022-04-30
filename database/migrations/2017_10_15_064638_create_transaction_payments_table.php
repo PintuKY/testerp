@@ -33,7 +33,7 @@ class CreateTransactionPaymentsTable extends Migration
             $table->string('bank_account_number')->nullable();
 
             $table->string('note')->nullable();
-            
+
             $table->timestamps();
         });
     }

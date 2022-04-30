@@ -18,9 +18,9 @@ class ModifyTransactionsTableForExpenses extends Migration
         DB::statement("ALTER TABLE transactions MODIFY COLUMN contact_id INT(11) UNSIGNED DEFAULT NULL");
 
         Schema::table('transactions', function (Blueprint $table) {
-            $table->integer('expense_category_id')->nullable()->unsigned()->after('final_total');
+            $table->integer('expense_category_id')->unsigned()->nullable()->after('final_total');
             $table->foreign('expense_category_id')->references('id')->on('expense_categories')->onDelete('cascade');
-            $table->integer('expense_for')->nullable()->unsigned()->after('expense_category_id');
+            $table->integer('expense_for')->unsigned()->nullable()->after('expense_category_id');
             $table->foreign('expense_for')->references('id')->on('users')->onDelete('cascade');
 
             $table->index('expense_category_id');

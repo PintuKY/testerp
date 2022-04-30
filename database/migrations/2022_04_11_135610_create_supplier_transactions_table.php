@@ -22,7 +22,7 @@ return new class extends Migration
             $table->enum('type', ['purchase','sell', 'expense', 'stock_adjustment', 'sell_transfer', 'purchase_transfer', 'opening_stock', 'sell_return', 'opening_balance', 'purchase_return'],"DEFAULT NULL");
             $table->enum('status', ['received', 'pending', 'ordered', 'draft', 'final']);
             $table->enum('payment_status', ['paid', 'due']);
-            $table->integer('supplier_id')->unsigned();
+            $table->foreignId('supplier_id');
             $table->foreign('supplier_id')->references('id')->on('supplier')->onDelete('cascade');
             $table->string('invoice_no')->nullable();
             $table->string('ref_no')->nullable();
@@ -30,7 +30,7 @@ return new class extends Migration
             $table->enum('pay_term_type', ['days', 'months'])->nullable();
             $table->dateTime('transaction_date')->nullable();
             $table->decimal('total_before_tax', 22, 4)->default(0)->comment('Total before the purchase/invoice tax, this includeds the indivisual product tax');
-            $table->integer('tax_id')->unsigned()->nullable();
+            $table->integer('tax_id')->nullable()->unsigned();
             $table->foreign('tax_id')->references('id')->on('tax_rates')->onDelete('cascade');
             $table->decimal('tax_amount', 22, 4)->default(0);
             $table->enum('discount_type', ['fixed', 'percentage'])->nullable();

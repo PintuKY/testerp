@@ -22,7 +22,6 @@ return new class extends Migration
             $table->string('email')->nullable();
             $table->string('prefix')->nullable();
             $table->integer('supplier_id')->nullable();
-            $table->foreign('supplier_id')->references('id')->on('supplier')->onDelete('cascade');
             $table->string('first_name')->nullable();
             $table->string('middle_name')->nullable();
             $table->string('last_name')->nullable();

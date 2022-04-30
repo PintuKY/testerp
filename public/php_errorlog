@@ -1,0 +1,19 @@
+[20-Apr-2022 13:12:41 UTC] PHP Fatal error:  Uncaught TypeError: Return value of Illuminate\Container\Container::offsetGet() must be an instance of Illuminate\Container\mixed, instance of Illuminate\Events\Dispatcher returned in /home/customer/www/rcgerp.webcarvingdev.com/public_html/vendor/laravel/framework/src/Illuminate/Container/Container.php:1417
+Stack trace:
+#0 /home/customer/www/rcgerp.webcarvingdev.com/public_html/vendor/laravel/framework/src/Illuminate/Routing/RoutingServiceProvider.php(43): Illuminate\Container\Container->offsetGet('events')
+#1 /home/customer/www/rcgerp.webcarvingdev.com/public_html/vendor/laravel/framework/src/Illuminate/Container/Container.php(873): Illuminate\Routing\RoutingServiceProvider->Illuminate\Routing\{closure}(Object(Illuminate\Foundation\Application), Array)
+#2 /home/customer/www/rcgerp.webcarvingdev.com/public_html/vendor/laravel/framework/src/Illuminate/Container/Container.php(758): Illuminate\Container\Container->build(Object(Closure))
+#3 /home/customer/www/rcgerp.webcarvingdev.com/public_html/vendor/laravel/fr in /home/customer/www/rcgerp.webcarvingdev.com/public_html/vendor/laravel/framework/src/Illuminate/Container/Container.php on line 1417
+[20-Apr-2022 13:15:34 UTC] PHP Fatal error:  Uncaught TypeError: Return value of Illuminate\Container\Container::offsetGet() must be an instance of Illuminate\Container\mixed, instance of Illuminate\Events\Dispatcher returned in /home/customer/www/rcgerp.webcarvingdev.com/public_html/vendor/laravel/framework/src/Illuminate/Container/Container.php:1417
+Stack trace:
+#0 /home/customer/www/rcgerp.webcarvingdev.com/public_html/vendor/laravel/framework/src/Illuminate/Routing/RoutingServiceProvider.php(43): Illuminate\Container\Container->offsetGet('events')
+#1 /home/customer/www/rcgerp.webcarvingdev.com/public_html/vendor/laravel/framework/src/Illuminate/Container/Container.php(873): Illuminate\Routing\RoutingServiceProvider->Illuminate\Routing\{closure}(Object(Illuminate\Foundation\Application), Array)
+#2 /home/customer/www/rcgerp.webcarvingdev.com/public_html/vendor/laravel/framework/src/Illuminate/Container/Container.php(758): Illuminate\Container\Container->build(Object(Closure))
+#3 /home/customer/www/rcgerp.webcarvingdev.com/public_html/vendor/laravel/fr in /home/customer/www/rcgerp.webcarvingdev.com/public_html/vendor/laravel/framework/src/Illuminate/Container/Container.php on line 1417
+[20-Apr-2022 13:40:45 UTC] PHP Fatal error:  Uncaught TypeError: Return value of Illuminate\Container\Container::offsetGet() must be an instance of Illuminate\Container\mixed, instance of Illuminate\Events\Dispatcher returned in /home/customer/www/rcgerp.webcarvingdev.com/public_html/vendor/laravel/framework/src/Illuminate/Container/Container.php:1417
+Stack trace:
+#0 /home/customer/www/rcgerp.webcarvingdev.com/public_html/vendor/laravel/framework/src/Illuminate/Routing/RoutingServiceProvider.php(43): Illuminate\Container\Container->offsetGet('events')
+#1 /home/customer/www/rcgerp.webcarvingdev.com/public_html/vendor/laravel/framework/src/Illuminate/Container/Container.php(873): Illuminate\Routing\RoutingServiceProvider->Illuminate\Routing\{closure}(Object(Illuminate\Foundation\Application), Array)
+#2 /home/customer/www/rcgerp.webcarvingdev.com/public_html/vendor/laravel/framework/src/Illuminate/Container/Container.php(758): Illuminate\Container\Container->build(Object(Closure))
+#3 /home/customer/www/rcgerp.webcarvingdev.com/public_html/vendor/laravel/fr in /home/customer/www/rcgerp.webcarvingdev.com/public_html/vendor/laravel/framework/src/Illuminate/Container/Container.php on line 1417
+[20-Apr-2022 13:44:33 UTC] PHP Fatal error:  Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.0.2". You are running 7.4.29. in /home/customer/www/rcgerp.webcarvingdev.com/public_html/vendor/composer/platform_check.php on line 24

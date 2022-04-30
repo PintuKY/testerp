@@ -14,7 +14,7 @@ class AddBusinessIdUsersTable extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->integer('business_id')->unsigned()->nullable()->after('remember_token');
+            $table->foreignId('business_id')->nullable()->after('remember_token');
             $table->foreign('business_id')->references('id')->on('business')->onDelete('cascade');
         });
     }

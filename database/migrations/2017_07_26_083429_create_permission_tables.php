@@ -25,14 +25,14 @@ class CreatePermissionTables extends Migration
             $table->increments('id');
             $table->string('name');
             $table->string('guard_name');
-            $table->integer('business_id')->unsigned();
+            $table->foreignId('business_id');
             $table->foreign('business_id')->references('id')->on('business')->onDelete('cascade');
             $table->boolean('is_default')->default(0);
             $table->timestamps();
         });
 
         Schema::create($tableNames['model_has_permissions'], function (Blueprint $table) use ($tableNames) {
-            $table->integer('permission_id')->unsigned();
+            $table->foreignId('permission_id');
             $table->morphs('model');
 
             $table->foreign('permission_id')
@@ -44,7 +44,7 @@ class CreatePermissionTables extends Migration
         });
 
         Schema::create($tableNames['model_has_roles'], function (Blueprint $table) use ($tableNames) {
-            $table->integer('role_id')->unsigned();
+            $table->foreignId('role_id');
             $table->morphs('model');
 
             $table->foreign('role_id')
@@ -56,7 +56,7 @@ class CreatePermissionTables extends Migration
         });
 
         Schema::create($tableNames['role_has_permissions'], function (Blueprint $table) use ($tableNames) {
-            $table->integer('permission_id')->unsigned();
+            $table->foreignId('permission_id');
             $table->integer('role_id')->unsigned();
 
             $table->foreign('permission_id')

@@ -15,7 +15,7 @@ class CreateBusinessLocationsTable extends Migration
     {
         Schema::create('business_locations', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('business_id')->unsigned();
+            $table->foreignId('business_id');
             $table->foreign('business_id')->references('id')->on('business')->onDelete('cascade');
             $table->string('name', 256);
             $table->text('landmark')->nullable();

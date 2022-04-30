@@ -29,7 +29,7 @@ class CreateBarcodesTable extends Migration
             $table->boolean('is_default')->default(0);
             $table->boolean('is_continuous')->default(0);
             $table->integer('stickers_in_one_sheet')->nullable();
-            $table->integer('business_id')->unsigned()->nullable();
+            $table->foreignId('business_id')->nullable();
             $table->foreign('business_id')->references('id')->on('business')->onDelete('cascade');
             $table->timestamps();
         });

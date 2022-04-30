@@ -15,7 +15,7 @@ class CreateResTablesTable extends Migration
     {
         Schema::create('res_tables', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('business_id')->unsigned();
+            $table->foreignId('business_id');
             $table->foreign('business_id')->references('id')->on('business')->onDelete('cascade');
             $table->integer('location_id')->unsigned();
             $table->string('name');

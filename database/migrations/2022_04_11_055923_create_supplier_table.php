@@ -15,13 +15,13 @@ return new class extends Migration
     {
         Schema::create('supplier', function (Blueprint $table) {
             $table->id();
-            $table->integer('business_id')->unsigned();
+            $table->foreignId('business_id');
             $table->foreign('business_id')->references('id')->on('business')->onDelete('cascade');
             $table->string('supplier_business_name')->nullable();
             $table->string('name');
             $table->string('email')->nullable();
             $table->string('prefix')->nullable();
-            $table->integer('supplier_id')->nullable();
+            $table->foreignId('supplier_id')->nullable();
             $table->foreign('supplier_id')->references('id')->on('supplier')->onDelete('cascade');
             $table->string('first_name')->nullable();
             $table->string('middle_name')->nullable();
@@ -43,7 +43,7 @@ return new class extends Migration
             $table->decimal('credit_limit', 22, 4)->nullable();
             $table->string('supplier_status')->index()->default('active');
             $table->decimal('balance', 22, 4)->default(0);
-            $table->integer('created_by')->unsigned();
+            $table->foreignId('created_by');
             $table->boolean('is_default')->default(0);
             $table->softDeletes();
             $table->foreign('created_by')->references('id')->on('users')->onDelete('cascade');

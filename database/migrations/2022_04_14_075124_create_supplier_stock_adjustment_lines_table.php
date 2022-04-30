@@ -15,11 +15,11 @@ return new class extends Migration
     {
         Schema::create('supplier_stock_adjustment_lines', function (Blueprint $table) {
             $table->id();
-            $table->integer('supplier_transaction_id')->unsigned();
+            $table->foreignId('supplier_transaction_id');
             $table->foreign('supplier_transaction_id')->references('id')->on('supplier_transactions')->onDelete('cascade');
-            $table->integer('product_id')->unsigned();
+            $table->foreignId('product_id');
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
-            $table->integer('variation_id')->unsigned();
+            $table->foreignId('variation_id');
             $table->foreign('variation_id')->references('id')->on('variations')
             ->onDelete('cascade');
             $table->decimal('quantity', 22, 4);

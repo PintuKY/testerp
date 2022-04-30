@@ -16,11 +16,11 @@ class CreateCategoriesTable extends Migration
         Schema::create('categories', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
-            $table->integer('business_id')->unsigned();
+            $table->foreignId('business_id');
             $table->foreign('business_id')->references('id')->on('business')->onDelete('cascade');
             $table->string('short_code')->nullable();
             $table->integer('parent_id');
-            $table->integer('created_by')->unsigned();
+            $table->foreignId('created_by');
             $table->foreign('created_by')->references('id')->on('users')->onDelete('cascade');
             $table->softDeletes();
             $table->timestamps();

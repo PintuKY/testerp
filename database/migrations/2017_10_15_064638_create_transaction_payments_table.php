@@ -15,7 +15,7 @@ class CreateTransactionPaymentsTable extends Migration
     {
         Schema::create('transaction_payments', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('transaction_id')->unsigned();
+            $table->foreignId('transaction_id');
             $table->foreign('transaction_id')->references('id')->on('transactions')->onDelete('cascade');
             $table->decimal('amount', 22, 4)->default(0);
             $table->enum('method', ['cash', 'card', 'cheque', 'bank_transfer', 'other']);
@@ -33,7 +33,7 @@ class CreateTransactionPaymentsTable extends Migration
             $table->string('bank_account_number')->nullable();
 
             $table->string('note')->nullable();
-            
+
             $table->timestamps();
         });
     }

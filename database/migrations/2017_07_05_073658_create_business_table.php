@@ -18,14 +18,14 @@ class CreateBusinessTable extends Migration
 
             $table->increments('id');
             $table->string('name');
-            $table->integer('currency_id')->unsigned();
+            $table->foreignId('currency_id');
             $table->date('start_date')->nullable();
             $table->string('tax_number_1', 100);
             $table->string('tax_label_1', 10);
             $table->string('tax_number_2', 100)->nullable();
             $table->string('tax_label_2', 10)->nullable();
             $table->float('default_profit_percent', 5, 2)->default(0);
-            $table->integer('owner_id')->unsigned();
+            $table->foreignId('owner_id');
             $table->foreign('owner_id')->references('id')->on('users')->onDelete('cascade');
             $table->string('time_zone')->default('Asia/Kolkata');
             $table->tinyInteger('fy_start_month')->default(1);

@@ -15,9 +15,9 @@ class CreateVariationGroupPricesTable extends Migration
     {
         Schema::create('variation_group_prices', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('variation_id')->unsigned();
+            $table->foreignId('variation_id');
             $table->foreign('variation_id')->references('id')->on('variations')->onDelete('cascade');
-            $table->integer('price_group_id')->unsigned();
+            $table->foreignId('price_group_id');
             $table->foreign('price_group_id')->references('id')->on('selling_price_groups')->onDelete('cascade');
             $table->decimal('price_inc_tax', 22, 4);
             $table->timestamps();

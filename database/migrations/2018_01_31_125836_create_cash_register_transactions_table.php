@@ -15,7 +15,7 @@ class CreateCashRegisterTransactionsTable extends Migration
     {
         Schema::create('cash_register_transactions', function (Blueprint $table) {
             $table->increments('id');
-            $table->foreignId('cash_register_id');
+            $table->integer('cash_register_id')->unsigned();
             $table->foreign('cash_register_id')->references('id')->on('cash_registers')
                     ->onDelete('cascade');
             $table->decimal('amount', 22, 4)->default(0);

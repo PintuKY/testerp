@@ -15,7 +15,8 @@ class AddCrmContactIdToUsersTable extends Migration
     {
         if (!Schema::hasColumn('users', 'crm_contact_id')) {
             Schema::table('users', function (Blueprint $table) {
-                $table->foreignId('crm_contact_id')
+                $table->integer('crm_contact_id')
+                    ->unsigned()
                     ->nullable()
                     ->after('status');
 

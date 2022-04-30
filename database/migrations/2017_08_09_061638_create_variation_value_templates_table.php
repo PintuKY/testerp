@@ -16,7 +16,7 @@ class CreateVariationValueTemplatesTable extends Migration
         Schema::create('variation_value_templates', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
-            $table->foreignId('variation_template_id');
+            $table->integer('variation_template_id')->unsigned();
             $table->foreign('variation_template_id')->references('id')->on('variation_templates')->onDelete('cascade');
             $table->timestamps();
 

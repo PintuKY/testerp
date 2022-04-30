@@ -19,10 +19,10 @@ class CreateVariationLocationDetailsTable extends Migration
             $table->integer('product_id')->unsigned();
             $table->integer('product_variation_id')->unsigned()->comment('id from product_variations table');
 
-            $table->foreignId('variation_id');
+            $table->integer('variation_id')->unsigned();
             $table->foreign('variation_id')->references('id')->on('variations');
 
-            $table->foreignId('location_id');
+            $table->integer('location_id')->unsigned();
             $table->foreign('location_id')->references('id')->on('business_locations');
 
             $table->decimal('qty_available', 22, 4)->default(0);

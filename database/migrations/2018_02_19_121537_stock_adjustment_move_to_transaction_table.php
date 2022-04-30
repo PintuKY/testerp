@@ -22,11 +22,11 @@ class StockAdjustmentMoveToTransactionTable extends Migration
 
         Schema::create('stock_adjustment_lines', function (Blueprint $table) {
             $table->increments('id');
-            $table->foreignId('transaction_id');
+            $table->integer('transaction_id')->unsigned();
             $table->foreign('transaction_id')->references('id')->on('transactions')->onDelete('cascade');
-            $table->foreignId('product_id');
+            $table->integer('product_id')->unsigned();
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
-            $table->foreignId('variation_id');
+            $table->integer('variation_id')->unsigned();
             $table->foreign('variation_id')->references('id')->on('variations')
             ->onDelete('cascade');
             $table->decimal('quantity', 22, 4);

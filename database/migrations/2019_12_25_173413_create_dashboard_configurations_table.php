@@ -16,7 +16,7 @@ class CreateDashboardConfigurationsTable extends Migration
         Schema::create('dashboard_configurations', function (Blueprint $table) {
             $table->increments('id');
 
-            $table->foreignId('business_id');
+            $table->integer('business_id')->unsigned();
             $table->foreign('business_id')->references('id')->on('business')->onDelete('cascade');
 
             $table->integer('created_by');

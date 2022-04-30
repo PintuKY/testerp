@@ -16,7 +16,7 @@ class CreateExpenseCategoriesTable extends Migration
         Schema::create('expense_categories', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
-            $table->foreignId('business_id');
+            $table->integer('business_id')->unsigned();
             $table->foreign('business_id')->references('id')->on('business')->onDelete('cascade');
             $table->string('code')->nullable();
             $table->softDeletes();

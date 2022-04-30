@@ -15,7 +15,7 @@ class CreateInvoiceSchemesTable extends Migration
     {
         Schema::create('invoice_schemes', function (Blueprint $table) {
             $table->increments('id');
-            $table->foreignId('business_id');
+            $table->integer('business_id')->unsigned();
             $table->foreign('business_id')->references('id')->on('business')->onDelete('cascade');
             $table->string('name');
             $table->enum('scheme_type', ['blank', 'year']);

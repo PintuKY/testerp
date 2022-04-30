@@ -17,9 +17,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('supplier_transaction_id');
             $table->foreign('supplier_transaction_id')->references('id')->on('supplier_transactions')->onDelete('cascade');
-            $table->foreignId('product_id');
+            $table->integer('product_id')->unsigned();
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
-            $table->foreignId('variation_id');
+            $table->integer('variation_id')->unsigned();
             $table->foreign('variation_id')->references('id')->on('variations')
             ->onDelete('cascade');
             $table->decimal('quantity', 22, 4);

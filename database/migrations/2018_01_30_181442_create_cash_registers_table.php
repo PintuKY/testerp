@@ -15,9 +15,9 @@ class CreateCashRegistersTable extends Migration
     {
         Schema::create('cash_registers', function (Blueprint $table) {
             $table->increments('id');
-            $table->foreignId('business_id');
+            $table->integer('business_id')->unsigned();
             $table->foreign('business_id')->references('id')->on('business')->onDelete('cascade');
-            $table->foreignId('user_id')->nullable();
+            $table->integer('user_id')->unsigned()->nullable();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->enum('status', ['close', 'open'])->default('open');
             $table->dateTime('closed_at')->nullable();

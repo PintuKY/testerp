@@ -15,7 +15,7 @@ class CreateCustomerGroupsTable extends Migration
     {
         Schema::create('customer_groups', function (Blueprint $table) {
             $table->increments('id');
-            $table->foreignId('business_id');
+            $table->integer('business_id')->unsigned();
             $table->foreign('business_id')->references('id')->on('business')->onDelete('cascade');
             $table->string('name');
             $table->float('amount', 5, 2);

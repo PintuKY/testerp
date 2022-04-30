@@ -17,15 +17,15 @@ return new class extends Migration
             $table->id();
             $table->foreignId('supplier_transactions_id');
             $table->foreign('supplier_transactions_id')->references('id')->on('supplier_transactions')->onDelete('cascade');
-            $table->foreignId('product_id');
+            $table->integer('product_id')->unsigned();
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
-            $table->foreignId('variation_id');
+            $table->integer('variation_id')->unsigned();
             $table->foreign('variation_id')->references('id')->on('variations')->onDelete('cascade');
             $table->decimal('quantity', 22, 4);
             $table->decimal('purchase_price', 22, 4);
             $table->decimal('purchase_price_inc_tax', 22, 4)->default(0);
             $table->decimal('item_tax', 22, 4)->comment("Tax for one quantity");
-            $table->foreignId('tax_id')->nullable();
+            $table->integer('tax_id')->nullable()->unsigned();
             $table->foreign('tax_id')->references('id')->on('tax_rates')->onDelete('cascade');
             $table->date('mfg_date')->nullable();
             $table->date('exp_date')->nullable();

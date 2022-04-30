@@ -15,9 +15,9 @@ return new class extends Migration
     {
         Schema::create('supplier_transactions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('business_id');
+            $table->integer('business_id')->unsigned();
             $table->foreign('business_id')->references('id')->on('business')->onDelete('cascade');
-            $table->foreignId('location_id');
+            $table->integer('location_id')->unsigned();
             $table->foreign('location_id')->references('id')->on('business_locations');
             $table->enum('type', ['purchase','sell', 'expense', 'stock_adjustment', 'sell_transfer', 'purchase_transfer', 'opening_stock', 'sell_return', 'opening_balance', 'purchase_return'],"DEFAULT NULL");
             $table->enum('status', ['received', 'pending', 'ordered', 'draft', 'final']);
@@ -30,7 +30,7 @@ return new class extends Migration
             $table->enum('pay_term_type', ['days', 'months'])->nullable();
             $table->dateTime('transaction_date')->nullable();
             $table->decimal('total_before_tax', 22, 4)->default(0)->comment('Total before the purchase/invoice tax, this includeds the indivisual product tax');
-            $table->foreignId('tax_id')->nullable();
+            $table->integer('tax_id')->nullable()->unsigned();
             $table->foreign('tax_id')->references('id')->on('tax_rates')->onDelete('cascade');
             $table->decimal('tax_amount', 22, 4)->default(0);
             $table->enum('discount_type', ['fixed', 'percentage'])->nullable();
@@ -53,7 +53,7 @@ return new class extends Migration
             $table->boolean('is_direct_sale')->default(0);
             $table->string('document')->nullable();
             $table->decimal('exchange_rate', 8, 3)->default(1);
-            $table->foreignId('created_by');
+            $table->integer('created_by')->unsigned();
             $table->foreign('created_by')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
 

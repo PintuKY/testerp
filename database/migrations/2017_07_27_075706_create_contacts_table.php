@@ -15,7 +15,7 @@ class CreateContactsTable extends Migration
     {
         Schema::create('contacts', function (Blueprint $table) {
             $table->increments('id');
-            $table->foreignId('business_id');
+            $table->integer('business_id')->unsigned();
             $table->foreign('business_id')->references('id')->on('business')->onDelete('cascade');
             $table->string('type')->index();
             $table->string('supplier_business_name')->nullable();
@@ -30,7 +30,7 @@ class CreateContactsTable extends Migration
             $table->string('alternate_number')->nullable();
             $table->integer('pay_term_number')->nullable();
             $table->enum('pay_term_type', ['days', 'months'])->nullable();
-            $table->foreignId('created_by');
+            $table->integer('created_by')->unsigned();
             $table->boolean('is_default')->default(0);
             $table->softDeletes();
             $table->foreign('created_by')->references('id')->on('users')->onDelete('cascade');

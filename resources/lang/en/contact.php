@@ -42,4 +42,6 @@ return [
     'customer' => 'Customer',
     'billing_adress' => 'Billing Address',
     'shipping_adress' => 'Shipping Address',
+    'billing_email' => 'Billing Email',
+    'billing_phone' => 'Billing Phone'
 ];

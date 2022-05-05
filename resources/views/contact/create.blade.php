@@ -251,7 +251,7 @@
 
                 <div class="col-md-12"><hr/></div>
                 <div class="clearfix"></div>
-                <h4 class="modal-title mb-10 ml-15">@lang('contact.billing_adress')</h4>
+                <h4 class="modal-title ml-15">@lang('contact.billing_adress')</h4>
                 <div class="col-md-12"><br/></div>
                 <div class="col-md-6">
                     <div class="form-group">
@@ -311,7 +311,28 @@
                         </div>
                     </div>
                 </div>
-
+                <div class="col-md-5">
+                    <div class="form-group">
+                        {!! Form::label('billing_email', __('contact.billing_email') . ':*') !!}
+                        <div class="input-group">
+                            <span class="input-group-addon">
+                                <i class="fa fa-envelope"></i>
+                            </span>
+                            {!! Form::email('billing_email', null, ['class' => 'form-control','required','placeholder' => __('business.billing_email')]); !!}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <div class="form-group">
+                        {!! Form::label('billing_phone', __('contact.billing_phone') . ':*') !!}
+                        <div class="input-group">
+                            <span class="input-group-addon">
+                                <i class="fa fa-mobile"></i>
+                            </span>
+                            {!! Form::text('billing_phone', null, ['class' => 'form-control', 'required', 'placeholder' => __('contact.billing_phone')]); !!}
+                        </div>
+                    </div>
+                </div>
           <div class="clearfix"></div>
           <div class="col-md-12">
             <hr/>
@@ -559,9 +580,9 @@
                 </div>
             </div>
         </div>
-        @include('layouts.partials.module_form_part')
     </div>
-    
+</div>
+@include('layouts.partials.module_form_part')
     <div class="modal-footer">
       <button type="submit" class="btn btn-primary">@lang( 'messages.save' )</button>
       <button type="button" class="btn btn-default" data-dismiss="modal">@lang( 'messages.close' )</button>

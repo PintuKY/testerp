@@ -147,10 +147,8 @@ if (! function_exists('str_ordinal')) {
 // Variations types lists
 function variationTypes(){
     $data = [
-        '1' => 'Text',
-        '2' => 'Select',
-        '3' => 'Checkbox',
-        '4' => 'Radio Button'
+        '1' => 'Select',
+        '2' => 'Radio Button'
     ];
     return $data;
 }

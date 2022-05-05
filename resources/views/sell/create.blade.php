@@ -63,9 +63,6 @@
 		<div class="col-md-12 col-sm-12">
 			@component('components.widget', ['class' => 'box-solid'])
 				{!! Form::hidden('location_id', !empty($default_location) ? $default_location->id : null , ['id' => 'location_id', 'data-receipt_printer_type' => !empty($default_location->receipt_printer_type) ? $default_location->receipt_printer_type : 'browser', 'data-default_payment_accounts' => !empty($default_location) ? $default_location->default_payment_accounts : '']); !!}
-
-				
-
 				@if(in_array('types_of_service', $enabled_modules) && !empty($types_of_service))
 					<div class="col-md-4 col-sm-6">
 						<div class="form-group">
@@ -105,18 +102,14 @@
 							<span class="input-group-addon">
 								<i class="fa fa-user"></i>
 							</span>
-							<input type="hidden" id="default_customer_id" 
-							value="{{ $walk_in_customer['id']}}" >
-							<input type="hidden" id="default_customer_name" 
-							value="{{ $walk_in_customer['name']}}" >
+							<input type="hidden" id="default_customer_id" value="{{ $walk_in_customer['id']}}" >
+							<input type="hidden" id="default_customer_name" value="{{ $walk_in_customer['name']}}" >
 							<input type="hidden" id="default_customer_balance" value="{{ $walk_in_customer['balance'] ?? ''}}" >
 							<input type="hidden" id="default_customer_address" value="{{ $walk_in_customer['shipping_address'] ?? ''}}" >
 							@if(!empty($walk_in_customer['price_calculation_type']) && $walk_in_customer['price_calculation_type'] == 'selling_price_group')
-								<input type="hidden" id="default_selling_price_group" 
-							value="{{ $walk_in_customer['selling_price_group_id'] ?? ''}}" >
+								<input type="hidden" id="default_selling_price_group" value="{{ $walk_in_customer['selling_price_group_id'] ?? ''}}" >
 							@endif
-							{!! Form::select('contact_id', 
-								[], null, ['class' => 'form-control mousetrap', 'id' => 'customer_id', 'placeholder' => 'Enter Customer name / phone', 'required']); !!}
+							{!! Form::select('contact_id', [], null, ['class' => 'form-control mousetrap', 'id' => 'customer_id', 'placeholder' => 'Enter Customer name / phone', 'required']); !!}
 							<span class="input-group-btn">
 								<button type="button" class="btn btn-default bg-white btn-flat add_new_customer" data-name=""><i class="fa fa-plus-circle text-primary fa-lg"></i></button>
 							</span>
@@ -124,21 +117,35 @@
 						<small class="text-danger hide contact_due_text"><strong>@lang('account.customer_due'):</strong> <span></span></small>
 					</div>
 					<small>
-					<strong>
-						@lang('lang_v1.billing_address'):
-					</strong>
-					<div id="billing_address_div">
-						{!! $walk_in_customer['contact_address'] ?? '' !!}
-					</div>
-					<br>
-					<strong>
-						@lang('lang_v1.shipping_address'):
-					</strong>
-					<div id="shipping_address_div">
-						{{$walk_in_customer['supplier_business_name'] ?? ''}},<br>
-						{{$walk_in_customer['name'] ?? ''}},<br>
-						{{$walk_in_customer['shipping_address'] ?? ''}}
-					</div>					
+						<strong>
+							@lang('lang_v1.billing_address'):
+						</strong>
+						<div id="billing_address_div">
+							{!! $walk_in_customer['contact_address'] ?? '' !!}
+						</div>
+						<br>
+						<strong>
+							@lang('lang_v1.shipping_address'):
+						</strong>
+						<div id="shipping_address_div">
+							{{$walk_in_customer['supplier_business_name'] ?? ''}},<br>
+							{{$walk_in_customer['name'] ?? ''}},<br>
+							{{$walk_in_customer['shipping_address'] ?? ''}}
+						</div>	
+						<br>
+						<strong>
+							@lang('contact.billing_email'):
+						</strong>
+						<div id="billing_email_div">
+							{!! $walk_in_customer['billing_email'] ?? '' !!}
+						</div>
+						<br>
+						<strong>
+							@lang('contact.billing_phone'):
+						</strong>
+						<div id="billing_phone_div">
+							{!! $walk_in_customer['billing_phone'] ?? '' !!}
+						</div>				
 					</small>
 				</div>
 
@@ -353,8 +360,7 @@
 					<input type="hidden" name="sell_price_tax" id="sell_price_tax" value="{{$business_details->sell_price_tax}}">
 
 					<!-- Keeps count of product rows -->
-					<input type="hidden" id="product_row_count" 
-						value="0">
+					<input type="hidden" id="product_row_count" value="0">
 					@php
 						$hide_tax = '';
 						if( session()->get('business.enable_inline_tax') == 0){
@@ -392,18 +398,26 @@
 									<th>@lang('lang_v1.warranty')</th>
 								@endif
 								<th class="text-center">
+									@lang('product.variation_name')
+								</th>
+								<th class="text-center">
+									@lang('product.variation_values')
+								</th>
+								<th class="text-center">
 									@lang('sale.subtotal')
 								</th>
 								<th class="text-center"><i class="fas fa-times" aria-hidden="true"></i></th>
 							</tr>
 						</thead>
-						<tbody></tbody>
+						<tbody>
+							
+						</tbody>
 					</table>
 					</div>
 					<div class="table-responsive">
 					<table class="table table-condensed table-bordered table-striped">
 						<tr>
-							<td>
+							<td class="price_cal">
 								<div class="pull-right">
 								<b>@lang('sale.item'):</b> 
 								<span class="total_quantity">0</span>
@@ -417,12 +431,41 @@
 					</div>
 				</div>
 			@endcomponent
-
+			<div class="box box-solid">
+				<div class="box-body">
+					<div class="col-md-6">
+						<div class="form-group">
+							<label for="brand_id">Number of Days:*</label>
+							<div class="form-group">
+							  
+							  <select class="form-control select2" id="delivery_days" name="number_of_days" required>
+								<option selected>please select</option>
+								@foreach(deliveryDays() as $key => $deliveryDays)
+								  <option value="{{$key}}">{{ $deliveryDays }}</option>
+								@endforeach
+							  </select>
+				
+							</div>
+						</div>
+					</div>
+					<div class="@if(!empty($commission_agent)) col-sm-6 @else col-sm-6 @endif">
+						<div class="form-group">
+							<label for="delivery_time">Delivery Time:*</label>
+							<div class="input-group">
+								<span class="input-group-addon">
+									<i class="fa fa-calendar"></i>
+								</span>
+								{!! Form::text('delivery_time','', ['class' => 'form-control timepicker', 'required']); !!}
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
 
 			<div class="box box-solid">
                 
 				<div class="box-body">
-					<div class="col-md-4  ">
+					<div class="col-md-4">
 								<div class="form-group">
 									<label for="discount_type">Delivery Days:*</label>
 									<br/>
@@ -543,11 +586,6 @@
 				</div>
 				<!-- /.box-body -->
 			</div>
-
-
-			
-
-
 
 			@component('components.widget', ['class' => 'box-solid'])
 				<div class="col-md-4  @if($sale_type == 'sales_order') hide @endif">
@@ -974,6 +1012,10 @@
     	<script src="{{ asset('js/restaurant.js?v=' . $asset_v) }}"></script>
     @endif
     <script type="text/javascript">
+
+		$('.timepicker').datetimepicker({
+            format: 'hh:mm a'
+        });
     	$(document).ready( function() {
     		$('#status').change(function(){
     			if ($(this).val() == 'final') {

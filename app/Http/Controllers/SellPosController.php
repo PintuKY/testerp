@@ -299,7 +299,7 @@ class SellPosController extends Controller
         if (!auth()->user()->can('sell.create') && !auth()->user()->can('direct_sell.access') && !auth()->user()->can('so.create') ) {
             abort(403, 'Unauthorized action.');
         }
-
+       
         $is_direct_sale = false;
         if (!empty($request->input('is_direct_sale'))) {
             $is_direct_sale = true;
@@ -323,7 +323,7 @@ class SellPosController extends Controller
                 $input['status'] = 'draft';
                 $input['sub_status'] = 'proforma';
             }
-
+            
             //Check Customer credit limit
             $is_credit_limit_exeeded = $this->transactionUtil->isCustomerCreditLimitExeeded($input);
 
@@ -465,9 +465,9 @@ class SellPosController extends Controller
                 //Upload Shipping documents
                 Media::uploadMedia($business_id, $transaction, $request, 'shipping_documents', false, 'shipping_document');
 
-
-                $this->transactionUtil->createOrUpdateSellLines($transaction, $input['products'], $input['location_id']);
-
+                
+               $this->transactionUtil->createOrUpdateSellLines($transaction, $input['products'], $input['location_id'],$input['number_of_days'],$input['delivery_time']);
+                
                 if (!$is_direct_sale) {
                     //Add change return
                     $change_return = $this->dummyPaymentLine;

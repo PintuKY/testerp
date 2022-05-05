@@ -2,8 +2,8 @@
 
 namespace App\Utils;
 
-use App\Events\TransactionPaymentAdded;
-use App\Events\TransactionPaymentDeleted;
+use App\Events\SupplierTransactionPaymentAdded;
+use App\Events\SupplierTransactionPaymentDeleted;
 use App\Models\Business;
 use App\Models\BusinessLocation;
 use App\Models\Currency;
@@ -644,7 +644,7 @@ class SupplierTransactionUtil extends Util
 
             //Fire delete transaction payment event
             foreach ($deleted_transaction_payments as $deleted_transaction_payment) {
-                event(new TransactionPaymentDeleted($deleted_transaction_payment));
+                event(new SupplierTransactionPaymentDeleted($deleted_transaction_payment));
             }
         }
 
@@ -653,7 +653,7 @@ class SupplierTransactionUtil extends Util
 
             foreach ($supplier_transaction->paymentLines as $key => $value) {
                 if (!empty($account_transactions[$key])) {
-                    event(new TransactionPaymentAdded($value, $account_transactions[$key]));
+                    event(new SupplierTransactionPaymentAdded($value, $account_transactions[$key]));
                 }
             }
         }
@@ -687,7 +687,7 @@ class SupplierTransactionUtil extends Util
         $tp->update($payment);
 
         //event
-        event(new TransactionPaymentUpdated($tp, $transaction->type));
+        event(new SupplierTransactionPaymentUpdated($tp, $transaction->type));
 
         return true;
     }

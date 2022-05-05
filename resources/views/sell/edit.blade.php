@@ -25,7 +25,7 @@
 	$common_settings = session()->get('business.common_settings');
 @endphp
 <input type="hidden" id="item_addition_method" value="{{$business_details->item_addition_method}}">
-	{!! Form::open(['url' => action('SellPosController@update', ['id' => $transaction->id ]), 'method' => 'put', 'id' => 'edit_sell_form', 'files' => true ]) !!}
+	{!! Form::open(['url' => action('SellPosController@update',  $transaction->id ), 'method' => 'put', 'id' => 'edit_sell_form', 'files' => true ]) !!}
 
 	{!! Form::hidden('location_id', $transaction->location_id, ['id' => 'location_id', 'data-receipt_printer_type' => !empty($location_printer_type) ? $location_printer_type : 'browser', 'data-default_payment_accounts' => $transaction->location->default_payment_accounts]); !!}
 
@@ -366,6 +366,12 @@
 									<th>@lang('lang_v1.warranty')</th>
 								@endif
 								<th class="text-center">
+									@lang('product.variation_name')
+								</th>
+								<th class="text-center">
+									@lang('product.variation_values')
+								</th>
+								<th class="text-center">
 									@lang('sale.subtotal')
 								</th>
 								<th class="text-center"><i class="fa fa-close" aria-hidden="true"></i></th>
@@ -373,7 +379,7 @@
 						</thead>
 						<tbody>
 							@foreach($sell_details as $sell_line)
-								@include('sale_pos.product_row', ['product' => $sell_line, 'row_count' => $loop->index, 'tax_dropdown' => $taxes, 'sub_units' => !empty($sell_line->unit_details) ? $sell_line->unit_details : [], 'action' => 'edit', 'is_direct_sell' => true, 'so_line' => $sell_line->so_line, 'is_sales_order' => $transaction->type == 'sales_order'])
+								@include('sell.product_row_edit', ['product' => $sell_line, 'row_count' => $loop->index, 'tax_dropdown' => $taxes, 'sub_units' => !empty($sell_line->unit_details) ? $sell_line->unit_details : [], 'action' => 'edit', 'is_direct_sell' => true, 'so_line' => $sell_line->so_line, 'is_sales_order' => $transaction->type == 'sales_order'])
 							@endforeach
 						</tbody>
 					</table>

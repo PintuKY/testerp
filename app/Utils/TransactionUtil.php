@@ -21,8 +21,10 @@ use App\Models\Transaction;
 use App\Models\TransactionPayment;
 use App\Models\TransactionSellLine;
 use App\Models\TransactionSellLinesPurchaseLines;
+use App\Models\TransactionSellLinesVariants;
 use App\Models\Variation;
 use App\Models\VariationLocationDetails;
+use App\Models\VariationValueTemplate;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Utils\ModuleUtil;
@@ -262,7 +264,7 @@ class TransactionUtil extends Util
      *
      * @return boolean/object
      */
-    public function createOrUpdateSellLines($transaction, $products, $location_id, $return_deleted = false, $status_before = null, $extra_line_parameters = [], $uf_data = true)
+    public function createOrUpdateSellLines($transaction, $products, $location_id, $number_of_days, $delivery_time, $return_deleted = false, $status_before = null, $extra_line_parameters = [], $uf_data = true ,)
     {
         $lines_formatted = [];
         $modifiers_array = [];
@@ -343,7 +345,7 @@ class TransactionUtil extends Util
                         $line_discount_amount = $line_discount_amount/$multiplier;
                     }
                 }
-
+                
                 $line = [
                     'product_id' => $product['product_id'],
                     'variation_id' => $product['variation_id'],
@@ -360,7 +362,9 @@ class TransactionUtil extends Util
                     'discount_id' => !empty($product['discount_id']) ? $product['discount_id'] : null,
                     'res_service_staff_id' => !empty($product['res_service_staff_id']) ? $product['res_service_staff_id'] : null,
                     'res_line_order_status' => !empty($product['res_service_staff_id']) ? 'received' : null,
-                    'so_line_id' => !empty($product['so_line_id']) ? $product['so_line_id'] : null
+                    'so_line_id' => !empty($product['so_line_id']) ? $product['so_line_id'] : null,
+                    'number_of_days' => $number_of_days,
+                    'delivery_time' => $delivery_time
                 ];
 
                 foreach ($extra_line_parameters as $key => $value) {
@@ -396,7 +400,7 @@ class TransactionUtil extends Util
                 }
 
                 $lines_formatted[] = new TransactionSellLine($line);
-
+               
                 $sell_line_warranties[] = !empty($product['warranty_id']) ? $product['warranty_id'] : 0;
 
                 //Update purchase order line quantity received
@@ -425,7 +429,22 @@ class TransactionUtil extends Util
         $combo_lines = [];
 
         if (!empty($lines_formatted)) {
-            $transaction->sell_lines()->saveMany($lines_formatted);
+           $sell_line_data =  $transaction->sell_lines()->saveMany($lines_formatted);
+            
+           // Add transaction sell lines variants data 
+            foreach($sell_line_data as $sell_line);{
+                $sell_line_id = $sell_line->id;
+            }
+            $variation_value_datas = VariationValueTemplate::whereIn('id',$product['variation_value_id'])->get();
+            foreach($variation_value_datas as $variation_value_data){
+                $transaction_sell_lines_variants = New TransactionSellLinesVariants();
+                $transaction_sell_lines_variants->transaction_sell_lines_id = $sell_line_id;
+                $transaction_sell_lines_variants->variation_templates_id = $variation_value_data->variation_template_id;
+                $transaction_sell_lines_variants->variation_value_templates_id = $variation_value_data->id;
+                $transaction_sell_lines_variants->name = $variation_value_data->name;
+                $transaction_sell_lines_variants->value = $variation_value_data->value;
+                $transaction_sell_lines_variants->save();
+            }
 
             //Add corresponding modifier sell lines if exists
             if ($this->isModuleEnabled('modifiers')) {
@@ -438,7 +457,6 @@ class TransactionUtil extends Util
                     }
                 }
             }
-
             //Combo product lines.
             //$products_value = array_values($products);
             foreach ($lines_formatted as $key => $value) {
@@ -454,16 +472,17 @@ class TransactionUtil extends Util
         }
 
         if (!empty($combo_lines)) {
-            $transaction->sell_lines()->saveMany($combo_lines);
+            $sell_line_data = $transaction->sell_lines()->saveMany($combo_lines);
         }
 
         if (!empty($modifiers_formatted)) {
-            $transaction->sell_lines()->saveMany($modifiers_formatted);
+            $sell_line_data = $transaction->sell_lines()->saveMany($modifiers_formatted);
         }
 
         if ($return_deleted) {
             return $deleted_lines;
         }
+
         return true;
     }
 

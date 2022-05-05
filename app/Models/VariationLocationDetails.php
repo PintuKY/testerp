@@ -12,4 +12,9 @@ class VariationLocationDetails extends Model
      * @var array
      */
     protected $guarded = ['id'];
+
+    public function productVariations()
+    {
+        return $this->belongsTo(\App\Models\ProductVariation::class,'product_variation_id');
+    }
 }

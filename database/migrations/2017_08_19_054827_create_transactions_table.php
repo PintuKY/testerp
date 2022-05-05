@@ -26,7 +26,7 @@ class CreateTransactionsTable extends Migration
             $table->string('ref_no')->nullable();
             $table->dateTime('transaction_date');
             $table->decimal('total_before_tax', 22, 4)->default(0)->comment('Total before the purchase/invoice tax, this includeds the indivisual product tax');
-            $table->integer('tax_id')->unsigned()->nullable();
+            $table->integer('tax_id')->nullable()->unsigned();
             $table->foreign('tax_id')->references('id')->on('tax_rates')->onDelete('cascade');
             $table->decimal('tax_amount', 22, 4)->default(0);
             $table->enum('discount_type', ['fixed', 'percentage'])->nullable();

@@ -25,7 +25,7 @@ class CreateTransactionSellLines extends Migration
             $table->decimal('unit_price', 22, 4)->comment("Sell price excluding tax")->nullable();
             $table->decimal('unit_price_inc_tax', 22, 4)->comment("Sell price including tax")->nullable();
             $table->decimal('item_tax', 22, 4)->comment("Tax for one quantity");
-            $table->integer('tax_id')->unsigned()->nullable();
+            $table->integer('tax_id')->nullable()->unsigned();
             $table->foreign('tax_id')->references('id')->on('tax_rates')->onDelete('cascade');
             $table->timestamps();
         });

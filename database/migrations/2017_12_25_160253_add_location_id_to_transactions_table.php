@@ -16,7 +16,6 @@ class AddLocationIdToTransactionsTable extends Migration
         Schema::table('transactions', function (Blueprint $table) {
             $table->integer('location_id')->unsigned()->after('business_id');
             $table->foreign('location_id')->references('id')->on('business_locations');
-
             $table->index('location_id');
         });
     }

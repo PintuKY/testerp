@@ -1,0 +1,6 @@
+[12-Apr-2022 05:48:11 UTC] PHP Parse error:  syntax error, unexpected '|', expecting ';' or '{' in /home/customer/www/rcgerp.webcarvingdev.com/public_html/vendor/symfony/process/PhpExecutableFinder.php on line 32
+[20-Apr-2022 13:11:49 UTC] PHP Parse error:  syntax error, unexpected '|', expecting variable (T_VARIABLE) in /home/customer/www/rcgerp.webcarvingdev.com/public_html/vendor/symfony/console/Input/ArgvInput.php on line 304
+[20-Apr-2022 13:11:59 UTC] PHP Parse error:  syntax error, unexpected '|', expecting variable (T_VARIABLE) in /home/customer/www/rcgerp.webcarvingdev.com/public_html/vendor/symfony/console/Input/ArgvInput.php on line 304
+[20-Apr-2022 13:13:33 UTC] PHP Parse error:  syntax error, unexpected '|', expecting variable (T_VARIABLE) in /home/customer/www/rcgerp.webcarvingdev.com/public_html/vendor/symfony/console/Input/ArgvInput.php on line 304
+[20-Apr-2022 13:14:31 UTC] PHP Parse error:  syntax error, unexpected '|', expecting variable (T_VARIABLE) in /home/customer/www/rcgerp.webcarvingdev.com/public_html/vendor/symfony/console/Input/ArgvInput.php on line 304
+[20-Apr-2022 13:16:26 UTC] PHP Parse error:  syntax error, unexpected '|', expecting ';' or '{' in /home/customer/www/rcgerp.webcarvingdev.com/public_html/vendor/symfony/process/PhpExecutableFinder.php on line 32

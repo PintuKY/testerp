@@ -705,8 +705,6 @@ $(document).ready(function() {
 
                     var total_payable = __read_number($('input#final_total_input'));
                     var total_paying = __read_number($('input#total_paying_input'));
-                    console.log(total_payable);
-                    console.log(total_paying);
                     var b_due = total_payable - total_paying;
                     $(appended)
                         .find('input.payment-amount')
@@ -2087,14 +2085,15 @@ $(document).on('click', '.input-number .product-quantity-up, .input-number .prod
 });
 
 function productVariationsPriceCalculation($this) {
-    let unitPrice = parseFloat($this.parents('.product_row').find('.pos_unit_price').val());
+    let unitPrice = parseFloat($this.parents('.product_row').find('.product_pos_unit_price').val());
     let posQuantity = $this.parents('.product_row').find('.pos_quantity').val();
     let subTotal = posQuantity * unitPrice;
     let priceTotal = 0;
     let totalQuantity = 0;
-    let rowDiscountType = $this.parents('.product_row').find('select.row_discount_type').find('option:selected').val();    
+    let rowDiscountType = $this.parents('.product_row').find('select.product_row_discount_type').find('option:selected').val();    
     let rowDiscountAmount = parseFloat($this.parents('.product_row').find('input.discount_amount').val());
     let discountAmount = posQuantity * rowDiscountAmount;
+    
     var variationValue = 0;
     if (rowDiscountAmount > 0) {
         if (rowDiscountType == 'fixed') {
@@ -2103,13 +2102,17 @@ function productVariationsPriceCalculation($this) {
             subTotal = (subTotal * rowDiscountAmount)/100;
         }
     }
+    
     if($this.parents('.product_row').find('.select_variation_value').length && $this.parents('.product_row').find('.select_variation_value').find('option:selected').data('price') !== 'NaN' && $this.parents('.product_row').find('.select_variation_value').find('option:selected').data('price') !== '' && typeof $this.parents('.product_row').find('.select_variation_value').find('option:selected').data('price') !=="undefined"){
         variationValue = parseFloat($this.parents('.product_row').find('.select_variation_value').find('option:selected').data('price'));
+        $this.parents('.product_row').find('.product_selectd_variation_value').val(variationValue);
+        $this.parents('.product_row').find('.product_selectd_variation_value').html(variationValue);
     } 
     if($this.parents('.product_row').find('.radio_variation_value:checked').data('price') !== 'NaN' && $this.parents('.product_row').find('.radio_variation_value:checked').data('price') !== '' && typeof $this.parents('.product_row').find('.radio_variation_value:checked').data('price') !=="undefined"){
         variationValue = parseFloat($this.parents('.product_row').find('.radio_variation_value:checked').data('price'));
+        $this.parents('.product_row').find('.product_radio_variation_value').val(variationValue);
+        $this.parents('.product_row').find('.product_radio_variation_value').html(variationValue);
     }
-
     finalAmount = variationValue + subTotal;
     $this.parents('.product_row').find('.pos_line_total_text').html('$'+finalAmount);
     $this.parents('.product_row').find('input.pos_line_total').val(finalAmount);  
@@ -2130,8 +2133,11 @@ function productVariationsPriceCalculation($this) {
 
     $('.price_cal .price_total').html(priceTotal);
     $('.price_cal .total_quantity').html(totalQuantity);
-    $('payment-amount').html(totalQuantity);
-    $('payment-amount').val(totalQuantity);
+    $('#final_total_input').val(priceTotal);
+    $('#total_payable').html(priceTotal);
+    $('#total_payable').val(priceTotal);
+    $('#payment_rows_div').find('.sell-product-payment-amount').html(priceTotal);
+    $('#payment_rows_div').find('.sell-product-payment-amount').val(priceTotal);
 }
 
 $(document).on('change', '.product_row .select_variation_value', function(e) {    
@@ -2142,9 +2148,33 @@ $(document).on('change', '.product_row .radio_variation_value', function(e) {
     productVariationsPriceCalculation($(this));    
 });
 
-$(document).on('change', '.product_row .discount_amount', function(e) {    
-    console.log('demo');    
+$(document).on('change', '.product_row .discount_amount', function(e) { 
     productVariationsPriceCalculation($(this));    
+});
+
+$(document).on('change', '.product_row .product_pos_unit_price', function(e) {    
+    productVariationsPriceCalculation($(this));    
+});
+
+$(document).on('change', '.product_row .product_row_discount_type', function(e) {    
+    productVariationsPriceCalculation($(this));    
+});
+
+
+$(document).on('change', '#shipping_charges', function(e) {    
+    let shippingCharge = parseInt($(this).val());
+    let sellProductPaymentAmount = parseInt($('#payment_rows_div').find('.sell-product-payment-amount').val());
+    let ProductPaymentAmount = shippingCharge + sellProductPaymentAmount;
+    $('#payment_rows_div').find('.sell-product-payment-amount').val(ProductPaymentAmount);
+    $('#payment_rows_div').find('.sell-product-payment-amount').html(ProductPaymentAmount)
+});
+
+$(document).on('change', '#discount_amount', function(e) {    
+    let discountAmount = parseInt($(this).val());
+    let sellProductPaymentAmount = parseInt($('#payment_rows_div').find('.sell-product-payment-amount').val());
+    let ProductPaymentAmount = sellProductPaymentAmount - discountAmount;
+    $('#payment_rows_div').find('.sell-product-payment-amount').val(ProductPaymentAmount);
+    $('#payment_rows_div').find('.sell-product-payment-amount').html(ProductPaymentAmount)
 });
 
 function calculate_discounted_unit_price(row) {

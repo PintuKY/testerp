@@ -1417,7 +1417,6 @@ class SellController extends Controller
         if (!auth()->user()->can('direct_sell.update') && !auth()->user()->can('so.update')) {
             abort(403, 'Unauthorized action.');
         }
-
         //Check if the transaction can be edited or not.
         $edit_days = request()->session()->get('business.transaction_edit_days');
         if (!$this->transactionUtil->canBeEdited($id, $edit_days)) {
@@ -1482,7 +1481,7 @@ class SellController extends Controller
                         ->where('transaction_sell_lines.transaction_id', $id)
                         ->with(['warranties', 'so_line'])
                         ->select(
-                            DB::raw("IF(pv.is_dummy = 0, CONCAT(p.name, ' (', pv.name, ':',variations.name, ')'), p.name) AS product_name"),
+                            DB::raw("IF(pv.is_dummy = 0, CONCAT(p.name, ' (', p.name, ':',variations.name, ')'), p.name) AS product_name"),
                             'p.id as product_id',
                             'p.enable_stock',
                             'p.name as product_actual_name',
@@ -1520,9 +1519,9 @@ class SellController extends Controller
                             DB::raw('vld.qty_available + transaction_sell_lines.quantity AS qty_available')
                         )
                         ->get();
-                        // echo "<pre>";
-                        // print_r($sell_details->toArray());
-                        // die();
+                        echo "<pre>";
+                        print_r($sell_details->toArray());
+                        die();
         if (!empty($sell_details)) {
             foreach ($sell_details as $key => $value) {
                 //If modifier or combo sell line then unset
@@ -2411,7 +2410,7 @@ class SellController extends Controller
     public function getDetailsFromVariation($product_id, $business_id, $location_id = null, $check_qty = true)
     {   
         $query = Variation::where('product_id','=',$product_id)->with('product','product.brand','product.unit','product_variation','variation_location_details','product_variation.variation_template','product_variation.variation_template.values');
-       
+        
         // Add condition for check of quantity. (if stock is not enabled or qty_available > 0)
         if ($check_qty) {
             $query->whereHas('product', function( $q ){

@@ -295,11 +295,12 @@ class SellPosController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
-    {
+    {    
+        
         if (!auth()->user()->can('sell.create') && !auth()->user()->can('direct_sell.access') && !auth()->user()->can('so.create') ) {
             abort(403, 'Unauthorized action.');
         }
-       
+        
         $is_direct_sale = false;
         if (!empty($request->input('is_direct_sale'))) {
             $is_direct_sale = true;

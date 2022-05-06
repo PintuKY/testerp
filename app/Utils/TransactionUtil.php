@@ -272,8 +272,10 @@ class TransactionUtil extends Util
         $modifiers_formatted = [];
         $combo_lines = [];
         $products_modified_combo = [];
-        foreach ($products as $product) {
+        $variation_value_id = [];
+        foreach ($products as $variationId => $product) {
             $multiplier = 1;
+           
             if (isset($product['sub_unit_id']) && $product['sub_unit_id'] == $product['product_unit_id']) {
                 unset($product['sub_unit_id']);
             }
@@ -348,7 +350,7 @@ class TransactionUtil extends Util
                 
                 $line = [
                     'product_id' => $product['product_id'],
-                    'variation_id' => $product['variation_id'],
+                    'variation_id' => $variationId,
                     'quantity' =>  $uf_quantity * $multiplier,
                     'unit_price_before_discount' => $unit_price_before_discount,
                     'unit_price' => $unit_price,
@@ -400,14 +402,14 @@ class TransactionUtil extends Util
                 }
 
                 $lines_formatted[] = new TransactionSellLine($line);
-               
+                
                 $sell_line_warranties[] = !empty($product['warranty_id']) ? $product['warranty_id'] : 0;
 
                 //Update purchase order line quantity received
                 $this->updateSalesOrderLine($line['so_line_id'], $line['quantity'], 0);
+                $variation_value_id[] = $product['variation_value_id'];
             }
         }
-
         if (!is_object($transaction)) {
             $transaction = Transaction::findOrFail($transaction);
         }
@@ -425,9 +427,8 @@ class TransactionUtil extends Util
 
             $this->deleteSellLines($deleted_lines, $location_id, $adjust_qty);
         }
-
+        
         $combo_lines = [];
-
         if (!empty($lines_formatted)) {
            $sell_line_data =  $transaction->sell_lines()->saveMany($lines_formatted);
             
@@ -435,7 +436,7 @@ class TransactionUtil extends Util
             foreach($sell_line_data as $sell_line);{
                 $sell_line_id = $sell_line->id;
             }
-            $variation_value_datas = VariationValueTemplate::whereIn('id',$product['variation_value_id'])->get();
+            $variation_value_datas = VariationValueTemplate::whereIn('id',$variation_value_id)->get();
             foreach($variation_value_datas as $variation_value_data){
                 $transaction_sell_lines_variants = New TransactionSellLinesVariants();
                 $transaction_sell_lines_variants->transaction_sell_lines_id = $sell_line_id;

@@ -13,7 +13,6 @@
 @foreach($productDatas as $productData)
 	<tr class="product_row" data-row_index="{{$row_count}}" @if(!empty($so_line)) data-so_id="{{$so_line->transaction_id}}" @endif>
 		<td>
-			<input type="hidden" name="products[{{$row_count}}][variation_id]" value="{{$productData->id}}">
 			@if(!empty($so_line))
 				<input type="hidden"
 				name="products[{{$row_count}}][so_line_id]"
@@ -37,7 +36,7 @@
 			<input type="hidden" class="enable_sr_no" value="{{$productData->product->enable_sr_no}}">
 			<input type="hidden"
 				class="product_type"
-				name="products[{{$row_count}}][product_type]"
+				name="products[{{$productData->id}}][product_type]"
 				value="{{$productData->product->type}}">
 
 			@php
@@ -172,7 +171,7 @@
 		@endif
 		@if(!empty($is_direct_sell))
 			<br>
-			<textarea class="form-control" name="products[{{$row_count}}][sell_line_note]" rows="2">{{$sell_line_note}}</textarea>
+			<textarea class="form-control" name="products[{{$productData->id}}][sell_line_note]" rows="2">{{$sell_line_note}}</textarea>
 			<p class="help-block"><small>@lang('lang_v1.sell_line_description_help')</small></p>
 		@endif
 		</td>
@@ -180,14 +179,14 @@
 		<td>
 			{{-- If edit then transaction sell lines will be present --}}
 			@if(!empty($product->transaction_sell_lines_id))
-				<input type="hidden" name="products[{{$row_count}}][transaction_sell_lines_id]" class="form-control" value="{{$productData->transaction_sell_lines_id}}">
+				<input type="hidden" name="products[{{$productData->id}}][transaction_sell_lines_id]" class="form-control" value="{{$productData->transaction_sell_lines_id}}">
 			@endif
 
-			<input type="hidden" name="products[{{$row_count}}][product_id]" class="form-control product_id" value="{{$productData->product->id}}">
+			<input type="hidden" name="products[{{$productData->id}}][product_id]" class="form-control product_id" value="{{$productData->product->id}}">
 
 			<!-- <input type="hidden" value="{{$productData->product_id}}" name="products[{{$row_count}}][product_id]" class="row_product_id"> -->
 
-			<input type="hidden" value="{{$productData->product->enable_stock}}" name="products[{{$row_count}}][enable_stock]">
+			<input type="hidden" value="{{$productData->product->enable_stock}}" name="products[{{$productData->id}}][enable_stock]">
 
 			@if(empty($productData->quantity_ordered))
 				@php
@@ -222,7 +221,7 @@
 				<span class="input-group-btn"><button type="button" class="btn btn-default btn-flat product-quantity-down"><i class="fa fa-minus text-danger"></i></button></span>
 			<input type="text" data-min="1"
 				class="form-control pos_quantity input_number mousetrap input_quantity"
-				value="{{@format_quantity($productData->quantity_ordered)}}" name="products[{{$row_count}}][quantity]" data-allow-overselling="@if(empty($pos_settings['allow_overselling'])){{'false'}}@else{{'true'}}@endif"
+				value="{{@format_quantity($productData->quantity_ordered)}}" name="products[{{$productData->id}}][quantity]" data-allow-overselling="@if(empty($pos_settings['allow_overselling'])){{'false'}}@else{{'true'}}@endif"
 				@if($allow_decimal)
 					data-decimal=1
 				@else
@@ -240,10 +239,10 @@
 			<span class="input-group-btn"><button type="button" class="btn btn-default btn-flat product-quantity-up"><i class="fa fa-plus text-success"></i></button></span>
 			</div>
 
-			<input type="hidden" name="products[{{$row_count}}][product_unit_id]" value="{{$productData->product->unit->id}}">
+			<input type="hidden" name="products[{{$productData->id}}][product_unit_id]" value="{{$productData->product->unit->id}}">
 			@if(count($sub_units) > 0)
 				<br>
-				<select name="products[{{$row_count}}][sub_unit_id]" class="form-control input-sm sub_unit">
+				<select name="products[{{$productData->id}}][sub_unit_id]" class="form-control input-sm sub_unit">
 					@foreach($sub_units as $key => $value)
 						<option value="{{$key}}" data-multiplier="{{$value['multiplier']}}" data-unit_name="{{$value['name']}}" data-allow_decimal="{{$value['allow_decimal']}}" @if(!empty($productData->sub_unit_id) && $productData->sub_unit_id == $key) selected @endif>
 							{{$value['name']}}
@@ -254,7 +253,7 @@
 				{{$productData->product->unit->short_name}}
 			@endif
 
-			<input type="hidden" class="base_unit_multiplier" name="products[{{$row_count}}][base_unit_multiplier]" value="{{$multiplier}}">
+			<input type="hidden" class="base_unit_multiplier" name="products[{{$productData->id}}][base_unit_multiplier]" value="{{$multiplier}}">
 
 			<input type="hidden" class="hidden_base_unit_sell_price" value="{{$productData->default_sell_price / $multiplier}}">
 
@@ -276,22 +275,22 @@
 					@endif
 
 					<input type="hidden"
-						name="products[{{$row_count}}][combo][{{$k}}][product_id]"
+						name="products[{{$productData->id}}][combo][{{$k}}][product_id]"
 						value="{{$combo_product['$productData->product_id']}}">
 
 						<input type="hidden"
-						name="products[{{$row_count}}][combo][{{$k}}][product_id]"
+						name="products[{{$productData->id}}][combo][{{$k}}][product_id]"
 						value="{{$combo_product['$productData->product_id']}}">
 
 						<input type="hidden"
 						class="combo_product_qty"
-						name="products[{{$row_count}}][combo][{{$k}}][quantity]"
+						name="products[{{$productData->id}}][combo][{{$k}}][quantity]"
 						data-unit_quantity="{{$combo_product['qty_required']}}"
 						value="{{$qty_total}}">
 
 						@if(isset($action) && $action == 'edit')
 							<input type="hidden"
-								name="products[{{$row_count}}][combo][{{$k}}][transaction_sell_lines_id]"
+								name="products[{{$productData->id}}][combo][{{$k}}][transaction_sell_lines_id]"
 								value="{{$combo_product['id']}}">
 						@endif
 
@@ -303,7 +302,7 @@
 				<td>
 					<div class="form-group">
 						<div class="input-group">
-							{!! Form::select("products[" . $row_count . "][res_service_staff_id]", $waiters, !empty($productData->res_service_staff_id) ? $productData->res_service_staff_id : null, ['class' => 'form-control select2 order_line_service_staff', 'placeholder' => __('restaurant.select_service_staff'), 'required' => (!empty($pos_settings['is_service_staff_required']) && $pos_settings['is_service_staff_required'] == 1) ? true : false ]); !!}
+							{!! Form::select("products[" . $productData->id . "][res_service_staff_id]", $waiters, !empty($productData->res_service_staff_id) ? $productData->res_service_staff_id : null, ['class' => 'form-control select2 order_line_service_staff', 'placeholder' => __('restaurant.select_service_staff'), 'required' => (!empty($pos_settings['is_service_staff_required']) && $pos_settings['is_service_staff_required'] == 1) ? true : false ]); !!}
 						</div>
 					</div>
 				</td>
@@ -316,69 +315,63 @@
 				}
 			@endphp
 			<td class="@if(!auth()->user()->can('edit_product_price_from_sale_screen')) hide @endif">
-				<input type="text" name="products[{{$row_count}}][unit_price]" class="form-control pos_unit_price input_number mousetrap" value="{{@num_format($pos_unit_price)}}" @if(!empty($pos_settings['enable_msp'])) data-rule-min-value="{{$pos_unit_price}}" data-msg-min-value="{{__('lang_v1.minimum_selling_price_error_msg', ['price' => @num_format($pos_unit_price)])}}" @endif>
+				<input type="text" name="products[{{$productData->id}}][unit_price]" class="form-control product_pos_unit_price input_number mousetrap" value="{{@num_format($pos_unit_price)}}" @if(!empty($pos_settings['enable_msp'])) data-rule-min-value="{{$pos_unit_price}}" data-msg-min-value="{{__('lang_v1.minimum_selling_price_error_msg', ['price' => @num_format($pos_unit_price)])}}" @endif>
 			</td>
 			<td @if(!$edit_discount) class="hide" @endif>
-				{!! Form::text("products[$row_count][line_discount_amount]", @num_format($discount_amount), ['class' => 'form-control input_number discount_amount']); !!}<br>
-				{!! Form::select("products[$row_count][line_discount_type]", ['fixed' => __('lang_v1.fixed'), 'percentage' => __('lang_v1.percentage')], $discount_type , ['class' => 'form-control row_discount_type']); !!}
+				{!! Form::text("products[$productData->id][line_discount_amount]", @num_format($discount_amount), ['class' => 'form-control input_number discount_amount']); !!}<br>
+				{!! Form::select("products[$productData->id][line_discount_type]", ['fixed' => __('lang_v1.fixed'), 'percentage' => __('lang_v1.percentage')], $discount_type , ['class' => 'form-control product_row_discount_type']); !!}
 				@if(!empty($discount))
 					<p class="help-block">{!! __('lang_v1.applied_discount_text', ['discount_name' => $discount->name, 'starts_at' => $discount->formated_starts_at, 'ends_at' => $discount->formated_ends_at]) !!}</p>
 				@endif
 			</td>
 			<td class="text-center {{$hide_tax}}">
-				{!! Form::hidden("products[$row_count][item_tax]", @num_format($item_tax), ['class' => 'item_tax']); !!}
+				{!! Form::hidden("products[$productData->id][item_tax]", @num_format($item_tax), ['class' => 'item_tax']); !!}
 
-				{!! Form::select("products[$row_count][tax_id]", $tax_dropdown['tax_rates'], $tax_id, ['placeholder' => 'Select', 'class' => 'form-control tax_id'], $tax_dropdown['attributes']); !!}
+				{!! Form::select("products[$productData->id][tax_id]", $tax_dropdown['tax_rates'], $tax_id, ['placeholder' => 'Select', 'class' => 'form-control tax_id'], $tax_dropdown['attributes']); !!}
 			</td>
 
 		@else
 			@if(!empty($warranties))
-				{!! Form::select("products[$row_count][warranty_id]", $warranties, $warranty_id, ['placeholder' => __('messages.please_select'), 'class' => 'form-control']); !!}
+				{!! Form::select("products[$productData->id][warranty_id]", $warranties, $warranty_id, ['placeholder' => __('messages.please_select'), 'class' => 'form-control']); !!}
 			@endif
 
 			@if(!empty($pos_settings['inline_service_staff']))
 				<td>
 					<div class="form-group">
 						<div class="input-group">
-							{!! Form::select("products[" . $row_count . "][res_service_staff_id]", $waiters, !empty($productData->res_service_staff_id) ? $productData->res_service_staff_id : null, ['class' => 'form-control select2 order_line_service_staff', 'placeholder' => __('restaurant.select_service_staff'), 'required' => (!empty($pos_settings['is_service_staff_required']) && $pos_settings['is_service_staff_required'] == 1) ? true : false ]); !!}
+							{!! Form::select("products[" . $productData->id . "][res_service_staff_id]", $waiters, !empty($productData->res_service_staff_id) ? $productData->res_service_staff_id : null, ['class' => 'form-control select2 order_line_service_staff', 'placeholder' => __('restaurant.select_service_staff'), 'required' => (!empty($pos_settings['is_service_staff_required']) && $pos_settings['is_service_staff_required'] == 1) ? true : false ]); !!}
 						</div>
 					</div>
 				</td>
 			@endif
 		@endif
 		<td class="{{$hide_tax}}">
-			<input type="text" name="products[{{$row_count}}][unit_price_inc_tax]" class="form-control pos_unit_price_inc_tax input_number" value="{{@num_format($unit_price_inc_tax)}}" @if(!$edit_price) readonly @endif @if(!empty($pos_settings['enable_msp'])) data-rule-min-value="{{$unit_price_inc_tax}}" data-msg-min-value="{{__('lang_v1.minimum_selling_price_error_msg', ['price' => @num_format($unit_price_inc_tax)])}}" @endif>
+			<input type="text" name="products[{{$productData->id}}][unit_price_inc_tax]" class="form-control pos_unit_price_inc_tax input_number" value="{{@num_format($unit_price_inc_tax)}}" @if(!$edit_price) readonly @endif @if(!empty($pos_settings['enable_msp'])) data-rule-min-value="{{$unit_price_inc_tax}}" data-msg-min-value="{{__('lang_v1.minimum_selling_price_error_msg', ['price' => @num_format($unit_price_inc_tax)])}}" @endif>
 		</td>
 		@if(!empty($common_settings['enable_product_warranty']) && !empty($is_direct_sell))
 			<td>
-				{!! Form::select("products[$row_count][warranty_id]", $warranties, $warranty_id, ['placeholder' => __('messages.please_select'), 'class' => 'form-control']); !!}
+				{!! Form::select("products[$productData->id][warranty_id]", $warranties, $warranty_id, ['placeholder' => __('messages.please_select'), 'class' => 'form-control']); !!}
 			</td>
 		@endif
-		@php 
-			foreach ($productData->product_variation->variation_template->values as $key => $product_variation_data){
-				$product_variation_value = $product_variation_data->value;
-				$data = $key;
-				$variation_value_templates_id = $product_variation_data->id;
-			}
-		@endphp
+		
 		@if($productData->product_variation->variation_template->type == 1)
 			<td class="text-center v-center">
-				<select class="form-control select_variation_value select2" required name="products[{{$row_count}}][variation_value_id][]">
+				<select class="form-control select_variation_value select2" required name="products[{{$productData->id}}][variation_value_id]">
 					<option value="">Please Select</option>
 					@foreach ($productData->product_variation->variation_template->values as $key => $product_variation_name_data) 
-						<option value="{{$product_variation_name_data->id}}" data-price="{{$product_variation_name_data->value}}">{{$product_variation_name_data->name}} - {{$product_variation_name_data->value}}</option>
+						<option value="{{$product_variation_name_data->id}}" data-price="{{$product_variation_name_data->value}}" data-products-variation-id="{{$productData->id}}">{{$product_variation_name_data->name}} - {{$product_variation_name_data->value}}</option>
 					@endforeach
 				</select>
 			</td>
 			<td class="text-center v-center">
-				<input type="text" class="product_variation_value" value="" readonly required>
+				<input type="text" class="product_selectd_variation_value" value="" readonly required>
 			</td>
 		@endif
 		@if($productData->product_variation->variation_template->type == 2)
 		<td>
 			@foreach($productData->product_variation->variation_template->values as $key => $product_variation_name_data)
 				<label class="radio-inline">
-					<input type="radio" class="radio_variation_value"  data-price="{{$product_variation_name_data->value}}" name="products[{{$row_count}}][variation_value_id][]" value="{{$product_variation_name_data->id}}">{{$product_variation_name_data->name}} - {{$product_variation_name_data->value}} 
+					<input type="radio" class="radio_variation_value" data-products-variation-id="{{$productData->id}}"  data-price="{{$product_variation_name_data->value}}" name="products[{{$productData->id}}][variation_value_id]" value="{{$product_variation_name_data->id}}">{{$product_variation_name_data->name}} - {{$product_variation_name_data->value}} 
 				</label><br>
 			@endforeach
 		</td>

@@ -497,43 +497,9 @@
 						<input class="input-icheck" id="has_purchase_due7" name="has_purchase_due7" type="checkbox" value="1" style="position: absolute; opacity: 0;"></div> <strong>Saturday</strong>	
 						<br/>
 						<div class="icheckbox_square-blue" style="position: relative;">
-	
-							<input class="input-icheck" id="has_purchase_due" name="has_purchase_due" type="checkbox" value="1" style="position: absolute; opacity: 0;"></div> <strong>Sunday</strong>		
-
-											
-
-								</div>
+							<input class="input-icheck" id="has_purchase_due" name="has_purchase_due" type="checkbox" value="1" style="position: absolute; opacity: 0;"></div> <strong>Sunday</strong>
+						</div>
 							</div>
-
-							<div class="col-md-4 ">
-								<div class="form-group">
-									<label for="discount_amount">Delivery Time:*</label>
-									<div class="input-group">
-										<span class="input-group-addon">
-											<i class="fa fa-info"></i>
-										</span>
-										<select class="form-control select2" required id="status" name="status"><option selected="selected" value="">Please Select</option><option value="final">Lunch</option><option value="draft">Dinner</option></select>
-									</div>
-								</div>
-							</div>
-
-
-											<div class="col-md-4 ">
-								<div class="form-group">
-									<label for="discount_amount">Discount Amount:*</label>
-									<div class="input-group">
-										<span class="input-group-addon">
-											<i class="fa fa-info"></i>
-										</span>
-										<input class="form-control input_number" data-max-discount="" data-max-discount-error_msg="You can give max % discount per sale" name="discount_amount" type="text" value="0.00" id="discount_amount">
-									</div>
-								</div>
-							</div>
-							<div class="col-md-4 "><br>
-								<b>Discount Amount:</b>(-) 
-								<span class="display_currency" id="total_discount">0.00</span>
-							</div>
-							<div class="clearfix"></div>
 							<div class="col-md-12 well well-sm bg-light-gray  hide ">
 								<input type="hidden" name="rp_redeemed" id="rp_redeemed" value="0">
 								<input type="hidden" name="rp_redeemed_amount" id="rp_redeemed_amount" value="0">
@@ -956,7 +922,7 @@
 							{!! Form::hidden('advance_balance', null, ['id' => 'advance_balance', 'data-error-msg' => __('lang_v1.required_advance_balance_not_available')]); !!}
 						</div>
 					</div>
-					@include('sale_pos.partials.payment_row_form', ['row_index' => 0, 'show_date' => true])
+					@include('sell.partials.payment_row_form', ['row_index' => 0, 'show_date' => true])
 					<hr>
 					<div class="row">
 						<div class="col-sm-12">

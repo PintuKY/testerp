@@ -19,8 +19,8 @@
     @component('components.widget', ['class' => 'box-primary', 'title' => __( 'business.all_your_business_locations' )])
         @slot('tool')
             <div class="box-tools">
-                <button type="button" class="btn btn-block btn-primary btn-modal" 
-                    data-href="{{action('BusinessLocationController@create')}}" 
+                <button type="button" class="btn btn-block btn-primary btn-modal"
+                    data-href="{{action('BusinessLocationController@create')}}"
                     data-container=".location_add_modal">
                     <i class="fa fa-plus"></i> @lang( 'messages.add' )</button>
             </div>
@@ -32,6 +32,7 @@
                         <th>@lang( 'invoice.name' )</th>
                         <th>@lang( 'lang_v1.location_id' )</th>
                         <th>@lang( 'business.landmark' )</th>
+                        <th>@lang('business.kitchen_location_name')</th>
                         <th>@lang( 'business.city' )</th>
                         <th>@lang( 'business.zip_code' )</th>
                         <th>@lang( 'business.state' )</th>
@@ -47,10 +48,10 @@
         </div>
     @endcomponent
 
-    <div class="modal fade location_add_modal" tabindex="-1" role="dialog" 
+    <div class="modal fade location_add_modal" tabindex="-1" role="dialog"
     	aria-labelledby="gridSystemModalLabel">
     </div>
-    <div class="modal fade location_edit_modal" tabindex="-1" role="dialog" 
+    <div class="modal fade location_edit_modal" tabindex="-1" role="dialog"
         aria-labelledby="gridSystemModalLabel">
     </div>
 

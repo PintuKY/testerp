@@ -99,6 +99,8 @@ return [
          */
         'raw'       => ['action'],
 
+        'raw'       => ['action', 'checkbox'],
+
         /*
          * List of columns are forbidden from being searched/sorted.
          */

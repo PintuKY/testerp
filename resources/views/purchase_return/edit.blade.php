@@ -24,7 +24,7 @@
 							<span class="input-group-addon">
 								<i class="fa fa-user"></i>
 							</span>
-							{!! Form::select('contact_id', [ $purchase_return->contact_id => $purchase_return->contact->name], $purchase_return->contact_id, ['class' => 'form-control', 'placeholder' => __('messages.please_select'), 'required', 'id' => 'supplier_id']); !!}
+							{!! Form::select('supplier_id', [ $purchase_return->supplier_id => $purchase_return->supplier->name], $purchase_return->supplier_id, ['class' => 'form-control', 'placeholder' => __('messages.please_select'), 'required', 'id' => 'supplier_id']); !!}
 						</div>
 					</div>
 				</div>

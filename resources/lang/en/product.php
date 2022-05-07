@@ -57,5 +57,6 @@ return [
     'variations' => 'Variations',
     'import_products' => 'Import Products',
     'file_to_import' => 'File To Import',
-    'file_imported_successfully' => 'File imported successfully'
+    'file_imported_successfully' => 'File imported successfully',
+    'price' => 'Price',
  ];

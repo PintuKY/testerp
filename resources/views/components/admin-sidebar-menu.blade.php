@@ -22,11 +22,9 @@
                         </span>
                       </a>
                       <ul class="treeview-menu">
-                          <li><a href="{{route('contacts.index',['type' => 'supplier'])}}"><i class="fa fas fa-star"></i> <span>Suppliers</span></a></li>
-    <li><a href="{{route('contacts.index',['type' => 'customer'])}}"><i class="fa fas fa-star"></i> <span>Customers</span></a></li>
-    <li><a href="{{route('customer-group.index')}}"><i class="fa fas fa-users"></i> <span>Customer Groups</span></a></li>
-    <li><a href="{{route('contacts.import')}}"><i class="fa fas fa-download"></i> <span>Import Contacts</span></a></li>
-
+                        <li><a href="{{route('contacts.index',['type' => 'customer'])}}"><i class="fa fas fa-star"></i> <span>Customers</span></a></li>
+                        <li><a href="{{route('customer-group.index')}}"><i class="fa fas fa-users"></i> <span>Customer Groups</span></a></li>
+                        <li><a href="{{route('contacts.import')}}"><i class="fa fas fa-download"></i> <span>Import Contacts</span></a></li>
                       </ul>
                       </li>
     <li class="treeview" id="tour_step5">
@@ -51,6 +49,20 @@
 
                       </ul>
                       </li>
+                      <li class="treeview" id="tour_step6">
+                        <a href="#">
+                          <i class="fa fas fa-arrow-circle-down"></i> <span>Supplier Purchases</span>
+                          <span class="pull-right-container">
+                            <i class="fa fa-angle-left pull-right"></i>
+                          </span>
+                        </a>
+                        <ul class="treeview-menu">
+                          <li><a href="{{route('supplier.index')}}"><i class="fa fas fa-star"></i> <span>Lists Suppliers</span></a></li>
+                          <li><a href="{{route('supplier-purchases.index')}}"><i class="fa fas fa-list"></i> <span>List Supplier Purchases</span></a></li>
+                          <li><a href="{{route('supplier-purchases.create')}}"><i class="fa fas fa-plus-circle"></i> <span>Add Supplier Purchase</span></a></li>
+                          <li><a href="{{route('purchase-return.index')}}"><i class="fa fas fa-undo"></i> <span>List Purchase Return</span></a></li>
+                        </ul>
+                      </li>
     <li class="treeview" id="tour_step6">
                       <a href="#">
                         <i class="fa fas fa-arrow-circle-down"></i> <span>Purchases</span>
@@ -61,7 +73,7 @@
                       <ul class="treeview-menu">
                           <li><a href="{{route('purchases.index')}}"><i class="fa fas fa-list"></i> <span>List Purchases</span></a></li>
     <li><a href="{{route('purchases.create')}}"><i class="fa fas fa-plus-circle"></i> <span>Add Purchase</span></a></li>
-    <li><a href="https://rcgerp.com/purchase-return"><i class="fa fas fa-undo"></i> <span>List Purchase Return</span></a></li>
+    <!-- <li><a href="https://rcgerp.com/purchase-return"><i class="fa fas fa-undo"></i> <span>List Purchase Return</span></a></li> -->
 
                       </ul>
                       </li>
@@ -87,6 +99,18 @@
     <li><a href="{{route('sales.import')}}"><i class="fa fas fa-file-import"></i> <span>Import Sales</span></a></li>
 
                       </ul>
+                      </li>
+                        <li class="treeview" id="tour_step6">
+                          <a href="#">
+                            <i class="fa fas fa-truck"></i> <span>Drivers</span>
+                            <span class="pull-right-container">
+                              <i class="fa fa-angle-left pull-right"></i>
+                            </span>
+                          </a>
+                          <ul class="treeview-menu">
+                            <li><a href="{{route('driver.index')}}"><i class="fa fas fa-star"></i> <span>Lists Drivers</span></a></li>
+                          </ul>
+                        </li>
                       </li>
     <li class="treeview">
                       <a href="#">
@@ -166,7 +190,9 @@
                       </a>
                       <ul class="treeview-menu">
                           <li><a href="{{route('business.getBusinessSettings')}}" id="tour_step2"><i class="fa fas fa-cogs"></i> <span>Business Settings</span></a></li>
+                          <li><a href="{{route('api-setting.index')}}"><i class="fa fas fa-map-marker"></i> <span>Api Setting</span></a></li>
     <li><a href="{{route('business-location.index')}}"><i class="fa fas fa-map-marker"></i> <span>Business Locations</span></a></li>
+    <li><a href="{{route('kitchen-location.index')}}"><i class="fa fas fa-plus-circle"></i> <span>Kitchen Location</span></a></li>
     <li><a href="{{route('invoice-schemes.index')}}"><i class="fa fas fa-file"></i> <span>Invoice Settings</span></a></li>
     <li><a href="{{route('barcodes.index')}}"><i class="fa fas fa-barcode"></i> <span>Barcode Settings</span></a></li>
     <li><a href="{{route('printers.index')}}"><i class="fa fas fa-share-alt"></i> <span>Receipt Printers</span></a></li>

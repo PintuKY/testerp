@@ -427,10 +427,9 @@ class ProductController extends Controller
         if (!auth()->user()->can('product.create')) {
             abort(403, 'Unauthorized action.');
         }
-
         try {
             $business_id = $request->session()->get('user.business_id');
-            $form_fields = ['name', 'brand_id', 'unit_id', 'category_id', 'tax', 'type', 'barcode_type', 'sku', 'alert_quantity', 'tax_type', 'weight', 'product_custom_field1', 'product_custom_field2', 'product_custom_field3', 'product_custom_field4', 'product_description', 'sub_unit_ids'];
+            $form_fields = ['name', 'brand_id', 'unit_id', 'category_id', 'tax', 'type', 'barcode_type', 'sku', 'alert_quantity', 'tax_type', 'weight', 'product_custom_field1', 'product_custom_field2', 'product_custom_field3', 'product_custom_field4', 'product_description', 'sub_unit_ids','delivery_days'];
 
             $module_form_fields = $this->moduleUtil->getModuleFormField('product_form_fields');
             if (!empty($module_form_fields)) {
@@ -655,7 +654,7 @@ class ProductController extends Controller
 
         try {
             $business_id = $request->session()->get('user.business_id');
-            $product_details = $request->only(['name', 'brand_id', 'unit_id', 'category_id', 'tax', 'barcode_type', 'sku', 'alert_quantity', 'tax_type', 'weight', 'product_custom_field1', 'product_custom_field2', 'product_custom_field3', 'product_custom_field4', 'product_description', 'sub_unit_ids']);
+            $product_details = $request->only(['name', 'brand_id', 'unit_id', 'category_id', 'tax', 'barcode_type', 'sku', 'alert_quantity', 'tax_type', 'weight', 'product_custom_field1', 'product_custom_field2', 'product_custom_field3', 'product_custom_field4', 'product_description', 'sub_unit_ids','delivery_days']);
 
             DB::beginTransaction();
 
@@ -1023,20 +1022,20 @@ class ProductController extends Controller
             $action = $request->input('action');
             if ($request->input('type') == 'single') {
                 $product_deatails = ProductVariation::where('product_id', $product_id)
-                    ->with(['variations', 'variations.media'])
+                    ->with(['variations', 'variations.media','variation_template.values'])
                     ->first();
 
                 return view('product.partials.edit_single_product_form_part')
                             ->with(compact('product_deatails', 'action'));
             } elseif ($request->input('type') == 'variable') {
                 $product_variations = ProductVariation::where('product_id', $product_id)
-                        ->with(['variations', 'variations.media'])
+                        ->with(['variations', 'variations.media','variation_template.values'])
                         ->get();
                 return view('product.partials.variable_product_form_part')
                         ->with(compact('product_variations', 'profit_percent', 'action'));
             } elseif ($request->input('type') == 'combo') {
                 $product_deatails = ProductVariation::where('product_id', $product_id)
-                    ->with(['variations', 'variations.media'])
+                    ->with(['variations', 'variations.media','variation_template.values'])
                     ->first();
                 $combo_variations = $this->productUtil->__getComboProductDetails($product_deatails['variations'][0]->combo_variations, $business_id);
 
@@ -1055,7 +1054,7 @@ class ProductController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function getVariationValueRow(Request $request)
-    {
+    {   
         $business_id = $request->session()->get('user.business_id');
         $business = Business::findorfail($business_id);
         $profit_percent = $business->default_profit_percent;
@@ -1106,7 +1105,7 @@ class ProductController extends Controller
 
         $template = VariationTemplate::where('id', $request->input('template_id'))
                                                 ->with(['values'])
-                                                ->first();
+                                                ->first();                                         
         $row_index = $request->input('row_index');
 
         return view('product.partials.product_variation_template')

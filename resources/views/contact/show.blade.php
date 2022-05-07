@@ -478,14 +478,17 @@ $(document).on('click', '#print_ledger_pdf', function() {
 
 <script type="text/javascript">
     $(document).ready( function(){
+        
         $('#purchase_list_filter_date_range').daterangepicker(
             dateRangeSettings,
             function (start, end) {
+                console.log('demo');
                 $('#purchase_list_filter_date_range').val(start.format(moment_date_format) + ' ~ ' + end.format(moment_date_format));
                purchase_table.ajax.reload();
             }
         );
         $('#purchase_list_filter_date_range').on('cancel.daterangepicker', function(ev, picker) {
+            console.log('demo12');
             $('#purchase_list_filter_date_range').val('');
             purchase_table.ajax.reload();
         });

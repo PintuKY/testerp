@@ -162,6 +162,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
 
     //Print Labels
     Route::get('/labels/show', 'LabelsController@show')->name("labels.show");
+    Route::get('/supplier/purchase/labels/show', 'LabelsController@supplierPurchaseShow')->name("labels.show");
     Route::get('/labels/add-product-row', 'LabelsController@addProductRow');
     Route::get('/labels/preview', 'LabelsController@preview');
 
@@ -217,6 +218,12 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     //Business Locations...
     Route::post('business-location/check-location-id', 'BusinessLocationController@checkLocationId');
     Route::resource('business-location', 'BusinessLocationController');
+
+    //kitchen Locations...
+    Route::resource('kitchen-location', 'KitchenLocationController');
+
+    // APi Setting...
+    Route::resource('api-setting', 'ApiController');
 
     //Invoice layouts..
     Route::resource('invoice-layouts', 'InvoiceLayoutController');
@@ -387,6 +394,40 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::put('update-sales-orders/{id}/status', 'SalesOrderController@postEditSalesOrderStatus');
     Route::get('reports/activity-log', 'ReportController@activityLog');
     Route::get('user-location/{latlng}', 'HomeController@getUserLocation');
+
+    // supplier modules
+    Route::resource('supplier', 'SupplierController');
+    Route::post('/supplier/check-supplier-id', 'SupplierController@checkSupplierId');
+    Route::post('/supplier/check-mobile', 'SupplierController@checkMobile');
+    Route::get('/supplier/update-status/{id}', 'SupplierController@updateStatus');
+    Route::get('/supplier/stock-report/{supplier_id}', 'SupplierController@getSupplierStockReport');
+    Route::get('/suppliers/ledger', 'SupplierController@getLedger');
+    Route::get('/supplier/payments/{supplier_id}', 'SupplierController@getSupplierPayments')->name('supplier.payments');
+
+    // supplier purchases modules
+    Route::post('/supplier-purchases/update-status', 'SupplierPurchaseController@updateStatus');
+    Route::get('/supplier-purchases/get_products', 'SupplierPurchaseController@getProducts');
+    Route::get('/suppliers-purchases/get_suppliers', 'SupplierPurchaseController@getSuppliers');
+    // Route::post('/supplier-purchases/get_purchase_entry_row', 'SupplierPurchaseController@getPurchaseEntryRow');
+    // Route::post('/supplier-purchases/check_ref_number', 'SupplierPurchaseController@checkRefNumber');
+    Route::resource('/supplier-purchases', 'SupplierPurchaseController');
+
+
+    //Supplier Transaction payments...
+    // Route::get('/payments/opening-balance/{contact_id}', 'TransactionPaymentController@getOpeningBalancePayments');
+    Route::get('/supplier/payments/show-child-payments/{payment_id}', 'SupplierTransactionPaymentController@showChildPayments');
+    Route::get('/supplier/payments/view-payment/{payment_id}', 'SupplierTransactionPaymentController@viewPayment');
+    Route::get('/supplier/payments/add_payment/{transaction_id}', 'SupplierTransactionPaymentController@addPayment');
+    Route::get('/supplier/payments/pay-contact-due/{contact_id}', 'SupplierTransactionPaymentController@getPayContactDue');
+    Route::post('/supplier/payments/pay-contact-due', 'SupplierTransactionPaymentController@postPayContactDue');
+    Route::resource('/suppliers/payments', 'SupplierTransactionPaymentController');
+
+    //Driver module...
+    Route::resource('driver', 'DriverController');
+    Route::post('/driver/check-mobile', 'DriverController@checkMobile');
+    Route::post('/driver/check-email', 'DriverController@checkEmail');
+
+
 });
 
 

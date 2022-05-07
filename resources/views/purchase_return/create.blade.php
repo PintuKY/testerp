@@ -22,7 +22,7 @@
 							<span class="input-group-addon">
 								<i class="fa fa-user"></i>
 							</span>
-							{!! Form::select('contact_id', [], null, ['class' => 'form-control', 'placeholder' => __('messages.please_select'), 'required', 'id' => 'supplier_id']); !!}
+							{!! Form::select('supplier_id', [], null, ['class' => 'form-control', 'placeholder' => __('messages.please_select'), 'required', 'id' => 'supplier_id']); !!}
 						</div>
 					</div>
 				</div>

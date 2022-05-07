@@ -38,6 +38,9 @@
 .mb-10 {
   margin-bottom: 10px;
 }
+.ml-15{
+  margin-left: 15px;
+}
 .discount-badge {
   position: absolute;
   top: 6px;
@@ -985,4 +988,9 @@ table.table-text-center td, table.table-text-center th{
 }
 .mb-40 {
     margin-bottom: 40px !important;
+}
+
+.variations_values_componets{
+  display: flex;
+  align-items: flex-end;
 }

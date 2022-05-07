@@ -1,5 +1,6 @@
 @php
     $variation_name = !empty($variation_name) ? $variation_name : null;
+    $variation_price = !empty($variation_price) ? $variation_price : null;
     $variation_value_id = !empty($variation_value_id) ? $variation_value_id : null;
 
     $name = (empty($row_type) || $row_type == 'add') ? 'product_variation' : 'product_variation_edit';
@@ -21,12 +22,15 @@
 
 <tr>
     <td>
-        {!! Form::text($name . '[' . $variation_index . '][variations][' . $value_index . '][sub_sku]', null, ['class' => 'form-control input-sm input_sub_sku']); !!}
+        {!! Form::text($name . '[' . $variation_index . '][variations][' . $value_index . '][sub_sku]', null, ['class' => 'form-control input_sub_sku']); !!}
 
         {!! Form::hidden($name . '[' . $variation_index . '][variations][' . $value_index . '][variation_value_id]', $variation_value_id) !!}
     </td>
     <td>
         {!! Form::text($name . '[' . $variation_index . '][variations][' . $value_index . '][value]', $variation_name, ['class' => 'form-control input-sm variation_value_name', 'required', $readonly]); !!}
+    </td>
+    <td>
+    {!! Form::text($name . '[' . $variation_index . '][variations][' . $value_index . '][price]', $variation_price, ['class' => 'form-control input-sm variation_value_price', 'required']); !!}
     </td>
     <td class="{{$class}}">
         <div class="width-50 f-left">

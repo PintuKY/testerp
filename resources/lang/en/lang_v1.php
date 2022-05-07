@@ -1416,5 +1416,9 @@ return [
     'variation_sku' => 'Variation SKUs',
     'variation_sku_ins' => 'SKUs of each variations separated by "|" if product type is variable',
     'lot_number_instructions' => 'Only if Lot number is enabled. You can enable Lot number from <br><code>Business Settings > Purchases > Enable Lot number</code>',
-    'exp_date_instructions' => 'Only if Product Expiry is enabled. You can enable Product expiry from <br><code>Business Settings > Product > Enable Product Expiry</code>'
+    'exp_date_instructions' => 'Only if Product Expiry is enabled. You can enable Product expiry from <br><code>Business Settings > Product > Enable Product Expiry</code>',
+    'supplier_id' => 'Supplier ID',
+    'you_cannot_delete_this_supplier' => "Cannot delete the supplier - Transactions already exist for the supplier.",
+    'driver_mobile_already_registered' => ':mobile Already registered for :Driver',
+    'driver_email_already_registered' => ':email Already registered for :Driver',
 ];

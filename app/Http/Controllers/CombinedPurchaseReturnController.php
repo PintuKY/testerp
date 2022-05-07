@@ -4,10 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\BusinessLocation;
 use App\Models\PurchaseLine;
+use App\Models\SupplierPurchaseLine;
+use App\Models\SupplierTransaction;
 use App\Models\TaxRate;
 use App\Models\Transaction;
 use App\Utils\ModuleUtil;
 use App\Utils\ProductUtil;
+use App\Utils\SupplierTransactionUtil;
 use App\Utils\TransactionUtil;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -21,7 +24,7 @@ class CombinedPurchaseReturnController extends Controller
      */
     protected $productUtil;
     protected $moduleUtil;
-    protected $transactionUtil;
+    protected $supplierTransactionUtil;
 
     /**
      * Constructor
@@ -29,11 +32,11 @@ class CombinedPurchaseReturnController extends Controller
      * @param ProductUtils $product
      * @return void
      */
-    public function __construct(ProductUtil $productUtil, ModuleUtil $moduleUtil, TransactionUtil $transactionUtil)
+    public function __construct(ProductUtil $productUtil, ModuleUtil $moduleUtil, SupplierTransactionUtil $supplierTransactionUtil)
     {
         $this->productUtil = $productUtil;
         $this->moduleUtil = $moduleUtil;
-        $this->transactionUtil = $transactionUtil;
+        $this->supplierTransactionUtil = $supplierTransactionUtil;
     }
 
     /**
@@ -46,7 +49,7 @@ class CombinedPurchaseReturnController extends Controller
         if (!auth()->user()->can('purchase.update')) {
             abort(403, 'Unauthorized action.');
         }
-
+        
         $business_id = request()->session()->get('user.business_id');
 
         //Check if subscribed or not
@@ -71,7 +74,7 @@ class CombinedPurchaseReturnController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function save(Request $request)
-    {
+    {   
         if (!auth()->user()->can('purchase.update')) {
             abort(403, 'Unauthorized action.');
         }
@@ -80,7 +83,7 @@ class CombinedPurchaseReturnController extends Controller
             DB::beginTransaction();
 
             $input_data = $request->only([ 'location_id', 'transaction_date', 'final_total', 'ref_no',
-                'tax_id', 'tax_amount', 'contact_id']);
+                'tax_id', 'tax_amount', 'supplier_id']);
             $business_id = $request->session()->get('user.business_id');
 
             //Check if subscribed or not
@@ -136,11 +139,11 @@ class CombinedPurchaseReturnController extends Controller
                     );
                 }
 
-                $purchase_return = Transaction::create($input_data);
-                $purchase_return->purchase_lines()->createMany($product_data);
+                $purchase_return = SupplierTransaction::create($input_data);
+                $purchase_return->supplierPurchaseLines()->createMany($product_data);
 
                 //update payment status
-                $this->transactionUtil->updatePaymentStatus($purchase_return->id, $purchase_return->final_total);
+                $this->supplierTransactionUtil->updatePaymentStatus($purchase_return->id, $purchase_return->final_total);
             }
 
             $output = ['success' => 1,
@@ -175,20 +178,21 @@ class CombinedPurchaseReturnController extends Controller
 
         $business_id = request()->session()->get('user.business_id');
 
-        $purchase_return = Transaction::where('business_id', $business_id)
-                                    ->with(['contact'])
+        $purchase_return = SupplierTransaction::where('business_id', $business_id)
+                                    ->with(['supplier'])
                                     ->find($id);
+        
         $location_id = $purchase_return->location_id;
-        $purchase_lines = PurchaseLine::
+        $purchase_lines = SupplierPurchaseLine::
                         join(
                             'products AS p',
-                            'purchase_lines.product_id',
+                            'supplier_purchase_lines.product_id',
                             '=',
                             'p.id'
                         )
                         ->join(
                             'variations AS variations',
-                            'purchase_lines.variation_id',
+                            'supplier_purchase_lines.variation_id',
                             '=',
                             'variations.id'
                         )
@@ -203,7 +207,7 @@ class CombinedPurchaseReturnController extends Controller
                                 ->where('vld.location_id', '=', $location_id);
                         })
                         ->leftjoin('units', 'units.id', '=', 'p.unit_id')
-                        ->where('purchase_lines.transaction_id', $id)
+                        ->where('supplier_purchase_lines.supplier_transactions_id', $id)
                         ->select(
                             DB::raw("IF(pv.is_dummy = 0, CONCAT(p.name,
                                     ' (', pv.name, ':',variations.name, ')'), p.name) AS product_name"),
@@ -215,11 +219,11 @@ class CombinedPurchaseReturnController extends Controller
                             'variations.id as variation_id',
                             'units.short_name as unit',
                             'units.allow_decimal as unit_allow_decimal',
-                            'purchase_lines.purchase_price',
-                            'purchase_lines.id as purchase_line_id',
-                            'purchase_lines.quantity_returned as quantity_returned',
-                            'purchase_lines.lot_number',
-                            'purchase_lines.exp_date'
+                            'supplier_purchase_lines.purchase_price',
+                            'supplier_purchase_lines.id as purchase_line_id',
+                            'supplier_purchase_lines.quantity_returned as quantity_returned',
+                            'supplier_purchase_lines.lot_number',
+                            'supplier_purchase_lines.exp_date'
                         )
                         ->get();
 
@@ -250,12 +254,12 @@ class CombinedPurchaseReturnController extends Controller
         if (!auth()->user()->can('purchase.update')) {
             abort(403, 'Unauthorized action.');
         }
-
+        
         try {
             DB::beginTransaction();
 
             $input_data = $request->only(['transaction_date', 'final_total',
-                'tax_id', 'tax_amount', 'contact_id']);
+                'tax_id', 'tax_amount', 'supplier_id']);
             $business_id = $request->session()->get('user.business_id');
 
             if (!empty($request->input('ref_no'))) {
@@ -279,7 +283,7 @@ class CombinedPurchaseReturnController extends Controller
 
             $products = $request->input('products');
             $purchase_return_id = $request->input('purchase_return_id');
-            $purchase_return = Transaction::where('business_id', $business_id)
+            $purchase_return = SupplierTransaction::where('business_id', $business_id)
                                 ->where('type', 'purchase_return')
                                 ->find($purchase_return_id);
 
@@ -290,7 +294,7 @@ class CombinedPurchaseReturnController extends Controller
                 foreach ($products as $product) {
                     $unit_price = $this->productUtil->num_uf($product['unit_price']);
                     if (!empty($product['purchase_line_id'])) {
-                        $return_line = PurchaseLine::find($product['purchase_line_id']);
+                        $return_line = SupplierPurchaseLine::find($product['purchase_line_id']);
                         $updated_purchase_lines[] = $return_line->id;
 
                         $this->productUtil->decreaseProductQuantity(
@@ -301,7 +305,7 @@ class CombinedPurchaseReturnController extends Controller
                             $return_line->quantity_returned
                         );
                     } else {
-                        $return_line = new PurchaseLine([
+                        $return_line = new SupplierPurchaseLine([
                             'product_id' => $product['product_id'],
                             'variation_id' => $product['variation_id'],
                             'quantity' => 0
@@ -327,7 +331,7 @@ class CombinedPurchaseReturnController extends Controller
                 $purchase_return->update($input_data);
 
                 //If purchase line deleted add return quantity to stock
-                $deleted_purchase_lines = PurchaseLine::where('transaction_id', $purchase_return_id)
+                $deleted_purchase_lines = SupplierPurchaseLine::where('supplier_transactions_id', $purchase_return_id)
                             ->whereNotIn('id', $updated_purchase_lines)
                             ->get();
 
@@ -335,14 +339,14 @@ class CombinedPurchaseReturnController extends Controller
                     $this->productUtil->updateProductQuantity($purchase_return->location_id, $dpl->product_id, $dpl->variation_id, $dpl->quantity_returned, 0, null, false);
                 }
 
-                PurchaseLine::where('transaction_id', $purchase_return_id)
+                SupplierPurchaseLine::where('supplier_transactions_id', $purchase_return_id)
                             ->whereNotIn('id', $updated_purchase_lines)
                             ->delete();
 
-                $purchase_return->purchase_lines()->saveMany($product_data);
+                $purchase_return->supplierPurchaseLines()->saveMany($product_data);
 
                 //update payment status
-                $this->transactionUtil->updatePaymentStatus($purchase_return->id, $purchase_return->final_total);
+                $this->supplierTransactionUtil->updatePaymentStatus($purchase_return->id, $purchase_return->final_total);
             }
 
             $output = ['success' => 1,

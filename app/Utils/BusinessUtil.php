@@ -209,7 +209,8 @@ class BusinessUtil extends Util
             'contacts' => 'CO',
             'purchase_payment' => 'PP',
             'sell_payment' => 'SP',
-            'business_location' => 'BL'
+            'business_location' => 'BL',
+            'supplier' => 'SU',
             ];
 
         //Disable inline tax editing

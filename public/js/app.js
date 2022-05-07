@@ -119,6 +119,122 @@ $(document).ready(function() {
         });
     });
 
+    //start:CRUD for kitchenlocation..
+    var kitchen_location_table = $('#kitchen_location_table').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: '/kitchen-location',
+        columnDefs: [
+            {
+                targets: 2,
+                orderable: false,
+                searchable: false,
+            },
+        ],
+        columns: [
+            { data: 'name', name: 'name' },
+            { data: 'email', name: 'email' },
+            { data: 'landmark', name: 'landmark' },
+            { data: 'country', name: 'country' },
+            { data: 'state', name: 'state' },
+            { data: 'city', name: 'city' },
+            { data: 'zip_code', name: 'zip_code' },
+            { data: 'mobile', name: 'mobile' },
+            { data: 'alternate_number', name: 'alternate_number' },
+            {data:'action', name:'action'},
+        ],
+    });
+
+    $(document).on('submit', 'form#kitchen_location_add_form', function(e) {
+        e.preventDefault();
+        var form = $(this);
+        var data = form.serialize();
+
+        $.ajax({
+            method: 'POST',
+            url: $(this).attr('action'),
+            dataType: 'json',
+            data: data,
+            beforeSend: function(xhr) {
+                __disable_submit_button(form.find('button[type="submit"]'));
+            },
+            success: function(result) {
+                if (result.success == true) {
+                    $('div.kitchen_location_modal').modal('hide');
+                    toastr.success(result.msg);
+                    kitchen_location_table.ajax.reload();
+                } else {
+                    toastr.error(result.msg);
+                }
+            },
+        });
+    });
+
+    $(document).on('click', 'button.edit_kitchen_location_button', function() {
+        $('div.kitchen_location_modal').load($(this).data('href'), function() {
+            $(this).modal('show');
+
+            $('form#kitchen_location_edit_form').submit(function(e) {
+                e.preventDefault();
+                var form = $(this);
+                var data = form.serialize();
+
+                $.ajax({
+                    method: 'POST',
+                    url: $(this).attr('action'),
+                    dataType: 'json',
+                    data: data,
+                    beforeSend: function(xhr) {
+                        __disable_submit_button(form.find('button[type="submit"]'));
+                    },
+                    success: function(result) {
+                        if (result.success == true) {
+                            $('div.kitchen_location_modal').modal('hide');
+                            // $('div.kitchen_location_edit_modal').modal('hide');
+                            toastr.success(result.msg);
+                            kitchen_location_table.ajax.reload();
+                        } else {
+                            toastr.error(result.msg);
+                        }
+                    },
+                });
+            });
+        });
+    });
+
+    $(document).on('click', 'button.delete_kitchen_location_button', function() {
+        swal({
+            title: LANG.sure,
+            text: LANG.confirm_delete_kitchen_location,
+            icon: 'warning',
+            buttons: true,
+            dangerMode: true,
+        }).then(willDelete => {
+            if (willDelete) {
+                var href = $(this).data('href');
+                var data = $(this).serialize();
+
+                $.ajax({
+                    method: 'DELETE',
+                    url: href,
+                    dataType: 'json',
+                    data: data,
+                    success: function(result) {
+                        if (result.success == true) {
+                            toastr.success(result.msg);
+                            kitchen_location_table.ajax.reload();
+                        } else {
+                            toastr.error(result.msg);
+                        }
+                    },
+                });
+            }
+        });
+    });
+    // End kitchenlocation....
+
+
+
     $(document).on('click', 'button.delete_brand_button', function() {
         swal({
             title: LANG.sure,
@@ -148,6 +264,121 @@ $(document).ready(function() {
             }
         });
     });
+
+
+    //Start: CRUD for Api setting
+    //Api setting table
+    $(document).on('submit', 'form#api_add_form', function(e) {
+        e.preventDefault();
+        var form = $(this);
+        var data = form.serialize();
+
+        $.ajax({
+            method: 'POST',
+            url: $(this).attr('action'),
+            dataType: 'json',
+            data: data,
+            beforeSend: function(xhr) {
+                __disable_submit_button(form.find('button[type="submit"]'));
+            },
+            success: function(result) {
+                if (result.success == true) {
+                    $('div.api_modal').modal('hide');
+                    toastr.success(result.msg);
+                    apisetting_table.ajax.reload();
+                } else {
+                    toastr.error(result.msg);
+                }
+            },
+        });
+    });
+
+    var apisetting_table = $('#apisetting_table').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: '/api-setting',
+        columnDefs: [
+            {
+                targets: [0, 6],
+                orderable: false,
+                searchable: false,
+            },
+        ],
+
+        columns: [
+            { data: 'checkbox', name: 'checkbox', orderable: false, searchable: false},
+            { data: 'consumer_key', name: 'consumer_key' },
+            { data: 'consumer_secret', name: 'consumer_secret' },
+            { data: 'url', name: 'url' },
+            { data: 'business_locations_id', name: 'business_locations_id' },
+            { data: 'status', name: 'status' },
+            { data: 'action', name: 'action' },
+        ],
+
+    });
+
+
+    $(document).on('click', 'button.edit_api_button', function() {
+        $('div.api_modal').load($(this).data('href'), function() {
+            $(this).modal('show');
+
+            $('form#api_edit_form').submit(function(e) {
+                e.preventDefault();
+                var form = $(this);
+                var data = form.serialize();
+
+                $.ajax({
+                    method: 'POST',
+                    url: $(this).attr('action'),
+                    dataType: 'json',
+                    data: data,
+                    beforeSend: function(xhr) {
+                        __disable_submit_button(form.find('button[type="submit"]'));
+                    },
+                    success: function(result) {
+                        if (result.success == true) {
+                            $('div.api_modal').modal('hide');
+                            toastr.success(result.msg);
+                            apisetting_table.ajax.reload();
+                        } else {
+                            toastr.error(result.msg);
+                        }
+                    },
+                });
+            });
+        });
+    });
+
+    $(document).on('click', 'button.delete_api_button', function() {
+        swal({
+            title: LANG.sure,
+            text: LANG.confirm_delete_api,
+            icon: 'warning',
+            buttons: true,
+            dangerMode: true,
+        }).then(willDelete => {
+            if (willDelete) {
+                var href = $(this).data('href');
+                var data = $(this).serialize();
+
+                $.ajax({
+                    method: 'DELETE',
+                    url: href,
+                    dataType: 'json',
+                    data: data,
+                    success: function(result) {
+                        if (result.success == true) {
+                            toastr.success(result.msg);
+                            apisetting_table.ajax.reload();
+                        } else {
+                            toastr.error(result.msg);
+                        }
+                    },
+                });
+            }
+        });
+    });
+
 
     //Start: CRUD for tax Rate
 
@@ -427,7 +658,7 @@ $(document).ready(function() {
             { data: 'custom_field10', name: 'custom_field10'},
             ]);
     }
-    
+
     contact_table = $('#contact_table').DataTable({
         processing: true,
         serverSide: true,
@@ -486,10 +717,10 @@ $(document).ready(function() {
             var total_due = 0;
             var total_return_due = 0;
             for (var r in data){
-                total_due += $(data[r].due).data('orig-value') ? 
+                total_due += $(data[r].due).data('orig-value') ?
                 parseFloat($(data[r].due).data('orig-value')) : 0;
 
-                total_return_due += $(data[r].return_due).data('orig-value') ? 
+                total_return_due += $(data[r].return_due).data('orig-value') ?
                 parseFloat($(data[r].return_due).data('orig-value')) : 0;
             }
             $('.footer_contact_due').html(__currency_trans_from_en(total_due));
@@ -508,15 +739,17 @@ $(document).ready(function() {
 
     //On display of add contact modal
     $('.contact_modal').on('shown.bs.modal', function(e) {
-        $('input[type=radio][name="contact_type_radio"]').on('change', function() {
-            if (this.value == 'individual') {
-                $('div.individual').show();
-                $('div.business').hide();
-            } else if (this.value == 'business') {
-                $('div.individual').hide();
-                $('div.business').show();
-            }
-        });
+        
+        // $('input[type=radio][name="contact_type_radio"]').on('change', function() {
+        //     if (this.value == 'individual') {
+        //         $('div.individual').show();
+        //         $('div.business').hide();
+        //     } else if (this.value == 'business') {
+        //         $('div.individual').hide();
+        //         $('div.business').show();
+        //     }
+        // });
+
         if ($('#is_customer_export').is(':checked')) {
             $('div.export_div').show();
         }
@@ -533,20 +766,20 @@ $(document).ready(function() {
         });
         $('div.lead_additional_div').hide();
 
-        if ($('select#contact_type').val() == 'customer') {
-            $('div.supplier_fields').hide();
-            $('div.customer_fields').show();
-        } else if ($('select#contact_type').val() == 'supplier') {
-            $('div.supplier_fields').show();
-            $('div.customer_fields').hide();
-        }  else if ($('select#contact_type').val() == 'lead') {
-            $('div.supplier_fields').hide();
-            $('div.customer_fields').hide();
-            $('div.opening_balance').hide();
-            $('div.pay_term').hide();
-            $('div.lead_additional_div').show();
-            $('div.shipping_addr_div').hide();
-        }
+        // if ($('select#contact_type').val() == 'customer') {
+        //     $('div.supplier_fields').hide();
+        //     $('div.customer_fields').show();
+        // } else if ($('select#contact_type').val() == 'supplier') {
+        //     $('div.supplier_fields').show();
+        //     $('div.customer_fields').hide();
+        // }  else if ($('select#contact_type').val() == 'lead') {
+        //     $('div.supplier_fields').hide();
+        //     $('div.customer_fields').hide();
+        //     $('div.opening_balance').hide();
+        //     $('div.pay_term').hide();
+        //     $('div.lead_additional_div').show();
+        //     $('div.shipping_addr_div').hide();
+        // }
 
         $('select#contact_type').change(function() {
             var t = $(this).val();
@@ -580,6 +813,15 @@ $(document).ready(function() {
             })
             .validate({
                 rules: {
+                    city:{
+                        required: true,
+                    },
+                    state:{
+                        required: true,
+                    },
+                    country:{
+                        required: true,
+                    },
                     contact_id: {
                         remote: {
                             url: '/contacts/check-contacts-id',
@@ -636,7 +878,7 @@ $(document).ready(function() {
                                         $('#mobile').select();
                                     }
                                 });
-                                
+
                             } else {
                                 submitContactForm(form);
                             }
@@ -686,6 +928,284 @@ $(document).ready(function() {
         });
     });
 
+    //Start: CRUD for supplier
+    //supplier table
+    var columns = [
+        { data: 'action', searchable: false, orderable: false },
+        { data: 'supplier_id', name: 'supplier_id' },
+        { data: 'supplier_business_name', name: 'supplier_business_name' },
+        { data: 'name', name: 'name' },
+        { data: 'email', name: 'email' },
+        { data: 'tax_number', name: 'tax_number' },
+        { data: 'pay_term', name: 'pay_term', searchable: false, orderable: false },
+        { data: 'opening_balance', name: 'opening_balance', searchable: false },
+        { data: 'balance', name: 'balance', searchable: false },
+        { data: 'created_at', name: 'supplier.created_at' },
+        { data: 'address', name: 'address', orderable: false },
+        { data: 'mobile', name: 'mobile' },
+        { data: 'due', searchable: false, orderable: false },
+        { data: 'return_due', searchable: false, orderable: false },
+    ];
+
+    supplier_table = $('#supplier_table').DataTable({
+        processing: true,
+        serverSide: true,
+        scrollY:        "75vh",
+        scrollX:        true,
+        scrollCollapse: true,
+        "ajax": {
+            "url": "/supplier",
+            "data": function ( d ) {
+                // d.type = $('#contact_type').val();
+                d = __datatable_ajax_callback(d);
+
+                if ($('#has_sell_due').length > 0 && $('#has_sell_due').is(':checked')) {
+                    d.has_sell_due = true;
+                }
+
+                if ($('#has_sell_return').length > 0 && $('#has_sell_return').is(':checked')) {
+                    d.has_sell_return = true;
+                }
+
+                if ($('#has_purchase_due').length > 0 && $('#has_purchase_due').is(':checked')) {
+                    d.has_purchase_due = true;
+                }
+
+                if ($('#has_purchase_return').length > 0 && $('#has_purchase_return').is(':checked')) {
+                    d.has_purchase_return = true;
+                }
+
+                if ($('#has_advance_balance').length > 0 && $('#has_advance_balance').is(':checked')) {
+                    d.has_advance_balance = true;
+                }
+
+                if ($('#has_opening_balance').length > 0 && $('#has_opening_balance').is(':checked')) {
+                    d.has_opening_balance = true;
+                }
+
+                if ($('#has_no_sell_from').length > 0) {
+                    d.has_no_sell_from = $('#has_no_sell_from').val();
+                }
+
+                if ($('#cg_filter').length > 0) {
+                    d.customer_group_id = $('#cg_filter').val();
+                }
+
+                if ($('#status_filter').length > 0) {
+                    d.supplier_status = $('#status_filter').val();
+                }
+            }
+        },
+        aaSorting: [[1, 'desc']],
+        columns: columns,
+        fnDrawCallback: function(oSettings) {
+            __currency_convert_recursively($('#supplier_table'));
+        },
+        "footerCallback": function ( row, data, start, end, display ) {
+            var total_due = 0;
+            var total_return_due = 0;
+            for (var r in data){
+                total_due += $(data[r].due).data('orig-value') ?
+                parseFloat($(data[r].due).data('orig-value')) : 0;
+
+                total_return_due += $(data[r].return_due).data('orig-value') ?
+                parseFloat($(data[r].return_due).data('orig-value')) : 0;
+            }
+            $('.footer_supplier_due').html(__currency_trans_from_en(total_due));
+            $('.footer_supplier_return_due').html(__currency_trans_from_en(total_return_due));
+        }
+    });
+
+// On display of add supplier modal
+$('.supplier_modal').on('shown.bs.modal', function(e) {
+    $('input[type=radio][name="supplier_type_radio"]').on('change', function() {
+        if (this.value == 'individual') {
+            $('div.individual').show();
+            $('div.business').hide();
+        } else if (this.value == 'business') {
+            $('div.individual').hide();
+            $('div.business').show();
+        }
+    });
+    if ($('#is_customer_export').is(':checked')) {
+        $('div.export_div').show();
+    }
+    $('#is_customer_export').on('change', function () {
+        if ($(this).is(':checked')) {
+            $('div.export_div').show();
+        } else {
+            $('div.export_div').hide();
+        }
+    });
+
+    $('.more_btn').click(function(){
+        $($(this).data('target')).toggleClass('hide');
+    });
+    $('div.lead_additional_div').hide();
+
+    if ($('select#contact_type').val() == 'customer') {
+        $('div.supplier_fields').hide();
+        $('div.customer_fields').show();
+    } else if ($('select#contact_type').val() == 'supplier') {
+        $('div.supplier_fields').show();
+        $('div.customer_fields').hide();
+    }  else if ($('select#contact_type').val() == 'lead') {
+        $('div.supplier_fields').hide();
+        $('div.customer_fields').hide();
+        $('div.opening_balance').hide();
+        $('div.pay_term').hide();
+        $('div.lead_additional_div').show();
+        $('div.shipping_addr_div').hide();
+    }
+
+    // $('select#contact_type').change(function() {
+    //     var t = $(this).val();
+
+    //     if (t == 'supplier') {
+    //         $('div.supplier_fields').fadeIn();
+    //         $('div.customer_fields').fadeOut();
+    //     } else if (t == 'both') {
+    //         $('div.supplier_fields').fadeIn();
+    //         $('div.customer_fields').fadeIn();
+    //     } else if (t == 'customer') {
+    //         $('div.customer_fields').fadeIn();
+    //         $('div.supplier_fields').fadeOut();
+    //     } else if (t == 'lead') {
+    //         $('div.customer_fields').fadeOut();
+    //         $('div.supplier_fields').fadeOut();
+    //         $('div.opening_balance').fadeOut();
+    //         $('div.pay_term').fadeOut();
+    //         $('div.lead_additional_div').fadeIn();
+    //         $('div.shipping_addr_div').hide();
+    //     }
+    // });
+
+    $(".supplier_modal").find('.select2').each( function(){
+        $(this).select2();
+    });
+
+    $('form#supplier_add_form, form#supplier_edit_form')
+        .submit(function(e) {
+            e.preventDefault();
+        })
+        .validate({
+            rules: {
+                supplier_id: {
+                    remote: {
+                        url: '/supplier/check-supplier-id',
+                        type: 'post',
+                        data: {
+                            supplier_id: function() {
+                                return $('#supplier_id').val();
+                            },
+                            hidden_id: function() {
+                                if ($('#hidden_id').length) {
+                                    return $('#hidden_id').val();
+                                } else {
+                                    return '';
+                                }
+                            },
+                        },
+                    },
+                },
+            },
+            messages: {
+                supplier_id: {
+                    remote: LANG.supplier_id_already_exists,
+                },
+            },
+            submitHandler: function(form) {
+                e.preventDefault();
+                $.ajax({
+                    method: 'POST',
+                    url: base_path + '/supplier/check-mobile',
+                    dataType: 'json',
+                    data: {
+                        supplier_id: function() {
+                            return $('#hidden_id').val();
+                        },
+                        mobile_number: function() {
+                            return $('#mobile').val();
+                        },
+                    },
+                    beforeSend: function(xhr) {
+                        __disable_submit_button($(form).find('button[type="submit"]'));
+                    },
+                    success: function(result) {
+                        if (result.is_mobile_exists == true) {
+                            swal({
+                                title: LANG.sure,
+                                text: result.msg,
+                                icon: 'warning',
+                                buttons: true,
+                                dangerMode: true
+                            }).then(willContinue => {
+                                if (willContinue) {
+                                    submitSupplierForm(form);
+                                } else {
+                                    $('#mobile').select();
+                                }
+                            });
+
+                        } else {
+                            submitSupplierForm(form);
+                        }
+                    },
+                });
+            },
+        });
+
+        $('#supplier_add_form').trigger('supplierFormvalidationAdded');
+    });
+
+    $(document).on('click', '.edit_supplier_button', function(e) {
+        e.preventDefault();
+        $('div.supplier_modal').load($(this).attr('href'), function() {
+            $(this).modal('show');
+        });
+    });
+
+    $(document).on('click', '.delete_supplier_button', function(e) {
+        e.preventDefault();
+        swal({
+            title: LANG.sure,
+            text: LANG.confirm_delete_supplier,
+            icon: 'warning',
+            buttons: true,
+            dangerMode: true,
+        }).then(willDelete => {
+            if (willDelete) {
+                var href = $(this).attr('href');
+                var data = $(this).serialize();
+
+                $.ajax({
+                    method: 'DELETE',
+                    url: href,
+                    dataType: 'json',
+                    data: data,
+                    success: function(result) {
+                        if (result.success == true) {
+                            toastr.success(result.msg);
+                            supplier_table.ajax.reload();
+                        } else {
+                            toastr.error(result.msg);
+                        }
+                    },
+                });
+            }
+        });
+    });
+
+    $(document).on('ifChanged', '#has_sell_due, #has_sell_return, \
+    #has_purchase_due, #has_purchase_return, #has_advance_balance, #has_opening_balance', function(){
+        supplier_table.ajax.reload();
+    });
+
+    $(document).on('change', '#has_no_sell_from, #cg_filter, #status_filter', function(){
+        supplier_table.ajax.reload();
+    });
+
+
     //Start: CRUD for product variations
     //Variations table
     var variation_table = $('#variation_table').DataTable({
@@ -702,7 +1222,7 @@ $(document).ready(function() {
     });
     $(document).on('click', '#add_variation_values', function() {
         var html =
-            '<div class="form-group"><div class="col-sm-7 col-sm-offset-3"><input type="text" name="variation_values[]" class="form-control" required></div><div class="col-sm-2"><button type="button" class="btn btn-danger delete_variation_value">-</button></div></div>';
+            '<div class="form-group"><div class="col-sm-5"><input type="text" name="variation_values[]" class="form-control" required></div><div class="col-sm-5"><input type="text" name="variation_values_price[]" class="form-control input-sm dpp input_number valid" required></div><div class="col-sm-2"><button type="button" class="btn btn-danger delete_variation_value">-</button></div></div>';
         $('#variation_values').append(html);
     });
     $(document).on('click', '.delete_variation_value', function() {
@@ -1241,6 +1761,21 @@ $(document).ready(function() {
                 searchable: false,
             },
         ],
+        columns: [
+            { data: 'name', name: 'name' },
+            {data:'location_id', name:'location_id'},
+            { data: 'landmark', name: 'landmark' },
+            {data:'kitchen_location_name', name:'kitchen_name'},
+            { data: 'country', name: 'country' },
+            { data: 'state', name: 'state' },
+            { data: 'city', name: 'city' },
+            { data: 'zip_code', name: 'zip_code' },
+            { data: 'selling_price_group_id', name: 'selling_price_group_id' },
+            { data: 'invoice_scheme_id', name: 'invoice_scheme_id' },
+            { data: 'invoice_layout_id', name: 'invoice_layout_id' },
+            { data: 'sale_invoice_layout_id', name: 'sale_invoice_layout_id' },
+            {data:'action', name:'action'},
+        ],
     });
     $('.location_add_modal, .location_edit_modal').on('shown.bs.modal', function(e) {
         $('form#business_location_add_form')
@@ -1330,6 +1865,38 @@ $(document).ready(function() {
         })
     });
 
+    $(document).on('click', 'button.delete_business_location_button', function() {
+        swal({
+            title: LANG.sure,
+            text: LANG.confirm_delete_business_location,
+            icon: 'warning',
+            buttons: true,
+            dangerMode: true,
+        }).then(willDelete => {
+            if (willDelete) {
+                var href = $(this).data('href');
+                var data = $(this).serialize();
+
+                $.ajax({
+                    method: 'DELETE',
+                    url: href,
+                    dataType: 'json',
+                    data: data,
+                    success: function(result) {
+                        if (result.success == true) {
+                            toastr.success(result.msg);
+                            business_location_table.ajax.reload();
+                        } else {
+                            toastr.error(result.msg);
+                        }
+                    },
+                });
+            }
+        });
+    });
+
+
+
     if ($('#header_text').length) {
         init_tinymce('header_text');
     }
@@ -1405,7 +1972,7 @@ $(document).ready(function() {
     //date filter for expense table
     if ($('#expense_date_range').length == 1) {
         $('#expense_date_range').daterangepicker(
-            dateRangeSettings, 
+            dateRangeSettings,
             function(start, end) {
                 $('#expense_date_range').val(
                     start.format(moment_date_format) + ' ~ ' + end.format(moment_date_format)
@@ -1997,8 +2564,8 @@ $(document).ready(function() {
             scrollTop: label.offset().top - 100
         }, 500);
         label.css('background-color', 'yellow');
-        setTimeout(function(){ 
-            label.css('background-color', ''); 
+        setTimeout(function(){
+            label.css('background-color', '');
         }, 3000);
     });
     $('#add_invoice_layout_form #design').change( function(){
@@ -2171,7 +2738,7 @@ function show_product_type_form() {
         $('#enable_stock').iCheck('uncheck');
         $('input[name="woocommerce_disable_sync"]').iCheck('check');
     }
-    
+
     var action = $('#type').attr('data-action');
     var product_id = $('#type').attr('data-product_id');
     $.ajax({
@@ -2189,21 +2756,21 @@ function show_product_type_form() {
                             if ($(this).closest('tr').find('.row_variation_id')) {
                                 row_variation_id = $(this).closest('tr').find('.row_variation_id').val();
                             }
-                            element.rules( "add", {
-                                remote: {
-                                    url: '/products/check_product_sku',
-                                    type: 'post',
-                                    data: {
-                                        sku: function() {
-                                            return element.val();
-                                        },
-                                        variation_id: row_variation_id
-                                    },
-                                },
-                                messages: {
-                                    remote: LANG.sku_already_exists,
-                                }
-                            });
+                            // element.rules( "add", {
+                            //     remote: {
+                            //         url: '/products/check_product_sku',
+                            //         type: 'post',
+                            //         data: {
+                            //             sku: function() {
+                            //                 return element.val();
+                            //             },
+                            //             variation_id: row_variation_id
+                            //         },
+                            //     },
+                            //     messages: {
+                            //         remote: LANG.sku_already_exists,
+                            //     }
+                            // });
                         });
 
                 toggle_dsp_input();
@@ -2679,7 +3246,31 @@ $(document).on('click', 'a.update_contact_status', function(e){
     });
 });
 
+$(document).on('click', 'a.update_supplier_status', function(e){
+    e.preventDefault();
+    var href = $(this).attr('href');
+    $.ajax({
+        url: href,
+        dataType: 'json',
+        success: function(data) {
+            if (data.success == true) {
+                toastr.success(data.msg);
+                supplier_table.ajax.reload();
+            } else {
+                toastr.error(data.msg);
+            }
+        },
+    });
+});
+
 $(document).on('shown.bs.modal', '.contact_modal', function(e) {
+    $('.dob-date-picker').datepicker({
+      autoclose: true,
+      endDate: 'today',
+    });
+});
+
+$(document).on('shown.bs.modal', '.supplier_modal', function(e) {
     $('.dob-date-picker').datepicker({
       autoclose: true,
       endDate: 'today',
@@ -2743,10 +3334,10 @@ $(document).on('click', '.delete-media', function () {
                     if (result.success == true) {
                         if (thumbnail) {
                             thumbnail.remove();
-                        } 
+                        }
                         if (tr) {
                             tr.remove();
-                        }   
+                        }
                         toastr.success(result.msg);
                     } else {
                         toastr.error(result.msg);
@@ -2814,7 +3405,37 @@ function submitContactForm(form) {
                 } else if(lead_view == 'list_view' && typeof(leads_datatable) != 'undefined') {
                     leads_datatable.ajax.reload();
                 }
-                
+
+            } else {
+                toastr.error(result.msg);
+            }
+        },
+    });
+}
+
+function submitSupplierForm(form) {
+    var data = $(form).serialize();
+    $.ajax({
+        method: 'POST',
+        url: $(form).attr('action'),
+        dataType: 'json',
+        data: data,
+        success: function(result) {
+            if (result.success == true) {
+                $('div.supplier_modal').modal('hide');
+                toastr.success(result.msg);
+
+                if (typeof(supplier_table) != 'undefined') {
+                    supplier_table.ajax.reload();
+                }
+
+                var lead_view = urlSearchParam('lead_view');
+                if (lead_view == 'kanban') {
+                    initializeLeadKanbanBoard();
+                } else if(lead_view == 'list_view' && typeof(leads_datatable) != 'undefined') {
+                    leads_datatable.ajax.reload();
+                }
+
             } else {
                 toastr.error(result.msg);
             }

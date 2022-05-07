@@ -8,22 +8,22 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use App\Models\AccountTransaction;
 
 use App\Utils\ModuleUtil;
-use App\Utils\TransactionUtil;
+use App\Utils\SupplierTransactionUtil;
 
 class DeleteAccountTransaction
 {
-    protected $transactionUtil;
+    protected $supplierTransactionUtil;
     protected $moduleUtil;
 
     /**
      * Constructor
      *
-     * @param TransactionUtil $transactionUtil
+     * @param SupplierTransactionUtil $supplierTransactionUtil
      * @return void
      */
-    public function __construct(TransactionUtil $transactionUtil, ModuleUtil $moduleUtil)
+    public function __construct(SupplierTransactionUtil $supplierTransactionUtil, ModuleUtil $moduleUtil)
     {
-        $this->transactionUtil = $transactionUtil;
+        $this->supplierTransactionUtil = $supplierTransactionUtil;
         $this->moduleUtil = $moduleUtil;
     }
 
@@ -35,9 +35,9 @@ class DeleteAccountTransaction
      */
     public function handle($event)
     {
-        //Add contact advance if exists
+        //Add Supplier advance if exists
         if ($event->transactionPayment->method == 'advance') {
-            $this->transactionUtil->updateContactBalance($event->transactionPayment->payment_for, $event->transactionPayment->amount);
+            $this->supplierTransactionUtil->updateSupplierBalance($event->transactionPayment->payment_for, $event->transactionPayment->amount);
         }
 
         if(!$this->moduleUtil->isModuleEnabled('account')){

@@ -17,7 +17,7 @@ class CreateCashRegistersTable extends Migration
             $table->increments('id');
             $table->integer('business_id')->unsigned();
             $table->foreign('business_id')->references('id')->on('business')->onDelete('cascade');
-            $table->integer('user_id')->nullable()->unsigned();
+            $table->integer('user_id')->unsigned()->nullable();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->enum('status', ['close', 'open'])->default('open');
             $table->dateTime('closed_at')->nullable();

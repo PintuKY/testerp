@@ -39,7 +39,7 @@ class CreateInvoiceLayoutsTable extends Migration
             $table->boolean('show_tax_1')->default(1);
             $table->boolean('show_tax_2')->default(0);
             $table->boolean('show_barcode')->default(0);
-            
+
             $table->string('highlight_color', 10)->nullable();
             $table->text('footer_text')->nullable();
             $table->boolean('is_default')->default(0);

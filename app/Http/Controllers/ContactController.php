@@ -677,9 +677,9 @@ class ContactController extends Controller
         if (is_null($view_type)) {
             $view_type = 'ledger';
         }
-        
+
         $contact_view_tabs = $this->moduleUtil->getModuleData('get_contact_view_tabs');
-       
+
         $activities = Activity::forSubject($contact)
            ->with(['causer', 'subject'])
            ->latest()
@@ -748,7 +748,7 @@ class ContactController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
-    {   
+    {
         if (!auth()->user()->can('supplier.update') && !auth()->user()->can('customer.update') && !auth()->user()->can('customer.view_own') && !auth()->user()->can('supplier.view_own')) {
             abort(403, 'Unauthorized action.');
         }

@@ -11,6 +11,9 @@
 |
 */
 
+use App\Http\Controllers\Api\ManageDataOfProductOrderAndCustomerController;
+use App\Http\Controllers\Api\MasterListController;
+
 include_once('install_r.php');
 
 Route::middleware(['setData'])->group(function () {
@@ -462,3 +465,9 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone'])
     Route::get('/sells/invoice-url/{id}', 'SellPosController@showInvoiceUrl');
     Route::get('/show-notification/{id}', 'HomeController@showNotification');
 });
+
+
+Route::get('sync/orders/{bussiness_location_id}', [ManageDataOfProductOrderAndCustomerController::class,'syncOrderDetails']);
+Route::get('sync/products/{bussiness_location_id}', [ManageDataOfProductOrderAndCustomerController::class,'syncProductDetails']);
+Route::get('sync/customers/{bussiness_location_id}', [ManageDataOfProductOrderAndCustomerController::class,'syncCustomerDetails']);
+Route::get('create/master/list', [MasterListController::class,'createMasterList']);

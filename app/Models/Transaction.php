@@ -47,6 +47,8 @@ class Transaction extends Model
         return $this->hasMany(\App\Models\TransactionSellLine::class);
     }
 
+ 
+
     public function contact()
     {
         return $this->belongsTo(\App\Models\Contact::class, 'contact_id');

@@ -2245,8 +2245,10 @@ class SellController extends Controller
     public function getSellProductRow($product_id, $location_id)
     {
         $output = [];
+        echo "hello1";
         
         try {
+            echo "hello2";
             $row_count = request()->get('product_row');
             $row_count = $row_count + 1;
             $quantity = request()->get('quantity', 1);
@@ -2286,6 +2288,7 @@ class SellController extends Controller
             }
 
         } catch (\Exception $e) {
+            dd($e->getMessage());
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
 
             $output['success'] = false;
@@ -2409,7 +2412,9 @@ class SellController extends Controller
     public function getDetailsFromVariation($product_id, $business_id, $location_id = null, $check_qty = true)
     {   
         $query = Variation::where('product_id','=',$product_id)->with('product','product.brand','product.unit','product_variation','variation_location_details','product_variation.variation_template','product_variation.variation_template.values');
-        
+        echo "<pre>";
+        echo "First query";
+        print_r($query->get()->toArray());
         // Add condition for check of quantity. (if stock is not enabled or qty_available > 0)
         if ($check_qty) {
             $query->whereHas('product', function( $q ){
@@ -2428,6 +2433,10 @@ class SellController extends Controller
             });
         }
         $data = $query->groupBy('variations.product_variation_id')->get();
+        echo "<pre>";
+        echo "data-query";
+        print_r($data->toArray());
+        die();
         return $data;
     }
 

@@ -354,7 +354,7 @@
 			</td>
 		@endif
 		
-		@if($productData->product_variation->variation_template->type == 1)
+		@if(isset($productData->product_variation) && $productData->product_variation->variation_template->type == 1)
 			<td class="text-center v-center">
 				<select class="form-control select_variation_value select2" required name="products[{{$productData->id}}][variation_value_id]">
 					<option value="">Please Select</option>
@@ -367,7 +367,7 @@
 				<input type="text" class="product_selectd_variation_value" value="" readonly required>
 			</td>
 		@endif
-		@if($productData->product_variation->variation_template->type == 2)
+		@if( isset($productData->product_variation) && $productData->product_variation->variation_template->type == 2)
 		<td>
 			@foreach($productData->product_variation->variation_template->values as $key => $product_variation_name_data)
 				<label class="radio-inline">

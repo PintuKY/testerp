@@ -268,7 +268,7 @@ class TransactionUtil extends Util
     {
         $lines_formatted = [];
         $modifiers_array = [];
-        $edit_ids = [0];
+        $edit_ids = [];
         $modifiers_formatted = [];
         $combo_lines = [];
         $products_modified_combo = [];
@@ -283,10 +283,11 @@ class TransactionUtil extends Util
             if (!empty($product['sub_unit_id']) && !empty($product['base_unit_multiplier'])) {
                 $multiplier = $product['base_unit_multiplier'];
             }
-
+            
             //Check if transaction_sell_lines_id is set, used when editing.
             if (!empty($product['transaction_sell_lines_id'])) {
-                $edit_id_temp = $this->editSellLine($product, $location_id, $status_before, $multiplier, $uf_data);
+                
+                $edit_id_temp = $this->editSellLine($product, $variationId ,$location_id, $status_before, $multiplier, $uf_data);
                 $edit_ids = array_merge($edit_ids, $edit_id_temp);
 
                 //update or create modifiers for existing sell lines
@@ -305,7 +306,7 @@ class TransactionUtil extends Util
                                     $modifier_quantity = isset($product['modifier_quantity'][$key]) ? $product['modifier_quantity'][$key] : 1;
                                     $modifiers_formatted[] = new TransactionSellLine([
                                         'product_id' => $product['modifier_set_id'][$key],
-                                        'variation_id' => $value,
+                                        'variation_id' => $variationId,
                                         'quantity' => $modifier_quantity,
                                         'unit_price_before_discount' => $this_price,
                                         'unit_price' => $this_price,
@@ -388,7 +389,7 @@ class TransactionUtil extends Util
                                 $modifier_quantity = isset($product['modifier_quantity'][$key]) ? $product['modifier_quantity'][$key] : 1;
                                 $sell_line_modifiers[] = [
                                     'product_id' => $product['modifier_set_id'][$key],
-                                    'variation_id' => $value,
+                                    'variation_id' => $variationId,
                                     'quantity' => $modifier_quantity,
                                     'unit_price_before_discount' => $this_price,
                                     'unit_price' => $this_price,
@@ -410,6 +411,7 @@ class TransactionUtil extends Util
                 $variation_value_id[] = $product['variation_value_id'];
             }
         }
+        
         if (!is_object($transaction)) {
             $transaction = Transaction::findOrFail($transaction);
         }
@@ -422,7 +424,7 @@ class TransactionUtil extends Util
                     ->select('id')->get()->toArray();
             $combo_delete_lines = TransactionSellLine::whereIn('parent_sell_line_id', $deleted_lines)->where('children_type', 'combo')->select('id')->get()->toArray();
             $deleted_lines = array_merge($deleted_lines, $combo_delete_lines);
-
+            
             $adjust_qty = $status_before == 'draft' ? false : true;
 
             $this->deleteSellLines($deleted_lines, $location_id, $adjust_qty);
@@ -430,23 +432,27 @@ class TransactionUtil extends Util
         
         $combo_lines = [];
         if (!empty($lines_formatted)) {
-           $sell_line_data =  $transaction->sell_lines()->saveMany($lines_formatted);
-            
-           // Add transaction sell lines variants data 
-            foreach($sell_line_data as $sell_line);{
-                $sell_line_id = $sell_line->id;
-            }
+            echo "demo";
+            die();
+            $sell_line_data =  $transaction->sell_lines()->saveMany($lines_formatted);           
+            $sell_line_data_ids = !empty($sell_line_data)  ?  array_column($sell_line_data,"id"): [];
             $variation_value_datas = VariationValueTemplate::whereIn('id',$variation_value_id)->get();
+            $data = [];
+           // Add transaction sell lines variants data 
+            $sell_line_ids = 0;
             foreach($variation_value_datas as $variation_value_data){
-                $transaction_sell_lines_variants = New TransactionSellLinesVariants();
-                $transaction_sell_lines_variants->transaction_sell_lines_id = $sell_line_id;
-                $transaction_sell_lines_variants->variation_templates_id = $variation_value_data->variation_template_id;
-                $transaction_sell_lines_variants->variation_value_templates_id = $variation_value_data->id;
-                $transaction_sell_lines_variants->name = $variation_value_data->name;
-                $transaction_sell_lines_variants->value = $variation_value_data->value;
-                $transaction_sell_lines_variants->save();
+                $data[] = [
+                    'transaction_sell_lines_id' => $sell_line_data_ids[$sell_line_ids],
+                    'variation_templates_id' => $variation_value_data->variation_template_id,
+                    'variation_value_templates_id' => $variation_value_data->id,
+                    'name' => $variation_value_data->name,
+                    'value' => $variation_value_data->value,
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now(),
+                ];
+                $sell_line_ids++; 
             }
-
+            $transaction_sell_lines_variants = TransactionSellLinesVariants::insert($data);
             //Add corresponding modifier sell lines if exists
             if ($this->isModuleEnabled('modifiers')) {
                 foreach ($lines_formatted as $key => $value) {
@@ -483,7 +489,6 @@ class TransactionUtil extends Util
         if ($return_deleted) {
             return $deleted_lines;
         }
-
         return true;
     }
 
@@ -551,19 +556,19 @@ class TransactionUtil extends Util
      *
      * @return boolean
      */
-    public function editSellLine($product, $location_id, $status_before, $multiplier = 1, $uf_data = true)
+    public function editSellLine($product, $variationId ,$location_id, $status_before, $multiplier = 1, $uf_data = true)
     {
         //Get the old order quantity
         $sell_line = TransactionSellLine::with(['product', 'warranties'])
                     ->find($product['transaction_sell_lines_id']);
-
         $old_qty = $sell_line->quantity;
+        
         $edit_ids[] = $product['transaction_sell_lines_id'];
         //Adjust quanity
         if ($status_before != 'draft') {
             $new_qty = $this->num_uf($product['quantity']) * $multiplier;
             $difference = $sell_line->quantity - $new_qty;
-            $this->adjustQuantity($location_id, $product['product_id'], $product['variation_id'], $difference);
+            $this->adjustQuantity($location_id, $product['product_id'], $variationId, $difference);
         }
 
         $uf_unit_price = $uf_data ? $this->num_uf($product['unit_price']) : $product['unit_price'];
@@ -588,7 +593,7 @@ class TransactionUtil extends Util
 
         //Update sell lines.
         $sell_line->fill(['product_id' => $product['product_id'],
-            'variation_id' => $product['variation_id'],
+            'variation_id' => $variationId,
             'quantity' => $uf_data ? $this->num_uf($product['quantity']) * $multiplier : $product['quantity'] * $multiplier,
             'unit_price_before_discount' => $unit_price_before_discount,
             'unit_price' => $unit_price,
@@ -641,11 +646,13 @@ class TransactionUtil extends Util
      * @return boolean
      */
     public function deleteSellLines($transaction_line_ids, $location_id, $adjust_qty = true)
-    {
+    {   
+        
         if (!empty($transaction_line_ids)) {
+            
             $sell_lines = TransactionSellLine::whereIn('id', $transaction_line_ids)
                         ->get();
-
+            dd($sell_lines);
             //Adjust quanity
 
             foreach ($sell_lines as $line) {
@@ -3210,21 +3217,19 @@ class TransactionUtil extends Util
      *
      * @return void
      */
-    public function adjustMappingPurchaseSell(
-        $status_before,
-        $transaction,
-        $business,
-        $deleted_line_ids = []
-    ) {
+    public function adjustMappingPurchaseSell($status_before, $transaction, $business, $deleted_line_ids = []) 
+    {   
+        
         if ($status_before == 'final' && $transaction->status == 'draft') {
             //Get sell lines used for the transaction.
+            dd("demo");
             $sell_purchases = Transaction::join('transaction_sell_lines AS SL', 'transactions.id', '=', 'SL.transaction_id')
                     ->join('transaction_sell_lines_purchase_lines as TSP', 'SL.id', '=', 'TSP.sell_line_id')
                     ->where('transactions.id', $transaction->id)
                     ->select('TSP.purchase_line_id', 'TSP.quantity', 'TSP.id')
                     ->get()
                     ->toArray();
-
+            
             //Included the deleted sell lines
             if (!empty($deleted_line_ids)) {
                 $deleted_sell_purchases = TransactionSellLinesPurchaseLines::whereIn('sell_line_id', $deleted_line_ids)
@@ -3254,6 +3259,7 @@ class TransactionUtil extends Util
             $this->mapPurchaseSell($business, $transaction->sell_lines, 'purchase');
         } elseif ($status_before == 'final' && $transaction->status == 'final') {
             //Handle deleted line
+            
             if (!empty($deleted_line_ids)) {
                 $deleted_sell_purchases = TransactionSellLinesPurchaseLines::whereIn('sell_line_id', $deleted_line_ids)
                             ->select('sell_line_id', 'quantity')

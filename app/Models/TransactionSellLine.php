@@ -39,6 +39,11 @@ class TransactionSellLine extends Model
         return $this->hasMany(\App\Models\TransactionSellLinesPurchaseLines::class, 'sell_line_id');
     }
 
+    public function transactionSellLinesVariants()
+    {
+        return $this->hasMany(TransactionSellLinesVariants::class, 'transaction_sell_lines_id');
+    }
+
     /**
      * Get the quantity column.
      *

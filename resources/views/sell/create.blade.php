@@ -102,13 +102,13 @@
 							<span class="input-group-addon">
 								<i class="fa fa-user"></i>
 							</span>
-							<input type="hidden" id="default_customer_id" value="{{ $walk_in_customer['id']}}" >
-							<input type="hidden" id="default_customer_name" value="{{ $walk_in_customer['name']}}" >
+							{{-- <input type="hidden" id="default_customer_id" value="{{ $walk_in_customer['id'] ?? ''}}" >
+							<input type="hidden" id="default_customer_name" value="{{ $walk_in_customer['name']?? ''}}" >
 							<input type="hidden" id="default_customer_balance" value="{{ $walk_in_customer['balance'] ?? ''}}" >
 							<input type="hidden" id="default_customer_address" value="{{ $walk_in_customer['shipping_address'] ?? ''}}" >
 							@if(!empty($walk_in_customer['price_calculation_type']) && $walk_in_customer['price_calculation_type'] == 'selling_price_group')
 								<input type="hidden" id="default_selling_price_group" value="{{ $walk_in_customer['selling_price_group_id'] ?? ''}}" >
-							@endif
+							@endif --}}
 							{!! Form::select('contact_id', [], null, ['class' => 'form-control mousetrap', 'id' => 'customer_id', 'placeholder' => 'Enter Customer name / phone', 'required']); !!}
 							<span class="input-group-btn">
 								<button type="button" class="btn btn-default bg-white btn-flat add_new_customer" data-name=""><i class="fa fa-plus-circle text-primary fa-lg"></i></button>
@@ -121,30 +121,28 @@
 							@lang('lang_v1.billing_address'):
 						</strong>
 						<div id="billing_address_div">
-							{!! $walk_in_customer['contact_address'] ?? '' !!}
+							
 						</div>
 						<br>
 						<strong>
 							@lang('lang_v1.shipping_address'):
 						</strong>
 						<div id="shipping_address_div">
-							{{$walk_in_customer['supplier_business_name'] ?? ''}},<br>
-							{{$walk_in_customer['name'] ?? ''}},<br>
-							{{$walk_in_customer['shipping_address'] ?? ''}}
+							
 						</div>	
 						<br>
 						<strong>
 							@lang('contact.billing_email'):
 						</strong>
 						<div id="billing_email_div">
-							{!! $walk_in_customer['billing_email'] ?? '' !!}
+							
 						</div>
 						<br>
 						<strong>
 							@lang('contact.billing_phone'):
 						</strong>
 						<div id="billing_phone_div">
-							{!! $walk_in_customer['billing_phone'] ?? '' !!}
+							
 						</div>				
 					</small>
 				</div>
@@ -157,12 +155,12 @@
 					@endphp
 		              {!! Form::label('pay_term_number', __('contact.pay_term') . ':') !!} @show_tooltip(__('tooltip.pay_term'))
 		              <br/>
-		              {!! Form::number('pay_term_number', $walk_in_customer['pay_term_number'], ['class' => 'form-control width-40 pull-left', 'placeholder' => __('contact.pay_term'), 'required' => $is_pay_term_required]); !!}
+		              {!! Form::number('pay_term_number','', ['class' => 'form-control width-40 pull-left', 'placeholder' => __('contact.pay_term'), 'required' => $is_pay_term_required]); !!}
 
 		              {!! Form::select('pay_term_type', 
 		              	['months' => __('lang_v1.months'), 
 		              		'days' => __('lang_v1.days')], 
-		              		$walk_in_customer['pay_term_type'], 
+		              		'', 
 		              	['class' => 'form-control width-60 pull-left','placeholder' => __('messages.please_select'), 'required' => $is_pay_term_required]); !!}
 		            </div>
 		          </div>
@@ -718,7 +716,7 @@
 	        	<div class="col-md-4">
 			        <div class="form-group">
 			            {!! Form::label('shipping_custom_field_1', $label_1 ) !!}
-			            {!! Form::text('shipping_custom_field_1', !empty($walk_in_customer['shipping_custom_field_details']['shipping_custom_field_1']) ? $walk_in_customer['shipping_custom_field_details']['shipping_custom_field_1'] : null, ['class' => 'form-control','placeholder' => $shipping_custom_label_1, 'required' => $is_shipping_custom_field_1_required]); !!}
+			            {!! Form::text('shipping_custom_field_1', null, ['class' => 'form-control','placeholder' => $shipping_custom_label_1, 'required' => $is_shipping_custom_field_1_required]); !!}
 			        </div>
 			    </div>
 	        @endif
@@ -733,7 +731,7 @@
 	        	<div class="col-md-4">
 			        <div class="form-group">
 			            {!! Form::label('shipping_custom_field_2', $label_2 ) !!}
-			            {!! Form::text('shipping_custom_field_2', !empty($walk_in_customer['shipping_custom_field_details']['shipping_custom_field_2']) ? $walk_in_customer['shipping_custom_field_details']['shipping_custom_field_2'] : null, ['class' => 'form-control','placeholder' => $shipping_custom_label_2, 'required' => $is_shipping_custom_field_2_required]); !!}
+			            {!! Form::text('shipping_custom_field_2', null, ['class' => 'form-control','placeholder' => $shipping_custom_label_2, 'required' => $is_shipping_custom_field_2_required]); !!}
 			        </div>
 			    </div>
 	        @endif
@@ -748,7 +746,7 @@
 	        	<div class="col-md-4">
 			        <div class="form-group">
 			            {!! Form::label('shipping_custom_field_3', $label_3 ) !!}
-			            {!! Form::text('shipping_custom_field_3', !empty($walk_in_customer['shipping_custom_field_details']['shipping_custom_field_3']) ? $walk_in_customer['shipping_custom_field_details']['shipping_custom_field_3'] : null, ['class' => 'form-control','placeholder' => $shipping_custom_label_3, 'required' => $is_shipping_custom_field_3_required]); !!}
+			            {!! Form::text('shipping_custom_field_3', null, ['class' => 'form-control','placeholder' => $shipping_custom_label_3, 'required' => $is_shipping_custom_field_3_required]); !!}
 			        </div>
 			    </div>
 	        @endif
@@ -763,7 +761,7 @@
 	        	<div class="col-md-4">
 			        <div class="form-group">
 			            {!! Form::label('shipping_custom_field_4', $label_4 ) !!}
-			            {!! Form::text('shipping_custom_field_4', !empty($walk_in_customer['shipping_custom_field_details']['shipping_custom_field_4']) ? $walk_in_customer['shipping_custom_field_details']['shipping_custom_field_4'] : null, ['class' => 'form-control','placeholder' => $shipping_custom_label_4, 'required' => $is_shipping_custom_field_4_required]); !!}
+			            {!! Form::text('shipping_custom_field_4', null, ['class' => 'form-control','placeholder' => $shipping_custom_label_4, 'required' => $is_shipping_custom_field_4_required]); !!}
 			        </div>
 			    </div>
 	        @endif
@@ -778,7 +776,7 @@
 	        	<div class="col-md-4">
 			        <div class="form-group">
 			            {!! Form::label('shipping_custom_field_5', $label_5 ) !!}
-			            {!! Form::text('shipping_custom_field_5', !empty($walk_in_customer['shipping_custom_field_details']['shipping_custom_field_5']) ? $walk_in_customer['shipping_custom_field_details']['shipping_custom_field_5'] : null, ['class' => 'form-control','placeholder' => $shipping_custom_label_5, 'required' => $is_shipping_custom_field_5_required]); !!}
+			            {!! Form::text('shipping_custom_field_5', null, ['class' => 'form-control','placeholder' => $shipping_custom_label_5, 'required' => $is_shipping_custom_field_5_required]); !!}
 			        </div>
 			    </div>
 	        @endif

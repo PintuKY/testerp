@@ -110,8 +110,8 @@ $(document).ready(function() {
         } else {
             $('input#pay_term_number').val('');
         }
-
         if (data.pay_term_type) {
+            
             $('#add_sell_form select[name="pay_term_type"]').val(data.pay_term_type);
             $('#edit_sell_form select[name="pay_term_type"]').val(data.pay_term_type);
         } else {
@@ -2140,6 +2140,10 @@ function productVariationsPriceCalculation($this) {
     $('#payment_rows_div').find('.sell-product-payment-amount').val(priceTotal);
 }
 
+$(document).on('change', '.product_row .pos_quantity', function(e) {    
+    productVariationsPriceCalculation($(this));    
+});
+
 $(document).on('change', '.product_row .select_variation_value', function(e) {    
     productVariationsPriceCalculation($(this));    
 });
@@ -2156,11 +2160,21 @@ $(document).on('change', '.product_row .product_pos_unit_price', function(e) {
     productVariationsPriceCalculation($(this));    
 });
 
-$(document).on('change', '.product_row .product_row_discount_type', function(e) {    
-    productVariationsPriceCalculation($(this));    
+
+$( window ).on( "load", function() {
+    let priceTotal = 0;
+    $('.product_row').each(function(){
+        let posLineTotal = parseFloat($(this).find('.pos_line_total').val());
+        
+        let productVariationValue = parseFloat($(this).find('.product_variation_value').val());
+        let sum = posLineTotal + productVariationValue;
+        $(this).find('.pos_line_total').val(sum);
+        $(this).find('.pos_line_total_text').html(sum);
+        priceTotal += sum
+    });
+    $('.price_total').html(priceTotal);
+    // console.log(priceTotal);
 });
-
-
 $(document).on('change', '#shipping_charges', function(e) {    
     let shippingCharge = parseInt($(this).val());
     let sellProductPaymentAmount = parseInt($('#payment_rows_div').find('.sell-product-payment-amount').val());
@@ -2897,6 +2911,7 @@ function get_contact_due(id) {
 
 function submitQuickContactForm(form) {
     var data = $(form).serialize();
+    console.log(data);
     $.ajax({
         method: 'POST',
         url: $(form).attr('action'),

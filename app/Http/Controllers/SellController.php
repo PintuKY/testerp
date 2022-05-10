@@ -1191,7 +1191,7 @@ class SellController extends Controller
         }
 
         $walk_in_customer = $this->contactUtil->getWalkInCustomer($business_id);
-        
+       
         $business_details = $this->businessUtil->getDetails($business_id);
         $taxes = TaxRate::forBusinessDropdown($business_id, true, true);
 
@@ -1478,7 +1478,6 @@ class SellController extends Controller
                                 ->where('vld.location_id', '=', $location_id);
                         })
                         ->leftjoin('units', 'units.id', '=', 'p.unit_id')
-                        ->where('transaction_sell_lines.transaction_id', $id)
                         ->with(['warranties', 'so_line'])
                         ->select(
                             DB::raw("IF(pv.is_dummy = 0, CONCAT(p.name, ' (', p.name, ':',variations.name, ')'), p.name) AS product_name"),
@@ -1509,6 +1508,8 @@ class SellController extends Controller
                             'transaction_sell_lines.line_discount_type',
                             'transaction_sell_lines.line_discount_amount',
                             'transaction_sell_lines.res_service_staff_id',
+                            'transaction_sell_lines.number_of_days',
+                            'transaction_sell_lines.delivery_time',
                             'units.id as unit_id',
                             'transaction_sell_lines.sub_unit_id',
                             'transaction_sell_lines.so_line_id',
@@ -1519,9 +1520,6 @@ class SellController extends Controller
                             DB::raw('vld.qty_available + transaction_sell_lines.quantity AS qty_available')
                         )
                         ->get();
-                        echo "<pre>";
-                        print_r($sell_details->toArray());
-                        die();
         if (!empty($sell_details)) {
             foreach ($sell_details as $key => $value) {
                 //If modifier or combo sell line then unset
@@ -1533,7 +1531,8 @@ class SellController extends Controller
                         $sell_details[$key]->qty_available = $actual_qty_avlbl;
                         $value->qty_available = $actual_qty_avlbl;
                     }
-
+                    $number_of_days = $value->number_of_days;
+                    $delivery_time = $value->delivery_time;
                     $sell_details[$key]->formatted_qty_available = $this->productUtil->num_f($value->qty_available, false, null, true);
                     $lot_numbers = [];
                     if (request()->session()->get('business.enable_lot_number') == 1) {
@@ -1710,7 +1709,7 @@ class SellController extends Controller
         $customer_due = $customer_due != 0 ? $this->transactionUtil->num_f($customer_due, true) : '';
 
         return view('sell.edit')
-            ->with(compact('business_details', 'taxes', 'sell_details', 'transaction', 'commission_agent', 'types', 'customer_groups', 'pos_settings', 'waiters', 'invoice_schemes', 'default_invoice_schemes', 'redeem_details', 'edit_discount', 'edit_price', 'shipping_statuses', 'warranties', 'statuses', 'sales_orders', 'payment_types', 'accounts', 'payment_lines', 'change_return', 'is_order_request_enabled', 'customer_due'));
+            ->with(compact('business_details','number_of_days','delivery_time' ,'taxes', 'sell_details', 'transaction', 'commission_agent', 'types', 'customer_groups', 'pos_settings', 'waiters', 'invoice_schemes', 'default_invoice_schemes', 'redeem_details', 'edit_discount', 'edit_price', 'shipping_statuses', 'warranties', 'statuses', 'sales_orders', 'payment_types', 'accounts', 'payment_lines', 'change_return', 'is_order_request_enabled', 'customer_due'));
     }
 
     /**

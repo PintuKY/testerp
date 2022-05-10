@@ -1,5 +1,8 @@
 <?php
 
+use App\Models\ApiSetting;
+use Automattic\WooCommerce\Client;
+
 /**
  * boots pos.
  */
@@ -62,7 +65,7 @@ if (! function_exists('humanFilesize')) {
             $size = $size / $step;
             $i++;
         }
-        
+
         return round($size, $precision).$units[$i];
     }
 }
@@ -132,14 +135,14 @@ if (! function_exists('str_ordinal')) {
     function str_ordinal($value, $superscript = false)
     {
         $number = abs($value);
- 
+
         $indicators = ['th','st','nd','rd','th','th','th','th','th','th'];
- 
+
         $suffix = $superscript ? '<sup>' . $indicators[$number % 10] . '</sup>' : $indicators[$number % 10];
         if ($number % 100 >= 11 && $number % 100 <= 13) {
             $suffix = $superscript ? '<sup>th</sup>' : 'th';
         }
- 
+
         return number_format($number) . $suffix;
     }
 }
@@ -188,3 +191,86 @@ function country(){
     ];
     return $data;
 }
+if (! function_exists('getDayNumberByDayName')) {
+
+    function getDayNumberByDayName($day)
+    {
+        $dayNumber = 0;
+        switch ($day) {
+            case ('Mon'):
+                $dayNumber = 1;
+                break;
+            case ('Monday'):
+                $dayNumber = 1;
+                break;
+            case ('Tues'):
+                $dayNumber = 2;
+                break;
+            case ('Tuesday'):
+                $dayNumber = 2;
+                break;
+            case ('Wed'):
+                $dayNumber = 3;
+                break;
+            case ('Wednesday'):
+                $dayNumber = 3;
+                break;
+            case ('Thurs'):
+                $dayNumber = 4;
+                break;
+            case ('Thursday'):
+                $dayNumber = 4;
+                break;
+            case ('Fri'):
+                $dayNumber = 5;
+                break;
+            case ('Friday'):
+                $dayNumber = 5;
+                break;
+            case ('Sat'):
+                $dayNumber = 6;
+                break;
+            case ('Saturday'):
+                $dayNumber = 6;
+                break;
+            case ('Sun'):
+                $dayNumber = 7;
+                break;
+            case ('Sunday'):
+                $dayNumber = 7;
+                break;
+            default:
+                $dayNumber = 0;
+        }
+        return $dayNumber;
+    }
+
+
+}
+
+
+// api configuration for getting data from api
+if (! function_exists('getConfiguration')) {
+
+    function getConfiguration($bussiness_location_id)
+    {
+        $apiSettings = ApiSetting::where('id', $bussiness_location_id)->first();
+
+        return new Client(
+            $apiSettings->url,
+            $apiSettings->consumer_key,
+            $apiSettings->consumer_secret
+        );
+    }
+}
+
+// for getting data from api
+if (! function_exists('getData')) {
+    function getData($configuration, $endPoint)
+    {
+        return $configuration->get($endPoint, $parameters = []);
+    }
+}
+
+
+

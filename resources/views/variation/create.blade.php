@@ -20,7 +20,7 @@
         <label for="name" class="col-sm-3 control-label">Variation Type:*</label>
 
         <div class="col-sm-9">
-          <select class="form-control select2" style="width: 100%;" id="role" name="role">
+          <select class="form-control select2" style="width: 100%;" id="type" name="type">
             <option selected></option>
             @foreach(variationTypes() as $key => $variationTypes)
             <option value="{{$key}}">{{$variationTypes}}</option>

@@ -21,7 +21,6 @@ class ContactUtil extends Util
     {
         $contact = Contact::whereIn('type', ['customer', 'both'])
                     ->where('contacts.business_id', $business_id)
-                    ->where('contacts.is_default', 1)
                     ->leftjoin('customer_groups as cg', 'cg.id', '=', 'contacts.customer_group_id')
                     ->select('contacts.*',
                         'cg.amount as discount_percent',
@@ -29,7 +28,7 @@ class ContactUtil extends Util
                         'cg.selling_price_group_id'
                     )
                     ->first();
-
+        
         if (!empty($contact)) {
             $contact->contact_address = $contact->contact_address;
             $output = $array ? $contact->toArray() : $contact;
@@ -94,6 +93,9 @@ class ContactUtil extends Util
     public function createNewContact($input)
     {
         //Check Contact id
+        echo "<pre>";
+        print_r($input);
+        die();
         $count = 0;
         if (!empty($input['contact_id'])) {
             $count = Contact::where('business_id', $input['business_id'])

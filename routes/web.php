@@ -130,6 +130,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/sells/convert-to-draft/{id}', 'SellPosController@convertToInvoice');
     Route::get('/sells/convert-to-proforma/{id}', 'SellPosController@convertToProforma');
     Route::get('/sells/quotations', 'SellController@getQuotations')->name('sells.quotations');
+    Route::get('sells/products/list', 'SellController@getProducts');
     Route::get('/sells/draft-dt', 'SellController@getDraftDatables');
 
     Route::resource('sells', 'SellController')->except(['show']);
@@ -147,6 +148,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/sells/pos/get-product-suggestion', 'SellPosController@getProductSuggestion');
     Route::get('/sells/pos/get-featured-products/{location_id}', 'SellPosController@getFeaturedProducts');
     Route::get('/reset-mapping', 'SellController@resetMapping');
+    Route::get('/sells/get_product_row/{product_id}/{location_id}', 'SellController@getSellProductRow');
 
     Route::resource('pos', 'SellPosController');
 

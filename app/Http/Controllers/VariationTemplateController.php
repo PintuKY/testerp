@@ -73,7 +73,7 @@ class VariationTemplateController extends Controller
     {   
         
         try {
-            $input = $request->only(['name']);
+            $input = $request->only(['name','type']);
             $input['business_id'] = $request->session()->get('user.business_id');
             $variation = VariationTemplate::create($input);
 
@@ -144,7 +144,7 @@ class VariationTemplateController extends Controller
     {
         if (request()->ajax()) {
             try {
-                $input = $request->only(['name']);
+                $input = $request->only(['name','type']);
                 $business_id = $request->session()->get('user.business_id');
 
                 $variation = VariationTemplate::where('business_id', $business_id)->findOrFail($id);

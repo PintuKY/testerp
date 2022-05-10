@@ -749,7 +749,6 @@ $(document).ready(function() {
         //         $('div.business').show();
         //     }
         // });
-
         if ($('#is_customer_export').is(':checked')) {
             $('div.export_div').show();
         }

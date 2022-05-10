@@ -2,7 +2,7 @@
 
 namespace App\Events;
 
-use App\Models\TransactionPayment;
+use App\Models\SupplierTransactionPayments;
 use Illuminate\Queue\SerializesModels;
 
 class TransactionPaymentAdded
@@ -19,8 +19,8 @@ class TransactionPaymentAdded
      * @param  array $formInput = []
      * @return void
      */
-    public function __construct(TransactionPayment $transactionPayment, $formInput = [])
-    {
+    public function __construct(SupplierTransactionPayments $transactionPayment, $formInput = [])
+    {   
         $this->transactionPayment = $transactionPayment;
         $this->formInput = $formInput;
     }

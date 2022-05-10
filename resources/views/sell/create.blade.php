@@ -63,9 +63,6 @@
 		<div class="col-md-12 col-sm-12">
 			@component('components.widget', ['class' => 'box-solid'])
 				{!! Form::hidden('location_id', !empty($default_location) ? $default_location->id : null , ['id' => 'location_id', 'data-receipt_printer_type' => !empty($default_location->receipt_printer_type) ? $default_location->receipt_printer_type : 'browser', 'data-default_payment_accounts' => !empty($default_location) ? $default_location->default_payment_accounts : '']); !!}
-
-				
-
 				@if(in_array('types_of_service', $enabled_modules) && !empty($types_of_service))
 					<div class="col-md-4 col-sm-6">
 						<div class="form-group">
@@ -105,18 +102,14 @@
 							<span class="input-group-addon">
 								<i class="fa fa-user"></i>
 							</span>
-							<input type="hidden" id="default_customer_id" 
-							value="{{ $walk_in_customer['id']}}" >
-							<input type="hidden" id="default_customer_name" 
-							value="{{ $walk_in_customer['name']}}" >
+							{{-- <input type="hidden" id="default_customer_id" value="{{ $walk_in_customer['id'] ?? ''}}" >
+							<input type="hidden" id="default_customer_name" value="{{ $walk_in_customer['name']?? ''}}" >
 							<input type="hidden" id="default_customer_balance" value="{{ $walk_in_customer['balance'] ?? ''}}" >
 							<input type="hidden" id="default_customer_address" value="{{ $walk_in_customer['shipping_address'] ?? ''}}" >
 							@if(!empty($walk_in_customer['price_calculation_type']) && $walk_in_customer['price_calculation_type'] == 'selling_price_group')
-								<input type="hidden" id="default_selling_price_group" 
-							value="{{ $walk_in_customer['selling_price_group_id'] ?? ''}}" >
-							@endif
-							{!! Form::select('contact_id', 
-								[], null, ['class' => 'form-control mousetrap', 'id' => 'customer_id', 'placeholder' => 'Enter Customer name / phone', 'required']); !!}
+								<input type="hidden" id="default_selling_price_group" value="{{ $walk_in_customer['selling_price_group_id'] ?? ''}}" >
+							@endif --}}
+							{!! Form::select('contact_id', [], null, ['class' => 'form-control mousetrap', 'id' => 'customer_id', 'placeholder' => 'Enter Customer name / phone', 'required']); !!}
 							<span class="input-group-btn">
 								<button type="button" class="btn btn-default bg-white btn-flat add_new_customer" data-name=""><i class="fa fa-plus-circle text-primary fa-lg"></i></button>
 							</span>
@@ -124,21 +117,33 @@
 						<small class="text-danger hide contact_due_text"><strong>@lang('account.customer_due'):</strong> <span></span></small>
 					</div>
 					<small>
-					<strong>
-						@lang('lang_v1.billing_address'):
-					</strong>
-					<div id="billing_address_div">
-						{!! $walk_in_customer['contact_address'] ?? '' !!}
-					</div>
-					<br>
-					<strong>
-						@lang('lang_v1.shipping_address'):
-					</strong>
-					<div id="shipping_address_div">
-						{{$walk_in_customer['supplier_business_name'] ?? ''}},<br>
-						{{$walk_in_customer['name'] ?? ''}},<br>
-						{{$walk_in_customer['shipping_address'] ?? ''}}
-					</div>					
+						<strong>
+							@lang('lang_v1.billing_address'):
+						</strong>
+						<div id="billing_address_div">
+							
+						</div>
+						<br>
+						<strong>
+							@lang('lang_v1.shipping_address'):
+						</strong>
+						<div id="shipping_address_div">
+							
+						</div>	
+						<br>
+						<strong>
+							@lang('contact.billing_email'):
+						</strong>
+						<div id="billing_email_div">
+							
+						</div>
+						<br>
+						<strong>
+							@lang('contact.billing_phone'):
+						</strong>
+						<div id="billing_phone_div">
+							
+						</div>				
 					</small>
 				</div>
 
@@ -150,12 +155,12 @@
 					@endphp
 		              {!! Form::label('pay_term_number', __('contact.pay_term') . ':') !!} @show_tooltip(__('tooltip.pay_term'))
 		              <br/>
-		              {!! Form::number('pay_term_number', $walk_in_customer['pay_term_number'], ['class' => 'form-control width-40 pull-left', 'placeholder' => __('contact.pay_term'), 'required' => $is_pay_term_required]); !!}
+		              {!! Form::number('pay_term_number','', ['class' => 'form-control width-40 pull-left', 'placeholder' => __('contact.pay_term'), 'required' => $is_pay_term_required]); !!}
 
 		              {!! Form::select('pay_term_type', 
 		              	['months' => __('lang_v1.months'), 
 		              		'days' => __('lang_v1.days')], 
-		              		$walk_in_customer['pay_term_type'], 
+		              		'', 
 		              	['class' => 'form-control width-60 pull-left','placeholder' => __('messages.please_select'), 'required' => $is_pay_term_required]); !!}
 		            </div>
 		          </div>
@@ -353,8 +358,7 @@
 					<input type="hidden" name="sell_price_tax" id="sell_price_tax" value="{{$business_details->sell_price_tax}}">
 
 					<!-- Keeps count of product rows -->
-					<input type="hidden" id="product_row_count" 
-						value="0">
+					<input type="hidden" id="product_row_count" value="0">
 					@php
 						$hide_tax = '';
 						if( session()->get('business.enable_inline_tax') == 0){
@@ -392,18 +396,26 @@
 									<th>@lang('lang_v1.warranty')</th>
 								@endif
 								<th class="text-center">
+									@lang('product.variation_name')
+								</th>
+								<th class="text-center">
+									@lang('product.variation_values')
+								</th>
+								<th class="text-center">
 									@lang('sale.subtotal')
 								</th>
 								<th class="text-center"><i class="fas fa-times" aria-hidden="true"></i></th>
 							</tr>
 						</thead>
-						<tbody></tbody>
+						<tbody>
+							
+						</tbody>
 					</table>
 					</div>
 					<div class="table-responsive">
 					<table class="table table-condensed table-bordered table-striped">
 						<tr>
-							<td>
+							<td class="price_cal">
 								<div class="pull-right">
 								<b>@lang('sale.item'):</b> 
 								<span class="total_quantity">0</span>
@@ -417,12 +429,41 @@
 					</div>
 				</div>
 			@endcomponent
-
+			<div class="box box-solid">
+				<div class="box-body">
+					<div class="col-md-6">
+						<div class="form-group">
+							<label for="brand_id">Number of Days:*</label>
+							<div class="form-group">
+							  
+							  <select class="form-control select2" id="delivery_days" name="number_of_days" required>
+								<option selected>please select</option>
+								@foreach(deliveryDays() as $key => $deliveryDays)
+								  <option value="{{$key}}">{{ $deliveryDays }}</option>
+								@endforeach
+							  </select>
+				
+							</div>
+						</div>
+					</div>
+					<div class="@if(!empty($commission_agent)) col-sm-6 @else col-sm-6 @endif">
+						<div class="form-group">
+							<label for="delivery_time">Delivery Time:*</label>
+							<div class="input-group">
+								<span class="input-group-addon">
+									<i class="fa fa-calendar"></i>
+								</span>
+								{!! Form::text('delivery_time','', ['class' => 'form-control timepicker', 'required']); !!}
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
 
 			<div class="box box-solid">
                 
 				<div class="box-body">
-					<div class="col-md-4  ">
+					<div class="col-md-4">
 								<div class="form-group">
 									<label for="discount_type">Delivery Days:*</label>
 									<br/>
@@ -454,43 +495,9 @@
 						<input class="input-icheck" id="has_purchase_due7" name="has_purchase_due7" type="checkbox" value="1" style="position: absolute; opacity: 0;"></div> <strong>Saturday</strong>	
 						<br/>
 						<div class="icheckbox_square-blue" style="position: relative;">
-	
-							<input class="input-icheck" id="has_purchase_due" name="has_purchase_due" type="checkbox" value="1" style="position: absolute; opacity: 0;"></div> <strong>Sunday</strong>		
-
-											
-
-								</div>
+							<input class="input-icheck" id="has_purchase_due" name="has_purchase_due" type="checkbox" value="1" style="position: absolute; opacity: 0;"></div> <strong>Sunday</strong>
+						</div>
 							</div>
-
-							<div class="col-md-4 ">
-								<div class="form-group">
-									<label for="discount_amount">Delivery Time:*</label>
-									<div class="input-group">
-										<span class="input-group-addon">
-											<i class="fa fa-info"></i>
-										</span>
-										<select class="form-control select2" required id="status" name="status"><option selected="selected" value="">Please Select</option><option value="final">Lunch</option><option value="draft">Dinner</option></select>
-									</div>
-								</div>
-							</div>
-
-
-											<div class="col-md-4 ">
-								<div class="form-group">
-									<label for="discount_amount">Discount Amount:*</label>
-									<div class="input-group">
-										<span class="input-group-addon">
-											<i class="fa fa-info"></i>
-										</span>
-										<input class="form-control input_number" data-max-discount="" data-max-discount-error_msg="You can give max % discount per sale" name="discount_amount" type="text" value="0.00" id="discount_amount">
-									</div>
-								</div>
-							</div>
-							<div class="col-md-4 "><br>
-								<b>Discount Amount:</b>(-) 
-								<span class="display_currency" id="total_discount">0.00</span>
-							</div>
-							<div class="clearfix"></div>
 							<div class="col-md-12 well well-sm bg-light-gray  hide ">
 								<input type="hidden" name="rp_redeemed" id="rp_redeemed" value="0">
 								<input type="hidden" name="rp_redeemed_amount" id="rp_redeemed_amount" value="0">
@@ -543,11 +550,6 @@
 				</div>
 				<!-- /.box-body -->
 			</div>
-
-
-			
-
-
 
 			@component('components.widget', ['class' => 'box-solid'])
 				<div class="col-md-4  @if($sale_type == 'sales_order') hide @endif">
@@ -714,7 +716,7 @@
 	        	<div class="col-md-4">
 			        <div class="form-group">
 			            {!! Form::label('shipping_custom_field_1', $label_1 ) !!}
-			            {!! Form::text('shipping_custom_field_1', !empty($walk_in_customer['shipping_custom_field_details']['shipping_custom_field_1']) ? $walk_in_customer['shipping_custom_field_details']['shipping_custom_field_1'] : null, ['class' => 'form-control','placeholder' => $shipping_custom_label_1, 'required' => $is_shipping_custom_field_1_required]); !!}
+			            {!! Form::text('shipping_custom_field_1', null, ['class' => 'form-control','placeholder' => $shipping_custom_label_1, 'required' => $is_shipping_custom_field_1_required]); !!}
 			        </div>
 			    </div>
 	        @endif
@@ -729,7 +731,7 @@
 	        	<div class="col-md-4">
 			        <div class="form-group">
 			            {!! Form::label('shipping_custom_field_2', $label_2 ) !!}
-			            {!! Form::text('shipping_custom_field_2', !empty($walk_in_customer['shipping_custom_field_details']['shipping_custom_field_2']) ? $walk_in_customer['shipping_custom_field_details']['shipping_custom_field_2'] : null, ['class' => 'form-control','placeholder' => $shipping_custom_label_2, 'required' => $is_shipping_custom_field_2_required]); !!}
+			            {!! Form::text('shipping_custom_field_2', null, ['class' => 'form-control','placeholder' => $shipping_custom_label_2, 'required' => $is_shipping_custom_field_2_required]); !!}
 			        </div>
 			    </div>
 	        @endif
@@ -744,7 +746,7 @@
 	        	<div class="col-md-4">
 			        <div class="form-group">
 			            {!! Form::label('shipping_custom_field_3', $label_3 ) !!}
-			            {!! Form::text('shipping_custom_field_3', !empty($walk_in_customer['shipping_custom_field_details']['shipping_custom_field_3']) ? $walk_in_customer['shipping_custom_field_details']['shipping_custom_field_3'] : null, ['class' => 'form-control','placeholder' => $shipping_custom_label_3, 'required' => $is_shipping_custom_field_3_required]); !!}
+			            {!! Form::text('shipping_custom_field_3', null, ['class' => 'form-control','placeholder' => $shipping_custom_label_3, 'required' => $is_shipping_custom_field_3_required]); !!}
 			        </div>
 			    </div>
 	        @endif
@@ -759,7 +761,7 @@
 	        	<div class="col-md-4">
 			        <div class="form-group">
 			            {!! Form::label('shipping_custom_field_4', $label_4 ) !!}
-			            {!! Form::text('shipping_custom_field_4', !empty($walk_in_customer['shipping_custom_field_details']['shipping_custom_field_4']) ? $walk_in_customer['shipping_custom_field_details']['shipping_custom_field_4'] : null, ['class' => 'form-control','placeholder' => $shipping_custom_label_4, 'required' => $is_shipping_custom_field_4_required]); !!}
+			            {!! Form::text('shipping_custom_field_4', null, ['class' => 'form-control','placeholder' => $shipping_custom_label_4, 'required' => $is_shipping_custom_field_4_required]); !!}
 			        </div>
 			    </div>
 	        @endif
@@ -774,7 +776,7 @@
 	        	<div class="col-md-4">
 			        <div class="form-group">
 			            {!! Form::label('shipping_custom_field_5', $label_5 ) !!}
-			            {!! Form::text('shipping_custom_field_5', !empty($walk_in_customer['shipping_custom_field_details']['shipping_custom_field_5']) ? $walk_in_customer['shipping_custom_field_details']['shipping_custom_field_5'] : null, ['class' => 'form-control','placeholder' => $shipping_custom_label_5, 'required' => $is_shipping_custom_field_5_required]); !!}
+			            {!! Form::text('shipping_custom_field_5', null, ['class' => 'form-control','placeholder' => $shipping_custom_label_5, 'required' => $is_shipping_custom_field_5_required]); !!}
 			        </div>
 			    </div>
 	        @endif
@@ -918,7 +920,7 @@
 							{!! Form::hidden('advance_balance', null, ['id' => 'advance_balance', 'data-error-msg' => __('lang_v1.required_advance_balance_not_available')]); !!}
 						</div>
 					</div>
-					@include('sale_pos.partials.payment_row_form', ['row_index' => 0, 'show_date' => true])
+					@include('sell.partials.payment_row_form', ['row_index' => 0, 'show_date' => true])
 					<hr>
 					<div class="row">
 						<div class="col-sm-12">
@@ -974,6 +976,10 @@
     	<script src="{{ asset('js/restaurant.js?v=' . $asset_v) }}"></script>
     @endif
     <script type="text/javascript">
+
+		$('.timepicker').datetimepicker({
+            format: 'hh:mm a'
+        });
     	$(document).ready( function() {
     		$('#status').change(function(){
     			if ($(this).val() == 'final') {

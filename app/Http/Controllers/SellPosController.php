@@ -295,11 +295,12 @@ class SellPosController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
-    {
+    {    
+        
         if (!auth()->user()->can('sell.create') && !auth()->user()->can('direct_sell.access') && !auth()->user()->can('so.create') ) {
             abort(403, 'Unauthorized action.');
         }
-
+        
         $is_direct_sale = false;
         if (!empty($request->input('is_direct_sale'))) {
             $is_direct_sale = true;
@@ -323,7 +324,7 @@ class SellPosController extends Controller
                 $input['status'] = 'draft';
                 $input['sub_status'] = 'proforma';
             }
-
+            
             //Check Customer credit limit
             $is_credit_limit_exeeded = $this->transactionUtil->isCustomerCreditLimitExeeded($input);
 
@@ -465,9 +466,9 @@ class SellPosController extends Controller
                 //Upload Shipping documents
                 Media::uploadMedia($business_id, $transaction, $request, 'shipping_documents', false, 'shipping_document');
 
-
-                $this->transactionUtil->createOrUpdateSellLines($transaction, $input['products'], $input['location_id']);
-
+                
+               $this->transactionUtil->createOrUpdateSellLines($transaction, $input['products'], $input['location_id'],$input['number_of_days'],$input['delivery_time']);
+                
                 if (!$is_direct_sale) {
                     //Add change return
                     $change_return = $this->dummyPaymentLine;
@@ -1024,7 +1025,7 @@ class SellPosController extends Controller
         if (!auth()->user()->can('sell.update') && !auth()->user()->can('direct_sell.access') && !auth()->user()->can('so.update')) {
             abort(403, 'Unauthorized action.');
         }
-
+       
         try {
             $input = $request->except('_token');
             //status is send as quotation from edit sales screen.
@@ -1179,18 +1180,17 @@ class SellPosController extends Controller
                 $transaction = $this->transactionUtil->updateSellTransaction($id, $business_id, $input, $invoice_total, $user_id);
 
                 //Update Sell lines
-                $deleted_lines = $this->transactionUtil->createOrUpdateSellLines($transaction, $input['products'], $input['location_id'], true, $status_before);
-
+                $deleted_lines = $this->transactionUtil->createOrUpdateSellLines($transaction, $input['products'], $input['location_id'],$input['number_of_days'],$input['delivery_time'], true, $status_before);
+                
                 //Update update lines
                 $is_credit_sale = isset($input['is_credit_sale']) && $input['is_credit_sale'] == 1 ? true : false;
-
                 $new_sales_order_ids = $transaction->sales_order_ids ?? [];
+                
                 $sales_order_ids =array_unique(array_merge($sales_order_ids, $new_sales_order_ids));
-
+                
                 if (!empty($sales_order_ids)) {
                     $this->transactionUtil->updateSalesOrderStatus($sales_order_ids);
                 }
-
                 if (!$transaction->is_suspend && !$is_credit_sale) {
                     //Add change return
                     $change_return = $this->dummyPaymentLine;
@@ -1207,7 +1207,7 @@ class SellPosController extends Controller
                         $this->cashRegisterUtil->updateSellPayments($status_before, $transaction, $input['payment']);
                     }
                 }
-
+                
                 if ($request->session()->get('business.enable_rp') == 1) {
                     $this->transactionUtil->updateCustomerRewardPoints($contact_id, $transaction->rp_earned, $rp_earned_before, $transaction->rp_redeemed, $rp_redeemed_before);
                 }
@@ -1215,31 +1215,34 @@ class SellPosController extends Controller
                 Media::uploadMedia($business_id, $transaction, $request, 'shipping_documents', false, 'shipping_document');
 
                 if ($transaction->type == 'sell') {
-
+                    
                     //Update payment status
                     $payment_status = $this->transactionUtil->updatePaymentStatus($transaction->id, $transaction->final_total);
+                    
                     $transaction->payment_status = $payment_status;
-
+                    
                     //Update product stock
                     $this->productUtil->adjustProductStockForInvoice($status_before, $transaction, $input);
-
+                    
                     //Allocate the quantity from purchase and add mapping of
                     //purchase & sell lines in
                     //transaction_sell_lines_purchase_lines table
                     $business_details = $this->businessUtil->getDetails($business_id);
+                    
                     $pos_settings = empty($business_details->pos_settings) ? $this->businessUtil->defaultPosSettings() : json_decode($business_details->pos_settings, true);
-
+                    
                     $business = ['id' => $business_id,
                                     'accounting_method' => $request->session()->get('business.accounting_method'),
                                     'location_id' => $input['location_id'],
                                     'pos_settings' => $pos_settings
                                 ];
-                    $this->transactionUtil->adjustMappingPurchaseSell($status_before, $transaction, $business, $deleted_lines);
-
+                    
+                    $data = $this->transactionUtil->adjustMappingPurchaseSell($status_before, $transaction, $business, $deleted_lines);
+                               
                     //Auto send notification
                     $whatsapp_link = $this->notificationUtil->autoSendNotification($business_id, 'new_sale', $transaction, $transaction->contact);
                 }
-
+                
                 $log_properties = [];
                 if (isset($input['repair_completed_on'])) {
                     $completed_on = !empty($input['repair_completed_on']) ? $this->transactionUtil->uf_date($input['repair_completed_on'], true) : null;
@@ -1257,7 +1260,7 @@ class SellPosController extends Controller
                 Media::uploadMedia($business_id, $transaction, $request, 'documents');
 
                 $this->transactionUtil->activityLog($transaction, 'edited', $transaction_before);
-
+                
                 DB::commit();
 
                 if ($request->input('is_save_and_print') == 1) {
@@ -1289,7 +1292,7 @@ class SellPosController extends Controller
                 }
 
                 $output = ['success' => 1, 'msg' => $msg, 'receipt' => $receipt ];
-
+                
                 if (!empty($whatsapp_link)) {
                     $output['whatsapp_link'] = $whatsapp_link;
                 }

@@ -248,7 +248,7 @@
         <hr/>
       </div>
       <div class="clearfix"></div>
-        <h4 class="modal-title mb-10 ml-15">@lang('contact.billing_adress')</h4>
+        <h4 class="modal-title ml-15">@lang('contact.billing_adress')</h4>
       <div class="col-md-6">
         <div class="form-group">
             {!! Form::label('address_line_1', __('lang_v1.address_line_1') . ':*') !!}
@@ -308,6 +308,28 @@
             </div>
         </div>
       </div>
+      <div class="col-md-5">
+                    <div class="form-group">
+                        {!! Form::label('billing_email', __('contact.billing_email') . ':*') !!}
+                        <div class="input-group">
+                            <span class="input-group-addon">
+                                <i class="fa fa-envelope"></i>
+                            </span>
+                            {!! Form::email('billing_email', $contact->billing_email, ['class' => 'form-control','required','placeholder' => __('business.billing_email')]); !!}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <div class="form-group">
+                        {!! Form::label('billing_phone', __('contact.billing_phone') . ':*') !!}
+                        <div class="input-group">
+                            <span class="input-group-addon">
+                                <i class="fa fa-mobile"></i>
+                            </span>
+                            {!! Form::text('billing_phone', $contact->billing_phone, ['class' => 'form-control', 'required', 'placeholder' => __('contact.billing_phone')]); !!}
+                        </div>
+                    </div>
+                </div>
       <div class="clearfix"></div>
       <div class="col-md-12">
         <hr/>

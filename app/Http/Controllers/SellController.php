@@ -2245,7 +2245,7 @@ class SellController extends Controller
     public function getSellProductRow($product_id, $location_id)
     {
         $output = [];
-        
+        dd('demo',$product_id,$location_id);
         try {
             $row_count = request()->get('product_row');
             $row_count = $row_count + 1;
@@ -2409,9 +2409,7 @@ class SellController extends Controller
     public function getDetailsFromVariation($product_id, $business_id, $location_id = null, $check_qty = true)
     {   
         $query = Variation::where('product_id','=',$product_id)->with('product','product.brand','product.unit','product_variation','variation_location_details','product_variation.variation_template','product_variation.variation_template.values');
-        echo "<pre>";
-        print_r($query->get());
-        die();
+       
         // Add condition for check of quantity. (if stock is not enabled or qty_available > 0)
         if ($check_qty) {
             $query->whereHas('product', function( $q ){

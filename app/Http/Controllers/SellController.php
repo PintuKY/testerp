@@ -2286,9 +2286,7 @@ class SellController extends Controller
             }
 
         } catch (\Exception $e) {
-            dd($e->getMessage());
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-
             $output['success'] = false;
             $output['msg'] = __('lang_v1.item_out_of_stock');
         }

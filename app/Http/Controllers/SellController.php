@@ -1508,6 +1508,8 @@ class SellController extends Controller
                             'transaction_sell_lines.line_discount_type',
                             'transaction_sell_lines.line_discount_amount',
                             'transaction_sell_lines.res_service_staff_id',
+                            'transaction_sell_lines.number_of_days',
+                            'transaction_sell_lines.delivery_time',
                             'units.id as unit_id',
                             'transaction_sell_lines.sub_unit_id',
                             'transaction_sell_lines.so_line_id',

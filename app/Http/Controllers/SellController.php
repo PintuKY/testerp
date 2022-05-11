@@ -2245,10 +2245,8 @@ class SellController extends Controller
     public function getSellProductRow($product_id, $location_id)
     {
         $output = [];
-        echo "hello1";
         
         try {
-            echo "hello2";
             $row_count = request()->get('product_row');
             $row_count = $row_count + 1;
             $quantity = request()->get('quantity', 1);
@@ -2373,7 +2371,7 @@ class SellController extends Controller
         }
 
         if (request()->get('type') == 'sell-return') {
-            dd('demo1');
+            
             $output['html_content'] =  view('sell_return.partials.product_row')
                         ->with(compact('productDatas', 'row_count', 'tax_dropdown', 'enabled_modules', 'sub_units'))
                         ->render();
@@ -2410,7 +2408,7 @@ class SellController extends Controller
      * @return array
      */
     public function getDetailsFromVariation($product_id, $business_id, $location_id = null, $check_qty = true)
-    {   
+    {   echo $product_id;
         $query = Variation::where('product_id','=',$product_id)->with('product','product.brand','product.unit','product_variation','variation_location_details','product_variation.variation_template','product_variation.variation_template.values');
         echo "<pre>";
         echo "First query";
@@ -2419,7 +2417,8 @@ class SellController extends Controller
         if ($check_qty) {
             $query->whereHas('product', function( $q ){
                 $q->where('enable_stock', '!=', 1);
-            })->orWhereHas('variation_location_details', function( $q ){
+            })->orWhereHas('variation_location_details', function( $q ) use ($product_id){
+                $q->where('product_id', '=', $product_id);
                 $q->where('qty_available','>', 0);
             });
         }
@@ -2428,7 +2427,8 @@ class SellController extends Controller
             //Check for enable stock, if enabled check for location id.
             $query->whereHas('product', function( $q ){
                 $q->where('enable_stock', '!=', 1);
-            })->orWhereHas('product.variationLocationDetails', function( $q ) use ( $location_id ){
+            })->orWhereHas('product.variationLocationDetails', function( $q ) use ( $location_id , $product_id){
+                $q->where('product_id', '=', $product_id);
                 $q->where('location_id', '!=', $location_id);
             });
         }

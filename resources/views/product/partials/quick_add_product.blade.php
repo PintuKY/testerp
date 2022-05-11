@@ -57,8 +57,8 @@
         <div class="clearfix"></div>
         <div class="col-sm-4">
           <div class="form-group">
-            {!! Form::label('category_id', __('product.category') . ':') !!}
-              {!! Form::select('category_id', $categories, null, ['placeholder' => __('messages.please_select'), 'class' => 'form-control select2']); !!}
+            {!! Form::label('category_id', __('product.category') . ':*') !!}
+              {!! Form::select('category_id', $categories, null, ['placeholder' => __('messages.please_select'), 'class' => 'form-control select2','required']); !!}
           </div>
         </div>
 

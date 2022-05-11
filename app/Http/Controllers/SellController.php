@@ -1478,6 +1478,7 @@ class SellController extends Controller
                                 ->where('vld.location_id', '=', $location_id);
                         })
                         ->leftjoin('units', 'units.id', '=', 'p.unit_id')
+                        ->where('transaction_sell_lines.transaction_id', $id)
                         ->with(['warranties', 'so_line'])
                         ->select(
                             DB::raw("IF(pv.is_dummy = 0, CONCAT(p.name, ' (', p.name, ':',variations.name, ')'), p.name) AS product_name"),
@@ -1520,6 +1521,7 @@ class SellController extends Controller
                             DB::raw('vld.qty_available + transaction_sell_lines.quantity AS qty_available')
                         )
                         ->get();
+                        
         if (!empty($sell_details)) {
             foreach ($sell_details as $key => $value) {
                 //If modifier or combo sell line then unset

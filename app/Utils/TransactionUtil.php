@@ -432,8 +432,6 @@ class TransactionUtil extends Util
         
         $combo_lines = [];
         if (!empty($lines_formatted)) {
-            echo "demo";
-            die();
             $sell_line_data =  $transaction->sell_lines()->saveMany($lines_formatted);           
             $sell_line_data_ids = !empty($sell_line_data)  ?  array_column($sell_line_data,"id"): [];
             $variation_value_datas = VariationValueTemplate::whereIn('id',$variation_value_id)->get();
@@ -3222,7 +3220,6 @@ class TransactionUtil extends Util
         
         if ($status_before == 'final' && $transaction->status == 'draft') {
             //Get sell lines used for the transaction.
-            dd("demo");
             $sell_purchases = Transaction::join('transaction_sell_lines AS SL', 'transactions.id', '=', 'SL.transaction_id')
                     ->join('transaction_sell_lines_purchase_lines as TSP', 'SL.id', '=', 'TSP.sell_line_id')
                     ->where('transactions.id', $transaction->id)

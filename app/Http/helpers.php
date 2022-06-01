@@ -272,5 +272,14 @@ if (! function_exists('getData')) {
     }
 }
 
+// for getting data from api
+if (! function_exists('getApiSettingData')) {
+    function getApiSettingData()
+    {
+        return ApiSetting::get();
+    }
+}
+
+
 
 

@@ -28,7 +28,7 @@ class ContactUtil extends Util
                         'cg.selling_price_group_id'
                     )
                     ->first();
-        
+
         if (!empty($contact)) {
             $contact->contact_address = $contact->contact_address;
             $output = $array ? $contact->toArray() : $contact;
@@ -93,9 +93,9 @@ class ContactUtil extends Util
     public function createNewContact($input)
     {
         //Check Contact id
-        echo "<pre>";
+       /* echo "<pre>";
         print_r($input);
-        die();
+        die();*/
         $count = 0;
         if (!empty($input['contact_id'])) {
             $count = Contact::where('business_id', $input['business_id'])
@@ -111,18 +111,18 @@ class ContactUtil extends Util
                 $input['contact_id'] = $this->generateReferenceNumber('contacts', $ref_count, $input['business_id']);
             }
 
-            $opening_balance = isset($input['opening_balance']) ? $input['opening_balance'] : 0;
+            /*$opening_balance = isset($input['opening_balance']) ? $input['opening_balance'] : 0;
             if (isset($input['opening_balance'])) {
                 unset($input['opening_balance']);
-            }
+            }*/
 
             $contact = Contact::create($input);
 
             //Add opening balance
-            if (!empty($opening_balance)) {
+           /* if (!empty($opening_balance)) {
                 $transactionUtil = new TransactionUtil();
                 $transactionUtil->createOpeningBalanceTransaction($contact->business_id, $contact->id, $opening_balance, $contact->created_by, false);
-            }
+            }*/
 
             $output = ['success' => true,
                         'data' => $contact,
@@ -197,11 +197,11 @@ class ContactUtil extends Util
                     ->leftjoin('customer_groups AS cg', 'contacts.customer_group_id', '=', 'cg.id')
                     ->where('contacts.business_id', $business_id);
 
-        if ($type == 'supplier') {
+        /*if ($type == 'supplier') {
            $query->onlySuppliers();
         } elseif ($type == 'customer') {
             $query->onlyCustomers();
-        }
+        }*/
         if (!empty($contact_ids)) {
             $query->whereIn('contacts.id', $contact_ids);
         }

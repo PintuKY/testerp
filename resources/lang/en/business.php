@@ -109,4 +109,5 @@ return [
     'tax_number2' => 'Tax Number 2',
     'is_active' => 'Active',
     'created_by' => 'Created By',
+    'billing_email' => 'Billing Email'
 ];

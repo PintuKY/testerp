@@ -583,20 +583,21 @@ class ContactController extends Controller
                 return $this->moduleUtil->expiredResponse();
             }
 
-            $input = $request->only(['type', 'supplier_business_name',
-                'prefix', 'first_name', 'middle_name', 'last_name', 'tax_number', 'pay_term_number', 'pay_term_type', 'mobile', 'landline', 'alternate_number', 'city', 'state', 'country', 'address_line_1', 'address_line_2', 'customer_group_id', 'zip_code', 'contact_id', 'custom_field1', 'custom_field2', 'custom_field3', 'custom_field4', 'custom_field5', 'custom_field6', 'custom_field7', 'custom_field8', 'custom_field9', 'custom_field10', 'email', 'shipping_address', 'position', 'dob', 'shipping_custom_field_details','shipping_city', 'shipping_state', 'shipping_country', 'shipping_address_1', 'shipping_address_2','shipping_zipcode','billing_phone','billing_email']);
+            /*$input = $request->only(['type', 'supplier_business_name',
+                'prefix', 'first_name', 'middle_name', 'last_name', 'tax_number', 'pay_term_number', 'pay_term_type', 'mobile', 'landline', 'alternate_number', 'city', 'state', 'country', 'address_line_1', 'address_line_2', 'customer_group_id', 'zip_code', 'contact_id', 'custom_field1', 'custom_field2', 'custom_field3', 'custom_field4', 'custom_field5', 'custom_field6', 'custom_field7', 'custom_field8', 'custom_field9', 'custom_field10', 'email', 'shipping_address', 'position', 'dob', 'shipping_custom_field_details','shipping_city', 'shipping_state', 'shipping_country', 'shipping_address_1', 'shipping_address_2','shipping_zipcode','billing_phone','billing_email']);*/
+            $input = $request->only(['type', 'supplier_business_name', 'first_name', 'last_name',   'mobile', 'city', 'state', 'country', 'address_line_1', 'address_line_2', 'customer_group_id', 'zip_code', 'contact_id', 'email', 'shipping_address', 'position', 'dob', 'shipping_custom_field_details','shipping_city', 'shipping_state', 'shipping_country', 'shipping_address_1', 'shipping_address_2','shipping_zipcode','billing_phone','billing_email']);
 
             $name_array = [];
 
-            if (!empty($input['prefix'])) {
+            /*if (!empty($input['prefix'])) {
                 $name_array[] = $input['prefix'];
-            }
+            }*/
             if (!empty($input['first_name'])) {
                 $name_array[] = $input['first_name'];
             }
-            if (!empty($input['middle_name'])) {
+            /*if (!empty($input['middle_name'])) {
                 $name_array[] = $input['middle_name'];
-            }
+            }*/
             if (!empty($input['last_name'])) {
                 $name_array[] = $input['last_name'];
             }
@@ -620,8 +621,8 @@ class ContactController extends Controller
             $input['business_id'] = $business_id;
             $input['created_by'] = $request->session()->get('user.id');
 
-            $input['credit_limit'] = $request->input('credit_limit') != '' ? $this->commonUtil->num_uf($request->input('credit_limit')) : null;
-            $input['opening_balance'] = $this->commonUtil->num_uf($request->input('opening_balance'));
+           /* $input['credit_limit'] = $request->input('credit_limit') != '' ? $this->commonUtil->num_uf($request->input('credit_limit')) : null;
+            $input['opening_balance'] = $this->commonUtil->num_uf($request->input('opening_balance'));*/
 
             $output = $this->contactUtil->createNewContact($input);
 
@@ -878,7 +879,7 @@ class ContactController extends Controller
     {
         if (request()->ajax()) {
             $term = request()->input('q', '');
-            
+
             $business_id = request()->session()->get('user.business_id');
             $user_id = request()->session()->get('user.id');
 

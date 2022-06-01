@@ -630,9 +630,9 @@ $(document).ready(function() {
             { data: 'supplier_business_name', name: 'supplier_business_name' },
             { data: 'name', name: 'name' },
             { data: 'email', name: 'email' },
-            { data: 'tax_number', name: 'tax_number' },
+            /*{ data: 'tax_number', name: 'tax_number' },
             { data: 'credit_limit', name: 'credit_limit' },
-            { data: 'pay_term', name: 'pay_term', searchable: false, orderable: false },
+            { data: 'pay_term', name: 'pay_term', searchable: false, orderable: false },*/
             { data: 'opening_balance', name: 'opening_balance', searchable: false },
             { data: 'balance', name: 'balance', searchable: false },
             { data: 'created_at', name: 'contacts.created_at' }
@@ -646,7 +646,7 @@ $(document).ready(function() {
             { data: 'mobile', name: 'mobile' },
             { data: 'due', searchable: false, orderable: false },
             { data: 'return_due', searchable: false, orderable: false },
-            { data: 'custom_field1', name: 'custom_field1'},
+            /*{ data: 'custom_field1', name: 'custom_field1'},
             { data: 'custom_field2', name: 'custom_field2'},
             { data: 'custom_field3', name: 'custom_field3'},
             { data: 'custom_field4', name: 'custom_field4'},
@@ -655,7 +655,7 @@ $(document).ready(function() {
             { data: 'custom_field7', name: 'custom_field7'},
             { data: 'custom_field8', name: 'custom_field8'},
             { data: 'custom_field9', name: 'custom_field9'},
-            { data: 'custom_field10', name: 'custom_field10'},
+            { data: 'custom_field10', name: 'custom_field10'},*/
             ]);
     }
 
@@ -739,7 +739,7 @@ $(document).ready(function() {
 
     //On display of add contact modal
     $('.contact_modal').on('shown.bs.modal', function(e) {
-        
+
         // $('input[type=radio][name="contact_type_radio"]').on('change', function() {
         //     if (this.value == 'individual') {
         //         $('div.individual').show();

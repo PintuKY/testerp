@@ -85,7 +85,7 @@
                 <div class="form-group">
                     <br>
                     <label>
-                      {!! Form::checkbox('woocommerce_enabled', 1, false, 
+                      {!! Form::checkbox('woocommerce_enabled', 1, false,
                       [ 'class' => 'input-icheck', 'id' => 'woocommerce_enabled']); !!} {{ __('lang_v1.woocommerce_enabled') }}
                     </label>
                 </div>
@@ -131,15 +131,15 @@
 @endcan
 <input type="hidden" id="is_rack_enabled" value="{{$rack_enabled}}">
 
-<div class="modal fade product_modal" tabindex="-1" role="dialog" 
+<div class="modal fade product_modal" tabindex="-1" role="dialog"
     aria-labelledby="gridSystemModalLabel">
 </div>
 
-<div class="modal fade" id="view_product_modal" tabindex="-1" role="dialog" 
+<div class="modal fade" id="view_product_modal" tabindex="-1" role="dialog"
     aria-labelledby="gridSystemModalLabel">
 </div>
 
-<div class="modal fade" id="opening_stock_modal" tabindex="-1" role="dialog" 
+<div class="modal fade" id="opening_stock_modal" tabindex="-1" role="dialog"
     aria-labelledby="gridSystemModalLabel">
 </div>
 
@@ -210,11 +210,7 @@
                         { data: 'brand', name: 'brands.name'},
                         { data: 'tax', name: 'tax_rates.name', searchable: false},
                         { data: 'sku', name: 'products.sku'},
-                        { data: 'product_custom_field1', name: 'products.product_custom_field1'  },
-                        { data: 'product_custom_field2', name: 'products.product_custom_field2'  },
-                        { data: 'product_custom_field3', name: 'products.product_custom_field3'  },
-                        { data: 'product_custom_field4', name: 'products.product_custom_field4'  }
-                        
+
                     ],
                     createdRow: function( row, data, dataIndex ) {
                         if($('input#is_rack_enabled').val() == 1){
@@ -244,7 +240,7 @@
                     i.removeClass( 'fa-minus-circle text-danger' );
 
                     row.child.hide();
-         
+
                     // Remove from the 'open' array
                     detailRows.splice( idx, 1 );
                 } else {
@@ -252,7 +248,7 @@
                     i.addClass( 'fa-minus-circle text-danger' );
 
                     row.child( get_product_details( row.data() ) ).show();
-         
+
                     // Add to the 'open' array
                     if ( idx === -1 ) {
                         detailRows.push( tr.attr('id') );
@@ -294,7 +290,7 @@
             $(document).on('click', '#delete-selected', function(e){
                 e.preventDefault();
                 var selected_rows = getSelectedRows();
-                
+
                 if(selected_rows.length > 0){
                     $('input#selected_rows').val(selected_rows);
                     swal({
@@ -310,13 +306,13 @@
                 } else{
                     $('input#selected_rows').val('');
                     swal('@lang("lang_v1.no_row_selected")');
-                }    
+                }
             });
 
             $(document).on('click', '#deactivate-selected', function(e){
                 e.preventDefault();
                 var selected_rows = getSelectedRows();
-                
+
                 if(selected_rows.length > 0){
                     $('input#selected_products').val(selected_rows);
                     swal({
@@ -351,20 +347,20 @@
                 } else{
                     $('input#selected_products').val('');
                     swal('@lang("lang_v1.no_row_selected")');
-                }    
+                }
             })
 
             $(document).on('click', '#edit-selected', function(e){
                 e.preventDefault();
                 var selected_rows = getSelectedRows();
-                
+
                 if(selected_rows.length > 0){
                     $('input#selected_products_for_edit').val(selected_rows);
                     $('form#bulk_edit_form').submit();
                 } else{
                     $('input#selected_products').val('');
                     swal('@lang("lang_v1.no_row_selected")');
-                }    
+                }
             })
 
             $('table#product_table tbody').on('click', 'a.activate-product', function(e){
@@ -385,7 +381,7 @@
                 });
             });
 
-            $(document).on('change', '#product_list_filter_type, #product_list_filter_category_id, #product_list_filter_brand_id, #product_list_filter_unit_id, #product_list_filter_tax_id, #location_id, #active_state, #repair_model_id', 
+            $(document).on('change', '#product_list_filter_type, #product_list_filter_category_id, #product_list_filter_brand_id, #product_list_filter_unit_id, #product_list_filter_tax_id, #location_id, #active_state, #repair_model_id',
                 function() {
                     if ($("#product_list_tab").hasClass('active')) {
                         product_table.ajax.reload();
@@ -418,7 +414,7 @@
                     } else{
                         $('input#selected_products').val('');
                         swal('@lang("lang_v1.no_row_selected")');
-                    }    
+                    }
                 });
 
                 $(document).on('submit', 'form#toggle_woocommerce_sync_form', function(e){
@@ -449,7 +445,7 @@
             @endif
         });
 
-        $(document).on('shown.bs.modal', 'div.view_product_modal, div.view_modal, #view_product_modal', 
+        $(document).on('shown.bs.modal', 'div.view_product_modal, div.view_modal, #view_product_modal',
             function(){
                 var div = $(this).find('#view_product_stock_details');
             if (div.length) {
@@ -522,28 +518,28 @@
                             var total_potential_profit = 0;
                             var footer_total_mfg_stock = 0;
                             for (var r in data){
-                                footer_total_stock += $(data[r].stock).data('orig-value') ? 
+                                footer_total_stock += $(data[r].stock).data('orig-value') ?
                                 parseFloat($(data[r].stock).data('orig-value')) : 0;
 
-                                footer_total_sold += $(data[r].total_sold).data('orig-value') ? 
+                                footer_total_sold += $(data[r].total_sold).data('orig-value') ?
                                 parseFloat($(data[r].total_sold).data('orig-value')) : 0;
 
-                                footer_total_transfered += $(data[r].total_transfered).data('orig-value') ? 
+                                footer_total_transfered += $(data[r].total_transfered).data('orig-value') ?
                                 parseFloat($(data[r].total_transfered).data('orig-value')) : 0;
 
-                                total_adjusted += $(data[r].total_adjusted).data('orig-value') ? 
+                                total_adjusted += $(data[r].total_adjusted).data('orig-value') ?
                                 parseFloat($(data[r].total_adjusted).data('orig-value')) : 0;
 
-                                total_stock_price += $(data[r].stock_price).data('orig-value') ? 
+                                total_stock_price += $(data[r].stock_price).data('orig-value') ?
                                 parseFloat($(data[r].stock_price).data('orig-value')) : 0;
 
-                                footer_stock_value_by_sale_price += $(data[r].stock_value_by_sale_price).data('orig-value') ? 
+                                footer_stock_value_by_sale_price += $(data[r].stock_value_by_sale_price).data('orig-value') ?
                                 parseFloat($(data[r].stock_value_by_sale_price).data('orig-value')) : 0;
 
-                                total_potential_profit += $(data[r].potential_profit).data('orig-value') ? 
+                                total_potential_profit += $(data[r].potential_profit).data('orig-value') ?
                                 parseFloat($(data[r].potential_profit).data('orig-value')) : 0;
 
-                                footer_total_mfg_stock += $(data[r].total_mfg_stock).data('orig-value') ? 
+                                footer_total_mfg_stock += $(data[r].total_mfg_stock).data('orig-value') ?
                                 parseFloat($(data[r].total_mfg_stock).data('orig-value')) : 0;
                             }
 
@@ -571,7 +567,7 @@
         $(document).on('click', '.update_product_location', function(e){
             e.preventDefault();
             var selected_rows = getSelectedRows();
-            
+
             if(selected_rows.length > 0){
                 $('input#selected_products').val(selected_rows);
                 var type = $(this).data('type');
@@ -592,7 +588,7 @@
             } else{
                 $('input#selected_products').val('');
                 swal('@lang("lang_v1.no_row_selected")');
-            }    
+            }
         });
 
     $(document).on('submit', 'form#edit_product_location_form', function(e) {

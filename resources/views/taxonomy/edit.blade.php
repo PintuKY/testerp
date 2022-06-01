@@ -34,7 +34,7 @@
         {!! Form::label('description', __( 'lang_v1.description' ) . ':') !!}
         {!! Form::textarea('description', $category->description, ['class' => 'form-control', 'placeholder' => __( 'lang_v1.description'), 'rows' => 3]); !!}
       </div>
-      @if(!empty($parent_categories) && $enable_sub_category)
+      {{--@if(!empty($parent_categories) && $enable_sub_category)
           <div class="form-group">
             <div class="checkbox">
               <label>
@@ -46,7 +46,7 @@
             {!! Form::label('parent_id', __( 'lang_v1.select_parent_taxonomy' ) . ':') !!}
             {!! Form::select('parent_id', $parent_categories, $selected_parent, ['class' => 'form-control']); !!}
           </div>
-      @endif
+      @endif--}}
     </div>
 
     <div class="modal-footer">

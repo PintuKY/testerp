@@ -75,7 +75,7 @@ class ProductController extends Controller
                 ->leftJoin('brands', 'products.brand_id', '=', 'brands.id')
                 ->join('units', 'products.unit_id', '=', 'units.id')
                 ->leftJoin('categories as c1', 'products.category_id', '=', 'c1.id')
-                ->leftJoin('categories as c2', 'products.sub_category_id', '=', 'c2.id')
+                /*->leftJoin('categories as c2', 'products.sub_category_id', '=', 'c2.id')*/
                 ->leftJoin('tax_rates', 'products.tax', '=', 'tax_rates.id')
                 ->join('variations as v', 'v.product_id', '=', 'products.id')
                 ->leftJoin('variation_location_details as vld', function($join) use ($permitted_locations){
@@ -110,7 +110,7 @@ class ProductController extends Controller
                 'products.name as product',
                 'products.type',
                 'c1.name as category',
-                'c2.name as sub_category',
+                /*'c2.name as sub_category',*/
                 'units.actual_name as unit',
                 'brands.name as brand',
                 'tax_rates.name as tax',
@@ -169,10 +169,10 @@ class ProductController extends Controller
             if ($active_state == 'inactive') {
                 $products->Inactive();
             }
-            $not_for_selling = request()->get('not_for_selling', null);
+            /*$not_for_selling = request()->get('not_for_selling', null);
             if ($not_for_selling == 'true') {
                 $products->ProductNotForSales();
-            }
+            }*/
 
             $woocommerce_enabled = request()->get('woocommerce_enabled', 0);
             if ($woocommerce_enabled == 1) {
@@ -254,8 +254,8 @@ class ProductController extends Controller
                 ->editColumn('product', function ($row) use ($is_woocommerce) {
                     $product = $row->is_inactive == 1 ? $row->product . ' <span class="label bg-gray">' . __("lang_v1.inactive") .'</span>' : $row->product;
 
-                    $product = $row->not_for_selling == 1 ? $product . ' <span class="label bg-gray">' . __("lang_v1.not_for_selling") .
-                        '</span>' : $product;
+                    /*$product = $row->not_for_selling == 1 ? $product . ' <span class="label bg-gray">' . __("lang_v1.not_for_selling") .
+                        '</span>' : $product;*/
 
                     if ($is_woocommerce && !$row->woocommerce_disable_sync) {
                         $product = $product .'<br><i class="fab fa-wordpress"></i>';
@@ -429,7 +429,7 @@ class ProductController extends Controller
         }
         try {
             $business_id = $request->session()->get('user.business_id');
-            $form_fields = ['name', 'brand_id', 'unit_id', 'category_id', 'tax', 'type', 'barcode_type', 'sku', 'alert_quantity', 'tax_type', 'weight', 'product_custom_field1', 'product_custom_field2', 'product_custom_field3', 'product_custom_field4', 'product_description', 'sub_unit_ids','delivery_days'];
+            $form_fields = ['name', 'brand_id', 'unit_id', 'category_id', 'tax', 'type', 'barcode_type', 'sku', 'alert_quantity', 'tax_type', /*'weight',*/ /*'product_custom_field1', 'product_custom_field2', 'product_custom_field3', 'product_custom_field4',*/ 'product_description', 'sub_unit_ids','delivery_days'];
 
             $module_form_fields = $this->moduleUtil->getModuleFormField('product_form_fields');
             if (!empty($module_form_fields)) {
@@ -441,7 +441,7 @@ class ProductController extends Controller
             $product_details['created_by'] = $request->session()->get('user.id');
 
             $product_details['enable_stock'] = (!empty($request->input('enable_stock')) &&  $request->input('enable_stock') == 1) ? 1 : 0;
-            $product_details['not_for_selling'] = (!empty($request->input('not_for_selling')) &&  $request->input('not_for_selling') == 1) ? 1 : 0;
+            /*$product_details['not_for_selling'] = (!empty($request->input('not_for_selling')) &&  $request->input('not_for_selling') == 1) ? 1 : 0;*/
 
             if (!empty($request->input('sub_category_id'))) {
                 $product_details['sub_category_id'] = $request->input('sub_category_id') ;
@@ -455,15 +455,15 @@ class ProductController extends Controller
                 $product_details['alert_quantity'] = $this->productUtil->num_uf($product_details['alert_quantity']);
             }
 
-            $expiry_enabled = $request->session()->get('business.enable_product_expiry');
+            /*$expiry_enabled = $request->session()->get('business.enable_product_expiry');
             if (!empty($request->input('expiry_period_type')) && !empty($request->input('expiry_period')) && !empty($expiry_enabled) && ($product_details['enable_stock'] == 1)) {
                 $product_details['expiry_period_type'] = $request->input('expiry_period_type');
                 $product_details['expiry_period'] = $this->productUtil->num_uf($request->input('expiry_period'));
-            }
+            }*/
 
-            if (!empty($request->input('enable_sr_no')) &&  $request->input('enable_sr_no') == 1) {
+            /*if (!empty($request->input('enable_sr_no')) &&  $request->input('enable_sr_no') == 1) {
                 $product_details['enable_sr_no'] = 1 ;
-            }
+            }*/
 
             //upload document
             $product_details['image'] = $this->productUtil->uploadFile($request, 'image', config('constants.product_img_path'), 'image');
@@ -516,10 +516,10 @@ class ProductController extends Controller
             }
 
             //Add product racks details.
-            $product_racks = $request->get('product_racks', null);
+            /*$product_racks = $request->get('product_racks', null);
             if (!empty($product_racks)) {
                 $this->productUtil->addRackDetails($business_id, $product->id, $product_racks);
-            }
+            }*/
 
             //Set Module fields
             if (!empty($request->input('has_module_data'))) {
@@ -654,7 +654,7 @@ class ProductController extends Controller
 
         try {
             $business_id = $request->session()->get('user.business_id');
-            $product_details = $request->only(['name', 'brand_id', 'unit_id', 'category_id', 'tax', 'barcode_type', 'sku', 'alert_quantity', 'tax_type', 'weight', 'product_custom_field1', 'product_custom_field2', 'product_custom_field3', 'product_custom_field4', 'product_description', 'sub_unit_ids','delivery_days']);
+            $product_details = $request->only(['name', 'brand_id', 'unit_id', 'category_id', 'tax', 'barcode_type', 'sku', 'alert_quantity', 'tax_type', /*'weight',*/ /*'product_custom_field1', 'product_custom_field2', 'product_custom_field3', 'product_custom_field4',*/ 'product_description', 'sub_unit_ids','delivery_days']);
 
             DB::beginTransaction();
 
@@ -679,11 +679,11 @@ class ProductController extends Controller
             $product->sku = $product_details['sku'];
             $product->alert_quantity = $this->productUtil->num_uf($product_details['alert_quantity']);
             $product->tax_type = $product_details['tax_type'];
-            $product->weight = $product_details['weight'];
-            $product->product_custom_field1 = $product_details['product_custom_field1'];
+            /*$product->weight = $product_details['weight'];*/
+            /*$product->product_custom_field1 = $product_details['product_custom_field1'];
             $product->product_custom_field2 = $product_details['product_custom_field2'];
             $product->product_custom_field3 = $product_details['product_custom_field3'];
-            $product->product_custom_field4 = $product_details['product_custom_field4'];
+            $product->product_custom_field4 = $product_details['product_custom_field4'];*/
             $product->product_description = $product_details['product_description'];
             $product->sub_unit_ids = !empty($product_details['sub_unit_ids']) ? $product_details['sub_unit_ids'] : null;
             $product->warranty_id = !empty($request->input('warranty_id')) ? $request->input('warranty_id') : null;
@@ -694,7 +694,7 @@ class ProductController extends Controller
                 $product->enable_stock = 0;
             }
 
-            $product->not_for_selling = (!empty($request->input('not_for_selling')) &&  $request->input('not_for_selling') == 1) ? 1 : 0;
+            /*$product->not_for_selling = (!empty($request->input('not_for_selling')) &&  $request->input('not_for_selling') == 1) ? 1 : 0;*/
 
             if (!empty($request->input('sub_category_id'))) {
                 $product->sub_category_id = $request->input('sub_category_id');
@@ -702,7 +702,7 @@ class ProductController extends Controller
                 $product->sub_category_id = null;
             }
 
-            $expiry_enabled = $request->session()->get('business.enable_product_expiry');
+           /* $expiry_enabled = $request->session()->get('business.enable_product_expiry');
             if (!empty($expiry_enabled)) {
                 if (!empty($request->input('expiry_period_type')) && !empty($request->input('expiry_period')) && ($product->enable_stock == 1)) {
                     $product->expiry_period_type = $request->input('expiry_period_type');
@@ -711,13 +711,13 @@ class ProductController extends Controller
                     $product->expiry_period_type = null;
                     $product->expiry_period = null;
                 }
-            }
+            }*/
 
-            if (!empty($request->input('enable_sr_no')) &&  $request->input('enable_sr_no') == 1) {
+            /*if (!empty($request->input('enable_sr_no')) &&  $request->input('enable_sr_no') == 1) {
                 $product->enable_sr_no = 1;
             } else {
                 $product->enable_sr_no = 0;
-            }
+            }*/
 
             //upload document
             $file_name = $this->productUtil->uploadFile($request, 'image', config('constants.product_img_path'), 'image');
@@ -798,7 +798,7 @@ class ProductController extends Controller
             }
 
             //Add product racks details.
-            $product_racks = $request->get('product_racks', null);
+            /*$product_racks = $request->get('product_racks', null);
             if (!empty($product_racks)) {
                 $this->productUtil->addRackDetails($business_id, $product->id, $product_racks);
             }
@@ -806,7 +806,7 @@ class ProductController extends Controller
             $product_racks_update = $request->get('product_racks_update', null);
             if (!empty($product_racks_update)) {
                 $this->productUtil->updateRackDetails($business_id, $product->id, $product_racks_update);
-            }
+            }*/
 
             //Set Module fields
             if (!empty($request->input('has_module_data'))) {
@@ -1054,7 +1054,7 @@ class ProductController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function getVariationValueRow(Request $request)
-    {   
+    {
         $business_id = $request->session()->get('user.business_id');
         $business = Business::findorfail($business_id);
         $profit_percent = $business->default_profit_percent;
@@ -1105,7 +1105,7 @@ class ProductController extends Controller
 
         $template = VariationTemplate::where('id', $request->input('template_id'))
                                                 ->with(['values'])
-                                                ->first();                                         
+                                                ->first();
         $row_index = $request->input('row_index');
 
         return view('product.partials.product_variation_template')
@@ -1155,14 +1155,14 @@ class ProductController extends Controller
      * @return JSON
      */
     public function getProducts()
-    {   
+    {
         if (request()->ajax()) {
             $search_term = request()->input('term', '');
             $location_id = request()->input('location_id', null);
             $check_qty = request()->input('check_qty', false);
             $price_group_id = request()->input('price_group', null);
             $business_id = request()->session()->get('user.business_id');
-            $not_for_selling = request()->get('not_for_selling', null);
+            //$not_for_selling = request()->get('not_for_selling', null);
             $price_group_id = request()->input('price_group', '');
             $product_types = request()->get('product_types', []);
 
@@ -1171,8 +1171,8 @@ class ProductController extends Controller
                 $search_fields[] = 'sub_sku';
             }
 
-            $result = $this->productUtil->filterProduct($business_id, $search_term, $location_id, $not_for_selling, $price_group_id, $product_types, $search_fields, $check_qty);
-       
+            $result = $this->productUtil->filterProduct($business_id, $search_term, $location_id, /*$not_for_selling,*/ $price_group_id, $product_types, $search_fields, $check_qty);
+
             return json_encode($result);
         }
     }
@@ -1331,7 +1331,7 @@ class ProductController extends Controller
         try {
             $business_id = $request->session()->get('user.business_id');
             $form_fields = ['name', 'brand_id', 'unit_id', 'category_id', 'tax', 'barcode_type','tax_type', 'sku',
-                'alert_quantity', 'type', 'sub_unit_ids', 'sub_category_id', 'weight', 'product_custom_field1', 'product_custom_field2', 'product_custom_field3', 'product_custom_field4', 'product_description'];
+                'alert_quantity', 'type', 'sub_unit_ids', 'sub_category_id', /*'weight',*/ /*'product_custom_field1', 'product_custom_field2', 'product_custom_field3', 'product_custom_field4', */'product_description'];
 
             $module_form_fields = $this->moduleUtil->getModuleData('product_form_fields');
             if (!empty($module_form_fields)) {
@@ -1351,9 +1351,9 @@ class ProductController extends Controller
                 //TODO: Save total qty
                 //$product_details['total_qty_available'] = 0;
             }
-            if (!empty($request->input('not_for_selling')) &&  $request->input('not_for_selling') == 1) {
+            /*if (!empty($request->input('not_for_selling')) &&  $request->input('not_for_selling') == 1) {
                 $product_details['not_for_selling'] = 1 ;
-            }
+            }*/
             if (empty($product_details['sku'])) {
                 $product_details['sku'] = ' ';
             }
@@ -1362,15 +1362,15 @@ class ProductController extends Controller
                 $product_details['alert_quantity'] = $this->productUtil->num_uf($product_details['alert_quantity']);
             }
 
-            $expiry_enabled = $request->session()->get('business.enable_product_expiry');
+            /*$expiry_enabled = $request->session()->get('business.enable_product_expiry');
             if (!empty($request->input('expiry_period_type')) && !empty($request->input('expiry_period')) && !empty($expiry_enabled)) {
                 $product_details['expiry_period_type'] = $request->input('expiry_period_type');
                 $product_details['expiry_period'] = $this->productUtil->num_uf($request->input('expiry_period'));
-            }
+            }*/
 
-            if (!empty($request->input('enable_sr_no')) &&  $request->input('enable_sr_no') == 1) {
+            /*if (!empty($request->input('enable_sr_no')) &&  $request->input('enable_sr_no') == 1) {
                 $product_details['enable_sr_no'] = 1 ;
-            }
+            }*/
 
             $product_details['warranty_id'] = !empty($request->input('warranty_id')) ? $request->input('warranty_id') : null;
 

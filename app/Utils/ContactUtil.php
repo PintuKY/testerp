@@ -93,9 +93,6 @@ class ContactUtil extends Util
     public function createNewContact($input)
     {
         //Check Contact id
-       /* echo "<pre>";
-        print_r($input);
-        die();*/
         $count = 0;
         if (!empty($input['contact_id'])) {
             $count = Contact::where('business_id', $input['business_id'])
@@ -111,18 +108,7 @@ class ContactUtil extends Util
                 $input['contact_id'] = $this->generateReferenceNumber('contacts', $ref_count, $input['business_id']);
             }
 
-            /*$opening_balance = isset($input['opening_balance']) ? $input['opening_balance'] : 0;
-            if (isset($input['opening_balance'])) {
-                unset($input['opening_balance']);
-            }*/
-
             $contact = Contact::create($input);
-
-            //Add opening balance
-           /* if (!empty($opening_balance)) {
-                $transactionUtil = new TransactionUtil();
-                $transactionUtil->createOpeningBalanceTransaction($contact->business_id, $contact->id, $opening_balance, $contact->created_by, false);
-            }*/
 
             $output = ['success' => true,
                         'data' => $contact,

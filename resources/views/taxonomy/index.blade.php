@@ -41,14 +41,14 @@
             @if($can_add)
             @slot('tool')
                 <div class="box-tools">
-                    <button type="button" class="btn btn-block btn-primary btn-modal" 
-                    data-href="{{action('TaxonomyController@create')}}?type={{request()->get('type')}}" 
+                    <button type="button" class="btn btn-block btn-primary btn-modal"
+                    data-href="{{action('TaxonomyController@create')}}?type={{request()->get('type')}}"
                     data-container=".category_modal">
                     <i class="fa fa-plus"></i> @lang( 'messages.add' )</button>
                 </div>
             @endslot
             @endif
-       
+
             <div class="table-responsive">
                 <table class="table table-bordered table-striped" id="category_table">
                     <thead>
@@ -65,7 +65,7 @@
             </div>
     @endcomponent
 
-    <div class="modal fade category_modal" tabindex="-1" role="dialog" 
+    <div class="modal fade category_modal" tabindex="-1" role="dialog"
     	aria-labelledby="gridSystemModalLabel">
     </div>
 

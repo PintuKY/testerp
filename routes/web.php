@@ -469,7 +469,8 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone'])
 });
 
 
-Route::get('sync/orders/{bussiness_location_id}', [ManageDataOfProductOrderAndCustomerController::class,'syncOrderDetails']);
-Route::get('sync/products/{bussiness_location_id}', [ManageDataOfProductOrderAndCustomerController::class,'syncProductDetails']);
-Route::get('sync/customers/{bussiness_location_id}', [ManageDataOfProductOrderAndCustomerController::class,'syncCustomerDetails']);
-Route::get('create/master/list', [MasterListController::class,'createMasterList']);
+Route::get('sync/orders/{business_location_id}', [ManageDataOfProductOrderAndCustomerController::class,'syncOrderDetails'])->name('sync.orders');
+Route::get('sync/products/{business_location_id}', [ManageDataOfProductOrderAndCustomerController::class,'syncProductDetails'])->name('sync.products');
+Route::get('sync/customers/{business_location_id}', [ManageDataOfProductOrderAndCustomerController::class,'syncCustomerDetails'])->name('sync.customers');
+Route::get('sync/all', [ManageDataOfProductOrderAndCustomerController::class,'syncAllDetails'])->name('sync.all');
+// Route::get('create/master/list', [MasterListController::class,'createMasterList']);

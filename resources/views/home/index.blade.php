@@ -7,6 +7,22 @@
 <section class="content-header content-header-custom">
     <h1>{{ __('home.welcome_message', ['name' => Session::get('user.first_name')]) }}
     </h1>
+    @php
+        $business_location_id = 1;
+    @endphp
+
+        <label class="card">
+          <select class="btn btn-success set-business-location-id">
+            <option value="">Select</option>
+              @foreach (getApiSettingData() as $item)
+                <option value="{{ $item->id??'' }}">{{ $item->url??'' }}</option>
+              @endforeach
+          </select>
+          <a class="btn btn-warning syncCustomer" href="">Sync Customer</a>
+          <a class="btn btn-warning syncProduct" href="">Sync Product</a>
+          <a class="btn btn-warning syncOrder" href="">Sync Order</a>
+          <a class="btn btn-warning syncAll" href="{{route('sync.all')}}">Sync All</a>
+        </label>
 </section>
 <!-- Main content -->
 <section class="content content-custom no-print">
@@ -32,7 +48,8 @@
                     </div>
         		</div>
         	</div>
-    	   <br>
+
+         <br>
     	   <div class="row row-custom">
             	<div class="col-md-3 col-sm-6 col-xs-12 col-custom">
             	   <div class="info-box info-box-new-style">
@@ -466,6 +483,17 @@
     @endif
     <script type="text/javascript">
         $(document).ready( function(){
+            $('.set-business-location-id').on('change',function(){
+                var selectedVal = '';
+                var selectedVal = $(".set-business-location-id option:selected").val();
+                var products_url = "{{route('sync.products',"")}}/"+selectedVal;
+                var customers_url = "{{route('sync.customers',"")}}/"+selectedVal;
+                var orders_url = "{{route('sync.orders',"")}}/"+selectedVal;
+                $('.syncCustomer').attr('href',customers_url);
+                $('.syncProduct').attr('href',products_url);
+                $('.syncOrder').attr('href',orders_url);
+            });
+
         sales_order_table = $('#sales_order_table').DataTable({
           processing: true,
           serverSide: true,

@@ -8,9 +8,6 @@
 			{!! Form::select('products[' . $product->id . '][sub_category_id]', !empty($sub_categories[$product->category_id]) ? $sub_categories[$product->category_id] : [], $product->sub_category_id, ['placeholder' => __('messages.please_select'), 'class' => 'form-control select2 input-sm sub_category_id', 'style' => 'width: 100%;']); !!}
 		</td>
 		<td>
-			{!! Form::select('products[' . $product->id . '][brand_id]', $brands, $product->brand_id, ['placeholder' => __('messages.please_select'), 'class' => 'form-control select2 input-sm', 'style' => 'width: 100%;']); !!}
-		</td>
-		<td>
 			{!! Form::select('products[' . $product->id . '][tax]', $taxes, $product->tax, ['placeholder' => __('messages.please_select'), 'class' => 'form-control select2 input-sm row_tax', 'style' => 'width: 100%;'],$tax_attributes); !!}
 		</td>
 		<td>

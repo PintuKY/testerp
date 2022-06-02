@@ -57,19 +57,6 @@
             {!! Form::select('sub_unit_ids[]', [], null, ['class' => 'form-control select2', 'multiple', 'id' => 'sub_unit_ids']); !!}
           </div>
         </div>
-
-        <div class="col-sm-4 @if(!session('business.enable_brand')) hide @endif">
-          <div class="form-group">
-            {!! Form::label('brand_id', __('product.brand') . ':') !!}
-            <div class="input-group">
-              {!! Form::select('brand_id', $brands, null, ['placeholder' => __('messages.please_select'), 'class' => 'form-control select2']); !!}
-            <span class="input-group-btn">
-                <button type="button" @if(!auth()->user()->can('brand.create')) disabled @endif class="btn btn-default bg-white btn-flat btn-modal" data-href="{{action('BrandController@create', ['quick_add' => true])}}" title="@lang('brand.add_brand')" data-container=".view_modal"><i class="fa fa-plus-circle text-primary fa-lg"></i></button>
-              </span>
-            </div>
-          </div>
-        </div>
-
         <div class="col-sm-4">
           <div class="form-group">
             <label for="brand_id">Delivery Days:*</label>
@@ -125,14 +112,7 @@
             'placeholder' => __('product.alert_quantity'), 'min' => '0']); !!}
           </div>
         </div>
-        @if(!empty($common_settings['enable_product_warranty']))
-        <div class="col-sm-4">
-          <div class="form-group">
-            {!! Form::label('warranty_id', __('lang_v1.warranty') . ':') !!}
-            {!! Form::select('warranty_id', $warranties, null, ['class' => 'form-control select2', 'placeholder' => __('messages.please_select')]); !!}
-          </div>
-        </div>
-        @endif
+
         <!-- include module fields -->
         @if(!empty($pos_module_data))
             @foreach($pos_module_data as $key => $value)

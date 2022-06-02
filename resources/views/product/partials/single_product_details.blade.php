@@ -4,14 +4,14 @@
 		<div class="table-responsive">
 			<table class="table bg-gray">
 				<tr class="bg-green">
-					@can('view_purchase_price')
+					{{--@can('view_purchase_price')
 						<th>@lang('product.default_purchase_price') (@lang('product.exc_of_tax'))</th>
 						<th>@lang('product.default_purchase_price') (@lang('product.inc_of_tax'))</th>
-					@endcan
+					@endcan--}}
 					@can('access_default_selling_price')
-						@can('view_purchase_price')
+						{{--@can('view_purchase_price')
 				        	<th>@lang('product.profit_percent')</th>
-				        @endcan
+				        @endcan--}}
 				        <th>@lang('product.default_selling_price') (@lang('product.exc_of_tax'))</th>
 				        <th>@lang('product.default_selling_price') (@lang('product.inc_of_tax'))</th>
 				    @endcan

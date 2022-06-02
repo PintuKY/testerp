@@ -41,10 +41,10 @@
 
                     <span class="pull-right"><small><i>@lang('product.inc_of_tax')</i></small></span>
                 </th>
-                <th class="{{$class}}">@lang('product.profit_percent')</th>
-                <th class="{{$class}}">@lang('product.default_selling_price') --}}
-                {{--<br/>
-                <small><i><span class="dsp_label"></span></i></small>--}}
+                <th class="{{$class}}">@lang('product.profit_percent')</th>--}}
+                <th class="{{$class}}">@lang('product.default_selling_price')
+                <br/>
+                <small><i><span class="dsp_label"></span></i></small>
                 </th>
                 <th>@lang('lang_v1.variation_images')</th>
                 <th><button type="button" class="btn btn-success btn-xs add_variation_value_row">+</button></th>
@@ -95,11 +95,12 @@
                     <td class="{{$class}}">
                         {!! Form::text($array_name . '[' . $row_index .'][' . $variation_array_name . '][' . $variation_row_index . '][profit_percent]', @num_format($variation->profit_percent), ['class' => 'form-control input-sm variable_profit_percent input_number', 'required']); !!}
                     </td>
+                    --}}
                     <td class="{{$class}}">
                         {!! Form::text($array_name . '[' . $row_index .'][' . $variation_array_name . '][' . $variation_row_index . '][default_sell_price]', @num_format($variation->default_sell_price), ['class' => 'form-control input-sm variable_dsp input_number', 'placeholder' => __('product.exc_of_tax'), 'required']); !!}
 
                         {!! Form::text($array_name . '[' . $row_index .'][' . $variation_array_name . '][' . $variation_row_index . '][sell_price_inc_tax]', @num_format($variation->sell_price_inc_tax), ['class' => 'form-control input-sm variable_dsp_inc_tax input_number', 'placeholder' => __('product.inc_of_tax'), 'required']); !!}
-                    </td>--}}
+                    </td>
                     <td>
                         @php
                             $action = !empty($action) ? $action : '';

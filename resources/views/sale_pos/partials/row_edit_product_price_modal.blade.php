@@ -35,15 +35,10 @@
 					<label>@lang('sale.tax')</label>
 
 					{!! Form::hidden("products[$row_count][item_tax]", @num_format($item_tax), ['class' => 'item_tax']); !!}
-		
+
 					{!! Form::select("products[$row_count][tax_id]", $tax_dropdown['tax_rates'], $tax_id, ['placeholder' => 'Select', 'class' => 'form-control tax_id'], $tax_dropdown['attributes']); !!}
 				</div>
-				@if(!empty($warranties))
-					<div class="form-group col-xs-12">
-						<label>@lang('lang_v1.warranty')</label>
-						{!! Form::select("products[$row_count][warranty_id]", $warranties, $warranty_id, ['placeholder' => __('messages.please_select'), 'class' => 'form-control']); !!}
-					</div>
-				@endif
+
 				<div class="form-group col-xs-12">
 		      		<label>@lang('lang_v1.description')</label>
 		      		<textarea class="form-control" name="products[{{$row_count}}][sell_line_note]" rows="3">{{$sell_line_note}}</textarea>

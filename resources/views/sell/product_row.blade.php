@@ -331,10 +331,6 @@
 			</td>
 
 		@else
-			@if(!empty($warranties))
-				{!! Form::select("products[$productData->id][warranty_id]", $warranties, $warranty_id, ['placeholder' => __('messages.please_select'), 'class' => 'form-control']); !!}
-			@endif
-
 			@if(!empty($pos_settings['inline_service_staff']))
 				<td>
 					<div class="form-group">
@@ -348,17 +344,12 @@
 		<td class="{{$hide_tax}}">
 			<input type="text" name="products[{{$productData->id}}][unit_price_inc_tax]" class="form-control pos_unit_price_inc_tax input_number" value="{{@num_format($unit_price_inc_tax)}}" @if(!$edit_price) readonly @endif @if(!empty($pos_settings['enable_msp'])) data-rule-min-value="{{$unit_price_inc_tax}}" data-msg-min-value="{{__('lang_v1.minimum_selling_price_error_msg', ['price' => @num_format($unit_price_inc_tax)])}}" @endif>
 		</td>
-		@if(!empty($common_settings['enable_product_warranty']) && !empty($is_direct_sell))
-			<td>
-				{!! Form::select("products[$productData->id][warranty_id]", $warranties, $warranty_id, ['placeholder' => __('messages.please_select'), 'class' => 'form-control']); !!}
-			</td>
-		@endif
-		
+
 		@if(isset($productData->product_variation) && $productData->product_variation->variation_template->type == 1)
 			<td class="text-center v-center">
 				<select class="form-control select_variation_value select2" required name="products[{{$productData->id}}][variation_value_id]">
 					<option value="">Please Select</option>
-					@foreach ($productData->product_variation->variation_template->values as $key => $product_variation_name_data) 
+					@foreach ($productData->product_variation->variation_template->values as $key => $product_variation_name_data)
 						<option value="{{$product_variation_name_data->id}}" data-price="{{$product_variation_name_data->value}}" data-products-variation-id="{{$productData->id}}">{{$product_variation_name_data->name}} - {{$product_variation_name_data->value}}</option>
 					@endforeach
 				</select>
@@ -371,7 +362,7 @@
 		<td>
 			@foreach($productData->product_variation->variation_template->values as $key => $product_variation_name_data)
 				<label class="radio-inline">
-					<input type="radio" class="radio_variation_value" data-products-variation-id="{{$productData->id}}"  data-price="{{$product_variation_name_data->value}}" name="products[{{$productData->id}}][variation_value_id]" value="{{$product_variation_name_data->id}}">{{$product_variation_name_data->name}} - {{$product_variation_name_data->value}} 
+					<input type="radio" class="radio_variation_value" data-products-variation-id="{{$productData->id}}"  data-price="{{$product_variation_name_data->value}}" name="products[{{$productData->id}}][variation_value_id]" value="{{$product_variation_name_data->id}}">{{$product_variation_name_data->name}} - {{$product_variation_name_data->value}}
 				</label><br>
 			@endforeach
 		</td>
@@ -387,7 +378,7 @@
 			<span class="display_currency pos_line_total_text @if(!empty($pos_settings['is_pos_subtotal_editable'])) hide @endif" data-currency_symbol="true">{{$productData->quantity_ordered*$unit_price_inc_tax}}</span>
 		</td>
 		<td class="text-center v-center">
-			<i class="fa fa-times text-danger pos_remove_row cursor-pointer" aria-hidden="true"></i> 
+			<i class="fa fa-times text-danger pos_remove_row cursor-pointer" aria-hidden="true"></i>
 		</td>
 	</tr>
 @endforeach

@@ -46,14 +46,6 @@
             {!! Form::select('sub_unit_ids[]', [], null, ['class' => 'form-control select2', 'multiple', 'id' => 'sub_unit_ids']); !!}
           </div>
         </div>
-
-        <div class="col-sm-4">
-          <div class="form-group">
-            {!! Form::label('brand_id', __('product.brand') . ':') !!}
-              {!! Form::select('brand_id', $brands, null, ['placeholder' => __('messages.please_select'), 'class' => 'form-control select2']); !!}
-          </div>
-        </div>
-        
         <div class="clearfix"></div>
         <div class="col-sm-4">
           <div class="form-group">
@@ -85,14 +77,7 @@
             'placeholder' => __('product.alert_quantity'), 'min' => '0']); !!}
           </div>
         </div>
-        @if(!empty($common_settings['enable_product_warranty']))
-        <div class="col-sm-4">
-          <div class="form-group">
-            {!! Form::label('warranty_id', __('lang_v1.warranty') . ':') !!}
-            {!! Form::select('warranty_id', $warranties, null, ['class' => 'form-control select2', 'placeholder' => __('messages.please_select')]); !!}
-          </div>
-        </div>
-        @endif
+
         @if(session('business.enable_product_expiry'))
           @if(session('business.expiry_type') == 'add_expiry')
               @php
@@ -274,7 +259,7 @@
           }
       },
       submitHandler: function (form) {
-        
+
         var form = $("form#quick_add_product_form");
         var url = form.attr('action');
         form.find('button[type="submit"]').attr('disabled', true);
@@ -296,7 +281,7 @@
                       if (location_check) {
                         get_purchase_entry_row( data.product.id, 0 );
                       }
-                      
+
                     }
                     $(document).trigger({type: "quickProductAdded", 'product': data.product, 'variation': data.variation });
                 } else {

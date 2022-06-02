@@ -58,11 +58,12 @@
             @endif
         </div>
     </td>
+    --}}
     <td class="{{$class}}">
         {!! Form::text($name . '[' . $variation_index . '][variations][' . $value_index . '][default_sell_price]', $default, ['class' => 'form-control input-sm variable_dsp input_number', 'placeholder' => __('product.exc_of_tax'), 'required']); !!}
 
         {!! Form::text($name . '[' . $variation_index . '][variations][' . $value_index . '][sell_price_inc_tax]', $default, ['class' => 'form-control input-sm variable_dsp_inc_tax input_number', 'placeholder' => __('product.inc_of_tax'), 'required']); !!}
-    </td>--}}
+    </td>
     <td>{!! Form::file('variation_images_' . $variation_index . '_' . $value_index . '[]', ['class' => 'variation_images', 'accept' => 'image/*', 'multiple']); !!}</td>
     <td>
         <button type="button" class="btn btn-danger btn-xs remove_variation_value_row">-</button>

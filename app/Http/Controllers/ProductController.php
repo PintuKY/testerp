@@ -217,17 +217,6 @@ class ProductController extends Controller
                             '<li><a href="' . action('ProductController@activate', [$row->id]) . '" class="activate-product"><i class="fas fa-check-circle"></i> ' . __("lang_v1.reactivate") . '</a></li>';
                         }
 
-                        $html .= '<li class="divider"></li>';
-
-                        if ($row->enable_stock == 1 && auth()->user()->can('product.opening_stock')) {
-                            $html .=
-                            '<li><a href="#" data-href="' . action('OpeningStockController@add', ['product_id' => $row->id]) . '" class="add-opening-stock"><i class="fa fa-database"></i> ' . __("lang_v1.add_edit_opening_stock") . '</a></li>';
-                        }
-
-                        if (auth()->user()->can('product.view')) {
-                            $html .=
-                            '<li><a href="' . action('ProductController@productStockHistory', [$row->id]) . '"><i class="fas fa-history"></i> ' . __("lang_v1.product_stock_history") . '</a></li>';
-                        }
 
                         if (auth()->user()->can('product.create')) {
 
@@ -235,9 +224,6 @@ class ProductController extends Controller
                                 $html .=
                                 '<li><a href="' . action('ProductController@addSellingPrices', [$row->id]) . '"><i class="fas fa-money-bill-alt"></i> ' . __("lang_v1.add_selling_price_group_prices") . '</a></li>';
                             }
-
-                            $html .=
-                                '<li><a href="' . action('ProductController@create', ["d" => $row->id]) . '"><i class="fa fa-copy"></i> ' . __("lang_v1.duplicate_product") . '</a></li>';
                         }
 
                         if (!empty($row->media->first())) {
@@ -371,27 +357,10 @@ class ProductController extends Controller
         //Get all business locations
         $business_locations = BusinessLocation::forDropdown($business_id);
 
-        //Duplicate product
-        $duplicate_product = null;
+
         $rack_details = null;
 
         $sub_categories = [];
-        if (!empty(request()->input('d'))) {
-            $duplicate_product = Product::where('business_id', $business_id)->find(request()->input('d'));
-            $duplicate_product->name .= ' (copy)';
-
-            if (!empty($duplicate_product->category_id)) {
-                $sub_categories = Category::where('business_id', $business_id)
-                        ->where('parent_id', $duplicate_product->category_id)
-                        ->pluck('name', 'id')
-                        ->toArray();
-            }
-
-            //Rack details
-            if (!empty($duplicate_product->id)) {
-                $rack_details = $this->productUtil->getRackDetails($business_id, $duplicate_product->id);
-            }
-        }
 
         $selling_price_group_count = SellingPriceGroup::countSellingPriceGroups($business_id);
 
@@ -405,7 +374,7 @@ class ProductController extends Controller
         $pos_module_data = $this->moduleUtil->getModuleData('get_product_screen_top_view');
 
         return view('product.create')
-            ->with(compact('categories', 'brands', 'units', 'taxes', 'barcode_types', 'default_profit_percent', 'tax_attributes', 'barcode_default', 'business_locations', 'duplicate_product', 'sub_categories', 'rack_details', 'selling_price_group_count', 'module_form_parts', 'product_types', 'common_settings', 'warranties', 'pos_module_data'));
+            ->with(compact('categories', 'brands', 'units', 'taxes', 'barcode_types', 'default_profit_percent', 'tax_attributes', 'barcode_default', 'business_locations', 'sub_categories', 'rack_details', 'selling_price_group_count', 'module_form_parts', 'product_types', 'common_settings', 'warranties', 'pos_module_data'));
     }
 
     private function product_types()
@@ -1017,7 +986,7 @@ class ProductController extends Controller
                 return view('product.partials.combo_product_form_part')
                 ->with(compact('profit_percent', 'action'));
             }
-        } elseif ($request->input('action') == "edit" || $request->input('action') == "duplicate") {
+        } elseif ($request->input('action') == "edit") {
             $product_id = $request->input('product_id');
             $action = $request->input('action');
             if ($request->input('type') == 'single') {
@@ -2156,35 +2125,6 @@ class ProductController extends Controller
         }
 
         return $output;
-    }
-
-    public function productStockHistory($id)
-    {
-        if (!auth()->user()->can('product.view')) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        $business_id = request()->session()->get('user.business_id');
-
-        if (request()->ajax()) {
-
-            $stock_details = $this->productUtil->getVariationStockDetails($business_id, $id, request()->input('location_id'));
-            $stock_history = $this->productUtil->getVariationStockHistory($business_id, $id, request()->input('location_id'));
-
-            return view('product.stock_history_details')
-                ->with(compact('stock_details', 'stock_history'));
-        }
-
-        $product = Product::where('business_id', $business_id)
-                            ->with(['variations', 'variations.product_variation'])
-                            ->findOrFail($id);
-
-        //Get all business locations
-        $business_locations = BusinessLocation::forDropdown($business_id);
-
-
-        return view('product.stock_history')
-                ->with(compact('product', 'business_locations'));
     }
 
     /**

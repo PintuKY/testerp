@@ -1,5 +1,5 @@
 @php
-    $colspan = 15;
+    $colspan = 9;
     $custom_labels = json_decode(session('business.custom_labels'), true);
 @endphp
 <table class="table table-bordered table-striped ajax_view hide-footer" id="product_table">
@@ -10,18 +10,8 @@
             <th>@lang('messages.action')</th>
             <th>@lang('sale.product')</th>
             <th>@lang('purchase.business_location') @show_tooltip(__('lang_v1.product_business_location_tooltip'))</th>
-            @can('view_purchase_price')
-                @php
-                    $colspan++;
-                @endphp
-                <th>@lang('lang_v1.unit_perchase_price')</th>
-            @endcan
-            @can('access_default_selling_price')
-                @php
-                    $colspan++;
-                @endphp
-                <th>@lang('lang_v1.selling_price')</th>
-            @endcan
+
+
             <th>@lang('report.current_stock')</th>
             <th>@lang('product.product_type')</th>
             <th>@lang('product.category')</th>
@@ -40,7 +30,6 @@
                     {!! Form::submit(__('lang_v1.delete_selected'), array('class' => 'btn btn-xs btn-danger', 'id' => 'delete-selected')) !!}
                     {!! Form::close() !!}
                 @endcan
-
 
                     @can('product.update')
 

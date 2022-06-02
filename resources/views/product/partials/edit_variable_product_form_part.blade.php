@@ -1,5 +1,5 @@
 <div class="col-sm-12">
-  <h4>Add Variation:* 
+  <h4>Add Variation:*
   <button type="button" class="btn btn-primary" id="add_variation" data-action="edit" >+</button></h4>
 </div>
 <div class="col-sm-12">
@@ -25,9 +25,9 @@
                 <table class="table table-condensed table-bordered blue-header variation_value_table">
                     <tr>
                         <th>@lang('product.value')</th>
-                        <th>@lang('product.default_purchase_price') &nbsp;&nbsp;<b><i class="fa fa-info-circle" aria-hidden="true" data-toggle="popover" data-html="true" data-trigger="hover" data-content="<p class='text-primary'>Drag the mouse over the table cells to copy input values</p>" data-placement="top"></i></b></th>
+                        {{--<th>@lang('product.default_purchase_price') &nbsp;&nbsp;<b><i class="fa fa-info-circle" aria-hidden="true" data-toggle="popover" data-html="true" data-trigger="hover" data-content="<p class='text-primary'>Drag the mouse over the table cells to copy input values</p>" data-placement="top"></i></b></th>
                         <th>@lang('product.default_selling_price') &nbsp;&nbsp;<b><i class="fa fa-info-circle" aria-hidden="true" data-toggle="popover" data-html="true" data-trigger="hover" data-content="<p class='text-primary'>Drag the mouse over the table cells to copy input values</p>" data-placement="top"></i></b></th>
-                        <th><button type="button" class="btn btn-success btn-xs add_variation_value_row">+</button></th>
+                        --}}<th><button type="button" class="btn btn-success btn-xs add_variation_value_row">+</button></th>
                     </tr>
                     @foreach($product_variation->variations as $variation )
                     <tr>

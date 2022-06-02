@@ -1,4 +1,4 @@
-@if(!session('business.enable_price_tax')) 
+@if(!session('business.enable_price_tax'))
     @php
         $default = 0;
         $class = 'hide';
@@ -35,16 +35,16 @@
                 <th>@lang('product.sku') @show_tooltip(__('tooltip.sub_sku'))</th>
                 <th>@lang('product.value')</th>
                 <th>@lang('product.price')</th>
-                <th class="{{$class}}">@lang('product.default_purchase_price') 
+                {{--<th class="{{$class}}">@lang('product.default_purchase_price')
                     <br/>
                     <span class="pull-left"><small><i>@lang('product.exc_of_tax')</i></small></span>
 
                     <span class="pull-right"><small><i>@lang('product.inc_of_tax')</i></small></span>
                 </th>
                 <th class="{{$class}}">@lang('product.profit_percent')</th>
-                <th class="{{$class}}">@lang('product.default_selling_price') 
-                <br/>
-                <small><i><span class="dsp_label"></span></i></small>
+                <th class="{{$class}}">@lang('product.default_selling_price') --}}
+                {{--<br/>
+                <small><i><span class="dsp_label"></span></i></small>--}}
                 </th>
                 <th>@lang('lang_v1.variation_images')</th>
                 <th><button type="button" class="btn btn-success btn-xs add_variation_value_row">+</button></th>
@@ -77,13 +77,13 @@
                     <td>
                     @forelse($product_variation->variation_template->values as $variation_template)
                         @if($variation_template->id == $variation->variation_value_id)
-                        
+
                             {!! Form::text($array_name . '[' . $row_index .'][' . $variation_array_name . '][' . $variation_row_index . '][price]', $variation_template->value, ['class' => 'form-control input-sm variation_value_price', 'required']); !!}
                         @endif
                     @empty
                     @endforelse
                     </td>
-                    <td class="{{$class}}">
+                    {{--<td class="{{$class}}">
                         <div class="col-sm-6">
                             {!! Form::text($array_name . '[' . $row_index .'][' . $variation_array_name . '][' . $variation_row_index . '][default_purchase_price]', @num_format($variation->default_purchase_price), ['class' => 'form-control input-sm variable_dpp input_number', 'placeholder' => __('product.exc_of_tax'), 'required']); !!}
                         </div>
@@ -99,9 +99,9 @@
                         {!! Form::text($array_name . '[' . $row_index .'][' . $variation_array_name . '][' . $variation_row_index . '][default_sell_price]', @num_format($variation->default_sell_price), ['class' => 'form-control input-sm variable_dsp input_number', 'placeholder' => __('product.exc_of_tax'), 'required']); !!}
 
                         {!! Form::text($array_name . '[' . $row_index .'][' . $variation_array_name . '][' . $variation_row_index . '][sell_price_inc_tax]', @num_format($variation->sell_price_inc_tax), ['class' => 'form-control input-sm variable_dsp_inc_tax input_number', 'placeholder' => __('product.inc_of_tax'), 'required']); !!}
-                    </td>
+                    </td>--}}
                     <td>
-                        @php 
+                        @php
                             $action = !empty($action) ? $action : '';
                         @endphp
                         @if($action !== 'duplicate')

@@ -161,7 +161,7 @@
             product_table = $('#product_table').DataTable({
                 processing: true,
                 serverSide: true,
-                aaSorting: [[3, 'asc']],
+                /*aaSorting: [[3, 'asc']],*/
                 scrollY:        "75vh",
                 scrollX:        true,
                 scrollCollapse: true,
@@ -188,7 +188,7 @@
                     }
                 },
                 columnDefs: [ {
-                    "targets": [0, 1, 2],
+                    /*"targets": [0, 1, 2],*/
                     "orderable": false,
                     "searchable": false
                 } ],
@@ -198,18 +198,12 @@
                         { data: 'action', name: 'action'},
                         { data: 'product', name: 'products.name'  },
                         { data: 'product_locations', name: 'product_locations'  },
-                        @can('view_purchase_price')
-                            { data: 'purchase_price', name: 'max_purchase_price', searchable: false},
-                        @endcan
-                        @can('access_default_selling_price')
-                            { data: 'selling_price', name: 'max_price', searchable: false},
-                        @endcan
                         { data: 'current_stock', searchable: false},
                         { data: 'type', name: 'products.type'},
                         { data: 'category', name: 'c1.name'},
                         { data: 'brand', name: 'brands.name'},
                         { data: 'tax', name: 'tax_rates.name', searchable: false},
-                        { data: 'sku', name: 'products.sku'},
+                        { data: 'sku', name: 'products.sku'}
 
                     ],
                     createdRow: function( row, data, dataIndex ) {
@@ -498,7 +492,7 @@
                                 d.unit_id = $('#product_list_filter_unit_id').val();
                                 d.type = $('#product_list_filter_type').val();
                                 d.active_state = $('#active_state').val();
-                                d.not_for_selling = $('#not_for_selling').is(':checked');
+
                                 if ($('#repair_model_id').length == 1) {
                                     d.repair_model_id = $('#repair_model_id').val();
                                 }

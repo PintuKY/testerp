@@ -58,11 +58,11 @@ class ProductUtil extends Util
                 'name' => 'DUMMY',
                 'product_id' => $product->id,
                 'sub_sku' => $sku,
-                'default_purchase_price' => $this->num_uf($purchase_price),
+                /*'default_purchase_price' => $this->num_uf($purchase_price),
                 'dpp_inc_tax' => $this->num_uf($dpp_inc_tax),
                 'profit_percent' => $this->num_uf($profit_percent),
                 'default_sell_price' => $this->num_uf($selling_price),
-                'sell_price_inc_tax' => $this->num_uf($selling_price_inc_tax),
+                'sell_price_inc_tax' => $this->num_uf($selling_price_inc_tax),*/
                 'combo_variations' => $combo_variations
             ];
         $variation = $product_variation->variations()->create($variation_data);
@@ -168,16 +168,16 @@ class ProductUtil extends Util
                       'variation_value_id' => $variation_value_id,
                       'product_id' => $product->id,
                       'sub_sku' => $sub_sku,
-                      'default_purchase_price' => $this->num_uf($v['default_purchase_price']),
+                      /*'default_purchase_price' => $this->num_uf($v['default_purchase_price']),
                       'dpp_inc_tax' => $this->num_uf($v['dpp_inc_tax']),
                       'profit_percent' => $this->num_uf($v['profit_percent']),
                       'default_sell_price' => $this->num_uf($v['default_sell_price']),
-                      'sell_price_inc_tax' => $this->num_uf($v['sell_price_inc_tax'])
+                      'sell_price_inc_tax' => $this->num_uf($v['sell_price_inc_tax'])*/
                     ];
                     $c++;
                     $images[] = 'variation_images_' . $key . '_' . $k;
                 }
-                
+
                 $variations = $product_variation->variations()->createMany($variation_data);
 
                 $i = 0;
@@ -204,7 +204,7 @@ class ProductUtil extends Util
         //Update product variations
         $product_variation_ids = [];
         $variations_ids = [];
-        
+
         foreach ($input_variations_edit as $key => $value) {
             $product_variation_ids[] = $key;
 
@@ -218,11 +218,11 @@ class ProductUtil extends Util
                     $data = [
                         'name' => $v['value'],
                         'price' => $v['price'],
-                        'default_purchase_price' => $this->num_uf($v['default_purchase_price']),
+                        /*'default_purchase_price' => $this->num_uf($v['default_purchase_price']),
                         'dpp_inc_tax' => $this->num_uf($v['dpp_inc_tax']),
                         'profit_percent' => $this->num_uf($v['profit_percent']),
                         'default_sell_price' => $this->num_uf($v['default_sell_price']),
-                        'sell_price_inc_tax' => $this->num_uf($v['sell_price_inc_tax'])
+                        'sell_price_inc_tax' => $this->num_uf($v['sell_price_inc_tax'])*/
                     ];
                     if (!empty($v['sub_sku'])) {
                         $data['sub_sku'] = $v['sub_sku'];
@@ -239,7 +239,7 @@ class ProductUtil extends Util
                     $variations_ids[] = $k;
                 }
             }
-            
+
             //Add new variations
             if (!empty($value['variations'])) {
                 echo "demo1";
@@ -276,11 +276,11 @@ class ProductUtil extends Util
                       'variation_value_id' => $variation_value_id,
                       'product_id' => $product->id,
                       'sub_sku' => $sub_sku,
-                      'default_purchase_price' => $this->num_uf($v['default_purchase_price']),
+                      /*'default_purchase_price' => $this->num_uf($v['default_purchase_price']),
                       'dpp_inc_tax' => $this->num_uf($v['dpp_inc_tax']),
                       'profit_percent' => $this->num_uf($v['profit_percent']),
                       'default_sell_price' => $this->num_uf($v['default_sell_price']),
-                      'sell_price_inc_tax' => $this->num_uf($v['sell_price_inc_tax'])
+                      'sell_price_inc_tax' => $this->num_uf($v['sell_price_inc_tax'])*/
                     ];
                     $c++;
                     $media[] = 'variation_images_' . $key . '_' . $k;
@@ -295,7 +295,7 @@ class ProductUtil extends Util
                 }
             }
         }
-        
+
         //Check if purchase or sell exist for the deletable variations
         $count_purchase = PurchaseLine::join(
             'transactions as T',
@@ -480,7 +480,7 @@ class ProductUtil extends Util
                 })
                 ->where('p.business_id', $business_id)
                 ->where('variations.id', $variation_id);
-        
+
         //Add condition for check of quantity. (if stock is not enabled or qty_available > 0)
         if ($check_qty) {
             $query->where(function ($query) use ($location_id) {
@@ -496,7 +496,7 @@ class ProductUtil extends Util
                             ->orWhere('vld.location_id', $location_id);
             });
         }
-        
+
         $product = $query->select(
             DB::raw("IF(pv.is_dummy = 0, CONCAT(p.name,
                     ' (', pv.name, ':',variations.name, ')'), p.name) AS product_name"),
@@ -528,7 +528,7 @@ class ProductUtil extends Util
                         variation_id=variations.id ORDER BY id DESC LIMIT 1) as last_purchased_price")
         )
         ->firstOrFail();
-            
+
         if ($product->product_type == 'combo') {
             if ($check_qty) {
                 $product->qty_available = $this->calculateComboQuantity($location_id, $product->combo_variations);
@@ -891,7 +891,7 @@ class ProductUtil extends Util
             $variation_data['sell_price_inc_tax'] = $variation_details->sell_price_inc_tax;
         }
 
-        if (($variation_details->default_purchase_price != $variation_data['pp_without_discount']) ||
+        /*if (($variation_details->default_purchase_price != $variation_data['pp_without_discount']) ||
             ($variation_details->sell_price_inc_tax != $variation_data['sell_price_inc_tax'])
             ) {
             //Set default purchase price exc. tax
@@ -910,7 +910,7 @@ class ProductUtil extends Util
             $variation_details->profit_percent = $this->get_percent($variation_details->default_purchase_price, $variation_details->default_sell_price);
 
             $variation_details->save();
-        }
+        }*/
     }
 
     /**
@@ -1324,7 +1324,7 @@ class ProductUtil extends Util
             } else {
                 //create newly added supplier purchase lines
                 $supplier_purchase_line = new SupplierPurchaseLine();
-                
+
                 $supplier_purchase_line->product_id = $data['product_id'];
                 $supplier_purchase_line->variation_id = $data['variation_id'];
 
@@ -1817,7 +1817,7 @@ class ProductUtil extends Util
             }
 
         }
-        
+
         return $discount;
     }
 

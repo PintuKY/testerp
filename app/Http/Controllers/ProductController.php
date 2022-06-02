@@ -118,16 +118,16 @@ class ProductController extends Controller
                 'products.image',
                 'products.enable_stock',
                 'products.is_inactive',
-                'products.not_for_selling',
+                /*'products.not_for_selling',
                 'products.product_custom_field1',
                 'products.product_custom_field2',
                 'products.product_custom_field3',
-                'products.product_custom_field4',
+                'products.product_custom_field4',*/
                 DB::raw('SUM(vld.qty_available) as current_stock'),
-                DB::raw('MAX(v.sell_price_inc_tax) as max_price'),
+                /*DB::raw('MAX(v.sell_price_inc_tax) as max_price'),
                 DB::raw('MIN(v.sell_price_inc_tax) as min_price'),
                 DB::raw('MAX(v.dpp_inc_tax) as max_purchase_price'),
-                DB::raw('MIN(v.dpp_inc_tax) as min_purchase_price')
+                DB::raw('MIN(v.dpp_inc_tax) as min_purchase_price')*/
                 );
 
             //if woocomerce enabled add field to query
@@ -271,14 +271,14 @@ class ProductController extends Controller
                     return  '<input type="checkbox" class="row-select" value="' . $row->id .'">' ;
                 })
                 ->editColumn('current_stock', '@if($enable_stock == 1) {{@number_format($current_stock)}} @else -- @endif {{$unit}}')
-                ->addColumn(
+                /*->addColumn(
                     'purchase_price',
                     '<div style="white-space: nowrap;">@format_currency($min_purchase_price) @if($max_purchase_price != $min_purchase_price && $type == "variable") -  @format_currency($max_purchase_price)@endif </div>'
-                )
-                ->addColumn(
+                )*/
+                /*->addColumn(
                     'selling_price',
                     '<div style="white-space: nowrap;">@format_currency($min_price) @if($max_price != $min_price && $type == "variable") -  @format_currency($max_price)@endif </div>'
-                )
+                )*/
                 ->filterColumn('products.sku', function ($query, $keyword) {
                     $query->whereHas('variations', function($q) use($keyword){
                             $q->where('sub_sku', 'like', "%{$keyword}%");
@@ -443,9 +443,9 @@ class ProductController extends Controller
             $product_details['enable_stock'] = (!empty($request->input('enable_stock')) &&  $request->input('enable_stock') == 1) ? 1 : 0;
             /*$product_details['not_for_selling'] = (!empty($request->input('not_for_selling')) &&  $request->input('not_for_selling') == 1) ? 1 : 0;*/
 
-            if (!empty($request->input('sub_category_id'))) {
+           /* if (!empty($request->input('sub_category_id'))) {
                 $product_details['sub_category_id'] = $request->input('sub_category_id') ;
-            }
+            }*/
 
             if (empty($product_details['sku'])) {
                 $product_details['sku'] = ' ';
@@ -533,6 +533,7 @@ class ProductController extends Controller
                             'msg' => __('product.product_added_success')
                         ];
         } catch (\Exception $e) {
+            dd($e->getMessage());
             DB::rollBack();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
 
@@ -609,7 +610,6 @@ class ProductController extends Controller
         //Sub-category
         $sub_categories = [];
         $sub_categories = Category::where('business_id', $business_id)
-                        ->where('parent_id', $product->category_id)
                         ->pluck('name', 'id')
                         ->toArray();
         $sub_categories = [ "" => "None"] + $sub_categories;
@@ -696,11 +696,11 @@ class ProductController extends Controller
 
             /*$product->not_for_selling = (!empty($request->input('not_for_selling')) &&  $request->input('not_for_selling') == 1) ? 1 : 0;*/
 
-            if (!empty($request->input('sub_category_id'))) {
+            /*if (!empty($request->input('sub_category_id'))) {
                 $product->sub_category_id = $request->input('sub_category_id');
             } else {
                 $product->sub_category_id = null;
-            }
+            }*/
 
            /* $expiry_enabled = $request->session()->get('business.enable_product_expiry');
             if (!empty($expiry_enabled)) {
@@ -748,8 +748,8 @@ class ProductController extends Controller
                 $variation = Variation::find($single_data['single_variation_id']);
 
                 $variation->sub_sku = $product->sku;
-                $variation->default_purchase_price = $this->productUtil->num_uf($single_data['single_dpp']);
-                $variation->dpp_inc_tax = $this->productUtil->num_uf($single_data['single_dpp_inc_tax']);
+                /*$variation->default_purchase_price = $this->productUtil->num_uf($single_data['single_dpp']);
+                $variation->dpp_inc_tax = $this->productUtil->num_uf($single_data['single_dpp_inc_tax']);*/
                 $variation->profit_percent = $this->productUtil->num_uf($single_data['profit_percent']);
                 $variation->default_sell_price = $this->productUtil->num_uf($single_data['single_dsp']);
                 $variation->sell_price_inc_tax = $this->productUtil->num_uf($single_data['single_dsp_inc_tax']);
@@ -788,11 +788,11 @@ class ProductController extends Controller
 
                 $variation = Variation::find($request->input('combo_variation_id'));
                 $variation->sub_sku = $product->sku;
-                $variation->default_purchase_price = $this->productUtil->num_uf($request->input('item_level_purchase_price_total'));
-                $variation->dpp_inc_tax = $this->productUtil->num_uf($request->input('purchase_price_inc_tax'));
-                $variation->profit_percent = $this->productUtil->num_uf($request->input('profit_percent'));
+                /*$variation->default_purchase_price = $this->productUtil->num_uf($request->input('item_level_purchase_price_total'));
+                $variation->dpp_inc_tax = $this->productUtil->num_uf($request->input('purchase_price_inc_tax'));*/
+                /*$variation->profit_percent = $this->productUtil->num_uf($request->input('profit_percent'));
                 $variation->default_sell_price = $this->productUtil->num_uf($request->input('selling_price'));
-                $variation->sell_price_inc_tax = $this->productUtil->num_uf($request->input('selling_price_inc_tax'));
+                $variation->sell_price_inc_tax = $this->productUtil->num_uf($request->input('selling_price_inc_tax'));*/
                 $variation->combo_variations = $combo_variations;
                 $variation->save();
             }
@@ -1331,7 +1331,7 @@ class ProductController extends Controller
         try {
             $business_id = $request->session()->get('user.business_id');
             $form_fields = ['name', 'brand_id', 'unit_id', 'category_id', 'tax', 'barcode_type','tax_type', 'sku',
-                'alert_quantity', 'type', 'sub_unit_ids', 'sub_category_id', /*'weight',*/ /*'product_custom_field1', 'product_custom_field2', 'product_custom_field3', 'product_custom_field4', */'product_description'];
+                'alert_quantity', 'type', 'sub_unit_ids', /*'sub_category_id',*/ /*'weight',*/ /*'product_custom_field1', 'product_custom_field2', 'product_custom_field3', 'product_custom_field4', */'product_description'];
 
             $module_form_fields = $this->moduleUtil->getModuleData('product_form_fields');
             if (!empty($module_form_fields)) {
@@ -1445,25 +1445,25 @@ class ProductController extends Controller
             $business_id = request()->session()->get('user.business_id');
 
             $product = Product::where('business_id', $business_id)
-                        ->with(['brand', 'unit', 'category', 'sub_category', 'product_tax', 'variations', 'variations.product_variation', 'variations.group_prices', 'variations.media', 'product_locations', 'warranty', 'media'])
+                        ->with(['brand', 'unit', 'category', 'product_tax', 'variations', 'variations.product_variation', 'variations.group_prices', 'variations.media', 'product_locations', 'warranty', 'media'])
                         ->findOrFail($id);
 
             $price_groups = SellingPriceGroup::where('business_id', $business_id)->active()->pluck('name', 'id');
 
             $allowed_group_prices = [];
-            foreach ($price_groups as $key => $value) {
+           /* foreach ($price_groups as $key => $value) {
                 if (auth()->user()->can('selling_price_group.' . $key)) {
                     $allowed_group_prices[$key] = $value;
                 }
-            }
+            }*/
 
             $group_price_details = [];
 
-            foreach ($product->variations as $variation) {
+            /*foreach ($product->variations as $variation) {
                 foreach ($variation->group_prices as $group_price) {
                     $group_price_details[$variation->id][$group_price->price_group_id] = $group_price->price_inc_tax;
                 }
-            }
+            }*/
 
             $rack_details = $this->productUtil->getRackDetails($business_id, $id, true);
 
@@ -1836,9 +1836,9 @@ class ProductController extends Controller
                 $query->where('category_id', $filters['category']);
             }
 
-            if (!empty($filters['sub_category'])) {
+            /*if (!empty($filters['sub_category'])) {
                 $query->where('sub_category_id', $filters['sub_category']);
-            }
+            }*/
 
             if ($order_by == 'name') {
                 $query->orderBy('name', 'asc');
@@ -1975,7 +1975,7 @@ class ProductController extends Controller
             foreach ($products as $id => $product_data) {
                 $update_data = [
                     'category_id' => $product_data['category_id'],
-                    'sub_category_id' => $product_data['sub_category_id'],
+                    //'sub_category_id' => $product_data['sub_category_id'],
                     'brand_id' => $product_data['brand_id'],
                     'tax' => $product_data['tax'],
                 ];
@@ -1996,11 +1996,11 @@ class ProductController extends Controller
                 //Format variations data
                 foreach ($product_data['variations'] as $key => $value) {
                     $variation = Variation::where('product_id', $product->id)->findOrFail($key);
-                    $variation->default_purchase_price = $this->productUtil->num_uf($value['default_purchase_price']);
-                    $variation->dpp_inc_tax = $this->productUtil->num_uf($value['dpp_inc_tax']);
+                   /* $variation->default_purchase_price = $this->productUtil->num_uf($value['default_purchase_price']);
+                    $variation->dpp_inc_tax = $this->productUtil->num_uf($value['dpp_inc_tax']);*/
                     $variation->profit_percent = $this->productUtil->num_uf($value['profit_percent']);
-                    $variation->default_sell_price = $this->productUtil->num_uf($value['default_sell_price']);
-                    $variation->sell_price_inc_tax = $this->productUtil->num_uf($value['sell_price_inc_tax']);
+                    /*$variation->default_sell_price = $this->productUtil->num_uf($value['default_sell_price']);
+                    $variation->sell_price_inc_tax = $this->productUtil->num_uf($value['sell_price_inc_tax']);*/
                     $variations_data[] = $variation;
 
                     //Update price groups
@@ -2008,7 +2008,7 @@ class ProductController extends Controller
                         foreach ($value['group_prices'] as $k => $v) {
                             VariationGroupPrice::updateOrCreate(
                                 ['price_group_id' => $k, 'variation_id' => $variation->id],
-                                ['price_inc_tax' => $this->productUtil->num_uf($v)]
+                                /*['price_inc_tax' => $this->productUtil->num_uf($v)]*/
                             );
                         }
                     }

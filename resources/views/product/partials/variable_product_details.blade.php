@@ -8,7 +8,7 @@
 				<tr class="bg-green">
 					<th>@lang('product.variations')</th>
 					<th>@lang('product.sku')</th>
-					@can('view_purchase_price')
+					{{--@can('view_purchase_price')
 						<th>@lang('product.default_purchase_price') (@lang('product.exc_of_tax'))</th>
 						<th>@lang('product.default_purchase_price') (@lang('product.inc_of_tax'))</th>
 					@endcan
@@ -21,7 +21,7 @@
 			        @endcan
 			        @if(!empty($allowed_group_prices))
 			        	<th>@lang('lang_v1.group_prices')</th>
-			        @endif
+			        @endif--}}
 			        <th>@lang('lang_v1.variation_images')</th>
 				</tr>
 				@foreach($product->variations as $variation)
@@ -32,7 +32,7 @@
 					<td>
 						{{ $variation->sub_sku }}
 					</td>
-					@can('view_purchase_price')
+					{{--@can('view_purchase_price')
 					<td>
 						<span class="display_currency" data-currency_symbol="true">{{ $variation->default_purchase_price }}</span>
 					</td>
@@ -64,7 +64,7 @@
 			        			<br>
 			        		@endforeach
 			        	</td>
-			        @endif
+			        @endif--}}
 			        <td>
 			        	@foreach($variation->media as $media)
 			        		{!! $media->thumbnail([60, 60], 'img-thumbnail') !!}

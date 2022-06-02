@@ -1,5 +1,5 @@
 
-@if(!session('business.enable_price_tax')) 
+@if(!session('business.enable_price_tax'))
     @php
         $default = 0;
         $class = 'hide';
@@ -24,16 +24,16 @@
                 <th>@lang('product.sku') @show_tooltip(__('tooltip.sub_sku'))</th>
                 <th>@lang('product.value')</th>
                 <th>@lang('product.price')</th>
-                <th class="{{$class}}">@lang('product.default_purchase_price')
+                {{--<th class="{{$class}}">@lang('product.default_purchase_price')
                     <br/>
                     <span class="pull-left"><small><i>@lang('product.exc_of_tax')</i></small></span>
 
                     <span class="pull-right"><small><i>@lang('product.inc_of_tax')</i></small></span>
                 </th>
                 <th class="{{$class}}">@lang('product.profit_percent')</th>
-                <th class="{{$class}}">@lang('product.default_selling_price')
-                <br/>
-                <small><i><span class="dsp_label"></span></i></small>
+                <th class="{{$class}}">@lang('product.default_selling_price')--}}
+               {{-- <br/>
+                <small><i><span class="dsp_label"></span></i></small>--}}
                     <!-- &nbsp;&nbsp;<b><i class="fa fa-info-circle" aria-hidden="true" data-toggle="popover" data-html="true" data-trigger="hover" data-content="<p class='text-primary'>Drag the mouse over the table cells to copy input values</p>" data-placement="top"></i></b> -->
                 </th>
                 <th>@lang('lang_v1.variation_images')</th>
@@ -52,7 +52,7 @@
                 <td>
                     {!! Form::text('product_variation[' . $row_index .'][variations][0][price]', null, ['class' => 'form-control input-sm variation_value_price', 'required']); !!}
                 </td>
-                <td class="{{$class}}">
+                {{--<td class="{{$class}}">
                     <div class="width-50 f-left">
                         {!! Form::text('product_variation[' . $row_index .'][variations][0][default_purchase_price]', $default, ['class' => 'form-control input-sm variable_dpp input_number', 'placeholder' => __('product.exc_of_tax'), 'required']); !!}
                     </div>
@@ -79,7 +79,7 @@
                     {!! Form::text('product_variation[' . $row_index .'][variations][0][default_sell_price]', $default, ['class' => 'form-control input-sm variable_dsp input_number', 'placeholder' => __('product.exc_of_tax'), 'required']); !!}
 
                      {!! Form::text('product_variation[' . $row_index .'][variations][0][sell_price_inc_tax]', $default, ['class' => 'form-control input-sm variable_dsp_inc_tax input_number', 'placeholder' => __('product.inc_of_tax'), 'required']); !!}
-                </td>
+                </td>--}}
                 <td>{!! Form::file('variation_images_' . $row_index .'_0[]', ['class' => 'variation_images', 'accept' => 'image/*', 'multiple']); !!}</td>
                 <td>
                     <button type="button" class="btn btn-danger btn-xs remove_variation_value_row">-</button>

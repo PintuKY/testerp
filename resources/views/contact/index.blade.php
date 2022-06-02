@@ -92,8 +92,8 @@
         @if(auth()->user()->can('supplier.create') || auth()->user()->can('customer.create') || auth()->user()->can('supplier.view_own') || auth()->user()->can('customer.view_own'))
             @slot('tool')
                 <div class="box-tools">
-                    <button type="button" class="btn btn-block btn-primary btn-modal" 
-                    data-href="{{action('ContactController@create', ['type' => $type])}}" 
+                    <button type="button" class="btn btn-block btn-primary btn-modal"
+                    data-href="{{action('ContactController@create', ['type' => $type])}}"
                     data-container=".contact_modal">
                     <i class="fa fa-plus"></i> @lang('messages.add')</button>
                 </div>
@@ -105,7 +105,7 @@
                     <tr>
                         <th>@lang('messages.action')</th>
                         <th>@lang('lang_v1.contact_id')</th>
-                        @if($type == 'supplier') 
+                        @if($type == 'supplier')
                             <th>@lang('business.business_name')</th>
                             <th>@lang('contact.name')</th>
                             <th>@lang('business.email')</th>
@@ -122,9 +122,6 @@
                             <th>@lang('business.business_name')</th>
                             <th>@lang('user.name')</th>
                             <th>@lang('business.email')</th>
-                            <th>@lang('contact.tax_no')</th>
-                            <th>@lang('lang_v1.credit_limit')</th>
-                            <th>@lang('contact.pay_term')</th>
                             <th>@lang('account.opening_balance')</th>
                             <th>@lang('lang_v1.advance_balance')</th>
                             <th>@lang('lang_v1.added_on')</th>
@@ -137,39 +134,6 @@
                             <th>@lang('contact.total_sale_due')</th>
                             <th>@lang('lang_v1.total_sell_return_due')</th>
                         @endif
-                        @php
-                            $custom_labels = json_decode(session('business.custom_labels'), true);
-                        @endphp
-                        <th>
-                            {{ $custom_labels['contact']['custom_field_1'] ?? __('lang_v1.contact_custom_field1') }}
-                        </th>
-                        <th>
-                            {{ $custom_labels['contact']['custom_field_2'] ?? __('lang_v1.contact_custom_field2') }}
-                        </th>
-                        <th>
-                            {{ $custom_labels['contact']['custom_field_3'] ?? __('lang_v1.contact_custom_field3') }}
-                        </th>
-                        <th>
-                            {{ $custom_labels['contact']['custom_field_4'] ?? __('lang_v1.contact_custom_field4') }}
-                        </th>
-                        <th>
-                            {{ $custom_labels['contact']['custom_field_5'] ?? __('lang_v1.custom_field', ['number' => 5]) }}
-                        </th>
-                        <th>
-                            {{ $custom_labels['contact']['custom_field_6'] ?? __('lang_v1.custom_field', ['number' => 6]) }}
-                        </th>
-                        <th>
-                            {{ $custom_labels['contact']['custom_field_7'] ?? __('lang_v1.custom_field', ['number' => 7]) }}
-                        </th>
-                        <th>
-                            {{ $custom_labels['contact']['custom_field_8'] ?? __('lang_v1.custom_field', ['number' => 8]) }}
-                        </th>
-                        <th>
-                            {{ $custom_labels['contact']['custom_field_9'] ?? __('lang_v1.custom_field', ['number' => 9]) }}
-                        </th>
-                        <th>
-                            {{ $custom_labels['contact']['custom_field_10'] ?? __('lang_v1.custom_field', ['number' => 10]) }}
-                        </th>
                     </tr>
                 </thead>
                 <tfoot>
@@ -185,9 +149,9 @@
                                 colspan="6"
                             @elseif( $type == 'customer')
                                 @if($reward_enabled)
-                                    colspan="9"
+                                    colspan="6"
                                 @else
-                                    colspan="8"
+                                    colspan="5"
                                 @endif
                             @endif>
                                 <strong>
@@ -196,26 +160,16 @@
                         </td>
                         <td class="footer_contact_due"></td>
                         <td class="footer_contact_return_due"></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
                     </tr>
                 </tfoot>
             </table>
         @endif
     @endcomponent
 
-    <div class="modal fade contact_modal" tabindex="-1" role="dialog" 
+    <div class="modal fade contact_modal" tabindex="-1" role="dialog"
     	aria-labelledby="gridSystemModalLabel">
     </div>
-    <div class="modal fade pay_contact_due_modal" tabindex="-1" role="dialog" 
+    <div class="modal fade pay_contact_due_modal" tabindex="-1" role="dialog"
         aria-labelledby="gridSystemModalLabel">
     </div>
 

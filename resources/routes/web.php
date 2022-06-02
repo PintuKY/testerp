@@ -81,7 +81,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
 
     Route::resource('variation-templates', 'VariationTemplateController');
 
-    Route::get('/products/stock-history/{id}', 'ProductController@productStockHistory');
+
     Route::get('/delete-media/{media_id}', 'ProductController@deleteMedia');
     Route::post('/products/mass-deactivate', 'ProductController@massDeactivate');
     Route::get('/products/activate/{id}', 'ProductController@activate');
@@ -176,7 +176,6 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/reports/get-opening-stock', 'ReportController@getOpeningStock');
     Route::get('/reports/purchase-sell', 'ReportController@getPurchaseSell');
     Route::get('/reports/customer-supplier', 'ReportController@getCustomerSuppliers');
-    Route::get('/reports/stock-report', 'ReportController@getStockReport');
     Route::get('/reports/stock-details', 'ReportController@getStockDetails');
     Route::get('/reports/tax-report', 'ReportController@getTaxReport');
     Route::get('/reports/tax-details', 'ReportController@getTaxDetails');

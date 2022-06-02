@@ -32,9 +32,9 @@
             <input type="text" class="form-control label-date-picker"
             name="products[{{$loop->index + $index}}][packing_date]" value="">
         </td>
-        <td>
+        {{--<td>
             {!! Form::select('products[' . $row_index . '][price_group_id]', $price_groups, null, ['class' => 'form-control', 'placeholder' => __('lang_v1.none')]); !!}
-        </td>
+        </td>--}}
     </tr>
 @empty
 

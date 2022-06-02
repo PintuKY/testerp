@@ -44,28 +44,7 @@ class Category extends Model
         $sub_categories = [];
 
         foreach ($all_categories as $category) {
-            if ($category['parent_id'] == 0) {
-                $categories[] = $category;
-            } else {
-                $sub_categories[] = $category;
-            }
-        }
-
-        $sub_cat_by_parent = [];
-        if (!empty($sub_categories)) {
-            foreach ($sub_categories as $sub_category) {
-                if (empty($sub_cat_by_parent[$sub_category['parent_id']])) {
-                    $sub_cat_by_parent[$sub_category['parent_id']] = [];
-                }
-
-                $sub_cat_by_parent[$sub_category['parent_id']][] = $sub_category;
-            }
-        }
-
-        foreach ($categories as $key => $value) {
-            if (!empty($sub_cat_by_parent[$value['id']])) {
-                $categories[$key]['sub_categories'] = $sub_cat_by_parent[$value['id']];
-            }
+            $categories[] = $category;
         }
 
         return $categories;
@@ -81,7 +60,6 @@ class Category extends Model
     public static function forDropdown($business_id, $type)
     {
         $categories = Category::where('business_id', $business_id)
-                            ->where('parent_id', 0)
                             ->where('category_type', $type)
                             ->select(DB::raw('IF(short_code IS NOT NULL, CONCAT(name, "-", short_code), name) as name'), 'id')
                             ->orderBy('name', 'asc')
@@ -90,21 +68,5 @@ class Category extends Model
         $dropdown =  $categories->pluck('name', 'id');
 
         return $dropdown;
-    }
-
-    public function sub_categories()
-    {
-        return $this->hasMany(\App\Models\Category::class, 'parent_id');
-    }
-
-    /**
-     * Scope a query to only include main categories.
-     *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
-    public function scopeOnlyParent($query)
-    {
-        return $query->where('parent_id', 0);
     }
 }

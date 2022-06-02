@@ -1,5 +1,5 @@
-@php 
-    $colspan = 15;
+@php
+    $colspan = 8;
     $custom_labels = json_decode(session('business.custom_labels'), true);
 @endphp
 <table class="table table-bordered table-striped ajax_view hide-footer" id="product_table">
@@ -10,28 +10,11 @@
             <th>@lang('messages.action')</th>
             <th>@lang('sale.product')</th>
             <th>@lang('purchase.business_location') @show_tooltip(__('lang_v1.product_business_location_tooltip'))</th>
-            @can('view_purchase_price')
-                @php 
-                    $colspan++;
-                @endphp
-                <th>@lang('lang_v1.unit_perchase_price')</th>
-            @endcan
-            @can('access_default_selling_price')
-                @php 
-                    $colspan++;
-                @endphp
-                <th>@lang('lang_v1.selling_price')</th>
-            @endcan
-            <th>@lang('report.current_stock')</th>
             <th>@lang('product.product_type')</th>
             <th>@lang('product.category')</th>
             <th>@lang('product.brand')</th>
             <th>@lang('product.tax')</th>
             <th>@lang('product.sku')</th>
-            <th>{{ $custom_labels['product']['custom_field_1'] ?? __('lang_v1.product_custom_field1') }}</th>
-            <th>{{ $custom_labels['product']['custom_field_2'] ?? __('lang_v1.product_custom_field2') }}</th>
-            <th>{{ $custom_labels['product']['custom_field_3'] ?? __('lang_v1.product_custom_field3') }}</th>
-            <th>{{ $custom_labels['product']['custom_field_4'] ?? __('lang_v1.product_custom_field4') }}</th>
         </tr>
     </thead>
     <tfoot>
@@ -45,9 +28,8 @@
                     {!! Form::close() !!}
                 @endcan
 
-                
                     @can('product.update')
-                    
+
                         @if(config('constants.enable_product_bulk_edit'))
                             &nbsp;
                             {!! Form::open(['url' => action('ProductController@bulkEdit'), 'method' => 'post', 'id' => 'bulk_edit_form' ]) !!}
@@ -60,7 +42,7 @@
                         &nbsp;
                         <button type="button" class="btn btn-xs bg-navy update_product_location" data-type="remove">@lang('lang_v1.remove_from_location')</button>
                     @endcan
-                
+
                 &nbsp;
                 {!! Form::open(['url' => action('ProductController@massDeactivate'), 'method' => 'post', 'id' => 'mass_deactivate_form' ]) !!}
                 {!! Form::hidden('selected_products', null, ['id' => 'selected_products']); !!}

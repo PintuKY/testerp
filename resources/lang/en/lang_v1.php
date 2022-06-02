@@ -181,7 +181,7 @@ return [
     'show_time_with_date' => 'Show time with date',
     'show_sale_description' => 'Show sale description',
     'product_imei_or_sn' => '(Product IMEI or Serial Number)',
-    'purchase_already_exist' => "Product can't be deleted because purchases related to 
+    'purchase_already_exist' => "Product can't be deleted because purchases related to
 								this product exist",
     'opening_stock_sold' => "Product can't be deleted because some stocks are sold",
     'stock_adjusted' => "Product can't be deleted because some stocks are adjusted",
@@ -394,7 +394,6 @@ return [
    'currency_exchange_rate' => 'Currency Exchange Rate',
    'select_all' => 'Select all',
    'deselect_all' => 'Deselect all',
-   'duplicate_product' => 'Duplicate Product',
    'delete_selected' => 'Delete Selected',
    'no_row_selected' => 'No row selected',
    'duplicate_sell' => 'Duplicate Sell',
@@ -935,8 +934,8 @@ return [
     'amount_rounding_method' => 'Amount rounding method',
     'round_to_nearest_whole_number' => 'Round to nearest whole number',
     'round_to_nearest_decimal' => 'Round to nearest decimal (multiple of :multiple)',
-    'amount_rounding_method_help' => 'Example: <br><b>Round to nearest 
-    whole number:</b> 2.23 => 2, 2.50 => 3, 2.73 => 3 <br><b>Round to nearest 
+    'amount_rounding_method_help' => 'Example: <br><b>Round to nearest
+    whole number:</b> 2.23 => 2, 2.50 => 3, 2.73 => 3 <br><b>Round to nearest
     decimal (multiple of 0.05):</b> 2.11 => 2.10, 2.12 => 2.10, 2.13 => 2.15',
     'round_off' => 'Round Off',
     'round_off_label' => 'Round off label',
@@ -1105,7 +1104,7 @@ return [
     'required_advance_balance_not_available' => 'Required advance balance not available',
     'in_transit' => 'In Transit',
     'edit_stock_transfer' => 'Edit Stock Transfer',
-    'completed_status_help' => 'Stock transfer will not be editable if status is completed', 
+    'completed_status_help' => 'Stock transfer will not be editable if status is completed',
     'no_data' => 'No data',
     'sms_service' => 'SMS Service',
     'nexmo_key' => 'Nexmo Key',
@@ -1239,7 +1238,7 @@ return [
     'purchase_order_delete_success' => 'Purchase order deleted successfully',
     'order_quantity' => 'Order quantity',
     'order_date' => 'Order date',
-    'max_quantity_quantity_allowed' => 'Max :quantity allowed', 
+    'max_quantity_quantity_allowed' => 'Max :quantity allowed',
     'leave_empty_to_autogenerate' => 'Leave empty to autogenerate',
     'add_edit_invoice_number' => 'Add edit invoice number',
     'keep_blank_to_autogenerate' => 'Keep blank to auto generate',

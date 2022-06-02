@@ -70,7 +70,7 @@ class LabelsController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function supplierPurchaseShow(Request $request)
-    {   
+    {
         $business_id = $request->session()->get('user.business_id');
         $purchase_id = $request->get('purchase_id', false);
         $product_id = $request->get('product_id', false);
@@ -115,7 +115,7 @@ class LabelsController extends Controller
                                             ->pluck('name', 'id');
 
                 return view('labels.partials.show_table_rows')
-                        ->with(compact('products', 'index', 'price_groups'));
+                        ->with(compact('products', 'index'));
             }
         }
     }

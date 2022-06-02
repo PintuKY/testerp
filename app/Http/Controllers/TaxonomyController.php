@@ -53,7 +53,7 @@ class TaxonomyController extends Controller
 
             $category = Category::where('business_id', $business_id)
                             ->where('category_type', $category_type)
-                            ->select(['name', 'short_code', 'description', 'id', 'parent_id']);
+                            ->select(['name', 'short_code', 'description', 'id']);
 
             return Datatables::of($category)
                 ->addColumn(
@@ -72,14 +72,9 @@ class TaxonomyController extends Controller
                     }
                 )
                 ->editColumn('name', function ($row) {
-                    if ($row->parent_id != 0) {
-                        return '--' . $row->name;
-                    } else {
-                        return $row->name;
-                    }
+                    return $row->name;
                 })
                 ->removeColumn('id')
-                ->removeColumn('parent_id')
                 ->rawColumns(['action'])
                 ->make(true);
         }
@@ -105,7 +100,6 @@ class TaxonomyController extends Controller
         $module_category_data = $this->moduleUtil->getTaxonomyData($category_type);
 
         $categories = Category::where('business_id', $business_id)
-                        ->where('parent_id', 0)
                         ->where('category_type', $category_type)
                         ->select(['name', 'short_code', 'id'])
                         ->get();
@@ -136,11 +130,7 @@ class TaxonomyController extends Controller
 
         try {
             $input = $request->only(['name', 'short_code', 'category_type', 'description']);
-            if (!empty($request->input('add_as_sub_cat')) &&  $request->input('add_as_sub_cat') == 1 && !empty($request->input('parent_id'))) {
-                $input['parent_id'] = $request->input('parent_id');
-            } else {
-                $input['parent_id'] = 0;
-            }
+
             $input['business_id'] = $request->session()->get('user.business_id');
             $input['created_by'] = $request->session()->get('user.id');
 
@@ -191,18 +181,13 @@ class TaxonomyController extends Controller
             $module_category_data = $this->moduleUtil->getTaxonomyData($category_type);
 
             $parent_categories = Category::where('business_id', $business_id)
-                                        ->where('parent_id', 0)
                                         ->where('category_type', $category_type)
                                         ->where('id', '!=', $id)
                                         ->pluck('name', 'id');
             $is_parent = false;
 
-            if ($category->parent_id == 0) {
-                $is_parent = true;
-                $selected_parent = null;
-            } else {
-                $selected_parent = $category->parent_id ;
-            }
+            $is_parent = true;
+            $selected_parent = null;
 
             return view('taxonomy.edit')
                 ->with(compact('category', 'parent_categories', 'is_parent', 'selected_parent', 'module_category_data'));
@@ -234,11 +219,6 @@ class TaxonomyController extends Controller
                 $category->description = $input['description'];
                 $category->short_code = $request->input('short_code');
 
-                if (!empty($request->input('add_as_sub_cat')) &&  $request->input('add_as_sub_cat') == 1 && !empty($request->input('parent_id'))) {
-                    $category->parent_id = $request->input('parent_id');
-                } else {
-                    $category->parent_id = 0;
-                }
                 $category->save();
 
                 $output = ['success' => true,

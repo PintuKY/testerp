@@ -20,7 +20,6 @@ return [
     'category' => 'Category',
     'sub_category' => 'Sub category',
     'unit' => 'Unit',
-    'brand' => 'Brand',
     'tax' => 'Tax',
     'sku' => 'SKU',
     'alert_quantity' => 'Alert quantity',
@@ -40,7 +39,6 @@ return [
     'variation_name' => 'Variation Name',
     'variation_values' => 'Variation Values',
     'use_template' => 'Use Template',
-    'variation_values' => 'Variation Values',
     'add_variation' => 'Add Variation',
     'product_added_success' => 'Product added successfully',
     'product_updated_success' => 'Product updated successfully',
@@ -59,4 +57,5 @@ return [
     'file_to_import' => 'File To Import',
     'file_imported_successfully' => 'File imported successfully',
     'price' => 'Price',
+    'unit_purchase_price' => 'Unit Purchase Price'
  ];

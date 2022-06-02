@@ -10,13 +10,11 @@
 	      			<div class="col-sm-4 invoice-col">
 	      				<b>@lang('product.sku'):</b>
 						{{$product->sku }}<br>
-						<b>@lang('product.brand'): </b>
-						{{$product->brand->name ?? '--' }}<br>
 						<b>@lang('product.unit'): </b>
 						{{$product->unit->short_name ?? '--' }}<br>
 						<b>@lang('product.barcode_type'): </b>
 						{{$product->barcode_type ?? '--' }}
-						@php 
+						@php
     						$custom_labels = json_decode(session('business.custom_labels'), true);
 						@endphp
 						@if(!empty($product->product_custom_field1))
@@ -64,8 +62,8 @@
 						<b>@lang('product.category'): </b>
 						{{$product->category->name ?? '--' }}<br>
 						<b>@lang('product.sub_category'): </b>
-						{{$product->sub_category->name ?? '--' }}<br>	
-						
+						{{$product->sub_category->name ?? '--' }}<br>
+
 						<b>@lang('product.manage_stock'): </b>
 						@if($product->enable_stock)
 							@lang('messages.yes')
@@ -78,13 +76,9 @@
 							{{$product->alert_quantity ?? '--' }}
 						@endif
 
-						@if(!empty($product->warranty))
-							<br>
-							<b>@lang('lang_v1.warranty'): </b>
-							{{$product->warranty->display_name }}
-						@endif
+
 	      			</div>
-					
+
 	      			<div class="col-sm-4 invoice-col">
 	      				<b>@lang('product.expires_in'): </b>
 	      				@php
@@ -109,7 +103,7 @@
 						{{$tax_type[$product->tax_type]  }}<br>
 						<b>@lang('product.product_type'): </b>
 						@lang('lang_v1.' . $product->type)
-						
+
 	      			</div>
 	      			<div class="clearfix"></div>
 	      			<br>
@@ -168,7 +162,7 @@
       			@include('product.partials.single_product_details')
       		@elseif($product->type == 'variable')
       			@include('product.partials.variable_product_details')
-      		
+
       		@endif
       		@if($product->enable_stock == 1)
 	      		<div class="row">
@@ -181,8 +175,8 @@
       		@endif
       	</div>
       	<div class="modal-footer">
-      		<button type="button" class="btn btn-primary no-print" 
-	        aria-label="Print" 
+      		<button type="button" class="btn btn-primary no-print"
+	        aria-label="Print"
 	          onclick="$(this).closest('div.modal').printThis();">
 	        <i class="fa fa-print"></i> @lang( 'messages.print' )
 	      </button>

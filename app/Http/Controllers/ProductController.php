@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Brands;
 use App\Models\Business;
 use App\Models\BusinessLocation;
 use App\Models\Category;
@@ -19,7 +18,6 @@ use App\Models\Variation;
 use App\Models\VariationGroupPrice;
 use App\Models\VariationLocationDetails;
 use App\Models\VariationTemplate;
-use App\Models\Warranty;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -72,7 +70,6 @@ class ProductController extends Controller
             $permitted_locations = auth()->user()->permitted_locations();
 
             $query = Product::with(['media'])
-                ->leftJoin('brands', 'products.brand_id', '=', 'brands.id')
                 ->join('units', 'products.unit_id', '=', 'units.id')
                 ->leftJoin('categories as c1', 'products.category_id', '=', 'c1.id')
                 /*->leftJoin('categories as c2', 'products.sub_category_id', '=', 'c2.id')*/
@@ -112,7 +109,6 @@ class ProductController extends Controller
                 'c1.name as category',
                 /*'c2.name as sub_category',*/
                 'units.actual_name as unit',
-                'brands.name as brand',
                 'tax_rates.name as tax',
                 'products.sku',
                 'products.image',
@@ -124,9 +120,9 @@ class ProductController extends Controller
                 'products.product_custom_field3',
                 'products.product_custom_field4',*/
                 DB::raw('SUM(vld.qty_available) as current_stock'),
-                /*DB::raw('MAX(v.sell_price_inc_tax) as max_price'),
+                DB::raw('MAX(v.sell_price_inc_tax) as max_price'),
                 DB::raw('MIN(v.sell_price_inc_tax) as min_price'),
-                DB::raw('MAX(v.dpp_inc_tax) as max_purchase_price'),
+                /*DB::raw('MAX(v.dpp_inc_tax) as max_purchase_price'),
                 DB::raw('MIN(v.dpp_inc_tax) as min_purchase_price')*/
                 );
 
@@ -147,10 +143,10 @@ class ProductController extends Controller
                 $products->where('products.category_id', $category_id);
             }
 
-            $brand_id = request()->get('brand_id', null);
+           /* $brand_id = request()->get('brand_id', null);
             if (!empty($brand_id)) {
                 $products->where('products.brand_id', $brand_id);
-            }
+            }*/
 
             $unit_id = request()->get('unit_id', null);
             if (!empty($unit_id)) {
@@ -217,7 +213,6 @@ class ProductController extends Controller
                             '<li><a href="' . action('ProductController@activate', [$row->id]) . '" class="activate-product"><i class="fas fa-check-circle"></i> ' . __("lang_v1.reactivate") . '</a></li>';
                         }
 
-
                         if (auth()->user()->can('product.create')) {
 
                             if ($selling_price_group_count > 0) {
@@ -227,7 +222,6 @@ class ProductController extends Controller
                         }
 
                         if (!empty($row->media->first())) {
-
                             $html .=
                                 '<li><a href="' . $row->media->first()->display_url . '" download="'.$row->media->first()->display_name.'"><i class="fas fa-download"></i> ' . __("lang_v1.product_brochure") . '</a></li>';
                         }
@@ -261,10 +255,10 @@ class ProductController extends Controller
                     'purchase_price',
                     '<div style="white-space: nowrap;">@format_currency($min_purchase_price) @if($max_purchase_price != $min_purchase_price && $type == "variable") -  @format_currency($max_purchase_price)@endif </div>'
                 )*/
-                /*->addColumn(
+                ->addColumn(
                     'selling_price',
                     '<div style="white-space: nowrap;">@format_currency($min_price) @if($max_price != $min_price && $type == "variable") -  @format_currency($max_price)@endif </div>'
-                )*/
+                )
                 ->filterColumn('products.sku', function ($query, $keyword) {
                     $query->whereHas('variations', function($q) use($keyword){
                             $q->where('sub_sku', 'like', "%{$keyword}%");
@@ -287,8 +281,6 @@ class ProductController extends Controller
 
         $categories = Category::forDropdown($business_id, 'product');
 
-        $brands = Brands::forDropdown($business_id);
-
         $units = Unit::forDropdown($business_id);
 
         $tax_dropdown = TaxRate::forBusinessDropdown($business_id, false);
@@ -310,7 +302,6 @@ class ProductController extends Controller
             ->with(compact(
                 'rack_enabled',
                 'categories',
-                'brands',
                 'units',
                 'taxes',
                 'business_locations',
@@ -342,7 +333,6 @@ class ProductController extends Controller
 
         $categories = Category::forDropdown($business_id, 'product');
 
-        $brands = Brands::forDropdown($business_id);
         $units = Unit::forDropdown($business_id, true);
 
         $tax_dropdown = TaxRate::forBusinessDropdown($business_id, true, true);
@@ -368,13 +358,12 @@ class ProductController extends Controller
         $product_types = $this->product_types();
 
         $common_settings = session()->get('business.common_settings');
-        $warranties = Warranty::forDropdown($business_id);
 
         //product screen view from module
         $pos_module_data = $this->moduleUtil->getModuleData('get_product_screen_top_view');
 
         return view('product.create')
-            ->with(compact('categories', 'brands', 'units', 'taxes', 'barcode_types', 'default_profit_percent', 'tax_attributes', 'barcode_default', 'business_locations', 'sub_categories', 'rack_details', 'selling_price_group_count', 'module_form_parts', 'product_types', 'common_settings', 'warranties', 'pos_module_data'));
+            ->with(compact('categories', 'units', 'taxes', 'barcode_types', 'default_profit_percent', 'tax_attributes', 'barcode_default', 'business_locations', 'sub_categories', 'rack_details', 'selling_price_group_count', 'module_form_parts', 'product_types', 'common_settings', 'pos_module_data'));
     }
 
     private function product_types()
@@ -398,7 +387,7 @@ class ProductController extends Controller
         }
         try {
             $business_id = $request->session()->get('user.business_id');
-            $form_fields = ['name', 'brand_id', 'unit_id', 'category_id', 'tax', 'type', 'barcode_type', 'sku', 'alert_quantity', 'tax_type', /*'weight',*/ /*'product_custom_field1', 'product_custom_field2', 'product_custom_field3', 'product_custom_field4',*/ 'product_description', 'sub_unit_ids','delivery_days'];
+            $form_fields = ['name', /*'brand_id',*/ 'unit_id', 'category_id', 'tax', 'type', 'barcode_type', 'sku', 'alert_quantity', 'tax_type', /*'weight',*/ /*'product_custom_field1', 'product_custom_field2', 'product_custom_field3', 'product_custom_field4',*/ 'product_description', 'sub_unit_ids','delivery_days'];
 
             $module_form_fields = $this->moduleUtil->getModuleFormField('product_form_fields');
             if (!empty($module_form_fields)) {
@@ -438,7 +427,6 @@ class ProductController extends Controller
             $product_details['image'] = $this->productUtil->uploadFile($request, 'image', config('constants.product_img_path'), 'image');
             $common_settings = session()->get('business.common_settings');
 
-            $product_details['warranty_id'] = !empty($request->input('warranty_id')) ? $request->input('warranty_id') : null;
 
             DB::beginTransaction();
 
@@ -563,7 +551,6 @@ class ProductController extends Controller
 
         $business_id = request()->session()->get('user.business_id');
         $categories = Category::forDropdown($business_id, 'product');
-        $brands = Brands::forDropdown($business_id);
 
         $tax_dropdown = TaxRate::forBusinessDropdown($business_id, true, true);
         $taxes = $tax_dropdown['tax_rates'];
@@ -599,13 +586,12 @@ class ProductController extends Controller
         $module_form_parts = $this->moduleUtil->getModuleData('product_form_part');
         $product_types = $this->product_types();
         $common_settings = session()->get('business.common_settings');
-        $warranties = Warranty::forDropdown($business_id);
 
         //product screen view from module
         $pos_module_data = $this->moduleUtil->getModuleData('get_product_screen_top_view');
 
         return view('product.edit')
-                ->with(compact('categories', 'brands', 'units', 'sub_units', 'taxes', 'tax_attributes', 'barcode_types', 'product', 'sub_categories', 'default_profit_percent', 'business_locations', 'rack_details', 'selling_price_group_count', 'module_form_parts', 'product_types', 'common_settings', 'warranties', 'pos_module_data'));
+                ->with(compact('categories', 'units', 'sub_units', 'taxes', 'tax_attributes', 'barcode_types', 'product', 'sub_categories', 'default_profit_percent', 'business_locations', 'rack_details', 'selling_price_group_count', 'module_form_parts', 'product_types', 'common_settings','pos_module_data'));
     }
 
     /**
@@ -623,7 +609,7 @@ class ProductController extends Controller
 
         try {
             $business_id = $request->session()->get('user.business_id');
-            $product_details = $request->only(['name', 'brand_id', 'unit_id', 'category_id', 'tax', 'barcode_type', 'sku', 'alert_quantity', 'tax_type', /*'weight',*/ /*'product_custom_field1', 'product_custom_field2', 'product_custom_field3', 'product_custom_field4',*/ 'product_description', 'sub_unit_ids','delivery_days']);
+            $product_details = $request->only(['name', /*'brand_id',*/ 'unit_id', 'category_id', 'tax', 'barcode_type', 'sku', 'alert_quantity', 'tax_type', /*'weight',*/ /*'product_custom_field1', 'product_custom_field2', 'product_custom_field3', 'product_custom_field4',*/ 'product_description', 'sub_unit_ids','delivery_days']);
 
             DB::beginTransaction();
 
@@ -640,7 +626,7 @@ class ProductController extends Controller
             }
 
             $product->name = $product_details['name'];
-            $product->brand_id = $product_details['brand_id'];
+            //$product->brand_id = $product_details['brand_id'];
             $product->unit_id = $product_details['unit_id'];
             $product->category_id = $product_details['category_id'];
             $product->tax = $product_details['tax'];
@@ -655,7 +641,6 @@ class ProductController extends Controller
             $product->product_custom_field4 = $product_details['product_custom_field4'];*/
             $product->product_description = $product_details['product_description'];
             $product->sub_unit_ids = !empty($product_details['sub_unit_ids']) ? $product_details['sub_unit_ids'] : null;
-            $product->warranty_id = !empty($request->input('warranty_id')) ? $request->input('warranty_id') : null;
 
             if (!empty($request->input('enable_stock')) &&  $request->input('enable_stock') == 1) {
                 $product->enable_stock = 1;
@@ -1257,7 +1242,6 @@ class ProductController extends Controller
 
         $business_id = request()->session()->get('user.business_id');
         $categories = Category::forDropdown($business_id, 'product');
-        $brands = Brands::forDropdown($business_id);
         $units = Unit::forDropdown($business_id, true);
 
         $tax_dropdown = TaxRate::forBusinessDropdown($business_id, true, true);
@@ -1279,10 +1263,9 @@ class ProductController extends Controller
         $business_locations = BusinessLocation::forDropdown($business_id);
 
         $common_settings = session()->get('business.common_settings');
-        $warranties = Warranty::forDropdown($business_id);
 
         return view('product.partials.quick_add_product')
-                ->with(compact('categories', 'brands', 'units', 'taxes', 'barcode_types', 'default_profit_percent', 'tax_attributes', 'product_name', 'locations', 'product_for', 'enable_expiry', 'enable_lot', 'module_form_parts', 'business_locations', 'common_settings', 'warranties'));
+                ->with(compact('categories', 'units', 'taxes', 'barcode_types', 'default_profit_percent', 'tax_attributes', 'product_name', 'locations', 'product_for', 'enable_expiry', 'enable_lot', 'module_form_parts', 'business_locations', 'common_settings'));
     }
 
     /**
@@ -1299,7 +1282,7 @@ class ProductController extends Controller
 
         try {
             $business_id = $request->session()->get('user.business_id');
-            $form_fields = ['name', 'brand_id', 'unit_id', 'category_id', 'tax', 'barcode_type','tax_type', 'sku',
+            $form_fields = ['name', /*'brand_id',*/ 'unit_id', 'category_id', 'tax', 'barcode_type','tax_type', 'sku',
                 'alert_quantity', 'type', 'sub_unit_ids', /*'sub_category_id',*/ /*'weight',*/ /*'product_custom_field1', 'product_custom_field2', 'product_custom_field3', 'product_custom_field4', */'product_description'];
 
             $module_form_fields = $this->moduleUtil->getModuleData('product_form_fields');
@@ -1341,7 +1324,6 @@ class ProductController extends Controller
                 $product_details['enable_sr_no'] = 1 ;
             }*/
 
-            $product_details['warranty_id'] = !empty($request->input('warranty_id')) ? $request->input('warranty_id') : null;
 
             DB::beginTransaction();
 
@@ -1414,7 +1396,7 @@ class ProductController extends Controller
             $business_id = request()->session()->get('user.business_id');
 
             $product = Product::where('business_id', $business_id)
-                        ->with(['brand', 'unit', 'category', 'product_tax', 'variations', 'variations.product_variation', 'variations.group_prices', 'variations.media', 'product_locations', 'warranty', 'media'])
+                        ->with([/*'brand',*/ 'unit', 'category', 'product_tax', 'variations', 'variations.product_variation', 'variations.group_prices', 'variations.media', 'product_locations', 'media'])
                         ->findOrFail($id);
 
             $price_groups = SellingPriceGroup::where('business_id', $business_id)->active()->pluck('name', 'id');
@@ -1787,7 +1769,7 @@ class ProductController extends Controller
 
             $query = Product::where('business_id', $api_settings->business_id)
                             ->active()
-                            ->with(['brand', 'unit', 'category', 'sub_category',
+                            ->with([/*'brand',*/ 'unit', 'category', 'sub_category',
                                 'product_variations', 'product_variations.variations', 'product_variations.variations.media',
                                 'product_variations.variations.variation_location_details' => function ($q) use ($location_id) {
                                     $q->where('location_id', $location_id);
@@ -1795,10 +1777,6 @@ class ProductController extends Controller
 
             if (!empty($filters['categories'])) {
                 $query->whereIn('category_id', $filters['categories']);
-            }
-
-            if (!empty($filters['brands'])) {
-                $query->whereIn('brand_id', $filters['brands']);
             }
 
             if (!empty($filters['category'])) {
@@ -1901,9 +1879,6 @@ class ProductController extends Controller
                     }
                 }
             }
-
-            $brands = Brands::forDropdown($business_id);
-
             $tax_dropdown = TaxRate::forBusinessDropdown($business_id, true, true);
             $taxes = $tax_dropdown['tax_rates'];
             $tax_attributes = $tax_dropdown['attributes'];
@@ -1914,7 +1889,6 @@ class ProductController extends Controller
             return view('product.bulk-edit')->with(compact(
                 'products',
                 'categories',
-                'brands',
                 'taxes',
                 'tax_attributes',
                 'sub_categories',
@@ -1945,7 +1919,7 @@ class ProductController extends Controller
                 $update_data = [
                     'category_id' => $product_data['category_id'],
                     //'sub_category_id' => $product_data['sub_category_id'],
-                    'brand_id' => $product_data['brand_id'],
+                    //'brand_id' => $product_data['brand_id'],
                     'tax' => $product_data['tax'],
                 ];
 
@@ -2031,7 +2005,6 @@ class ProductController extends Controller
             }
         }
 
-        $brands = Brands::forDropdown($business_id);
 
         $tax_dropdown = TaxRate::forBusinessDropdown($business_id, true, true);
         $taxes = $tax_dropdown['tax_rates'];
@@ -2042,7 +2015,6 @@ class ProductController extends Controller
         return view('product.partials.bulk_edit_product_row')->with(compact(
             'product',
             'categories',
-            'brands',
             'taxes',
             'tax_attributes',
             'sub_categories',

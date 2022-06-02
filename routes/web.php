@@ -57,7 +57,6 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::post('/user/update', 'UserController@updateProfile')->name('user.updateProfile');
     Route::post('/user/update-password', 'UserController@updatePassword')->name('user.updatePassword');
 
-    Route::resource('brands', 'BrandController');
 
    //Route::resource('payment-account', 'PaymentAccountController');
 
@@ -376,7 +375,6 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::post('upload-module', 'Install\ModulesController@uploadModule');
     Route::resource('manage-modules', 'Install\ModulesController')
         ->only(['index', 'destroy', 'update']);
-    Route::resource('warranties', 'WarrantyController');
 
     Route::resource('dashboard-configurator', 'DashboardConfiguratorController')
     ->only(['edit', 'update']);

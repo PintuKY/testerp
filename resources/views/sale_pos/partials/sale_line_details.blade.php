@@ -40,12 +40,7 @@
                 @if(!empty($sell_line->sell_line_note))
                 <br> {{$sell_line->sell_line_note}}
                 @endif
-                @if($is_warranty_enabled && !empty($sell_line->warranties->first()) )
-                    <br><small>{{$sell_line->warranties->first()->display_name ?? ''}} - {{ @format_date($sell_line->warranties->first()->getEndDate($sell->transaction_date))}}</small>
-                    @if(!empty($sell_line->warranties->first()->description))
-                    <br><small>{{$sell_line->warranties->first()->description ?? ''}}</small>
-                    @endif
-                @endif
+
 
                 @if(in_array('kitchen', $enabled_modules))
                     <br><span class="label @if($sell_line->res_line_order_status == 'cooked' ) bg-red @elseif($sell_line->res_line_order_status == 'served') bg-green @else bg-light-blue @endif">@lang('restaurant.order_statuses.' . $sell_line->res_line_order_status) </span>
@@ -76,7 +71,7 @@
                 <span class="display_currency" data-currency_symbol="true">{{ $sell_line->get_discount_amount() }}</span> @if($sell_line->line_discount_type == 'percentage') ({{$sell_line->line_discount_amount}}%) @endif
             </td>
             <td>
-                <span class="display_currency" data-currency_symbol="true">{{ $sell_line->item_tax }}</span> 
+                <span class="display_currency" data-currency_symbol="true">{{ $sell_line->item_tax }}</span>
                 @if(!empty($taxes[$sell_line->tax_id]))
                 ( {{ $taxes[$sell_line->tax_id]}} )
                 @endif
@@ -112,7 +107,7 @@
                     &nbsp;
                 </td>
                 <td>
-                    <span class="display_currency" data-currency_symbol="true">{{ $modifier->item_tax }}</span> 
+                    <span class="display_currency" data-currency_symbol="true">{{ $modifier->item_tax }}</span>
                     @if(!empty($taxes[$modifier->tax_id]))
                     ( {{ $taxes[$modifier->tax_id]}} )
                     @endif

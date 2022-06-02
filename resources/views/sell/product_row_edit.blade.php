@@ -332,10 +332,6 @@
 		</td>
 
 	@else
-		@if(!empty($warranties))
-			{!! Form::select("products[$product->variation_id][warranty_id]", $warranties, $warranty_id, ['placeholder' => __('messages.please_select'), 'class' => 'form-control']); !!}
-		@endif
-
 		@if(!empty($pos_settings['inline_service_staff']))
 			<td>
 				<div class="form-group">
@@ -349,11 +345,6 @@
 	<td class="{{$hide_tax}}">
 		<input type="text" name="products[{{$product->variation_id}}][unit_price_inc_tax]" class="form-control pos_unit_price_inc_tax input_number" value="{{@num_format($unit_price_inc_tax)}}" @if(!$edit_price) readonly @endif @if(!empty($pos_settings['enable_msp'])) data-rule-min-value="{{$unit_price_inc_tax}}" data-msg-min-value="{{__('lang_v1.minimum_selling_price_error_msg', ['price' => @num_format($unit_price_inc_tax)])}}" @endif>
 	</td>
-	@if(!empty($common_settings['enable_product_warranty']) && !empty($is_direct_sell))
-		<td>
-			{!! Form::select("products[$product->variation_id][warranty_id]", $warranties, $warranty_id, ['placeholder' => __('messages.please_select'), 'class' => 'form-control']); !!}
-		</td>
-	@endif
 	<td>
 		<input type="text" class="form-control input_number mousetrap input_quantity" readonly value="{{$product->name}}" name="products[{{$product->variation_id}}][variation_name]">
 	</td>

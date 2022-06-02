@@ -115,7 +115,7 @@ class LabelsController extends Controller
                                             ->pluck('name', 'id');
 
                 return view('labels.partials.show_table_rows')
-                        ->with(compact('products', 'index'));
+                        ->with(compact('products', 'index', 'price_groups'));
             }
         }
     }

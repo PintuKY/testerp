@@ -11,15 +11,15 @@
 					{{--@can('view_purchase_price')
 						<th>@lang('product.default_purchase_price') (@lang('product.exc_of_tax'))</th>
 						<th>@lang('product.default_purchase_price') (@lang('product.inc_of_tax'))</th>
-					@endcan
+					@endcan--}}
 					@can('access_default_selling_price')
-						@can('view_purchase_price')
+						{{--@can('view_purchase_price')
 				        	<th>@lang('product.profit_percent')</th>
-				        @endcan
+				        @endcan--}}
 				        <th>@lang('product.default_selling_price') (@lang('product.exc_of_tax'))</th>
 				        <th>@lang('product.default_selling_price') (@lang('product.inc_of_tax'))</th>
 			        @endcan
-			        @if(!empty($allowed_group_prices))
+			        {{--@if(!empty($allowed_group_prices))
 			        	<th>@lang('lang_v1.group_prices')</th>
 			        @endif--}}
 			        <th>@lang('lang_v1.variation_images')</th>
@@ -39,13 +39,13 @@
 					<td>
 						<span class="display_currency" data-currency_symbol="true">{{ $variation->dpp_inc_tax }}</span>
 					</td>
-					@endcan
+					@endcan--}}
 					@can('access_default_selling_price')
-						@can('view_purchase_price')
+						{{--@can('view_purchase_price')
 						<td>
 							{{ @num_format($variation->profit_percent) }}
 						</td>
-						@endcan
+						@endcan--}}
 						<td>
 							<span class="display_currency" data-currency_symbol="true">{{ $variation->default_sell_price }}</span>
 						</td>
@@ -53,7 +53,7 @@
 							<span class="display_currency" data-currency_symbol="true">{{ $variation->sell_price_inc_tax }}</span>
 						</td>
 					@endcan
-					@if(!empty($allowed_group_prices))
+					{{--@if(!empty($allowed_group_prices))
 			        	<td class="td-full-width">
 			        		@foreach($allowed_group_prices as $key => $value)
 			        			<strong>{{$value}}</strong> - @if(!empty($group_price_details[$variation->id][$key]))

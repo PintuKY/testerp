@@ -72,14 +72,6 @@
             @endforeach
         @endif
 
-        <div class="col-md-3">
-          <div class="form-group">
-            <br>
-            <label>
-              {!! Form::checkbox('not_for_selling', 1, false, ['class' => 'input-icheck', 'id' => 'not_for_selling']); !!} <strong>@lang('lang_v1.not_for_selling')</strong>
-            </label>
-          </div>
-        </div>
         @if($is_woocommerce)
             <div class="col-md-3">
                 <div class="form-group">
@@ -161,7 +153,7 @@
                         d.unit_id = $('#product_list_filter_unit_id').val();
                         d.tax_id = $('#product_list_filter_tax_id').val();
                         d.active_state = $('#active_state').val();
-                        d.not_for_selling = $('#not_for_selling').is(':checked');
+
                         d.location_id = $('#location_id').val();
                         if ($('#repair_model_id').length == 1) {
                             d.repair_model_id = $('#repair_model_id').val();
@@ -366,7 +358,7 @@
                     }
             });
 
-            $(document).on('ifChanged', '#not_for_selling, #woocommerce_enabled', function(){
+            $(document).on('ifChanged', '#woocommerce_enabled', function(){
                 if ($("#product_list_tab").hasClass('active')) {
                     product_table.ajax.reload();
                 }

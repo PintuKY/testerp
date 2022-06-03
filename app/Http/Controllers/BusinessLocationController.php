@@ -302,6 +302,7 @@ class BusinessLocationController extends Controller
                             'msg' => __('business.business_location_updated_success')
                         ];
         } catch (\Exception $e) {
+            dd($e->getMessage());
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
 
             $output = ['success' => false,

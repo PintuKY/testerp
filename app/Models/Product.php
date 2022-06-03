@@ -61,14 +61,6 @@ class Product extends Model
     }
 
     /**
-     * Get the brand associated with the product.
-     */
-    public function brand()
-    {
-        return $this->belongsTo(\App\Models\Brands::class);
-    }
-
-    /**
     * Get the unit associated with the product.
     */
     public function unit()

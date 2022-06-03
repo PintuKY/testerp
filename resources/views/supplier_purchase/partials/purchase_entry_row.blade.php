@@ -7,11 +7,8 @@
                 <br/>
                 (<b>{{ $variation->product_variation->name }}</b> : {{ $variation->name }})
             @endif
-            @if($product->enable_stock == 1)
-                <br>
-                <small class="text-muted" style="white-space: nowrap;">@lang('report.current_stock'): @if(!empty($variation->variation_location_details->first())) {{@num_format($variation->variation_location_details->first()->qty_available)}} @else 0 @endif {{ $product->unit->short_name }}</small>
-            @endif
-            
+
+
         </td>
         <td>
             @if(!empty($purchase_order_line))
@@ -34,9 +31,9 @@
 
                 $quantity_value = !empty($imported_data) ? $imported_data['quantity'] : $quantity_value;
             @endphp
-            
-            <input type="text" 
-                name="purchases[{{$row_count}}][quantity]" 
+
+            <input type="text"
+                name="purchases[{{$row_count}}][quantity]"
                 value="{{@format_quantity($quantity_value)}}"
                 class="form-control input-sm purchase_quantity input_number mousetrap"
                 required
@@ -44,7 +41,7 @@
                 data-msg-abs_digit="{{__('lang_v1.decimal_value_not_allowed')}}"
                 @if(!empty($max_quantity))
                     data-rule-max-value="{{$max_quantity}}"
-                    data-msg-max-value="{{__('lang_v1.max_quantity_quantity_allowed', ['quantity' => $max_quantity])}}" 
+                    data-msg-max-value="{{__('lang_v1.max_quantity_quantity_allowed', ['quantity' => $max_quantity])}}"
                 @endif
             >
 
@@ -62,7 +59,7 @@
                         </option>
                     @endforeach
                 </select>
-            @else 
+            @else
                 {{ $product->unit->short_name }}
             @endif
         </td>

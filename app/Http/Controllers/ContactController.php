@@ -911,8 +911,8 @@ class ContactController extends Controller
                 'billing_phone',
                 'billing_email',
                 'shipping_address',
-                'pay_term_number',
-                'pay_term_type',
+                /*'pay_term_number',
+                'pay_term_type',*/
                 'balance',
                 'supplier_business_name',
                 'cg.amount as discount_percent',

@@ -184,10 +184,7 @@
 
 		<input type="hidden" name="products[{{$product->variation_id}}][product_id]" class="form-control product_id" value="{{$product->product_id}}">
 
-		{{-- <input type="hidden" value="{{$product->variation_id}}" name="products[{{$row_count}}][variation_id]" class="row_variation_id"> --}}
 
-		<input type="hidden" value="{{$product->enable_stock}}"
-			name="products[{{$product->variation_id}}][enable_stock]">
 
 		@if(empty($product->quantity_ordered))
 			@php
@@ -232,10 +229,7 @@
 			@endif
 			data-rule-required="true"
 			data-msg-required="@lang('validation.custom-messages.this_field_is_required')"
-			@if($product->enable_stock && empty($pos_settings['allow_overselling']) && empty($is_sales_order) )
-				data-rule-max-value="{{$max_qty_rule}}" data-qty_available="{{$product->qty_available}}" data-msg-max-value="{{$max_qty_msg}}"
-				data-msg_max_default="@lang('validation.custom-messages.quantity_not_available', ['qty'=> $product->formatted_qty_available, 'unit' => $product->unit  ])"
-			@endif
+
 		>
 		{{-- <span class="input-group-btn"><button type="button" class="btn btn-default btn-flat quantity-up"><i class="fa fa-plus text-success"></i></button></span> --}}
 		</div>

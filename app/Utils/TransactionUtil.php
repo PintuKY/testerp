@@ -92,8 +92,8 @@ class TransactionUtil extends Util
             'exchange_rate' => !empty($input['exchange_rate']) ?
                                 $uf_data ? $this->num_uf($input['exchange_rate']) : $input['exchange_rate'] : 1,
             'selling_price_group_id' => isset($input['selling_price_group_id']) ? $input['selling_price_group_id'] : null,
-            'pay_term_number' => isset($input['pay_term_number']) ? $input['pay_term_number'] : null,
-            'pay_term_type' => isset($input['pay_term_type']) ? $input['pay_term_type'] : null,
+            /*'pay_term_number' => isset($input['pay_term_number']) ? $input['pay_term_number'] : null,
+            'pay_term_type' => isset($input['pay_term_type']) ? $input['pay_term_type'] : null,*/
             'is_suspend' => !empty($input['is_suspend']) ? 1 : 0,
             'is_recurring' => !empty($input['is_recurring']) ? $input['is_recurring'] : 0,
             'recur_interval' => !empty($input['recur_interval']) ? $input['recur_interval'] : 1,
@@ -203,8 +203,8 @@ class TransactionUtil extends Util
             'exchange_rate' => !empty($input['exchange_rate']) ?
                                 $uf_data ? $this->num_uf($input['exchange_rate']) : $input['exchange_rate'] : 1,
             'selling_price_group_id' => isset($input['selling_price_group_id']) ? $input['selling_price_group_id'] : null,
-            'pay_term_number' => isset($input['pay_term_number']) ? $input['pay_term_number'] : null,
-            'pay_term_type' => isset($input['pay_term_type']) ? $input['pay_term_type'] : null,
+            /*'pay_term_number' => isset($input['pay_term_number']) ? $input['pay_term_number'] : null,
+            'pay_term_type' => isset($input['pay_term_type']) ? $input['pay_term_type'] : null,*/
             'is_suspend' => !empty($input['is_suspend']) ? 1 : 0,
             'is_recurring' => !empty($input['is_recurring']) ? $input['is_recurring'] : 0,
             'recur_interval' => !empty($input['recur_interval']) ? $input['recur_interval'] : 1,
@@ -264,7 +264,7 @@ class TransactionUtil extends Util
      *
      * @return boolean/object
      */
-    public function createOrUpdateSellLines($transaction, $products, $location_id, $number_of_days, $delivery_time, $return_deleted = false, $status_before = null, $extra_line_parameters = [], $uf_data = true ,)
+    public function createOrUpdateSellLines($transaction, $products, $location_id, $return_deleted = false, $status_before = null, $extra_line_parameters = [], $uf_data = true ,)
     {
         $lines_formatted = [];
         $modifiers_array = [];
@@ -275,7 +275,7 @@ class TransactionUtil extends Util
         $variation_value_id = [];
         foreach ($products as $variationId => $product) {
             $multiplier = 1;
-           
+
             if (isset($product['sub_unit_id']) && $product['sub_unit_id'] == $product['product_unit_id']) {
                 unset($product['sub_unit_id']);
             }
@@ -283,10 +283,10 @@ class TransactionUtil extends Util
             if (!empty($product['sub_unit_id']) && !empty($product['base_unit_multiplier'])) {
                 $multiplier = $product['base_unit_multiplier'];
             }
-            
+
             //Check if transaction_sell_lines_id is set, used when editing.
             if (!empty($product['transaction_sell_lines_id'])) {
-                
+
                 $edit_id_temp = $this->editSellLine($product, $variationId ,$location_id, $status_before, $multiplier, $uf_data);
                 $edit_ids = array_merge($edit_ids, $edit_id_temp);
 
@@ -348,7 +348,7 @@ class TransactionUtil extends Util
                         $line_discount_amount = $line_discount_amount/$multiplier;
                     }
                 }
-                
+
                 $line = [
                     'product_id' => $product['product_id'],
                     'variation_id' => $variationId,
@@ -366,8 +366,8 @@ class TransactionUtil extends Util
                     'res_service_staff_id' => !empty($product['res_service_staff_id']) ? $product['res_service_staff_id'] : null,
                     'res_line_order_status' => !empty($product['res_service_staff_id']) ? 'received' : null,
                     'so_line_id' => !empty($product['so_line_id']) ? $product['so_line_id'] : null,
-                    'number_of_days' => $number_of_days,
-                    'delivery_time' => $delivery_time
+                    /*'number_of_days' => $number_of_days,
+                    'delivery_time' => $delivery_time*/
                 ];
 
                 foreach ($extra_line_parameters as $key => $value) {
@@ -403,7 +403,7 @@ class TransactionUtil extends Util
                 }
 
                 $lines_formatted[] = new TransactionSellLine($line);
-                
+
                 $sell_line_warranties[] = !empty($product['warranty_id']) ? $product['warranty_id'] : 0;
 
                 //Update purchase order line quantity received
@@ -411,7 +411,7 @@ class TransactionUtil extends Util
                 $variation_value_id[] = $product['variation_value_id'];
             }
         }
-        
+
         if (!is_object($transaction)) {
             $transaction = Transaction::findOrFail($transaction);
         }
@@ -424,19 +424,19 @@ class TransactionUtil extends Util
                     ->select('id')->get()->toArray();
             $combo_delete_lines = TransactionSellLine::whereIn('parent_sell_line_id', $deleted_lines)->where('children_type', 'combo')->select('id')->get()->toArray();
             $deleted_lines = array_merge($deleted_lines, $combo_delete_lines);
-            
+
             $adjust_qty = $status_before == 'draft' ? false : true;
 
             $this->deleteSellLines($deleted_lines, $location_id, $adjust_qty);
         }
-        
+
         $combo_lines = [];
         if (!empty($lines_formatted)) {
-            $sell_line_data =  $transaction->sell_lines()->saveMany($lines_formatted);           
+            $sell_line_data =  $transaction->sell_lines()->saveMany($lines_formatted);
             $sell_line_data_ids = !empty($sell_line_data)  ?  array_column($sell_line_data,"id"): [];
             $variation_value_datas = VariationValueTemplate::whereIn('id',$variation_value_id)->get();
             $data = [];
-           // Add transaction sell lines variants data 
+           // Add transaction sell lines variants data
             $sell_line_ids = 0;
             foreach($variation_value_datas as $variation_value_data){
                 $data[] = [
@@ -448,7 +448,7 @@ class TransactionUtil extends Util
                     'created_at' => Carbon::now(),
                     'updated_at' => Carbon::now(),
                 ];
-                $sell_line_ids++; 
+                $sell_line_ids++;
             }
             $transaction_sell_lines_variants = TransactionSellLinesVariants::insert($data);
             //Add corresponding modifier sell lines if exists
@@ -560,7 +560,7 @@ class TransactionUtil extends Util
         $sell_line = TransactionSellLine::with(['product', 'warranties'])
                     ->find($product['transaction_sell_lines_id']);
         $old_qty = $sell_line->quantity;
-        
+
         $edit_ids[] = $product['transaction_sell_lines_id'];
         //Adjust quanity
         if ($status_before != 'draft') {
@@ -644,10 +644,10 @@ class TransactionUtil extends Util
      * @return boolean
      */
     public function deleteSellLines($transaction_line_ids, $location_id, $adjust_qty = true)
-    {   
-        
+    {
+
         if (!empty($transaction_line_ids)) {
-            
+
             $sell_lines = TransactionSellLine::whereIn('id', $transaction_line_ids)
                         ->get();
             dd($sell_lines);
@@ -3215,9 +3215,9 @@ class TransactionUtil extends Util
      *
      * @return void
      */
-    public function adjustMappingPurchaseSell($status_before, $transaction, $business, $deleted_line_ids = []) 
-    {   
-        
+    public function adjustMappingPurchaseSell($status_before, $transaction, $business, $deleted_line_ids = [])
+    {
+
         if ($status_before == 'final' && $transaction->status == 'draft') {
             //Get sell lines used for the transaction.
             $sell_purchases = Transaction::join('transaction_sell_lines AS SL', 'transactions.id', '=', 'SL.transaction_id')
@@ -3226,7 +3226,7 @@ class TransactionUtil extends Util
                     ->select('TSP.purchase_line_id', 'TSP.quantity', 'TSP.id')
                     ->get()
                     ->toArray();
-            
+
             //Included the deleted sell lines
             if (!empty($deleted_line_ids)) {
                 $deleted_sell_purchases = TransactionSellLinesPurchaseLines::whereIn('sell_line_id', $deleted_line_ids)
@@ -3256,7 +3256,7 @@ class TransactionUtil extends Util
             $this->mapPurchaseSell($business, $transaction->sell_lines, 'purchase');
         } elseif ($status_before == 'final' && $transaction->status == 'final') {
             //Handle deleted line
-            
+
             if (!empty($deleted_line_ids)) {
                 $deleted_sell_purchases = TransactionSellLinesPurchaseLines::whereIn('sell_line_id', $deleted_line_ids)
                             ->select('sell_line_id', 'quantity')
@@ -4721,8 +4721,8 @@ class TransactionUtil extends Util
                         'transactions.payment_status',
                         'transactions.final_total',
                         'BS.name as location_name',
-                        'transactions.pay_term_number',
-                        'transactions.pay_term_type',
+                        /*'transactions.pay_term_number',
+                        'transactions.pay_term_type',*/
                         'PR.id as return_transaction_id',
                         DB::raw('SUM(TP.amount) as amount_paid'),
                         DB::raw('(SELECT SUM(TP2.amount) FROM transaction_payments AS TP2 WHERE
@@ -4797,8 +4797,8 @@ class TransactionUtil extends Util
                     'transactions.rp_earned',
                     'transactions.types_of_service_id',
                     'transactions.shipping_status',
-                    'transactions.pay_term_number',
-                    'transactions.pay_term_type',
+                    /*'transactions.pay_term_number',
+                    'transactions.pay_term_type',*/
                     'transactions.additional_notes',
                     'transactions.staff_note',
                     'transactions.shipping_details',
@@ -5676,7 +5676,7 @@ class TransactionUtil extends Util
                 $this->updateQuantitySoldFromSellLine($sell_line, $quantity, $quantity_before, false);
 
                 // Update quantity in variation location details
-                $productUtil->updateProductQuantity($sell_return->location_id, $sell_line->product_id, $sell_line->variation_id, $quantity, $quantity_before, null, false);
+                //$productUtil->updateProductQuantity($sell_return->location_id, $sell_line->product_id, $sell_line->variation_id, $quantity, $quantity_before, null, false);
             }
         }
 

@@ -106,21 +106,7 @@
 
             <div class="clearfix"></div>
 
-            <div class="col-sm-4">
-              <div class="form-group">
-              <br>
-                <label>
-                  {!! Form::checkbox('enable_stock', 1, $product->enable_stock, ['class' => 'input-icheck', 'id' => 'enable_stock']); !!} <strong>@lang('product.manage_stock')</strong>
-                </label>@show_tooltip(__('tooltip.enable_stock')) <p class="help-block"><i>@lang('product.enable_stock_help')</i></p>
-              </div>
-            </div>
-            <div class="col-sm-4" id="alert_quantity_div" @if(!$product->enable_stock) style="display:none" @endif>
-              <div class="form-group">
-                {!! Form::label('alert_quantity', __('product.alert_quantity') . ':') !!} @show_tooltip(__('tooltip.alert_quantity'))
-                {!! Form::text('alert_quantity', @format_quantity($product->alert_quantity), ['class' => 'form-control input_number',
-                'placeholder' => __('product.alert_quantity') , 'min' => '0']); !!}
-              </div>
-            </div>
+
 
             <!-- include module fields -->
             @if(!empty($pos_module_data))
@@ -203,9 +189,6 @@
                 <button type="submit" value="submit_n_add_selling_prices" class="btn btn-warning submit_product_form">@lang('lang_v1.save_n_add_selling_price_group_prices')</button>
               @endif
 
-              @can('product.opening_stock')
-              <button type="submit" @if(empty($product->enable_stock)) disabled="true" @endif id="opening_stock_button"  value="update_n_edit_opening_stock" class="btn bg-purple submit_product_form">@lang('lang_v1.update_n_edit_opening_stock')</button>
-              @endif
 
               <button type="submit" value="save_n_add_another" class="btn bg-maroon submit_product_form">@lang('lang_v1.update_n_add_another')</button>
 

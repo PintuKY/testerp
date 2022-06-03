@@ -36,7 +36,7 @@ $(document).ready(function() {
             let invoice_scheme_id = $(this).find(':selected').data('default_invoice_scheme_id');
             $("#invoice_scheme_id").val(invoice_scheme_id).change();
         }
-        
+
         //Set default price group
         if ($('#default_price_group').length) {
             var dpg = default_price_group ?
@@ -70,7 +70,7 @@ $(document).ready(function() {
                 };
             },
         },
-        templateResult: function (data) { 
+        templateResult: function (data) {
             var template = '';
             if (data.supplier_business_name) {
                 template += data.supplier_business_name + "<br>";
@@ -111,14 +111,14 @@ $(document).ready(function() {
             $('input#pay_term_number').val('');
         }
         if (data.pay_term_type) {
-            
+
             $('#add_sell_form select[name="pay_term_type"]').val(data.pay_term_type);
             $('#edit_sell_form select[name="pay_term_type"]').val(data.pay_term_type);
         } else {
             $('#add_sell_form select[name="pay_term_type"]').val('');
             $('#edit_sell_form select[name="pay_term_type"]').val('');
         }
-        
+
         update_shipping_address(data);
         $('#advance_balance_text').text(__currency_trans_from_en(data.balance), true);
         $('#advance_balance').val(data.balance);
@@ -158,7 +158,6 @@ $(document).ready(function() {
                             price_group: price_group,
                             location_id: $('input#location_id').val(),
                             term: request.term,
-                            not_for_selling: 0,
                             search_fields: search_fields
                         },
                         response
@@ -178,13 +177,16 @@ $(document).ready(function() {
                             for_so = true;
                         }
 
-                        if ((ui.item.enable_stock == 1 && ui.item.qty_available > 0) || 
+                        /*if ((ui.item.enable_stock == 1 && ui.item.qty_available > 0) ||
                                 (ui.item.enable_stock == 0) || is_overselling_allowed || for_so) {
                             $(this)
                                 .data('ui-autocomplete')
                                 ._trigger('select', 'autocompleteselect', ui);
                             $(this).autocomplete('close');
-                        }
+                        }*/
+                        $(this)
+                            .data('ui-autocomplete')
+                            ._trigger('select', 'autocompleteselect', ui);
                     } else if (ui.content.length == 0) {
                         toastr.error(LANG.no_products_found);
                         $('input#search_product').select();
@@ -639,7 +641,7 @@ $(document).ready(function() {
         var payment_method_dropdown = $('#payment_rows_div')
             .find('.payment_types_dropdown')
             .first();
-        
+
             payment_method_dropdown.val(pay_method);
             payment_method_dropdown.change();
         if (pay_method == 'card') {
@@ -983,7 +985,7 @@ $(document).ready(function() {
                                     $('#mobile').select();
                                 }
                             });
-                            
+
                         } else {
                             submitQuickContactForm(form);
                         }
@@ -1051,7 +1053,7 @@ $(document).ready(function() {
         }
 
         if ($(this).attr('id') == 'save-and-print') {
-            $('#is_save_and_print').val(1);           
+            $('#is_save_and_print').val(1);
         } else {
             $('#is_save_and_print').val(0);
         }
@@ -1286,12 +1288,12 @@ $(document).ready(function() {
             suffixKeyCodes: [13], // enter-key expected at the end of a scan
             reactToPaste: true, // Compatibility to built-in scanners in paste-mode (as opposed to keyboard-mode)
             onScan: function(sCode, iQty) {
-                console.log('Scanned: ' + iQty + 'x ' + sCode); 
+                console.log('Scanned: ' + iQty + 'x ' + sCode);
                 $('input#weighing_scale_barcode').val(sCode);
                 $('button#weighing_scale_submit').trigger('click');
             },
             onScanError: function(oDebug) {
-                console.log(oDebug); 
+                console.log(oDebug);
             },
             minLength: 2
             // onKeyDetect: function(iKeyCode){ // output all potentially relevant key events - great for debugging!
@@ -1514,17 +1516,17 @@ function pos_product_row(product_id = null, purchase_line_id = null, weighing_sc
         }
 
         //If default price group present
-        if ($('#default_price_group').length > 0 && 
+        if ($('#default_price_group').length > 0 &&
             price_group === '') {
             price_group = $('#default_price_group').val();
         }
 
         //If types of service selected give more priority
-        if ($('#types_of_service_price_group').length > 0 && 
+        if ($('#types_of_service_price_group').length > 0 &&
             $('#types_of_service_price_group').val()) {
             price_group = $('#types_of_service_price_group').val();
         }
-        
+
         $.ajax({
             method: 'GET',
             url: '/sells/get_product_row/' + product_id + '/' + location_id,
@@ -1698,9 +1700,9 @@ function calculate_billing_details(price_total) {
 
     //Add packaging charge
     var packing_charge = 0;
-    if ($('#types_of_service_id').length > 0 && 
+    if ($('#types_of_service_id').length > 0 &&
             $('#types_of_service_id').val()) {
-        packing_charge = __calculate_amount($('#packing_charge_type').val(), 
+        packing_charge = __calculate_amount($('#packing_charge_type').val(),
             __read_number($('input#packing_charge')), price_total);
 
         $('#packing_charge_text').text(__currency_trans_from_en(packing_charge, false));
@@ -1831,7 +1833,7 @@ function reset_pos_form(){
 		}, 4000);
 		return true;
 	}
-	
+
     //reset all repair defects tags
     if ($("#repair_defects").length > 0) {
         tagify_repair_defects.removeAllTags();
@@ -1897,7 +1899,7 @@ function reset_pos_form(){
     }
     if ($('#commission_agent').length > 0) {
         $('#commission_agent').val('').trigger('change');
-    } 
+    }
 
     //reset contact due
     $('.contact_due_text').find('span').text('');
@@ -1936,7 +1938,7 @@ function set_default_customer() {
     if ($("textarea#repair_defects").length > 0 && !customer_set) {
         let suggestions = [];
         if ($("input#pos_repair_defects_suggestion").length > 0 && $("input#pos_repair_defects_suggestion").val().length > 2) {
-            suggestions = JSON.parse($("input#pos_repair_defects_suggestion").val());    
+            suggestions = JSON.parse($("input#pos_repair_defects_suggestion").val());
         }
         let repair_defects = document.querySelector('textarea#repair_defects');
         tagify_repair_defects = new Tagify(repair_defects, {
@@ -2065,7 +2067,7 @@ $(document).on('click', '.input-number .product-quantity-up, .input-number .prod
     let min = parseFloat(input.attr( 'min' ));
     let step = 1;
     let quantity = 1;
-    
+
     if ($(this).hasClass('product-quantity-up')) {
         //if max reached return false
         if (typeof max != 'undefined' && val + step > max) {
@@ -2073,7 +2075,7 @@ $(document).on('click', '.input-number .product-quantity-up, .input-number .prod
         }
         quantity = val + step;
     } else if ($(this).hasClass('product-quantity-down')) {
-        
+
         //if max reached return false
         if (typeof min != 'undefined' && val - step < min) {
             return false;
@@ -2090,10 +2092,10 @@ function productVariationsPriceCalculation($this) {
     let subTotal = posQuantity * unitPrice;
     let priceTotal = 0;
     let totalQuantity = 0;
-    let rowDiscountType = $this.parents('.product_row').find('select.product_row_discount_type').find('option:selected').val();    
+    let rowDiscountType = $this.parents('.product_row').find('select.product_row_discount_type').find('option:selected').val();
     let rowDiscountAmount = parseFloat($this.parents('.product_row').find('input.discount_amount').val());
     let discountAmount = posQuantity * rowDiscountAmount;
-    
+
     var variationValue = 0;
     if (rowDiscountAmount > 0) {
         if (rowDiscountType == 'fixed') {
@@ -2102,12 +2104,12 @@ function productVariationsPriceCalculation($this) {
             subTotal = (subTotal * rowDiscountAmount)/100;
         }
     }
-    
+
     if($this.parents('.product_row').find('.select_variation_value').length && $this.parents('.product_row').find('.select_variation_value').find('option:selected').data('price') !== 'NaN' && $this.parents('.product_row').find('.select_variation_value').find('option:selected').data('price') !== '' && typeof $this.parents('.product_row').find('.select_variation_value').find('option:selected').data('price') !=="undefined"){
         variationValue = parseFloat($this.parents('.product_row').find('.select_variation_value').find('option:selected').data('price'));
         $this.parents('.product_row').find('.product_selectd_variation_value').val(variationValue);
         $this.parents('.product_row').find('.product_selectd_variation_value').html(variationValue);
-    } 
+    }
     if($this.parents('.product_row').find('.radio_variation_value:checked').data('price') !== 'NaN' && $this.parents('.product_row').find('.radio_variation_value:checked').data('price') !== '' && typeof $this.parents('.product_row').find('.radio_variation_value:checked').data('price') !=="undefined"){
         variationValue = parseFloat($this.parents('.product_row').find('.radio_variation_value:checked').data('price'));
         $this.parents('.product_row').find('.product_radio_variation_value').val(variationValue);
@@ -2115,7 +2117,7 @@ function productVariationsPriceCalculation($this) {
     }
     finalAmount = variationValue + subTotal;
     $this.parents('.product_row').find('.pos_line_total_text').html('$'+finalAmount);
-    $this.parents('.product_row').find('input.pos_line_total').val(finalAmount);  
+    $this.parents('.product_row').find('input.pos_line_total').val(finalAmount);
     $('table#pos_table tbody tr').each(function() {
         priceTotal = priceTotal + __read_number($(this).find('input.pos_line_total'));
     });
@@ -2140,24 +2142,24 @@ function productVariationsPriceCalculation($this) {
     $('#payment_rows_div').find('.sell-product-payment-amount').val(priceTotal);
 }
 
-$(document).on('change', '.product_row .pos_quantity', function(e) {    
-    productVariationsPriceCalculation($(this));    
+$(document).on('change', '.product_row .pos_quantity', function(e) {
+    productVariationsPriceCalculation($(this));
 });
 
-$(document).on('change', '.product_row .select_variation_value', function(e) {    
-    productVariationsPriceCalculation($(this));    
+$(document).on('change', '.product_row .select_variation_value', function(e) {
+    productVariationsPriceCalculation($(this));
 });
 
-$(document).on('change', '.product_row .radio_variation_value', function(e) {        
-    productVariationsPriceCalculation($(this));    
+$(document).on('change', '.product_row .radio_variation_value', function(e) {
+    productVariationsPriceCalculation($(this));
 });
 
-$(document).on('change', '.product_row .discount_amount', function(e) { 
-    productVariationsPriceCalculation($(this));    
+$(document).on('change', '.product_row .discount_amount', function(e) {
+    productVariationsPriceCalculation($(this));
 });
 
-$(document).on('change', '.product_row .product_pos_unit_price', function(e) {    
-    productVariationsPriceCalculation($(this));    
+$(document).on('change', '.product_row .product_pos_unit_price', function(e) {
+    productVariationsPriceCalculation($(this));
 });
 
 
@@ -2165,7 +2167,7 @@ $( window ).on( "load", function() {
     let priceTotal = 0;
     $('.product_row').each(function(){
         let posLineTotal = parseFloat($(this).find('.pos_line_total').val());
-        
+
         let productVariationValue = parseFloat($(this).find('.product_variation_value').val());
         let sum = posLineTotal + productVariationValue;
         $(this).find('.pos_line_total').val(sum);
@@ -2175,7 +2177,7 @@ $( window ).on( "load", function() {
     $('.price_total').html(priceTotal);
     // console.log(priceTotal);
 });
-$(document).on('change', '#shipping_charges', function(e) {    
+$(document).on('change', '#shipping_charges', function(e) {
     let shippingCharge = parseInt($(this).val());
     let sellProductPaymentAmount = parseInt($('#payment_rows_div').find('.sell-product-payment-amount').val());
     let ProductPaymentAmount = shippingCharge + sellProductPaymentAmount;
@@ -2183,7 +2185,7 @@ $(document).on('change', '#shipping_charges', function(e) {
     $('#payment_rows_div').find('.sell-product-payment-amount').html(ProductPaymentAmount)
 });
 
-$(document).on('change', '#discount_amount', function(e) {    
+$(document).on('change', '#discount_amount', function(e) {
     let discountAmount = parseInt($(this).val());
     let sellProductPaymentAmount = parseInt($('#payment_rows_div').find('.sell-product-payment-amount').val());
     let ProductPaymentAmount = sellProductPaymentAmount - discountAmount;
@@ -2306,7 +2308,7 @@ function getCustomerRewardPoints() {
     if ($('#reward_point_enabled').length <= 0) {
         return false;
     }
-    var is_edit = $('form#edit_sell_form').length || 
+    var is_edit = $('form#edit_sell_form').length ||
     $('form#edit_pos_sell_form').length ? true : false;
     if (is_edit && !customer_set) {
         return false;
@@ -2317,7 +2319,7 @@ function getCustomerRewardPoints() {
     $.ajax({
         method: 'POST',
         url: '/sells/pos/get-reward-details',
-        data: { 
+        data: {
             customer_id: customer_id
         },
         dataType: 'json',
@@ -2438,7 +2440,7 @@ $(document).on('change', '#types_of_service_id', function(){
         $.ajax({
             method: 'POST',
             url: '/sells/pos/get-types-of-service-details',
-            data: { 
+            data: {
                 types_of_service_id: types_of_service_id,
                 location_id: location_id
             },
@@ -2457,7 +2459,7 @@ $(document).on('change', '#types_of_service_id', function(){
                 }
                 $('#types_of_service_id').val(types_of_service_id);
                 $('.types_of_service_modal').html(result.modal_html);
-                
+
                 if (prev_price_group != result.price_group_id) {
                     if ($('form#edit_pos_sell_form').length > 0) {
                         $('table#pos_table tbody').html('');
@@ -2499,14 +2501,14 @@ $(document).on('click', '.service_modal_btn', function(e) {
 });
 
 $(document).on('change', '.payment_types_dropdown', function(e) {
-    var default_accounts = $('select#select_location_id').length ? 
+    var default_accounts = $('select#select_location_id').length ?
                 $('select#select_location_id')
                 .find(':selected')
                 .data('default_payment_accounts') : $('#location_id').data('default_payment_accounts');
     var payment_type = $(this).val();
     var payment_row = $(this).closest('.payment_row');
     if (payment_type && payment_type != 'advance') {
-        var default_account = default_accounts && default_accounts[payment_type]['account'] ? 
+        var default_account = default_accounts && default_accounts[payment_type]['account'] ?
             default_accounts[payment_type]['account'] : '';
         var row_index = payment_row.find('.payment_row_index').val();
 
@@ -2517,7 +2519,7 @@ $(document).on('change', '.payment_types_dropdown', function(e) {
         }
     }
 
-    //Validate max amount and disable account if advance 
+    //Validate max amount and disable account if advance
     amount_element = payment_row.find('.payment-amount');
     account_dropdown = payment_row.find('.account-dropdown');
     if (payment_type == 'advance') {
@@ -2536,9 +2538,9 @@ $(document).on('change', '.payment_types_dropdown', function(e) {
     } else {
         amount_element.rules("remove", "max-value");
         if (account_dropdown) {
-            account_dropdown.prop('disabled', false); 
+            account_dropdown.prop('disabled', false);
             account_dropdown.closest('.form-group').removeClass('hide');
-        }    
+        }
     }
 });
 
@@ -2599,7 +2601,7 @@ function validate_discount_field() {
             },
         });
     } else {
-        discount_element.rules("remove", "max-value");      
+        discount_element.rules("remove", "max-value");
     }
     discount_element.trigger('change');
 }
@@ -2689,7 +2691,7 @@ function update_shipping_address(data) {
         let shipping_custom_field_5 = data.shipping_custom_field_details != null ? data.shipping_custom_field_details.shipping_custom_field_5 : '';
         $('#shipping_custom_field_5').val(shipping_custom_field_5);
     }
-    
+
     //update export fields
     if (data.is_export) {
         $('#is_export').prop('checked', true);
@@ -2717,7 +2719,7 @@ function update_shipping_address(data) {
         $('#is_export').prop('checked', false);
         $('div.export_div').hide();
     }
-    
+
     $('#shipping_address_modal').val(data.shipping_address);
     $('#shipping_address').val(data.shipping_address);
 }
@@ -2766,7 +2768,7 @@ $("#sales_order_ids").on("select2:select", function (e) {
                     $('table#pos_table tbody')
                     .append($(this))
                     .find('input.pos_quantity');
-                    
+
                     var this_row = $('table#pos_table tbody')
                         .find('tr')
                         .last();
@@ -2791,9 +2793,9 @@ $("#sales_order_ids").on("select2:select", function (e) {
 
                 //increment row count
                 $('input#product_row_count').val(product_row);
-                
+
                 pos_total_row();
-            
+
             } else {
                 toastr.error(result.msg);
                 $('input#search_product')
@@ -2833,7 +2835,7 @@ function set_so_values(so) {
 $("#sales_order_ids").on("select2:unselect", function (e) {
     var sales_order_id = e.params.data.id;
     $('table#pos_table tbody').find('tr').each( function(){
-        if (typeof($(this).data('so_id')) !== 'undefined' 
+        if (typeof($(this).data('so_id')) !== 'undefined'
             && $(this).data('so_id') == sales_order_id) {
             $(this).remove();
         pos_total_row();
@@ -2844,7 +2846,7 @@ $("#sales_order_ids").on("select2:unselect", function (e) {
 $(document).on('click', '#add_expense', function(){
     $.ajax({
         url: '/expenses/create',
-        data: { 
+        data: {
             location_id: $('#select_location_id').val()
         },
         dataType: 'html',

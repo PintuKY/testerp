@@ -47,7 +47,7 @@ class Transaction extends Model
         return $this->hasMany(\App\Models\TransactionSellLine::class);
     }
 
- 
+
 
     public function contact()
     {
@@ -358,8 +358,8 @@ class Transaction extends Model
         return [
             'final' => __('sale.final'),
             'draft' => __('sale.draft'),
-            'quotation' => __('lang_v1.quotation'),
-            'proforma' => __('lang_v1.proforma')
+            /*'quotation' => __('lang_v1.quotation'),
+            'proforma' => __('lang_v1.proforma')*/
         ];
     }
 

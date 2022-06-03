@@ -813,12 +813,7 @@ class PurchaseController extends Controller
                     $delete_purchase_line_ids = [];
                     foreach ($delete_purchase_lines as $purchase_line) {
                         $delete_purchase_line_ids[] = $purchase_line->id;
-                        $this->productUtil->decreaseProductQuantity(
-                            $purchase_line->product_id,
-                            $purchase_line->variation_id,
-                            $transaction->location_id,
-                            $purchase_line->quantity
-                        );
+
                     }
                     PurchaseLine::where('transaction_id', $transaction->id)
                                 ->whereIn('id', $delete_purchase_line_ids)
@@ -913,11 +908,6 @@ class PurchaseController extends Controller
         if (request()->ajax()) {
             $term = request()->term;
 
-            $check_enable_stock = true;
-            if (isset(request()->check_enable_stock)) {
-                $check_enable_stock = filter_var(request()->check_enable_stock, FILTER_VALIDATE_BOOLEAN);
-            }
-
             $only_variations = false;
             if (isset(request()->only_variations)) {
                 $only_variations = filter_var(request()->only_variations, FILTER_VALIDATE_BOOLEAN);
@@ -953,9 +943,7 @@ class PurchaseController extends Controller
                 )
                 ->groupBy('variation_id');
 
-            if ($check_enable_stock) {
-                $q->where('enable_stock', 1);
-            }
+
             if (!empty(request()->location_id)) {
                 $q->ForLocation(request()->location_id);
             }

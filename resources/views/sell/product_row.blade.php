@@ -3,15 +3,15 @@
 	$multiplier = 1;
 @endphp
 
-@foreach($sub_units as $key => $value)
+{{--@foreach($sub_units as $key => $value)
 	@if(!empty($product->sub_unit_id) && $product->sub_unit_id == $key)
 		@php
 			$multiplier = $value['multiplier'];
 		@endphp
 	@endif
-@endforeach
+@endforeach--}}
 @foreach($productDatas as $productData)
-	<tr class="product_row" data-row_index="{{$row_count}}" @if(!empty($so_line)) data-so_id="{{$so_line->transaction_id}}" @endif>
+	<tr class="product_row" data-row_index="{{$row_count}}" @if(!empty($so_line)) data-so_id="{{($so_line != '')?$so_line->transaction_id:''}}" @endif>
 		<td>
 			@if(!empty($so_line))
 				<input type="hidden"
@@ -184,10 +184,6 @@
 
 			<input type="hidden" name="products[{{$productData->id}}][product_id]" class="form-control product_id" value="{{$productData->product->id}}">
 
-			<!-- <input type="hidden" value="{{$productData->product_id}}" name="products[{{$row_count}}][product_id]" class="row_product_id"> -->
-
-			<input type="hidden" value="{{$productData->product->enable_stock}}" name="products[{{$productData->id}}][enable_stock]">
-
 			@if(empty($productData->quantity_ordered))
 				@php
 					$productData->quantity_ordered = 1;
@@ -200,7 +196,7 @@
 					$allow_decimal = false;
 				}
 			@endphp
-			@foreach($sub_units as $key => $value)
+			{{--@foreach($sub_units as $key => $value)
 				@if(!empty($productData->sub_unit_id) && $productData->sub_unit_id == $key)
 					@php
 						$max_qty_rule = $max_qty_rule / $multiplier;
@@ -216,7 +212,7 @@
 						}
 					@endphp
 				@endif
-			@endforeach
+			@endforeach--}}
 			<div class="input-group input-number">
 				<span class="input-group-btn"><button type="button" class="btn btn-default btn-flat product-quantity-down"><i class="fa fa-minus text-danger"></i></button></span>
 			<input type="text" data-min="1"
@@ -231,16 +227,13 @@
 				@endif
 				data-rule-required="true"
 				data-msg-required="@lang('validation.custom-messages.this_field_is_required')"
-				@if($productData->enable_stock && empty($pos_settings['allow_overselling']) && empty($is_sales_order) )
-					data-rule-max-value="{{$max_qty_rule}}" data-qty_available="{{$productData->qty_available}}" data-msg-max-value="{{$max_qty_msg}}"
-					data-msg_max_default="@lang('validation.custom-messages.quantity_not_available', ['qty'=> $productData->formatted_qty_available, 'unit' => $productData->product->unit->short_name  ])"
-				@endif
+
 			>
 			<span class="input-group-btn"><button type="button" class="btn btn-default btn-flat product-quantity-up"><i class="fa fa-plus text-success"></i></button></span>
 			</div>
 
 			<input type="hidden" name="products[{{$productData->id}}][product_unit_id]" value="{{$productData->product->unit->id}}">
-			@if(count($sub_units) > 0)
+			{{--@if(count($sub_units) > 0)
 				<br>
 				<select name="products[{{$productData->id}}][sub_unit_id]" class="form-control input-sm sub_unit">
 					@foreach($sub_units as $key => $value)
@@ -249,16 +242,16 @@
 						</option>
 					@endforeach
 			</select>
-			@else
+			@else--}}
 				{{$productData->product->unit->short_name}}
-			@endif
+			{{--@endif--}}
 
 			<input type="hidden" class="base_unit_multiplier" name="products[{{$productData->id}}][base_unit_multiplier]" value="{{$multiplier}}">
 
 			<input type="hidden" class="hidden_base_unit_sell_price" value="{{$productData->default_sell_price / $multiplier}}">
 
 			{{-- Hidden fields for combo products --}}
-			@if($productData->product->type == 'combo'&& !empty($productData->product->type))
+			@if($productData->product && !empty($productData->product->type) && $productData->product->type == 'combo' )
 
 				@foreach($productData->product->type as $k => $combo_product)
 
@@ -276,11 +269,8 @@
 
 					<input type="hidden"
 						name="products[{{$productData->id}}][combo][{{$k}}][product_id]"
-						value="{{$combo_product['$productData->product_id']}}">
+						value="{{$combo_product[$productData->product_id]}}">
 
-						<input type="hidden"
-						name="products[{{$productData->id}}][combo][{{$k}}][product_id]"
-						value="{{$combo_product['$productData->product_id']}}">
 
 						<input type="hidden"
 						class="combo_product_qty"
@@ -297,7 +287,7 @@
 				@endforeach
 			@endif
 		</td>
-		@if(!empty($is_direct_sell))
+		{{--@if(!empty($is_direct_sell))
 			@if(!empty($pos_settings['inline_service_staff']))
 				<td>
 					<div class="form-group">
@@ -340,12 +330,13 @@
 					</div>
 				</td>
 			@endif
-		@endif
+		@endif--}}
 		<td class="{{$hide_tax}}">
 			<input type="text" name="products[{{$productData->id}}][unit_price_inc_tax]" class="form-control pos_unit_price_inc_tax input_number" value="{{@num_format($unit_price_inc_tax)}}" @if(!$edit_price) readonly @endif @if(!empty($pos_settings['enable_msp'])) data-rule-min-value="{{$unit_price_inc_tax}}" data-msg-min-value="{{__('lang_v1.minimum_selling_price_error_msg', ['price' => @num_format($unit_price_inc_tax)])}}" @endif>
 		</td>
 
-		@if(isset($productData->product_variation) && $productData->product_variation->variation_template->type == 1)
+
+		@if(!empty($productData->product_variation) && $productData->product_variation->variation_template->type == 1)
 			<td class="text-center v-center">
 				<select class="form-control select_variation_value select2" required name="products[{{$productData->id}}][variation_value_id]">
 					<option value="">Please Select</option>
@@ -358,7 +349,7 @@
 				<input type="text" class="product_selectd_variation_value" value="" readonly required>
 			</td>
 		@endif
-		@if( isset($productData->product_variation) && $productData->product_variation->variation_template->type == 2)
+		{{--@if( isset($productData->product_variation) && $productData->product_variation->variation_template->type == 2)
 		<td>
 			@foreach($productData->product_variation->variation_template->values as $key => $product_variation_name_data)
 				<label class="radio-inline">
@@ -369,7 +360,7 @@
 		<td>
 			<input type="text" class="product_radio_variation_value" value="" readonly required>
 		</td>
-		@endif
+		@endif--}}
 		<td class="text-center">
 			@php
 				$subtotal_type = !empty($pos_settings['is_pos_subtotal_editable']) ? 'text' : 'hidden';

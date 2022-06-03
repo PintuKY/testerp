@@ -39,11 +39,11 @@
 					<i class="fa fa-map-marker"></i>
 				</span>
 			{!! Form::select('select_location_id', $business_locations, $default_location->id ?? null, ['class' => 'form-control input-sm',
-			'id' => 'select_location_id', 
+			'id' => 'select_location_id',
 			'required', 'autofocus'], $bl_attributes); !!}
 			<span class="input-group-addon">
 					@show_tooltip(__('tooltip.sale_location'))
-				</span> 
+				</span>
 			</div>
 		</div>
 	</div>
@@ -76,14 +76,14 @@
 
 								<span class="input-group-addon">
 									@show_tooltip(__('lang_v1.types_of_service_help'))
-								</span> 
+								</span>
 							</div>
 							<small><p class="help-block hide" id="price_group_text">@lang('lang_v1.price_group'): <span></span></p></small>
 						</div>
 					</div>
 					<div class="modal fade types_of_service_modal" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel"></div>
 				@endif
-				
+
 				@if(in_array('subscription', $enabled_modules))
 					<div class="col-md-4 pull-right col-sm-6">
 						<div class="checkbox">
@@ -93,7 +93,7 @@
 						</div>
 					</div>
 				@endif
-				
+
 				<div class="clearfix"></div>
 				<div class="@if(!empty($commission_agent)) col-sm-3 @else col-sm-4 @endif">
 					<div class="form-group">
@@ -121,50 +121,31 @@
 							@lang('lang_v1.billing_address'):
 						</strong>
 						<div id="billing_address_div">
-							
+
 						</div>
 						<br>
 						<strong>
 							@lang('lang_v1.shipping_address'):
 						</strong>
 						<div id="shipping_address_div">
-							
-						</div>	
+
+						</div>
 						<br>
 						<strong>
 							@lang('contact.billing_email'):
 						</strong>
 						<div id="billing_email_div">
-							
+
 						</div>
 						<br>
 						<strong>
 							@lang('contact.billing_phone'):
 						</strong>
 						<div id="billing_phone_div">
-							
-						</div>				
+
+						</div>
 					</small>
 				</div>
-
-				<div class="col-md-3">
-		          <div class="form-group">
-		            <div class="multi-input">
-		            @php
-						$is_pay_term_required = !empty($pos_settings['is_pay_term_required']);
-					@endphp
-		              {!! Form::label('pay_term_number', __('contact.pay_term') . ':') !!} @show_tooltip(__('tooltip.pay_term'))
-		              <br/>
-		              {!! Form::number('pay_term_number','', ['class' => 'form-control width-40 pull-left', 'placeholder' => __('contact.pay_term'), 'required' => $is_pay_term_required]); !!}
-
-		              {!! Form::select('pay_term_type', 
-		              	['months' => __('lang_v1.months'), 
-		              		'days' => __('lang_v1.days')], 
-		              		'', 
-		              	['class' => 'form-control width-60 pull-left','placeholder' => __('messages.please_select'), 'required' => $is_pay_term_required]); !!}
-		            </div>
-		          </div>
-		        </div>
 
 				@if(!empty($commission_agent))
 				@php
@@ -173,7 +154,7 @@
 				<div class="col-sm-3">
 					<div class="form-group">
 					{!! Form::label('commission_agent', __('lang_v1.commission_agent') . ':') !!}
-					{!! Form::select('commission_agent', 
+					{!! Form::select('commission_agent',
 								$commission_agent, null, ['class' => 'form-control select2', 'id' => 'commission_agent', 'required' => $is_commission_agent_required]); !!}
 					</div>
 				</div>
@@ -229,7 +210,7 @@
 						</div>
 					</div>
 					@endcan
-				
+
 				@php
 			        $custom_field_1_label = !empty($custom_labels['sell']['custom_field_1']) ? $custom_labels['sell']['custom_field_1'] : '';
 
@@ -369,7 +350,7 @@
 					<table class="table table-condensed table-bordered table-striped table-responsive" id="pos_table">
 						<thead>
 							<tr>
-								<th class="text-center">	
+								<th class="text-center">
 									@lang('sale.product')
 								</th>
 								<th class="text-center">
@@ -408,7 +389,7 @@
 							</tr>
 						</thead>
 						<tbody>
-							
+
 						</tbody>
 					</table>
 					</div>
@@ -417,7 +398,7 @@
 						<tr>
 							<td class="price_cal">
 								<div class="pull-right">
-								<b>@lang('sale.item'):</b> 
+								<b>@lang('sale.item'):</b>
 								<span class="total_quantity">0</span>
 								&nbsp;&nbsp;&nbsp;&nbsp;
 								<b>@lang('sale.total'): </b>
@@ -429,70 +410,40 @@
 					</div>
 				</div>
 			@endcomponent
-			<div class="box box-solid">
-				<div class="box-body">
-					<div class="col-md-6">
-						<div class="form-group">
-							<label for="brand_id">Number of Days:*</label>
-							<div class="form-group">
-							  
-							  <select class="form-control select2" id="delivery_days" name="number_of_days" required>
-								<option selected>please select</option>
-								@foreach(deliveryDays() as $key => $deliveryDays)
-								  <option value="{{$key}}">{{ $deliveryDays }}</option>
-								@endforeach
-							  </select>
-				
-							</div>
-						</div>
-					</div>
-					<div class="@if(!empty($commission_agent)) col-sm-6 @else col-sm-6 @endif">
-						<div class="form-group">
-							<label for="delivery_time">Delivery Time:*</label>
-							<div class="input-group">
-								<span class="input-group-addon">
-									<i class="fa fa-calendar"></i>
-								</span>
-								{!! Form::text('delivery_time','', ['class' => 'form-control timepicker', 'required']); !!}
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
 
 			<div class="box box-solid">
-                
+
 				<div class="box-body">
 					<div class="col-md-4">
 								<div class="form-group">
 									<label for="discount_type">Delivery Days:*</label>
 									<br/>
-									
+
 										<div class="icheckbox_square-blue" style="position: relative;">
-											
+
 	<input class="input-icheck" id="has_purchase_due" name="has_purchase_due" type="checkbox" value="1" style="position: absolute; opacity: 0;"></div> <strong>Monday</strong>
 	<br/>
 
 	<div class="icheckbox_square-blue" style="position: relative;">
-	
-		<input class="input-icheck" id="has_purchase_due" name="has_purchase_due" type="checkbox" value="1" style="position: absolute; opacity: 0;"></div> <strong>Tuesday</strong>	
+
+		<input class="input-icheck" id="has_purchase_due" name="has_purchase_due" type="checkbox" value="1" style="position: absolute; opacity: 0;"></div> <strong>Tuesday</strong>
 		<br/>
 		<div class="icheckbox_square-blue" style="position: relative;">
-	
-			<input class="input-icheck" id="has_purchase_due" name="has_purchase_due" type="checkbox" value="1" style="position: absolute; opacity: 0;"></div> <strong>Wednesday</strong>	
+
+			<input class="input-icheck" id="has_purchase_due" name="has_purchase_due" type="checkbox" value="1" style="position: absolute; opacity: 0;"></div> <strong>Wednesday</strong>
 			<br/>
 			<div class="icheckbox_square-blue" style="position: relative;">
-	
+
 				<input class="input-icheck" id="has_purchase_due" name="has_purchase_due" type="checkbox" value="1" style="position: absolute; opacity: 0;"></div> <strong>Thursday</strong>
 				<br/>
 				<div class="icheckbox_square-blue" style="position: relative;">
-	
-					<input class="input-icheck" id="has_purchase_due6" name="has_purchase_due6" type="checkbox" value="1" style="position: absolute; opacity: 0;"></div> <strong>Friday</strong>	
+
+					<input class="input-icheck" id="has_purchase_due6" name="has_purchase_due6" type="checkbox" value="1" style="position: absolute; opacity: 0;"></div> <strong>Friday</strong>
 					<br/>
-					
+
 					<div class="icheckbox_square-blue" style="position: relative;">
-	
-						<input class="input-icheck" id="has_purchase_due7" name="has_purchase_due7" type="checkbox" value="1" style="position: absolute; opacity: 0;"></div> <strong>Saturday</strong>	
+
+						<input class="input-icheck" id="has_purchase_due7" name="has_purchase_due7" type="checkbox" value="1" style="position: absolute; opacity: 0;"></div> <strong>Saturday</strong>
 						<br/>
 						<div class="icheckbox_square-blue" style="position: relative;">
 							<input class="input-icheck" id="has_purchase_due" name="has_purchase_due" type="checkbox" value="1" style="position: absolute; opacity: 0;"></div> <strong>Sunday</strong>
@@ -522,31 +473,10 @@
 								</div>
 							</div>
 							<div class="clearfix"></div>
-							<div class="col-md-4  ">
-								<div class="form-group">
-									<label for="tax_rate_id">Order Tax:*</label>
-									<div class="input-group">
-										<span class="input-group-addon">
-											<i class="fa fa-info"></i>
-										</span>
-										<select class="form-control" id="tax_rate_id" name="tax_rate_id"><option selected="selected" value="">Please Select</option><option value="" selected="selected">None</option></select>
-			
-										<input type="hidden" name="tax_calculation_amount" id="tax_calculation_amount" value=" 0.00 " data-default="">
-									</div>
-								</div>
-							</div>
-							<div class="col-md-4 col-md-offset-4  ">
-								<b>Order Tax:</b>(+) 
-								<span class="display_currency" id="order_tax">0.00</span>
-							</div>				
-							
-							<div class="col-md-12">
-								<div class="form-group">
-									<label for="sell_note">Seller note</label>
-									<textarea class="form-control" rows="3" name="sale_note" cols="50"></textarea>
-								</div>
-							</div>
-							<input type="hidden" name="is_direct_sale" value="1">
+
+
+
+
 				</div>
 				<!-- /.box-body -->
 			</div>
@@ -559,7 +489,7 @@
 			                <span class="input-group-addon">
 			                    <i class="fa fa-info"></i>
 			                </span>
-			                {!! Form::select('discount_type', ['fixed' => __('lang_v1.fixed'), 'percentage' => __('lang_v1.percentage')], 'percentage' , ['class' => 'form-control','placeholder' => __('messages.please_select'), 'required', 'data-default' => 'percentage']); !!}
+			                {!! Form::select('discount_type', ['fixed' => __('lang_v1.fixed'), 'percentage' => __('lang_v1.percentage')], 'fixed' , ['class' => 'form-control', 'required', 'data-default' => 'fixed']); !!}
 			            </div>
 			        </div>
 			    </div>
@@ -591,7 +521,7 @@
 			        </div>
 			    </div>
 			    <div class="col-md-4 @if($sale_type == 'sales_order') hide @endif"><br>
-			    	<b>@lang( 'sale.discount_amount' ):</b>(-) 
+			    	<b>@lang( 'sale.discount_amount' ):</b>(-)
 					<span class="display_currency" id="total_discount">0</span>
 			    </div>
 			    <div class="clearfix"></div>
@@ -628,16 +558,16 @@
 			                </span>
 			                {!! Form::select('tax_rate_id', $taxes['tax_rates'], $default_sales_tax, ['placeholder' => __('messages.please_select'), 'class' => 'form-control', 'data-default'=> $default_sales_tax], $taxes['attributes']); !!}
 
-							<input type="hidden" name="tax_calculation_amount" id="tax_calculation_amount" 
+							<input type="hidden" name="tax_calculation_amount" id="tax_calculation_amount"
 							value="@if(empty($edit)) {{@num_format($business_details->tax_calculation_amount)}} @else {{@num_format(optional($transaction->tax)->amount)}} @endif" data-default="{{$business_details->tax_calculation_amount}}">
 			            </div>
 			        </div>
 			    </div>
 			    <div class="col-md-4 col-md-offset-4  @if($sale_type == 'sales_order') hide @endif">
-			    	<b>@lang( 'sale.order_tax' ):</b>(+) 
+			    	<b>@lang( 'sale.order_tax' ):</b>(+)
 					<span class="display_currency" id="order_tax">0</span>
-			    </div>				
-				
+			    </div>
+
 			    <div class="col-md-12">
 			    	<div class="form-group">
 						{!! Form::label('sell_note',__('sale.sell_note')) !!}
@@ -693,15 +623,15 @@
 		        $is_shipping_custom_field_2_required = !empty($custom_labels['shipping']['is_custom_field_2_required']) && $custom_labels['shipping']['is_custom_field_2_required'] == 1 ? true : false;
 
 		        $shipping_custom_label_3 = !empty($custom_labels['shipping']['custom_field_3']) ? $custom_labels['shipping']['custom_field_3'] : '';
-		        
+
 		        $is_shipping_custom_field_3_required = !empty($custom_labels['shipping']['is_custom_field_3_required']) && $custom_labels['shipping']['is_custom_field_3_required'] == 1 ? true : false;
 
 		        $shipping_custom_label_4 = !empty($custom_labels['shipping']['custom_field_4']) ? $custom_labels['shipping']['custom_field_4'] : '';
-		        
+
 		        $is_shipping_custom_field_4_required = !empty($custom_labels['shipping']['is_custom_field_4_required']) && $custom_labels['shipping']['is_custom_field_4_required'] == 1 ? true : false;
 
 		        $shipping_custom_label_5 = !empty($custom_labels['shipping']['custom_field_5']) ? $custom_labels['shipping']['custom_field_5'] : '';
-		        
+
 		        $is_shipping_custom_field_5_required = !empty($custom_labels['shipping']['is_custom_field_5_required']) && $custom_labels['shipping']['is_custom_field_5_required'] == 1 ? true : false;
 	        @endphp
 
@@ -842,7 +772,7 @@
 		    	@if(!empty($pos_settings['amount_rounding_method']) && $pos_settings['amount_rounding_method'] > 0)
 		    	<small id="round_off"><br>(@lang('lang_v1.round_off'): <span id="round_off_text">0</span>)</small>
 				<br/>
-				<input type="hidden" name="round_off_amount" 
+				<input type="hidden" name="round_off_amount"
 					id="round_off_amount" value=0>
 				@endif
 		    	<div><b>@lang('sale.total_payable'): </b>
@@ -932,7 +862,7 @@
 			@endcomponent
 		@endcan
 	@endif
-	
+
 	<div class="row">
 		{!! Form::hidden('is_save_and_print', 0, ['id' => 'is_save_and_print']); !!}
 		<div class="col-sm-12 text-center">
@@ -940,11 +870,11 @@
 			<button type="button" id="save-and-print" class="btn btn-success btn-big">@lang('lang_v1.save_and_print')</button>
 		</div>
 	</div>
-	
+
 	@if(empty($pos_settings['disable_recurring_invoice']))
 		@include('sale_pos.partials.recurring_invoice_modal')
 	@endif
-	
+
 	{!! Form::close() !!}
 </section>
 
@@ -955,10 +885,10 @@
 </div>
 
 <!-- /.content -->
-<div class="modal fade register_details_modal" tabindex="-1" role="dialog" 
+<div class="modal fade register_details_modal" tabindex="-1" role="dialog"
 	aria-labelledby="gridSystemModalLabel">
 </div>
-<div class="modal fade close_register_modal" tabindex="-1" role="dialog" 
+<div class="modal fade close_register_modal" tabindex="-1" role="dialog"
 	aria-labelledby="gridSystemModalLabel">
 </div>
 
@@ -969,7 +899,6 @@
 @section('javascript')
 	<script src="{{ asset('js/pos.js?v=' . $asset_v) }}"></script>
 	<script src="{{ asset('js/product.js?v=' . $asset_v) }}"></script>
-	<script src="{{ asset('js/opening_stock.js?v=' . $asset_v) }}"></script>
 
 	<!-- Call restaurant module if defined -->
     @if(in_array('tables' ,$enabled_modules) || in_array('modifiers' ,$enabled_modules) || in_array('service_staff' ,$enabled_modules))
@@ -1001,13 +930,13 @@
 		    });
 
 		    $(document).on('change', '#prefer_payment_method', function(e) {
-			    var default_accounts = $('select#select_location_id').length ? 
+			    var default_accounts = $('select#select_location_id').length ?
 			                $('select#select_location_id')
 			                .find(':selected')
 			                .data('default_payment_accounts') : $('#location_id').data('default_payment_accounts');
 			    var payment_type = $(this).val();
 			    if (payment_type) {
-			        var default_account = default_accounts && default_accounts[payment_type]['account'] ? 
+			        var default_account = default_accounts && default_accounts[payment_type]['account'] ?
 			            default_accounts[payment_type]['account'] : '';
 			        var account_dropdown = $('select#prefer_payment_account');
 			        if (account_dropdown.length && default_accounts) {
@@ -1036,7 +965,7 @@
 			        });
 			    }
 			}
-			
+
 			setPreferredPaymentMethodDropdown();
 
 			$('#is_export').on('change', function () {

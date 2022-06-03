@@ -1082,11 +1082,10 @@ class ReportController extends Controller
                             )
                             ->leftjoin('business_locations as l', 't.location_id', '=', 'l.id')
                             ->leftjoin('units as u', 'p.unit_id', '=', 'u.id')
-                            ->where('t.business_id', $business_id)
+                            ->where('t.business_id', $business_id);
                             //->whereNotNull('p.expiry_period')
                             //->whereNotNull('p.expiry_period_type')
                             //->whereNotNull('exp_date')
-                            ->where('p.enable_stock', 1);
             // ->whereRaw('purchase_lines.quantity > purchase_lines.quantity_sold + quantity_adjusted + quantity_returned');
 
             $permitted_locations = auth()->user()->permitted_locations();
@@ -2315,7 +2314,6 @@ class ReportController extends Controller
                 ->where('t.status', 'final')
                 ->select(
                     'p.name as product_name',
-                    'p.enable_stock',
                     'p.type as product_type',
                     'pv.name as product_variation',
                     'v.name as variation_name',
@@ -2384,13 +2382,6 @@ class ReportController extends Controller
                 ->editColumn('transaction_date', '{{@format_date($formated_date)}}')
                 ->editColumn('total_qty_sold', function ($row) {
                     return '<span data-is_quantity="true" class="display_currency sell_qty" data-currency_symbol=false data-orig-value="' . (float)$row->total_qty_sold . '" data-unit="' . $row->unit . '" >' . (float) $row->total_qty_sold . '</span> ' .$row->unit;
-                })
-                ->editColumn('current_stock', function ($row) {
-                    if ($row->enable_stock) {
-                        return '<span data-is_quantity="true" class="display_currency current_stock" data-currency_symbol=false data-orig-value="' . (float)$row->current_stock . '" data-unit="' . $row->unit . '" >' . (float) $row->current_stock . '</span> ' .$row->unit;
-                    } else {
-                        return '';
-                    }
                 })
                  ->editColumn('subtotal', function ($row) {
                      return '<span class="display_currency row_subtotal" data-currency_symbol = true data-orig-value="' . $row->subtotal . '">' . $row->subtotal . '</span>';
@@ -2595,7 +2586,6 @@ class ReportController extends Controller
                 'p.type',
                 'p.sku as sku',
                 'units.short_name as unit',
-                'p.enable_stock as enable_stock',
                 'variations.sell_price_inc_tax as unit_price',
                 'pv.name as product_variation',
                 'variations.name as variation_name',
@@ -2813,7 +2803,7 @@ class ReportController extends Controller
                 ON tsl.id=tspl2.sell_line_id
                 JOIN purchase_lines AS pl2
                 ON tspl2.purchase_line_id = pl2.id
-                WHERE tsl.parent_sell_line_id = transaction_sell_lines.id), IF(P.enable_stock=0,(transaction_sell_lines.quantity - transaction_sell_lines.quantity_returned) * transaction_sell_lines.unit_price_inc_tax,
+                WHERE tsl.parent_sell_line_id = transaction_sell_lines.id),
                 (TSPL.quantity - TSPL.qty_returned) * (transaction_sell_lines.unit_price_inc_tax - PL.purchase_price_inc_tax)) )) AS gross_profit')
             );
 

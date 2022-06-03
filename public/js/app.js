@@ -2710,7 +2710,7 @@ function show_product_type_form() {
 
     //Disable Stock management & Woocommmerce sync if type combo
     if ($('#type').val() == 'combo') {
-        $('#enable_stock').iCheck('uncheck');
+        /*$('#enable_stock').iCheck('uncheck');*/
         $('input[name="woocommerce_disable_sync"]').iCheck('check');
     }
 

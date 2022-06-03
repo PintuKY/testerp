@@ -62,7 +62,7 @@ class SupplierPurchaseController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index()
-    {   
+    {
         // if (!auth()->user()->can('purchase.view') && !auth()->user()->can('purchase.create') && !auth()->user()->can('view_own_purchase')) {
         //     abort(403, 'Unauthorized action.');
         // }
@@ -73,7 +73,7 @@ class SupplierPurchaseController extends Controller
             if ($permitted_locations != 'all') {
                 $purchases->whereIn('supplier_transactions.location_id', $permitted_locations);
             }
-        
+
             if (!empty(request()->supplier_id)) {
                 $purchases->where('supplier.id', request()->supplier_id);
             }
@@ -216,7 +216,7 @@ class SupplierPurchaseController extends Controller
 
         $business_locations = BusinessLocation::forDropdown($business_id);
         $suppliers = Supplier::suppliersDropdown($business_id, false);
-        
+
         $orderStatuses = $this->productUtil->orderStatuses();
 
         return view('supplier_purchase.index')
@@ -260,7 +260,7 @@ class SupplierPurchaseController extends Controller
         if (auth()->user()->can('supplier.create')) {
             $types['supplier'] = __('report.supplier');
         }
-       
+
         // $customer_groups = CustomerGroup::forDropdown($business_id);
 
         $business_details = $this->businessUtil->getDetails($business_id);
@@ -307,7 +307,7 @@ class SupplierPurchaseController extends Controller
 
             //TODO: Check for "Undefined index: total_before_tax" issue
             //Adding temporary fix by validating
-            
+
             $request->validate([
                 'status' => 'required',
                 'supplier_id' => 'required',
@@ -397,7 +397,7 @@ class SupplierPurchaseController extends Controller
             $purchases = $request->input('purchases');
 
            $this->productUtil->createOrUpdateSupplierPurchaseLines($supplier_transaction, $purchases, $currency_details, $enable_product_editing);
-            
+
             //Add Purchase payments
             $this->supplierTransactionUtil->createOrUpdateSupplierPaymentLines($supplier_transaction, $request->input('payment'));
 
@@ -441,7 +441,7 @@ class SupplierPurchaseController extends Controller
         // if (!auth()->user()->can('purchase.view')) {
         //     abort(403, 'Unauthorized action.');
         // }
-        
+
         $business_id = request()->session()->get('user.business_id');
         $taxes = TaxRate::where('business_id', $business_id)
                             ->pluck('name', 'id');
@@ -633,7 +633,7 @@ class SupplierPurchaseController extends Controller
         if (!auth()->user()->can('purchase.update')) {
             abort(403, 'Unauthorized action.');
         }
-        
+
         try {
             // $transaction = SupplierTransaction::findOrFail($id);
 
@@ -764,8 +764,8 @@ class SupplierPurchaseController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function destroy($id)
-    {   
-       
+    {
+
         if (!auth()->user()->can('purchase.delete')) {
             abort(403, 'Unauthorized action.');
         }
@@ -814,12 +814,7 @@ class SupplierPurchaseController extends Controller
                     $delete_purchase_line_ids = [];
                     foreach ($delete_purchase_lines as $purchase_line) {
                         $delete_purchase_line_ids[] = $purchase_line->id;
-                        $this->productUtil->decreaseProductQuantity(
-                            $purchase_line->product_id,
-                            $purchase_line->variation_id,
-                            $transaction->location_id,
-                            $purchase_line->quantity
-                        );
+
                     }
                     SupplierPurchaseLine::where('supplier_transactions_id', $transaction->id)
                                 ->whereIn('id', $delete_purchase_line_ids)
@@ -859,7 +854,7 @@ class SupplierPurchaseController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function getSuppliers()
-    {   
+    {
         if (request()->ajax()) {
             $term = request()->q;
             if (empty($term)) {
@@ -913,11 +908,6 @@ class SupplierPurchaseController extends Controller
         if (request()->ajax()) {
             $term = request()->term;
 
-            $check_enable_stock = true;
-            if (isset(request()->check_enable_stock)) {
-                $check_enable_stock = filter_var(request()->check_enable_stock, FILTER_VALIDATE_BOOLEAN);
-            }
-
             $only_variations = false;
             if (isset(request()->only_variations)) {
                 $only_variations = filter_var(request()->only_variations, FILTER_VALIDATE_BOOLEAN);
@@ -953,9 +943,6 @@ class SupplierPurchaseController extends Controller
                 )
                 ->groupBy('variation_id');
 
-            if ($check_enable_stock) {
-                $q->where('enable_stock', 1);
-            }
             if (!empty(request()->location_id)) {
                 $q->ForLocation(request()->location_id);
             }
@@ -1014,17 +1001,17 @@ class SupplierPurchaseController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function updateStatus(Request $request)
-    {   
+    {
         if (!auth()->user()->can('purchase.update') && !auth()->user()->can('purchase.update_status')) {
             abort(403, 'Unauthorized action.');
         }
-        
+
         try {
             $business_id = request()->session()->get('user.business_id');
             $transaction = SupplierTransaction::where('business_id', $business_id)
                                 ->where('type', 'purchase')
                                 ->findOrFail($request->input('purchase_id'));
-            
+
             $before_status = $transaction->status;
             $update_data['status'] = $request->input('status');
             DB::beginTransaction();

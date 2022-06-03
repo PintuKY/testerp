@@ -300,7 +300,6 @@ class HomeController extends Controller
                     )
                     ->leftjoin('units as u', 'p.unit_id', '=', 'u.id')
                     ->where('p.business_id', $business_id)
-                    ->where('p.enable_stock', 1)
                     ->where('p.is_inactive', 0)
                     ->whereNull('v.deleted_at')
                     ->whereRaw('variation_location_details.qty_available <= p.alert_quantity');

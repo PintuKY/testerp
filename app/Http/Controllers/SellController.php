@@ -1191,7 +1191,7 @@ class SellController extends Controller
         }
 
         $walk_in_customer = $this->contactUtil->getWalkInCustomer($business_id);
-       
+
         $business_details = $this->businessUtil->getDetails($business_id);
         $taxes = TaxRate::forBusinessDropdown($business_id, true, true);
 
@@ -1413,7 +1413,7 @@ class SellController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function edit($id)
-    {   
+    {
         if (!auth()->user()->can('direct_sell.update') && !auth()->user()->can('so.update')) {
             abort(403, 'Unauthorized action.');
         }
@@ -1483,7 +1483,6 @@ class SellController extends Controller
                         ->select(
                             DB::raw("IF(pv.is_dummy = 0, CONCAT(p.name, ' (', p.name, ':',variations.name, ')'), p.name) AS product_name"),
                             'p.id as product_id',
-                            'p.enable_stock',
                             'p.name as product_actual_name',
                             'p.type as product_type',
                             'pv.name as product_variation_name',
@@ -1521,7 +1520,7 @@ class SellController extends Controller
                             DB::raw('vld.qty_available + transaction_sell_lines.quantity AS qty_available')
                         )
                         ->get();
-                        
+
         if (!empty($sell_details)) {
             foreach ($sell_details as $key => $value) {
                 //If modifier or combo sell line then unset
@@ -2208,7 +2207,7 @@ class SellController extends Controller
      * @return JSON
      */
     public function getProducts()
-    {   
+    {
         if (request()->ajax()) {
             $location_id = request()->input('location_id', null);
             $search_term = request()->input('term', '');
@@ -2230,7 +2229,6 @@ class SellController extends Controller
                 'products.id as product_id',
                 'products.name',
                 'products.type',
-                'products.enable_stock',
             );
             $result = $query->get();
             return json_encode($result);
@@ -2247,12 +2245,13 @@ class SellController extends Controller
     public function getSellProductRow($product_id, $location_id)
     {
         $output = [];
-        
+
         try {
             $row_count = request()->get('product_row');
+            $price_group = request()->get('price_group');
             $row_count = $row_count + 1;
             $quantity = request()->get('quantity', 1);
-            
+
             $weighing_barcode = request()->get('weighing_scale_barcode', null);
 
             $is_direct_sell = false;
@@ -2260,7 +2259,7 @@ class SellController extends Controller
                 $is_direct_sell = true;
             }
 
-            // if ($variation_id == 'null' && !empty($weighing_barcode)) {                
+            // if ($variation_id == 'null' && !empty($weighing_barcode)) {
             //     $product_details = $this->__parseWeighingBarcode($weighing_barcode);
             //     if ($product_details['success']) {
             //         $variation_id = $product_details['variation_id'];
@@ -2271,8 +2270,8 @@ class SellController extends Controller
             //         return $output;
             //     }
             // }
-            
-            $output = $this->getSellLineRow($product_id, $location_id, $quantity, $row_count, $is_direct_sell);
+
+            $output = $this->getSellLineRow($product_id, $location_id, $quantity, $row_count, $is_direct_sell,$so_line = null,$price_group);
 
             if ($this->transactionUtil->isModuleEnabled('modifiers')  && !$is_direct_sell) {
                 $variation = Variation::find($product_id);
@@ -2288,6 +2287,9 @@ class SellController extends Controller
             }
 
         } catch (\Exception $e) {
+            dd($e);
+            dd($e->getFile());
+            dd($e->getMessage());
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
             $output['success'] = false;
             $output['msg'] = __('lang_v1.item_out_of_stock');
@@ -2296,7 +2298,7 @@ class SellController extends Controller
         return $output;
     }
 
-    private function getSellLineRow($product_id, $location_id, $quantity, $row_count, $is_direct_sell, $so_line = null)
+    private function getSellLineRow($product_id, $location_id, $quantity, $row_count, $is_direct_sell, $so_line = null,$price_group)
     {
         $business_id = request()->session()->get('user.business_id');
         $business_details = $this->businessUtil->getDetails($business_id);
@@ -2312,29 +2314,29 @@ class SellController extends Controller
         if ($is_sales_order) {
             $check_qty = false;
         }
-        
+
         $productDatas = $this->getDetailsFromVariation($product_id, $business_id, $location_id, $check_qty);
-        
         foreach($productDatas as $productData){
             if (!isset($productData->quantity_ordered)) {
                 $productData->quantity_ordered = $quantity;
             }
-            
+
             // $productData->formatted_qty_available = $this->productUtil->num_f($productData->qty_available, false, null, true);
-            
+
             $sub_units = $this->productUtil->getSubUnits($business_id, $productData->product->unit_id, false, $productData->product->id);
+
             //Get customer group and change the price accordingly
             $customer_id = request()->get('customer_id', null);
-            
+
             $cg = $this->contactUtil->getCustomerGroup($business_id, $customer_id);
             $percent = (empty($cg) || empty($cg->amount) || $cg->price_calculation_type != 'percentage') ? 0 : $cg->amount;
             $productData->default_sell_price = $productData->default_sell_price + ($percent * $productData->default_sell_price / 100);
             $productData->sell_price_inc_tax = $productData->sell_price_inc_tax + ($percent * $productData->sell_price_inc_tax / 100);
-    
+
             $tax_dropdown = TaxRate::forBusinessDropdown($business_id, true, true);
-    
+
             $enabled_modules = $this->transactionUtil->allModulesEnabled();
-    
+
             //Get lot number dropdown if enabled
             $lot_numbers = [];
             if (request()->session()->get('business.enable_lot_number') == 1 || request()->session()->get('business.enable_product_expiry') == 1) {
@@ -2345,42 +2347,42 @@ class SellController extends Controller
                 }
             }
             $productData->lot_numbers = $lot_numbers;
-    
+
             $purchase_line_id = request()->get('purchase_line_id');
-    
             $price_group = request()->input('price_group');
             if (!empty($price_group)) {
                 $variation_group_prices = $this->productUtil->getVariationGroupPrice($productData->id, $price_group, $productData->tax_id);
-    
+
                 if (!empty($variation_group_prices['price_inc_tax'])) {
                     $productData->sell_price_inc_tax = $variation_group_prices['price_inc_tax'];
                     $productData->default_sell_price = $variation_group_prices['price_exc_tax'];
                 }
             }
-    
+
             $warranties = $this->__getwarranties();
-    
+
             $output['success'] = true;
             $output['enable_sr_no'] = $productData->enable_sr_no;
-    
+
             $waiters = [];
             if ($this->productUtil->isModuleEnabled('service_staff') && !empty($pos_settings['inline_service_staff'])) {
                 $waiters_enabled = true;
                 $waiters = $this->productUtil->serviceStaffDropdown($business_id, $location_id);
-            }            
+            }
         }
+        $tax_dropdown='';
 
         if (request()->get('type') == 'sell-return') {
-            
+
             $output['html_content'] =  view('sell_return.partials.product_row')
                         ->with(compact('productDatas', 'row_count', 'tax_dropdown', 'enabled_modules', 'sub_units'))
                         ->render();
         } else {
-            
+
             $is_cg = !empty($cg->id) ? true : false;
 
-            $discount = $this->productUtil->getSellProductDiscount($productDatas, $business_id, $location_id, $is_cg, $price_group, $productData->id);
-            
+            $discount = $this->productUtil->getSellProductDiscount($productDatas, $business_id, $location_id, $is_cg, $price_group, ''/*$productData->id*/);
+
             if ($is_direct_sell) {
                 $edit_discount = auth()->user()->can('edit_product_discount_from_sale_screen');
                 $edit_price = auth()->user()->can('edit_product_price_from_sale_screen');
@@ -2388,9 +2390,8 @@ class SellController extends Controller
                 $edit_discount = auth()->user()->can('edit_product_discount_from_pos_screen');
                 $edit_price = auth()->user()->can('edit_product_price_from_pos_screen');
             }
-
             $output['html_content'] =  view('sell.product_row')
-                        ->with(compact('productDatas', 'row_count', 'tax_dropdown', 'enabled_modules', 'pos_settings', 'sub_units', 'discount', 'waiters', 'edit_discount', 'edit_price', 'purchase_line_id', 'warranties', 'quantity', 'is_direct_sell', 'so_line', 'is_sales_order'))
+                        ->with(compact('productDatas', 'row_count', 'tax_dropdown', 'enabled_modules', 'pos_settings', 'sub_units', 'discount', 'waiters', 'edit_discount', 'edit_price', 'purchase_line_id',  'quantity', 'is_direct_sell', 'so_line', 'is_sales_order'))
                         ->render();
         }
 
@@ -2408,27 +2409,22 @@ class SellController extends Controller
      * @return array
      */
     public function getDetailsFromVariation($product_id, $business_id, $location_id = null, $check_qty = true)
-    {   
-        $query = Variation::where('product_id','=',$product_id)->with('product','product.brand','product.unit','product_variation','variation_location_details','product_variation.variation_template','product_variation.variation_template.values');
+    {
+        $query = Variation::where('product_id','=',$product_id)->with('product','product.unit','product_variation','product_variation.variation_template','product_variation.variation_template.values');
         // Add condition for check of quantity. (if stock is not enabled or qty_available > 0)
-        if ($check_qty) {
-            $query->whereHas('product', function( $q ){
-                $q->where('enable_stock', '!=', 1);
-            })->orWhereHas('variation_location_details', function( $q ) use ($product_id){
+       /* if ($check_qty) {
+            $query->whereHas('variation_location_details', function( $q ) use ($product_id){
                 $q->where('product_id', '=', $product_id);
-                $q->where('qty_available','>', 0);
             });
-        }
+        }*/
 
-        if (!empty($location_id) && $check_qty) {
+        /*if (!empty($location_id) && $check_qty) {
             //Check for enable stock, if enabled check for location id.
-            $query->whereHas('product', function( $q ){
-                $q->where('enable_stock', '!=', 1);
-            })->orWhereHas('product.variationLocationDetails', function( $q ) use ( $location_id , $product_id){
+            $query->whereHas('product.variationLocationDetails', function( $q ) use ( $location_id , $product_id){
                 $q->where('product_id', '=', $product_id);
                 $q->where('location_id', '!=', $location_id);
             });
-        }
+        }*/
         $data = $query->groupBy('variations.product_variation_id')->get();
         return $data;
     }

@@ -295,12 +295,12 @@ class SellPosController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
-    {    
-        
+    {
+
         if (!auth()->user()->can('sell.create') && !auth()->user()->can('direct_sell.access') && !auth()->user()->can('so.create') ) {
             abort(403, 'Unauthorized action.');
         }
-        
+
         $is_direct_sale = false;
         if (!empty($request->input('is_direct_sale'))) {
             $is_direct_sale = true;
@@ -324,7 +324,7 @@ class SellPosController extends Controller
                 $input['status'] = 'draft';
                 $input['sub_status'] = 'proforma';
             }
-            
+
             //Check Customer credit limit
             $is_credit_limit_exeeded = $this->transactionUtil->isCustomerCreditLimitExeeded($input);
 
@@ -466,9 +466,9 @@ class SellPosController extends Controller
                 //Upload Shipping documents
                 Media::uploadMedia($business_id, $transaction, $request, 'shipping_documents', false, 'shipping_document');
 
-                
-               $this->transactionUtil->createOrUpdateSellLines($transaction, $input['products'], $input['location_id'],$input['number_of_days'],$input['delivery_time']);
-                
+
+               $this->transactionUtil->createOrUpdateSellLines($transaction, $input['products'], $input['location_id']);
+
                 if (!$is_direct_sale) {
                     //Add change return
                     $change_return = $this->dummyPaymentLine;
@@ -491,15 +491,6 @@ class SellPosController extends Controller
                                     ->num_uf($product['quantity']);
                         if (!empty($product['base_unit_multiplier'])) {
                             $decrease_qty = $decrease_qty * $product['base_unit_multiplier'];
-                        }
-
-                        if ($product['enable_stock']) {
-                            $this->productUtil->decreaseProductQuantity(
-                                $product['product_id'],
-                                $product['variation_id'],
-                                $input['location_id'],
-                                $decrease_qty
-                            );
                         }
 
 
@@ -807,7 +798,6 @@ class SellPosController extends Controller
                         ->select(
                             DB::raw("IF(pv.is_dummy = 0, CONCAT(p.name, ' (', pv.name, ':',variations.name, ')'), p.name) AS product_name"),
                             'p.id as product_id',
-                            'p.enable_stock',
                             'p.name as product_actual_name',
                             'p.type as product_type',
                             'pv.name as product_variation_name',
@@ -1025,7 +1015,7 @@ class SellPosController extends Controller
         if (!auth()->user()->can('sell.update') && !auth()->user()->can('direct_sell.access') && !auth()->user()->can('so.update')) {
             abort(403, 'Unauthorized action.');
         }
-       
+
         try {
             $input = $request->except('_token');
             //status is send as quotation from edit sales screen.
@@ -1180,14 +1170,14 @@ class SellPosController extends Controller
                 $transaction = $this->transactionUtil->updateSellTransaction($id, $business_id, $input, $invoice_total, $user_id);
 
                 //Update Sell lines
-                $deleted_lines = $this->transactionUtil->createOrUpdateSellLines($transaction, $input['products'], $input['location_id'],$input['number_of_days'],$input['delivery_time'], true, $status_before);
-                
+                $deleted_lines = $this->transactionUtil->createOrUpdateSellLines($transaction, $input['products'], $input['location_id'], true, $status_before);
+
                 //Update update lines
                 $is_credit_sale = isset($input['is_credit_sale']) && $input['is_credit_sale'] == 1 ? true : false;
                 $new_sales_order_ids = $transaction->sales_order_ids ?? [];
-                
+
                 $sales_order_ids =array_unique(array_merge($sales_order_ids, $new_sales_order_ids));
-                
+
                 if (!empty($sales_order_ids)) {
                     $this->transactionUtil->updateSalesOrderStatus($sales_order_ids);
                 }
@@ -1207,7 +1197,7 @@ class SellPosController extends Controller
                         $this->cashRegisterUtil->updateSellPayments($status_before, $transaction, $input['payment']);
                     }
                 }
-                
+
                 if ($request->session()->get('business.enable_rp') == 1) {
                     $this->transactionUtil->updateCustomerRewardPoints($contact_id, $transaction->rp_earned, $rp_earned_before, $transaction->rp_redeemed, $rp_redeemed_before);
                 }
@@ -1215,34 +1205,34 @@ class SellPosController extends Controller
                 Media::uploadMedia($business_id, $transaction, $request, 'shipping_documents', false, 'shipping_document');
 
                 if ($transaction->type == 'sell') {
-                    
+
                     //Update payment status
                     $payment_status = $this->transactionUtil->updatePaymentStatus($transaction->id, $transaction->final_total);
-                    
+
                     $transaction->payment_status = $payment_status;
-                    
+
                     //Update product stock
                     $this->productUtil->adjustProductStockForInvoice($status_before, $transaction, $input);
-                    
+
                     //Allocate the quantity from purchase and add mapping of
                     //purchase & sell lines in
                     //transaction_sell_lines_purchase_lines table
                     $business_details = $this->businessUtil->getDetails($business_id);
-                    
+
                     $pos_settings = empty($business_details->pos_settings) ? $this->businessUtil->defaultPosSettings() : json_decode($business_details->pos_settings, true);
-                    
+
                     $business = ['id' => $business_id,
                                     'accounting_method' => $request->session()->get('business.accounting_method'),
                                     'location_id' => $input['location_id'],
                                     'pos_settings' => $pos_settings
                                 ];
-                    
+
                     $data = $this->transactionUtil->adjustMappingPurchaseSell($status_before, $transaction, $business, $deleted_lines);
-                               
+
                     //Auto send notification
                     $whatsapp_link = $this->notificationUtil->autoSendNotification($business_id, 'new_sale', $transaction, $transaction->contact);
                 }
-                
+
                 $log_properties = [];
                 if (isset($input['repair_completed_on'])) {
                     $completed_on = !empty($input['repair_completed_on']) ? $this->transactionUtil->uf_date($input['repair_completed_on'], true) : null;
@@ -1260,7 +1250,7 @@ class SellPosController extends Controller
                 Media::uploadMedia($business_id, $transaction, $request, 'documents');
 
                 $this->transactionUtil->activityLog($transaction, 'edited', $transaction_before);
-                
+
                 DB::commit();
 
                 if ($request->input('is_save_and_print') == 1) {
@@ -1292,7 +1282,7 @@ class SellPosController extends Controller
                 }
 
                 $output = ['success' => 1, 'msg' => $msg, 'receipt' => $receipt ];
-                
+
                 if (!empty($whatsapp_link)) {
                     $output['whatsapp_link'] = $whatsapp_link;
                 }
@@ -1552,6 +1542,7 @@ class SellPosController extends Controller
                 }
             }
         } catch (\Exception $e) {
+            dd($e->getMessage());
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
 
             $output['success'] = false;
@@ -1733,7 +1724,6 @@ class SellPosController extends Controller
                         ->where('p.business_id', $business_id)
                         ->where('p.type', '!=', 'modifier')
                         ->where('p.is_inactive', 0)
-                        ->where('p.not_for_selling', 0)
                         //Hide products not available in the selected location
                         ->where(function ($q) use ($location_id) {
                             $q->where('pl.location_id', $location_id);
@@ -1763,15 +1753,6 @@ class SellPosController extends Controller
                 $products->where('p.brand_id', $brand_id);
             }
 
-            if (!empty($request->get('is_enabled_stock'))) {
-                $is_enabled_stock = 0;
-                if ($request->get('is_enabled_stock') == 'product') {
-                    $is_enabled_stock = 1;
-                }
-
-                $products->where('p.enable_stock', $is_enabled_stock);
-            }
-
             if (!empty($request->get('repair_model_id'))) {
                 $products->where('p.repair_model_id', $request->get('repair_model_id'));
             }
@@ -1780,7 +1761,6 @@ class SellPosController extends Controller
                 'p.id as product_id',
                 'p.name',
                 'p.type',
-                'p.enable_stock',
                 'p.image as product_image',
                 'variations.id',
                 'variations.name as variation',
@@ -2227,12 +2207,6 @@ class SellPosController extends Controller
             $sell_lines = [];
             $final_total = 0;
             foreach ($variations_details as $variation_details) {
-                if ($variation_details->product->enable_stock == 1) {
-                    if (empty($variation_details->variation_location_details[0]) || $variation_details->variation_location_details[0]->qty_available < $input['products'][$variation_details->id]['quantity']) {
-                        $is_valid = false;
-                        $error_messages[] = 'Only ' . $variation_details->variation_location_details[0]->qty_available . ' ' . $variation_details->product->unit->short_name . ' of '. $input['products'][$variation_details->id]['product_name'] . ' available';
-                    }
-                }
 
                 //Create product line array
                 $sell_lines[] = [
@@ -2243,7 +2217,6 @@ class SellPosController extends Controller
                     'variation_id' => $variation_details->id,
                     'quantity' => $input['products'][$variation_details->id]['quantity'],
                     'item_tax' => 0,
-                    'enable_stock' => $variation_details->product->enable_stock,
                     'tax_id' => null,
                 ];
 
@@ -2303,17 +2276,6 @@ class SellPosController extends Controller
             //Create sell lines
             $this->transactionUtil->createOrUpdateSellLines($transaction, $order_data['products'], $order_data['location_id'], false, null, [], false);
 
-            //update product stock
-            foreach ($order_data['products'] as $product) {
-                if ($product['enable_stock']) {
-                    $this->productUtil->decreaseProductQuantity(
-                        $product['product_id'],
-                        $product['variation_id'],
-                        $order_data['location_id'],
-                        $product['quantity']
-                    );
-                }
-            }
 
             $this->transactionUtil->mapPurchaseSell($business_data, $transaction->sell_lines, 'purchase');
             //Auto send notification
@@ -2526,16 +2488,6 @@ class SellPosController extends Controller
 
             //update product stock
             foreach ($transaction->sell_lines as $sell_line) {
-                $decrease_qty = $sell_line->quantity;
-
-                if ($sell_line->product->enable_stock == 1) {
-                    $this->productUtil->decreaseProductQuantity(
-                        $sell_line->product_id,
-                        $sell_line->variation_id,
-                        $transaction->location_id,
-                        $decrease_qty
-                    );
-                }
 
                 if ($sell_line->product->type == 'combo') {
                     //Decrease quantity of combo as well.
@@ -2554,11 +2506,11 @@ class SellPosController extends Controller
                         $combo_variations[$key]['product_id'] = $sell_line->product_id;
                         $combo_variations[$key]['quantity'] = $value['quantity'] * $decrease_qty * $base_unit_multiplier;
                     }
-                    $this->productUtil
+                    /*$this->productUtil
                         ->decreaseProductQuantityCombo(
                             $combo_variations,
                             $transaction->location_id
-                        );
+                        );*/
                 }
             }
 

@@ -72,8 +72,6 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/contacts/stock-report/{supplier_id}', 'ContactController@getSupplierStockReport');
     Route::get('/contacts/ledger', 'ContactController@getLedger');
     Route::post('/contacts/send-ledger', 'ContactController@sendLedger');
-    Route::get('/contacts/import', 'ContactController@getImportContacts')->name('contacts.import');
-    Route::post('/contacts/import', 'ContactController@postImportContacts');
     Route::post('/contacts/check-contacts-id', 'ContactController@checkContactId');
     Route::get('/contacts/customers', 'ContactController@getCustomers');
     Route::resource('contacts', 'ContactController');
@@ -261,9 +259,6 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::post('/cash-register/close-register', 'CashRegisterController@postCloseRegister');
     Route::resource('cash-register', 'CashRegisterController');
 
-    //Import products
-    Route::get('/import-products', 'ImportProductsController@index')->name('products.import');
-    Route::post('/import-products/store', 'ImportProductsController@store');
 
     //Sales Commission Agent
     Route::resource('sales-commission-agents', 'SalesCommissionAgentController');
@@ -278,10 +273,6 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
 
     //Customer Groups
     Route::resource('customer-group', 'CustomerGroupController');
-
-    //Import opening stock
-    Route::get('/import-opening-stock', 'ImportOpeningStockController@index')->name('opening.stock.import');
-    Route::post('/import-opening-stock/store', 'ImportOpeningStockController@store');
 
     //Sell return
     Route::resource('sell-return', 'SellReturnController');

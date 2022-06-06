@@ -412,6 +412,34 @@
 			@endcomponent
 
 			<div class="box box-solid">
+                <div class="box-body">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="brand_id">Number of Days:*</label>
+                            <div class="form-group">
+
+                                <select class="form-control select2" id="delivery_days" name="number_of_days" required>
+                                    <option selected>please select</option>
+                                    @foreach(deliveryDays() as $key => $deliveryDays)
+                                        <option value="{{$key}}">{{ $deliveryDays }}</option>
+                                    @endforeach
+                                </select>
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="@if(!empty($commission_agent)) col-sm-6 @else col-sm-6 @endif">
+                        <div class="form-group">
+                            <label for="delivery_time">Delivery Time:*</label>
+                            <div class="input-group">
+								<span class="input-group-addon">
+									<i class="fa fa-calendar"></i>
+								</span>
+                                {!! Form::text('delivery_time','', ['class' => 'form-control timepicker', 'required']); !!}
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
 				<div class="box-body">
 					<div class="col-md-4">

@@ -10,7 +10,19 @@
 		@endphp
 	@endif
 @endforeach--}}
-@foreach($productDatas as $productData)
+@foreach($productDatas as $key=>$productData)
+    @php
+        $selected_variation = \App\Models\Variation::with('product_variation', 'product_variation')->where('product_variation_id', $productData->product_variation->id)
+                        ->get();
+
+        echo 'key=>>>>'.$key;
+        if($key == 9){
+          $selected_variation = \App\Models\Variation::with('product_variation', 'product_variation')->where('product_variation_id', $productData->product_variation->id)
+                        ->get();
+//dd($selected_variation);
+        }
+
+    @endphp
 	<tr class="product_row" data-row_index="{{$row_count}}" @if(!empty($so_line)) data-so_id="{{($so_line != '')?$so_line->transaction_id:''}}" @endif>
 		<td>
 			@if(!empty($so_line))
@@ -196,7 +208,7 @@
 					$allow_decimal = false;
 				}
 			@endphp
-			{{--@foreach($sub_units as $key => $value)
+			@foreach($sub_units as $key => $value)
 				@if(!empty($productData->sub_unit_id) && $productData->sub_unit_id == $key)
 					@php
 						$max_qty_rule = $max_qty_rule / $multiplier;
@@ -212,7 +224,7 @@
 						}
 					@endphp
 				@endif
-			@endforeach--}}
+			@endforeach
 			<div class="input-group input-number">
 				<span class="input-group-btn"><button type="button" class="btn btn-default btn-flat product-quantity-down"><i class="fa fa-minus text-danger"></i></button></span>
 			<input type="text" data-min="1"
@@ -233,7 +245,7 @@
 			</div>
 
 			<input type="hidden" name="products[{{$productData->id}}][product_unit_id]" value="{{$productData->product->unit->id}}">
-			{{--@if(count($sub_units) > 0)
+			@if(count($sub_units) > 0)
 				<br>
 				<select name="products[{{$productData->id}}][sub_unit_id]" class="form-control input-sm sub_unit">
 					@foreach($sub_units as $key => $value)
@@ -242,52 +254,18 @@
 						</option>
 					@endforeach
 			</select>
-			@else--}}
+			@else
 				{{$productData->product->unit->short_name}}
-			{{--@endif--}}
+			@endif
 
 			<input type="hidden" class="base_unit_multiplier" name="products[{{$productData->id}}][base_unit_multiplier]" value="{{$multiplier}}">
 
 			<input type="hidden" class="hidden_base_unit_sell_price" value="{{$productData->default_sell_price / $multiplier}}">
 
 			{{-- Hidden fields for combo products --}}
-			@if($productData->product && !empty($productData->product->type) && $productData->product->type == 'combo' )
 
-				@foreach($productData->product->type as $k => $combo_product)
-
-					@if(isset($action) && $action == 'edit')
-						@php
-							$combo_product['qty_required'] = $combo_product['quantity'] / $productData->quantity_ordered;
-
-							$qty_total = $combo_product['quantity'];
-						@endphp
-					@else
-						@php
-							$qty_total = $combo_product['qty_required'];
-						@endphp
-					@endif
-
-					<input type="hidden"
-						name="products[{{$productData->id}}][combo][{{$k}}][product_id]"
-						value="{{$combo_product[$productData->product_id]}}">
-
-
-						<input type="hidden"
-						class="combo_product_qty"
-						name="products[{{$productData->id}}][combo][{{$k}}][quantity]"
-						data-unit_quantity="{{$combo_product['qty_required']}}"
-						value="{{$qty_total}}">
-
-						@if(isset($action) && $action == 'edit')
-							<input type="hidden"
-								name="products[{{$productData->id}}][combo][{{$k}}][transaction_sell_lines_id]"
-								value="{{$combo_product['id']}}">
-						@endif
-
-				@endforeach
-			@endif
 		</td>
-		{{--@if(!empty($is_direct_sell))
+		@if(!empty($is_direct_sell))
 			@if(!empty($pos_settings['inline_service_staff']))
 				<td>
 					<div class="form-group">
@@ -330,7 +308,7 @@
 					</div>
 				</td>
 			@endif
-		@endif--}}
+		@endif
 		<td class="{{$hide_tax}}">
 			<input type="text" name="products[{{$productData->id}}][unit_price_inc_tax]" class="form-control pos_unit_price_inc_tax input_number" value="{{@num_format($unit_price_inc_tax)}}" @if(!$edit_price) readonly @endif @if(!empty($pos_settings['enable_msp'])) data-rule-min-value="{{$unit_price_inc_tax}}" data-msg-min-value="{{__('lang_v1.minimum_selling_price_error_msg', ['price' => @num_format($unit_price_inc_tax)])}}" @endif>
 		</td>
@@ -340,8 +318,8 @@
 			<td class="text-center v-center">
 				<select class="form-control select_variation_value select2" required name="products[{{$productData->id}}][variation_value_id]">
 					<option value="">Please Select</option>
-					@foreach ($productData->product_variation->variation_template->values as $key => $product_variation_name_data)
-						<option value="{{$product_variation_name_data->id}}" data-price="{{$product_variation_name_data->value}}" data-products-variation-id="{{$productData->id}}">{{$product_variation_name_data->name}} - {{$product_variation_name_data->value}}</option>
+					@foreach ($selected_variation as $key => $product_variation_name_data)
+						<option value="{{$product_variation_name_data->id}}" data-price="{{$product_variation_name_data->default_sell_price}}" data-products-variation-id="{{$productData->id}}">{{$product_variation_name_data->name}} - {{$product_variation_name_data->default_sell_price}}</option>
 					@endforeach
 				</select>
 			</td>
@@ -349,18 +327,19 @@
 				<input type="text" class="product_selectd_variation_value" value="" readonly required>
 			</td>
 		@endif
-		{{--@if( isset($productData->product_variation) && $productData->product_variation->variation_template->type == 2)
+
+		@if( isset($productData->product_variation) && $productData->product_variation->variation_template->type == 2)
 		<td>
-			@foreach($productData->product_variation->variation_template->values as $key => $product_variation_name_data)
+			@foreach($selected_variation as $key => $product_variation_name_data)
 				<label class="radio-inline">
-					<input type="radio" class="radio_variation_value" data-products-variation-id="{{$productData->id}}"  data-price="{{$product_variation_name_data->value}}" name="products[{{$productData->id}}][variation_value_id]" value="{{$product_variation_name_data->id}}">{{$product_variation_name_data->name}} - {{$product_variation_name_data->value}}
+					<input type="radio" class="radio_variation_value" data-products-variation-id="{{$productData->id}}"  data-price="{{$product_variation_name_data->default_sell_price}}" name="products[{{$productData->id}}][variation_value_id]" value="{{$product_variation_name_data->id}}">{{$product_variation_name_data->name}} - {{$product_variation_name_data->default_sell_price}}
 				</label><br>
 			@endforeach
 		</td>
 		<td>
 			<input type="text" class="product_radio_variation_value" value="" readonly required>
 		</td>
-		@endif--}}
+		@endif
 		<td class="text-center">
 			@php
 				$subtotal_type = !empty($pos_settings['is_pos_subtotal_editable']) ? 'text' : 'hidden';

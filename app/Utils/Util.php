@@ -601,7 +601,6 @@ class Util
                 }
             }
         }
-
         return $sub_units;
     }
 

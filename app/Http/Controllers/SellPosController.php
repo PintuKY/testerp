@@ -296,7 +296,6 @@ class SellPosController extends Controller
      */
     public function store(Request $request)
     {
-
         if (!auth()->user()->can('sell.create') && !auth()->user()->can('direct_sell.access') && !auth()->user()->can('so.create') ) {
             abort(403, 'Unauthorized action.');
         }
@@ -588,6 +587,7 @@ class SellPosController extends Controller
                         ];
             }
         } catch (\Exception $e) {
+            dd($e->getMessage());
             DB::rollBack();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
             $msg = trans("messages.something_went_wrong");

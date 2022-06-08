@@ -443,6 +443,7 @@ Route::middleware(['EcomApi'])->prefix('api/ecom')->group(function () {
     Route::get('variations', 'ProductController@getVariationsApi');
     Route::post('orders', 'SellPosController@placeOrdersApi');
 });
+Route::resource('master', 'MasterController');
 
 //common route
 Route::middleware(['auth'])->group(function () {

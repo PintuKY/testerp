@@ -41,6 +41,7 @@ return [
     'purchase_stock_adjustment_mismatch_exception' => 'ERROR: NOT ALLOWED: Mismatch between stock adjustment and purchase quantity. Product: :product',
     'transaction_edit_not_allowed' => 'Transaction edit not allowed after :days days.',
     'name' => 'Name',
+    'address' => 'Address',
     'price' => 'Price',
     'activate' => 'Activate',
     'deactivate' => 'Deactivate',

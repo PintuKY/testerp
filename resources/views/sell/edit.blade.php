@@ -442,7 +442,7 @@
 							<label for="brand_id">Number of Days:*</label>
 							<div class="form-group">
 							  <select class="form-control select2" id="delivery_days" name="number_of_days" required>
-								<option selected>please select</option>
+								<option value="0" selected>please select</option>
 								@foreach(noOfDays() as $key => $deliveryDays)
 								  <option value="{{$key}}" {{$number_of_days == $key ? 'selected' : ''}}>{{ $deliveryDays }}</option>
 								@endforeach

@@ -617,6 +617,7 @@ class ProductController extends Controller
             $product->sku = $product_details['sku'];
             //$product->alert_quantity = $this->productUtil->num_uf($product_details['alert_quantity']);
             $product->tax_type = $product_details['tax_type'];
+            $product->delivery_days = $product_details['delivery_days'];
             /*$product->weight = $product_details['weight'];*/
             /*$product->product_custom_field1 = $product_details['product_custom_field1'];
             $product->product_custom_field2 = $product_details['product_custom_field2'];
@@ -624,23 +625,6 @@ class ProductController extends Controller
             $product->product_custom_field4 = $product_details['product_custom_field4'];*/
             $product->product_description = $product_details['product_description'];
             $product->sub_unit_ids = !empty($product_details['sub_unit_ids']) ? $product_details['sub_unit_ids'] : null;
-
-
-            /*$product->not_for_selling = (!empty($request->input('not_for_selling')) &&  $request->input('not_for_selling') == 1) ? 1 : 0;*/
-
-            /*if (!empty($request->input('sub_category_id'))) {
-                $product->sub_category_id = $request->input('sub_category_id');
-            } else {
-                $product->sub_category_id = null;
-            }*/
-
-
-
-            /*if (!empty($request->input('enable_sr_no')) &&  $request->input('enable_sr_no') == 1) {
-                $product->enable_sr_no = 1;
-            } else {
-                $product->enable_sr_no = 0;
-            }*/
 
             //upload document
             $file_name = $this->productUtil->uploadFile($request, 'image', config('constants.product_img_path'), 'image');
@@ -803,6 +787,7 @@ class ProductController extends Controller
                                     ->count();
                 if ($count > 0) {
                     $can_be_deleted = false;
+                    dd('bbb');
                     $error_msg = __('lang_v1.purchase_already_exist');
                 } else {
                     //Check if any opening stock sold

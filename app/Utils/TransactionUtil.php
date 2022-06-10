@@ -488,19 +488,14 @@ class TransactionUtil extends Util
                             'created_at' => Carbon::now(),
                             'updated_at' => Carbon::now(),
                         ]);
-
-                        /*$days[] = [
-                            'transaction_sell_lines_id' => $sell_day->id,
-                            'day' => $day,
-                            'created_at' => Carbon::now(),
-                            'updated_at' => Carbon::now(),
-                        ];*/
-
-                        $totalPurchaseDays = count($product_delivery_date['has_purchase_due']);
                         $total_days = $sell_day->number_of_days;
-                        $loop = $total_days / $totalPurchaseDays;
+                        $totalPurchaseDays = count($product_delivery_date['has_purchase_due']);
+                        if($total_days == 0 || $total_days == null){
+                            $loop = 1;
+                        }else{
+                            $loop = $total_days / $totalPurchaseDays;
+                        }
                         $getDayName = getDayNameByDayNumber($day);
-
                         $getNextDate = Carbon::parse($sell_day->delivery_date)->next($getDayName)->format('Y-m-d');
                         $sDate = Carbon::parse($getNextDate);
                         $x = 7;

@@ -156,14 +156,39 @@ function variationTypes(){
     return $data;
 }
 
+// MEal types lists
+function mealTypes(){
+    $data = [
+        '4' => 'None',
+        '1' => 'Lunch',
+        '2' => 'Dinner',
+        '3' => 'Both'
+    ];
+    return $data;
+}
 
-// Delivery Days lists
-function deliveryDays(){
+
+// number of Days lists
+function noOfDays(){
     $data = [
         '7' => '7',
         '10' => '10',
         '20' => '20',
         '30' => '30'
+    ];
+    return $data;
+}
+
+// deliveryDays lists
+function deliveryDays(){
+    $data = [
+        '1' => 'Monday',
+        '2' => 'Tuesday',
+        '3' => 'Wednesday',
+        '4' => 'Thursday',
+        '5' => 'Friday',
+        '6' => 'Saturday',
+        '7' => 'Sunday',
     ];
     return $data;
 }
@@ -247,7 +272,36 @@ if (! function_exists('getDayNumberByDayName')) {
 
 
 }
-
+function getDayNameByDayNumber($day)
+{
+    $dayNumber = '';
+    switch ($day) {
+        case ('1'):
+            $dayNumber = 'Monday';
+            break;
+        case ('2'):
+            $dayNumber = 'Tuesday';
+            break;
+        case ('3'):
+            $dayNumber = 'Wednesday';
+            break;
+        case ('4'):
+            $dayNumber = 'Thursday';
+            break;
+        case ('5'):
+            $dayNumber = 'Friday';
+            break;
+        case ('6'):
+            $dayNumber = 'Saturday';
+            break;
+        case ('7'):
+            $dayNumber = 'Sunday';
+            break;
+        default:
+            $dayNumber = '0';
+    }
+    return $dayNumber;
+}
 
 // api configuration for getting data from api
 if (! function_exists('getConfiguration')) {

@@ -64,6 +64,7 @@ return [
     'add_payment_row' => 'Add Payment Row',
     'finalize_payment' => 'Finalize Payment',
     'sale_date' => 'Sale Date',
+    'delivery_date' => 'Start Date Or Delivery Date',
     'list_pos' => 'List POS',
     'edit_sale' => 'Edit Sale',
     'shipping' => 'Shipping',

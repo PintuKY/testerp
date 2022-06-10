@@ -83,8 +83,6 @@
 		@endif
 
 		@php
-			$warranty_id = !empty($action) && $action == 'edit' && !empty($product->warranties->first())  ? $product->warranties->first()->id : $product->warranty_id;
-
 			if($discount_type == 'fixed') {
 				$discount_amount = $discount_amount * $multiplier;
 			}

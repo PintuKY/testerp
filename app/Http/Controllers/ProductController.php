@@ -380,6 +380,7 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
+
         if (!auth()->user()->can('product.create')) {
             abort(403, 'Unauthorized action.');
         }
@@ -412,7 +413,6 @@ class ProductController extends Controller
 
 
             DB::beginTransaction();
-
             $product = Product::create($product_details);
 
             if (empty(trim($request->input('sku')))) {

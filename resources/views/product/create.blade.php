@@ -64,7 +64,7 @@
 
               <select class="form-control select2" id="delivery_days" name="delivery_days" required>
                 <option selected>Not Applicable</option>
-                @foreach(deliveryDays() as $key => $deliveryDays)
+                @foreach(noOfDays() as $key => $deliveryDays)
                   <option value="{{$key}}">{{ $deliveryDays }}</option>
                 @endforeach
               </select>

@@ -296,6 +296,7 @@ class SellPosController extends Controller
      */
     public function store(Request $request)
     {
+        //dd($request->all());
         if (!auth()->user()->can('sell.create') && !auth()->user()->can('direct_sell.access') && !auth()->user()->can('so.create') ) {
             abort(403, 'Unauthorized action.');
         }
@@ -312,7 +313,6 @@ class SellPosController extends Controller
 
         try {
             $input = $request->except('_token');
-
             $input['is_quotation'] = 0;
             //status is send as quotation from Add sales screen.
             if ($input['status'] == 'quotation') {
@@ -466,7 +466,7 @@ class SellPosController extends Controller
                 Media::uploadMedia($business_id, $transaction, $request, 'shipping_documents', false, 'shipping_document');
 
 
-               $this->transactionUtil->createOrUpdateSellLines($transaction, $input['products'], $input['location_id']);
+                $this->transactionUtil->createOrUpdateSellLines($input,$transaction, $input['products'], $input['location_id'],/*$input['number_of_days'],$input['time_slot'],$input['has_purchase_due']*/);
 
                 if (!$is_direct_sale) {
                     //Add change return
@@ -491,8 +491,6 @@ class SellPosController extends Controller
                         if (!empty($product['base_unit_multiplier'])) {
                             $decrease_qty = $decrease_qty * $product['base_unit_multiplier'];
                         }
-
-
                     }
 
                     //Add payments to Cash Register
@@ -539,6 +537,8 @@ class SellPosController extends Controller
                 Media::uploadMedia($business_id, $transaction, $request, 'documents');
 
                 $this->transactionUtil->activityLog($transaction, 'added');
+
+
 
                 DB::commit();
 
@@ -794,7 +794,6 @@ class SellPosController extends Controller
                         })
                         ->leftjoin('units', 'units.id', '=', 'p.unit_id')
                         ->where('transaction_sell_lines.transaction_id', $id)
-                        ->with(['warranties'])
                         ->select(
                             DB::raw("IF(pv.is_dummy = 0, CONCAT(p.name, ' (', pv.name, ':',variations.name, ')'), p.name) AS product_name"),
                             'p.id as product_id',
@@ -978,7 +977,6 @@ class SellPosController extends Controller
         $edit_price = auth()->user()->can('edit_product_price_from_pos_screen');
         $shipping_statuses = $this->transactionUtil->shipping_statuses();
 
-        $warranties = $this->__getwarranties();
         $sub_type = request()->get('sub_type');
 
         //pos screen view from module
@@ -999,7 +997,7 @@ class SellPosController extends Controller
         $customer_due = $customer_due != 0 ? $this->transactionUtil->num_f($customer_due, true) : '';
 
         return view('sale_pos.edit')
-            ->with(compact('business_details', 'taxes', 'payment_types', 'walk_in_customer', 'sell_details', 'transaction', 'payment_lines', 'location_printer_type', 'shortcuts', 'commission_agent', 'categories', 'pos_settings', 'change_return', 'types', 'customer_groups', 'brands', 'accounts', 'waiters', 'redeem_details', 'edit_price', 'edit_discount', 'shipping_statuses', 'warranties', 'sub_type', 'pos_module_data', 'invoice_schemes', 'default_invoice_schemes', 'invoice_layouts', 'featured_products', 'customer_due'));
+            ->with(compact('business_details', 'taxes', 'payment_types', 'walk_in_customer', 'sell_details', 'transaction', 'payment_lines', 'location_printer_type', 'shortcuts', 'commission_agent', 'categories', 'pos_settings', 'change_return', 'types', 'customer_groups', 'brands', 'accounts', 'waiters', 'redeem_details', 'edit_price', 'edit_discount', 'shipping_statuses', 'sub_type', 'pos_module_data', 'invoice_schemes', 'default_invoice_schemes', 'invoice_layouts', 'featured_products', 'customer_due'));
     }
 
     /**
@@ -1170,7 +1168,7 @@ class SellPosController extends Controller
                 $transaction = $this->transactionUtil->updateSellTransaction($id, $business_id, $input, $invoice_total, $user_id);
 
                 //Update Sell lines
-                $deleted_lines = $this->transactionUtil->createOrUpdateSellLines($transaction, $input['products'], $input['location_id'], true, $status_before);
+                $deleted_lines = $this->transactionUtil->createOrUpdateSellLines($input,$transaction, $input['products'], $input['location_id'], /*$input['number_of_days'],*/$input['time_slot'], $status_before,'');
 
                 //Update update lines
                 $is_credit_sale = isset($input['is_credit_sale']) && $input['is_credit_sale'] == 1 ? true : false;
@@ -1226,7 +1224,6 @@ class SellPosController extends Controller
                                     'location_id' => $input['location_id'],
                                     'pos_settings' => $pos_settings
                                 ];
-
                     $data = $this->transactionUtil->adjustMappingPurchaseSell($status_before, $transaction, $business, $deleted_lines);
 
                     //Auto send notification
@@ -1292,6 +1289,7 @@ class SellPosController extends Controller
                         ];
             }
         } catch (\Exception $e) {
+            dd($e->getMessage());
             DB::rollBack();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
             $output = ['success' => 0,
@@ -1457,8 +1455,6 @@ class SellPosController extends Controller
             }
         }
 
-        $warranties = $this->__getwarranties();
-
         $output['success'] = true;
         $output['enable_sr_no'] = $product->enable_sr_no;
 
@@ -1486,7 +1482,7 @@ class SellPosController extends Controller
             }
 
             $output['html_content'] =  view('sale_pos.product_row')
-                        ->with(compact('product', 'row_count', 'tax_dropdown', 'enabled_modules', 'pos_settings', 'sub_units', 'discount', 'waiters', 'edit_discount', 'edit_price', 'purchase_line_id', 'warranties', 'quantity', 'is_direct_sell', 'so_line', 'is_sales_order'))
+                        ->with(compact('product', 'row_count', 'tax_dropdown', 'enabled_modules', 'pos_settings', 'sub_units', 'discount', 'waiters', 'edit_discount', 'edit_price', 'purchase_line_id', 'quantity', 'is_direct_sell', 'so_line', 'is_sales_order'))
                         ->render();
         }
 
@@ -2360,14 +2356,6 @@ class SellPosController extends Controller
             ]);
     }
 
-    private function __getwarranties()
-    {
-        $business_id = session()->get('user.business_id');
-        $common_settings = session()->get('business.common_settings');
-        $is_warranty_enabled = !empty($common_settings['enable_product_warranty']) ? true : false;
-        $warranties = $is_warranty_enabled ? Warranty::forDropdown($business_id) : [];
-        return $warranties;
-    }
 
     /**
      * Parse the weighing barcode.

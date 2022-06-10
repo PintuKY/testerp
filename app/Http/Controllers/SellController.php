@@ -12,6 +12,7 @@ use App\Models\SellingPriceGroup;
 use App\Models\TaxRate;
 use App\Models\Transaction;
 use App\Models\TransactionSellLine;
+use App\Models\TransactionSellLinesDay;
 use App\Models\TypesOfService;
 use App\Models\User;
 use App\Models\VariationValueTemplate;
@@ -1316,7 +1317,7 @@ class SellController extends Controller
             ->where('id', $id)
             ->with(['contact', 'sell_lines' => function ($q) {
                 $q->whereNull('parent_sell_line_id');
-            }, 'sell_lines.product', 'sell_lines.product.unit', 'sell_lines.variations', 'sell_lines.variations.product_variation', 'payment_lines', 'sell_lines.modifiers', 'sell_lines.lot_details', 'tax', 'sell_lines.sub_unit', 'table', 'service_staff', 'sell_lines.service_staff', 'types_of_service', 'sell_lines.warranties', 'media']);
+            }, 'sell_lines.product', 'sell_lines.product.unit', 'sell_lines.variations', 'sell_lines.variations.product_variation', 'payment_lines', 'sell_lines.modifiers', 'sell_lines.lot_details', 'tax', 'sell_lines.sub_unit', 'table', 'service_staff', 'sell_lines.service_staff', 'types_of_service',  'media']);
 
         if (!auth()->user()->can('sell.view') && !auth()->user()->can('direct_sell.access') && auth()->user()->can('view_own_sell_only')) {
             $query->where('transactions.created_by', request()->session()->get('user.id'));
@@ -1457,13 +1458,19 @@ class SellController extends Controller
                 '=',
                 'transaction_sell_lines.id'
             )
-            ->leftjoin('variation_location_details AS vld', function ($join) use ($location_id) {
+            ->join(
+                'transaction_sell_lines_days',
+                'transaction_sell_lines_days.transaction_sell_lines_id',
+                '=',
+                'transaction_sell_lines.id'
+            )
+            /*->leftjoin('variation_location_details AS vld', function ($join) use ($location_id) {
                 $join->on('variations.id', '=', 'vld.variation_id')
                     ->where('vld.location_id', '=', $location_id);
-            })
+            })*/
             ->leftjoin('units', 'units.id', '=', 'p.unit_id')
             ->where('transaction_sell_lines.transaction_id', $id)
-            ->with(['warranties', 'so_line'])
+            ->with(['so_line'])
             ->select(
                 DB::raw("IF(pv.is_dummy = 0, CONCAT(p.name, ' (', p.name, ':',variations.name, ')'), p.name) AS product_name"),
                 'p.id as product_id',
@@ -1474,7 +1481,7 @@ class SellController extends Controller
                 'variations.name as variation_name',
                 'variations.sub_sku',
                 'p.barcode_type',
-                'p.enable_sr_no',
+                /*'p.enable_sr_no',*/
                 'variations.id as variation_id',
                 'units.short_name as unit',
                 'units.allow_decimal as unit_allow_decimal',
@@ -1493,7 +1500,7 @@ class SellController extends Controller
                 'transaction_sell_lines.line_discount_amount',
                 'transaction_sell_lines.res_service_staff_id',
                 'transaction_sell_lines.number_of_days',
-                'transaction_sell_lines.delivery_time',
+                'transaction_sell_lines.time_slot',
                 'units.id as unit_id',
                 'transaction_sell_lines.sub_unit_id',
                 'transaction_sell_lines.so_line_id',
@@ -1501,10 +1508,11 @@ class SellController extends Controller
                 'transaction_sell_lines_variants.variation_value_templates_id',
                 'transaction_sell_lines_variants.name',
                 'transaction_sell_lines_variants.value',
-                DB::raw('vld.qty_available + transaction_sell_lines.quantity AS qty_available')
+                'transaction_sell_lines_days.day',
+                /*DB::raw('vld.qty_available + transaction_sell_lines.quantity AS qty_available')*/
             )
             ->get();
-
+        $transaction_sell_lines_id = [];
         if (!empty($sell_details)) {
             foreach ($sell_details as $key => $value) {
                 //If modifier or combo sell line then unset
@@ -1517,7 +1525,9 @@ class SellController extends Controller
                         $value->qty_available = $actual_qty_avlbl;
                     }
                     $number_of_days = $value->number_of_days;
-                    $delivery_time = $value->delivery_time;
+                    $time_slot = $value->time_slot;
+                    $transaction_sell_lines_id[] = $value->transaction_sell_lines_id;
+                    $transaction_sell_lines_days = TransactionSellLinesDay::where('transaction_sell_lines_id',$value->transaction_sell_lines_id)->first();
                     $sell_details[$key]->formatted_qty_available = $this->productUtil->num_f($value->qty_available, false, null, true);
                     $lot_numbers = [];
                     if (request()->session()->get('business.enable_lot_number') == 1) {
@@ -1648,7 +1658,6 @@ class SellController extends Controller
 
         $common_settings = session()->get('business.common_settings');
         $is_warranty_enabled = !empty($common_settings['enable_product_warranty']) ? true : false;
-        $warranties = $is_warranty_enabled ? Warranty::forDropdown($business_id) : [];
 
         $statuses = Transaction::sell_statuses();
 
@@ -1665,11 +1674,11 @@ class SellController extends Controller
         }
 
         $sales_orders = [];
-        if (!empty($pos_settings['enable_sales_order']) || $is_order_request_enabled) {
+        if(!empty($pos_settings['enable_sales_order']) || $is_order_request_enabled) {
             $sales_orders = Transaction::where('business_id', $business_id)
                 ->where('type', 'sales_order')
                 ->where('contact_id', $transaction->contact_id)
-                ->where(function ($q) use ($transaction) {
+                ->where( function($q) use($transaction){
                     $q->where('status', '!=', 'completed');
 
                     if (!empty($transaction->sales_order_ids)) {
@@ -1686,16 +1695,14 @@ class SellController extends Controller
         if (empty($payment_lines)) {
             $payment_lines[] = $this->dummyPaymentLine;
         }
-
         $change_return = $this->dummyPaymentLine;
-
         $customer_due = $this->transactionUtil->getContactDue($transaction->contact_id, $transaction->business_id);
-
         $customer_due = $customer_due != 0 ? $this->transactionUtil->num_f($customer_due, true) : '';
-
         return view('sell.edit')
-            ->with(compact('business_details', 'number_of_days', 'delivery_time', 'taxes', 'sell_details', 'transaction', 'commission_agent', 'types', 'customer_groups', 'pos_settings', 'waiters', 'invoice_schemes', 'default_invoice_schemes', 'redeem_details', 'edit_discount', 'edit_price', 'shipping_statuses', 'warranties', 'statuses', 'sales_orders', 'payment_types', 'accounts', 'payment_lines', 'change_return', 'is_order_request_enabled', 'customer_due'));
+            ->with(compact('business_details','number_of_days','time_slot' ,'transaction_sell_lines_id','taxes', 'sell_details', 'transaction', 'commission_agent', 'types', 'customer_groups', 'pos_settings', 'waiters', 'invoice_schemes', 'default_invoice_schemes', 'redeem_details', 'edit_discount', 'edit_price', 'shipping_statuses', 'statuses', 'sales_orders', 'payment_types', 'accounts', 'payment_lines', 'change_return', 'is_order_request_enabled', 'customer_due'));
     }
+
+
 
     /**
      * Display a listing sell drafts.
@@ -2258,6 +2265,7 @@ class SellController extends Controller
 
             $output = $this->getSellLineRow($product_id, $location_id, $quantity, $row_count, $is_direct_sell, $so_line = null, $price_group);
 
+            $output['product'] = Product::with('unit')->where('id',$product_id)->first();
             if ($this->transactionUtil->isModuleEnabled('modifiers') && !$is_direct_sell) {
                 $variation = Variation::find($product_id);
                 $business_id = request()->session()->get('user.business_id');
@@ -2352,10 +2360,9 @@ class SellController extends Controller
                 }
             }
 
-            $warranties = $this->__getwarranties();
 
             $output['success'] = true;
-            $output['enable_sr_no'] = $productData->enable_sr_no;
+            //$output['enable_sr_no'] = $productData->enable_sr_no;
 
             $waiters = [];
             if ($this->productUtil->isModuleEnabled('service_staff') && !empty($pos_settings['inline_service_staff'])) {
@@ -2381,8 +2388,9 @@ class SellController extends Controller
                 $edit_discount = auth()->user()->can('edit_product_discount_from_pos_screen');
                 $edit_price = auth()->user()->can('edit_product_price_from_pos_screen');
             }
+            $default_datetime = $this->businessUtil->format_date('now', true);
             $output['html_content'] = view('sell.product_row')
-                ->with(compact('productDatas', 'row_count', 'tax_dropdown', /*'enabled_modules',*/ 'pos_settings', 'sub_units', 'discount', 'waiters', 'edit_discount', 'edit_price', 'purchase_line_id', 'quantity', 'is_direct_sell', 'so_line', 'is_sales_order'))
+                ->with(compact('product_id','default_datetime','productDatas', 'row_count', 'tax_dropdown', /*'enabled_modules',*/ 'pos_settings', 'sub_units', 'discount', 'waiters', 'edit_discount', 'edit_price', 'purchase_line_id', 'quantity', 'is_direct_sell', 'so_line', 'is_sales_order'))
                 ->render();
         }
 
@@ -2420,12 +2428,4 @@ class SellController extends Controller
         return $data;
     }
 
-    private function __getwarranties()
-    {
-        $business_id = session()->get('user.business_id');
-        $common_settings = session()->get('business.common_settings');
-        $is_warranty_enabled = !empty($common_settings['enable_product_warranty']) ? true : false;
-        $warranties = $is_warranty_enabled ? Warranty::forDropdown($business_id) : [];
-        return $warranties;
-    }
 }

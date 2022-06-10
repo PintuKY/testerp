@@ -30,8 +30,6 @@
             </li>
             <li><a href="{{route('customer-group.index')}}"><i class="fa fas fa-users"></i> <span>Customer Groups</span></a>
             </li>
-            <li><a href="{{route('contacts.import')}}"><i class="fa fas fa-download"></i>
-                    <span>Import Contacts</span></a></li>
         </ul>
     </li>
     <li class="treeview" id="tour_step5">
@@ -48,10 +46,6 @@
             <li><a href="{{route('labels.show')}}"><i class="fa fas fa-barcode"></i> <span>Print Labels</span></a></li>
             <li><a href="{{route('variation-templates.index')}}"><i class="fa fas fa-circle"></i>
                     <span>Variations</span></a></li>
-            <li><a href="{{route('products.import')}}"><i class="fa fas fa-download"></i>
-                    <span>Import Products</span></a></li>
-            <li><a href="{{route('opening.stock.import')}}"><i class="fa fas fa-download"></i> <span>Import Opening Stock</span></a>
-            </li>
             <li><a href="{{route('selling-price-group.index')}}"><i class="fa fas fa-circle"></i> <span>Selling Price Group</span></a>
             </li>
             <li><a href="{{route('units.index')}}"><i class="fa fas fa-balance-scale"></i> <span>Units</span></a></li>

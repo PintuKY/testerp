@@ -313,23 +313,6 @@ class StockTransferController extends Controller
                         if (!empty($product['base_unit_multiplier'])) {
                             $decrease_qty = $decrease_qty * $product['base_unit_multiplier'];
                         }
-
-                        $this->productUtil->decreaseProductQuantity(
-                            $product['product_id'],
-                            $product['variation_id'],
-                            $sell_transfer->location_id,
-                            $decrease_qty
-                        );
-
-                        $this->productUtil->updateProductQuantity(
-                            $purchase_transfer->location_id,
-                            $product['product_id'],
-                            $product['variation_id'],
-                            $decrease_qty,
-                            0,
-                            null,
-                            false
-                        );
                     }
                 }
 
@@ -495,26 +478,6 @@ class StockTransferController extends Controller
                     }
                 }
 
-                //Update quantity available in both location
-                if (!empty($products)) {
-                    foreach ($products as $key => $value) {
-                        //Decrease from location 2
-                        $this->productUtil->decreaseProductQuantity(
-                            $products[$key]['product_id'],
-                            $key,
-                            $purchase_transfer->location_id,
-                            $products[$key]['quantity']
-                        );
-
-                        //Increase in location 1
-                        $this->productUtil->updateProductQuantity(
-                            $sell_transfer->location_id,
-                            $products[$key]['product_id'],
-                            $key,
-                            $products[$key]['quantity']
-                        );
-                    }
-                }
 
                 //Delete sale line purchase line
                 if (!empty($deleted_sell_purchase_ids)) {
@@ -812,23 +775,6 @@ class StockTransferController extends Controller
                         if (!empty($product['base_unit_multiplier'])) {
                             $decrease_qty = $decrease_qty * $product['base_unit_multiplier'];
                         }
-
-                        $this->productUtil->decreaseProductQuantity(
-                            $product['product_id'],
-                            $product['variation_id'],
-                            $sell_transfer->location_id,
-                            $decrease_qty
-                        );
-
-                        $this->productUtil->updateProductQuantity(
-                            $purchase_transfer->location_id,
-                            $product['product_id'],
-                            $product['variation_id'],
-                            $decrease_qty,
-                            0,
-                            null,
-                            false
-                        );
                     }
                 }
 
@@ -894,27 +840,6 @@ class StockTransferController extends Controller
 
             DB::beginTransaction();
             if ($status == 'completed' && $sell_transfer->status != 'completed' ) {
-
-                foreach ($sell_transfer->sell_lines as $sell_line) {
-                    if ($sell_line->product->enable_stock) {
-                        $this->productUtil->decreaseProductQuantity(
-                            $sell_line->product_id,
-                            $sell_line->variation_id,
-                            $sell_transfer->location_id,
-                            $sell_line->quantity
-                        );
-
-                        $this->productUtil->updateProductQuantity(
-                            $purchase_transfer->location_id,
-                            $sell_line->product_id,
-                            $sell_line->variation_id,
-                            $sell_line->quantity,
-                            0,
-                            null,
-                            false
-                        );
-                    }
-                }
 
                 //Adjust stock over selling if found
                 $this->productUtil->adjustStockOverSelling($purchase_transfer);

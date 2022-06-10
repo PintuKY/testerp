@@ -65,16 +65,10 @@
 						{{$product->sub_category->name ?? '--' }}<br>
 
 						<b>@lang('product.manage_stock'): </b>
-						@if($product->enable_stock)
-							@lang('messages.yes')
-						@else
+
 							@lang('messages.no')
-						@endif
 						<br>
-						@if($product->enable_stock)
-							<b>@lang('product.alert_quantity'): </b>
-							{{$product->alert_quantity ?? '--' }}
-						@endif
+
 
 
 	      			</div>
@@ -164,15 +158,7 @@
       			@include('product.partials.variable_product_details')
 
       		@endif
-      		@if($product->enable_stock == 1)
-	      		<div class="row">
-	      			<div class="col-md-12">
-	      				<strong>@lang('lang_v1.product_stock_details')</strong>
-	      			</div>
-	      			<div class="col-md-12" id="view_product_stock_details" data-product_id="{{$product->id}}">
-	      			</div>
-	      		</div>
-      		@endif
+
       	</div>
       	<div class="modal-footer">
       		<button type="button" class="btn btn-primary no-print"

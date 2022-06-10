@@ -277,7 +277,6 @@ class ImportSalesController extends Controller
                     'tax_id' => $tax_id,
                     'sell_line_note' =>  $line_data['item_description'],
                     'product_unit_id' => $product->unit_id,
-                    'enable_stock' => $product->enable_stock,
                     'type' => $product->type,
                     'combo_variations' => $product->type == 'combo' ? $variation->combo_variations : []
                 ];
@@ -369,14 +368,6 @@ class ImportSalesController extends Controller
     		$this->transactionUtil->createOrUpdateSellLines($transaction, $sell_lines, $location_id, false, null, [], false);
 
     		foreach ($sell_lines as $line) {
-    			if ($line['enable_stock']) {
-	                $this->productUtil->decreaseProductQuantity(
-	                    $line['product_id'],
-	                    $line['variation_id'],
-	                    $location_id,
-	                    $line['quantity']
-	                );
-	            }
 
                 if ($line['type'] == 'combo') {
                     $line_total_quantity = $line['quantity'];

@@ -109,9 +109,6 @@
                             <th>@lang('business.business_name')</th>
                             <th>@lang('contact.name')</th>
                             <th>@lang('business.email')</th>
-                            <th>@lang('contact.tax_no')</th>
-                            <th>@lang('contact.pay_term')</th>
-                            <th>@lang('account.opening_balance')</th>
                             <th>@lang('lang_v1.advance_balance')</th>
                             <th>@lang('lang_v1.added_on')</th>
                             <th>@lang('business.address')</th>
@@ -146,7 +143,7 @@
                         <td></td>
                         <td
                             @if($type == 'supplier')
-                                colspan="6"
+                                colspan="3"
                             @elseif( $type == 'customer')
                                 @if($reward_enabled)
                                     colspan="6"

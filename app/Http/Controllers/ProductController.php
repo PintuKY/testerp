@@ -112,7 +112,6 @@ class ProductController extends Controller
                 'tax_rates.name as tax',
                 'products.sku',
                 'products.image',
-                'products.enable_stock',
                 'products.is_inactive',
                 /*'products.not_for_selling',
                 'products.product_custom_field1',
@@ -250,7 +249,6 @@ class ProductController extends Controller
                 ->addColumn('mass_delete', function ($row) {
                     return  '<input type="checkbox" class="row-select" value="' . $row->id .'">' ;
                 })
-                ->editColumn('current_stock', '@if($enable_stock == 1) {{@number_format($current_stock)}} @else -- @endif {{$unit}}')
                 /*->addColumn(
                     'purchase_price',
                     '<div style="white-space: nowrap;">@format_currency($min_purchase_price) @if($max_purchase_price != $min_purchase_price && $type == "variable") -  @format_currency($max_purchase_price)@endif </div>'
@@ -382,12 +380,13 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
+
         if (!auth()->user()->can('product.create')) {
             abort(403, 'Unauthorized action.');
         }
         try {
             $business_id = $request->session()->get('user.business_id');
-            $form_fields = ['name', /*'brand_id',*/ 'unit_id', 'category_id', 'tax', 'type', 'barcode_type', 'sku', 'alert_quantity', 'tax_type', /*'weight',*/ /*'product_custom_field1', 'product_custom_field2', 'product_custom_field3', 'product_custom_field4',*/ 'product_description', 'sub_unit_ids','delivery_days'];
+            $form_fields = ['name', /*'brand_id',*/ 'unit_id', 'category_id', 'tax', 'type', 'barcode_type', 'sku'/*, 'alert_quantity'*/, 'tax_type', /*'weight',*/ /*'product_custom_field1', 'product_custom_field2', 'product_custom_field3', 'product_custom_field4',*/ 'product_description', 'sub_unit_ids','delivery_days'];
 
             $module_form_fields = $this->moduleUtil->getModuleFormField('product_form_fields');
             if (!empty($module_form_fields)) {
@@ -398,7 +397,6 @@ class ProductController extends Controller
             $product_details['business_id'] = $business_id;
             $product_details['created_by'] = $request->session()->get('user.id');
 
-            $product_details['enable_stock'] = (!empty($request->input('enable_stock')) &&  $request->input('enable_stock') == 1) ? 1 : 0;
             /*$product_details['not_for_selling'] = (!empty($request->input('not_for_selling')) &&  $request->input('not_for_selling') == 1) ? 1 : 0;*/
 
            /* if (!empty($request->input('sub_category_id'))) {
@@ -409,27 +407,12 @@ class ProductController extends Controller
                 $product_details['sku'] = ' ';
             }
 
-            if (!empty($product_details['alert_quantity'])) {
-                $product_details['alert_quantity'] = $this->productUtil->num_uf($product_details['alert_quantity']);
-            }
-
-            /*$expiry_enabled = $request->session()->get('business.enable_product_expiry');
-            if (!empty($request->input('expiry_period_type')) && !empty($request->input('expiry_period')) && !empty($expiry_enabled) && ($product_details['enable_stock'] == 1)) {
-                $product_details['expiry_period_type'] = $request->input('expiry_period_type');
-                $product_details['expiry_period'] = $this->productUtil->num_uf($request->input('expiry_period'));
-            }*/
-
-            /*if (!empty($request->input('enable_sr_no')) &&  $request->input('enable_sr_no') == 1) {
-                $product_details['enable_sr_no'] = 1 ;
-            }*/
-
             //upload document
             $product_details['image'] = $this->productUtil->uploadFile($request, 'image', config('constants.product_img_path'), 'image');
             $common_settings = session()->get('business.common_settings');
 
 
             DB::beginTransaction();
-
             $product = Product::create($product_details);
 
             if (empty(trim($request->input('sku')))) {
@@ -609,7 +592,7 @@ class ProductController extends Controller
 
         try {
             $business_id = $request->session()->get('user.business_id');
-            $product_details = $request->only(['name', /*'brand_id',*/ 'unit_id', 'category_id', 'tax', 'barcode_type', 'sku', 'alert_quantity', 'tax_type', /*'weight',*/ /*'product_custom_field1', 'product_custom_field2', 'product_custom_field3', 'product_custom_field4',*/ 'product_description', 'sub_unit_ids','delivery_days']);
+            $product_details = $request->only(['name', /*'brand_id',*/ 'unit_id', 'category_id', 'tax', 'barcode_type', 'sku'/*, 'alert_quantity'*/, 'tax_type', /*'weight',*/ /*'product_custom_field1', 'product_custom_field2', 'product_custom_field3', 'product_custom_field4',*/ 'product_description', 'sub_unit_ids','delivery_days']);
 
             DB::beginTransaction();
 
@@ -632,8 +615,9 @@ class ProductController extends Controller
             $product->tax = $product_details['tax'];
             $product->barcode_type = $product_details['barcode_type'];
             $product->sku = $product_details['sku'];
-            $product->alert_quantity = $this->productUtil->num_uf($product_details['alert_quantity']);
+            //$product->alert_quantity = $this->productUtil->num_uf($product_details['alert_quantity']);
             $product->tax_type = $product_details['tax_type'];
+            $product->delivery_days = $product_details['delivery_days'];
             /*$product->weight = $product_details['weight'];*/
             /*$product->product_custom_field1 = $product_details['product_custom_field1'];
             $product->product_custom_field2 = $product_details['product_custom_field2'];
@@ -641,37 +625,6 @@ class ProductController extends Controller
             $product->product_custom_field4 = $product_details['product_custom_field4'];*/
             $product->product_description = $product_details['product_description'];
             $product->sub_unit_ids = !empty($product_details['sub_unit_ids']) ? $product_details['sub_unit_ids'] : null;
-
-            if (!empty($request->input('enable_stock')) &&  $request->input('enable_stock') == 1) {
-                $product->enable_stock = 1;
-            } else {
-                $product->enable_stock = 0;
-            }
-
-            /*$product->not_for_selling = (!empty($request->input('not_for_selling')) &&  $request->input('not_for_selling') == 1) ? 1 : 0;*/
-
-            /*if (!empty($request->input('sub_category_id'))) {
-                $product->sub_category_id = $request->input('sub_category_id');
-            } else {
-                $product->sub_category_id = null;
-            }*/
-
-           /* $expiry_enabled = $request->session()->get('business.enable_product_expiry');
-            if (!empty($expiry_enabled)) {
-                if (!empty($request->input('expiry_period_type')) && !empty($request->input('expiry_period')) && ($product->enable_stock == 1)) {
-                    $product->expiry_period_type = $request->input('expiry_period_type');
-                    $product->expiry_period = $this->productUtil->num_uf($request->input('expiry_period'));
-                } else {
-                    $product->expiry_period_type = null;
-                    $product->expiry_period = null;
-                }
-            }*/
-
-            /*if (!empty($request->input('enable_sr_no')) &&  $request->input('enable_sr_no') == 1) {
-                $product->enable_sr_no = 1;
-            } else {
-                $product->enable_sr_no = 0;
-            }*/
 
             //upload document
             $file_name = $this->productUtil->uploadFile($request, 'image', config('constants.product_img_path'), 'image');
@@ -834,6 +787,7 @@ class ProductController extends Controller
                                     ->count();
                 if ($count > 0) {
                     $can_be_deleted = false;
+                    dd('bbb');
                     $error_msg = __('lang_v1.purchase_already_exist');
                 } else {
                     //Check if any opening stock sold
@@ -1172,7 +1126,6 @@ class ProductController extends Controller
                     'products.id as product_id',
                     'products.name',
                     'products.type',
-                    'products.enable_stock',
                     'products.sku'
                 )
                     ->orderBy('products.name')
@@ -1283,7 +1236,7 @@ class ProductController extends Controller
         try {
             $business_id = $request->session()->get('user.business_id');
             $form_fields = ['name', /*'brand_id',*/ 'unit_id', 'category_id', 'tax', 'barcode_type','tax_type', 'sku',
-                'alert_quantity', 'type', 'sub_unit_ids', /*'sub_category_id',*/ /*'weight',*/ /*'product_custom_field1', 'product_custom_field2', 'product_custom_field3', 'product_custom_field4', */'product_description'];
+                /*'alert_quantity',*/ 'type', 'sub_unit_ids', /*'sub_category_id',*/ /*'weight',*/ /*'product_custom_field1', 'product_custom_field2', 'product_custom_field3', 'product_custom_field4', */'product_description'];
 
             $module_form_fields = $this->moduleUtil->getModuleData('product_form_fields');
             if (!empty($module_form_fields)) {
@@ -1298,21 +1251,14 @@ class ProductController extends Controller
             $product_details['type'] = empty($product_details['type']) ? 'single' : $product_details['type'];
             $product_details['business_id'] = $business_id;
             $product_details['created_by'] = $request->session()->get('user.id');
-            if (!empty($request->input('enable_stock')) &&  $request->input('enable_stock') == 1) {
-                $product_details['enable_stock'] = 1 ;
-                //TODO: Save total qty
-                //$product_details['total_qty_available'] = 0;
-            }
-            /*if (!empty($request->input('not_for_selling')) &&  $request->input('not_for_selling') == 1) {
-                $product_details['not_for_selling'] = 1 ;
-            }*/
+
             if (empty($product_details['sku'])) {
                 $product_details['sku'] = ' ';
             }
-
+/*
             if (!empty($product_details['alert_quantity'])) {
                 $product_details['alert_quantity'] = $this->productUtil->num_uf($product_details['alert_quantity']);
-            }
+            }*/
 
             /*$expiry_enabled = $request->session()->get('business.enable_product_expiry');
             if (!empty($request->input('expiry_period_type')) && !empty($request->input('expiry_period')) && !empty($expiry_enabled)) {
@@ -1344,15 +1290,6 @@ class ProductController extends Controller
                 $request->input('single_dsp'),
                 $request->input('single_dsp_inc_tax')
             );
-
-            if ($product->enable_stock == 1 && !empty($request->input('opening_stock'))) {
-                $user_id = $request->session()->get('user.id');
-
-                $transaction_date = $request->session()->get("financial_year.start");
-                $transaction_date = Carbon::createFromFormat('Y-m-d', $transaction_date)->toDateTimeString();
-
-                $this->productUtil->addSingleProductOpeningStock($business_id, $product, $request->input('opening_stock'), $transaction_date, $user_id);
-            }
 
             //Add product locations
             $product_locations = $request->input('product_locations');

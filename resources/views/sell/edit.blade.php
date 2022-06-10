@@ -46,7 +46,7 @@
 								{!! Form::text('price_group_text', $transaction->price_group->name, ['class' => 'form-control', 'readonly']); !!}
 								<span class="input-group-addon">
 									@show_tooltip(__('lang_v1.price_group_help_text'))
-								</span> 
+								</span>
 							</div>
 						</div>
 					</div>
@@ -65,7 +65,7 @@
 
 								<span class="input-group-addon">
 									@show_tooltip(__('lang_v1.types_of_service_help'))
-								</span> 
+								</span>
 							</div>
 							<small><p class="help-block @if(empty($transaction->selling_price_group_id)) hide @endif" id="price_group_text">@lang('lang_v1.price_group'): <span>@if(!empty($transaction->selling_price_group_id)){{$transaction->price_group->name}}@endif</span></p></small>
 						</div>
@@ -94,11 +94,11 @@
 							<span class="input-group-addon">
 								<i class="fa fa-user"></i>
 							</span>
-							<input type="hidden" id="default_customer_id" 
+							<input type="hidden" id="default_customer_id"
 							value="{{ $transaction->contact->id }}" >
-							<input type="hidden" id="default_customer_name" 
+							<input type="hidden" id="default_customer_name"
 							value="{{ $transaction->contact->name }}" >
-							{!! Form::select('contact_id', 
+							{!! Form::select('contact_id',
 								[], null, ['class' => 'form-control mousetrap', 'id' => 'customer_id', 'placeholder' => 'Enter Customer name / phone', 'required']); !!}
 							<span class="input-group-btn">
 								<button type="button" class="btn btn-default bg-white btn-flat add_new_customer" data-name=""><i class="fa fa-plus-circle text-primary fa-lg"></i></button>
@@ -121,28 +121,10 @@
 							{!! $transaction->contact->supplier_business_name ?? '' !!}, <br>
 							{!! $transaction->contact->name ?? '' !!}, <br>
 							{!!$transaction->contact->shipping_address ?? '' !!}
-						</div>						
+						</div>
 					</small>
 				</div>
 
-				<div class="col-md-3">
-		          <div class="form-group">
-		            <div class="multi-input">
-		            	@php
-							$is_pay_term_required = !empty($pos_settings['is_pay_term_required']);
-						@endphp
-		              {!! Form::label('pay_term_number', __('contact.pay_term') . ':') !!} @show_tooltip(__('tooltip.pay_term'))
-		              <br/>
-		              {!! Form::number('pay_term_number', $transaction->pay_term_number, ['class' => 'form-control width-40 pull-left', 'placeholder' => __('contact.pay_term'), 'required' => $is_pay_term_required]); !!}
-
-		              {!! Form::select('pay_term_type', 
-		              	['months' => __('lang_v1.months'), 
-		              		'days' => __('lang_v1.days')], 
-		              		$transaction->pay_term_type, 
-		              	['class' => 'form-control width-60 pull-left','placeholder' => __('messages.please_select'), 'required' => $is_pay_term_required]); !!}
-		            </div>
-		          </div>
-		        </div>
 
 				@if(!empty($commission_agent))
 				@php
@@ -151,7 +133,7 @@
 				<div class="col-sm-3">
 					<div class="form-group">
 					{!! Form::label('commission_agent', __('lang_v1.commission_agent') . ':') !!}
-					{!! Form::select('commission_agent', 
+					{!! Form::select('commission_agent',
 								$commission_agent, $transaction->commission_agent, ['class' => 'form-control select2', 'id' => 'commission_agent', 'required' => $is_commission_agent_required]); !!}
 					</div>
 				</div>
@@ -299,12 +281,12 @@
 				@endif
 				<!-- Call restaurant module if defined -->
 		        @if(in_array('tables' ,$enabled_modules) || in_array('service_staff' ,$enabled_modules))
-		        	<span id="restaurant_module_span" 
+		        	<span id="restaurant_module_span"
 		        		data-transaction_id="{{$transaction->id}}">
 		        	</span>
 		        @endif
 			@endcomponent
-			
+
 			@component('components.widget', ['class' => 'box-solid'])
 				<div class="col-sm-10 col-sm-offset-1">
 					<div class="form-group">
@@ -327,7 +309,7 @@
 					<input type="hidden" name="sell_price_tax" id="sell_price_tax" value="{{$business_details->sell_price_tax}}">
 
 					<!-- Keeps count of product rows -->
-					<input type="hidden" id="product_row_count" 
+					<input type="hidden" id="product_row_count"
 						value="{{count($sell_details)}}">
 					@php
 						$hide_tax = '';
@@ -339,7 +321,7 @@
 					<table class="table table-condensed table-bordered table-striped table-responsive" id="pos_table">
 						<thead>
 							<tr>
-								<th class="text-center">	
+								<th class="text-center">
 									@lang('sale.product')
 								</th>
 								<th class="text-center">
@@ -389,7 +371,7 @@
 						<tr>
 							<td>
 								<div class="pull-right">
-									<b>@lang('sale.item'):</b> 
+									<b>@lang('sale.item'):</b>
 									<span class="total_quantity">0</span>
 									&nbsp;&nbsp;&nbsp;&nbsp;
 									<b>@lang('sale.total'): </b>
@@ -401,32 +383,88 @@
 					</div>
 				</div>
 			@endcomponent
+                <div class="box box-solid">
+                    <div class="box-body">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="delivery_days">Delivery Days:*</label>
+                                <br/>
+                                <input type="hidden" name="sweta" value="{{$transaction_sell_lines_days->day}}">
+                                @foreach(deliveryDays() as $key => $deliveryDays)
+                                    <div class="icheckbox_square-blue" style="position: relative;">
+
+                                        <input class="input-icheck" id="has_purchase_due" name="has_purchase_due"
+                                               type="checkbox" value="{{$key}}" style="position: absolute; opacity: 0;" {{$transaction_sell_lines_days->day == $key ? 'checked' : ''}}></div>
+                                    <strong>{{ $deliveryDays }}</strong>
+                                    <br/>
+                                @endforeach
+
+
+                            </div>
+                        </div>
+                        <div class="col-md-12 well well-sm bg-light-gray  hide ">
+                            <input type="hidden" name="rp_redeemed" id="rp_redeemed" value="0">
+                            <input type="hidden" name="rp_redeemed_amount" id="rp_redeemed_amount" value="0">
+                            <div class="col-md-12"><h4></h4></div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="rp_redeemed_modal">Redeemed:</label>
+                                    <div class="input-group">
+											<span class="input-group-addon">
+												<i class="fa fa-gift"></i>
+											</span>
+                                        <input class="form-control direct_sell_rp_input"
+                                               data-amount_per_unit_point="1.0000" min="0" data-max_points="0"
+                                               data-min_order_total="1.0000" name="rp_redeemed_modal" type="number"
+                                               value="0" id="rp_redeemed_modal">
+                                        <input type="hidden" id="rp_name" value="">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <p><strong>Available:</strong> <span id="available_rp"></span></p>
+                            </div>
+                            <div class="col-md-4">
+                                <p><strong>Redeemed Amount:</strong> (-)<span id="rp_redeemed_amount_text">$ 0.00</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+
+
+                    </div>
+                    <!-- /.box-body -->
+                </div>
 			<div class="box box-solid">
 				<div class="box-body">
 					<div class="col-md-6">
 						<div class="form-group">
 							<label for="brand_id">Number of Days:*</label>
 							<div class="form-group">
-							  
 							  <select class="form-control select2" id="delivery_days" name="number_of_days" required>
-								<option selected>please select</option>
-								@foreach(deliveryDays() as $key => $deliveryDays)
+								<option value="0" selected>please select</option>
+								@foreach(noOfDays() as $key => $deliveryDays)
 								  <option value="{{$key}}" {{$number_of_days == $key ? 'selected' : ''}}>{{ $deliveryDays }}</option>
 								@endforeach
 							  </select>
-				
+
 							</div>
 						</div>
 					</div>
 					<div class="@if(!empty($commission_agent)) col-sm-6 @else col-sm-6 @endif">
 						<div class="form-group">
-							<label for="delivery_time">Delivery Time:*</label>
-							<div class="input-group">
-								<span class="input-group-addon">
-									<i class="fa fa-calendar"></i>
-								</span>
-								{!! Form::text('delivery_time',$delivery_time, ['class' => 'form-control timepicker', 'required']); !!}
-							</div>
+                            <label for="time_slot">Meal Type:*</label>
+                            <div class="form-group">
+
+                                <select class="form-control select2" id="time_slot" name="time_slot"
+                                        required>
+                                    <option selected>please select</option>
+                                    @foreach(mealTypes() as $key => $meal_types)
+                                        <option value="{{$key}}" {{$time_slot == $key ? 'selected' : ''}}>{{ $meal_types }}</option>
+                                    @endforeach
+                                </select>
+
+                            </div>
 						</div>
 					</div>
 				</div>
@@ -458,7 +496,7 @@
 			        </div>
 			    </div>
 			    <div class="col-md-4 @if($transaction->type == 'sales_order') hide @endif"><br>
-			    	<b>@lang( 'sale.discount_amount' ):</b>(-) 
+			    	<b>@lang( 'sale.discount_amount' ):</b>(-)
 					<span class="display_currency" id="total_discount">0</span>
 			    </div>
 			    <div class="clearfix"></div>
@@ -495,13 +533,13 @@
 			                </span>
 			                {!! Form::select('tax_rate_id', $taxes['tax_rates'], $transaction->tax_id, ['placeholder' => __('messages.please_select'), 'class' => 'form-control', 'data-default'=> $business_details->default_sales_tax], $taxes['attributes']); !!}
 
-							<input type="hidden" name="tax_calculation_amount" id="tax_calculation_amount" 
+							<input type="hidden" name="tax_calculation_amount" id="tax_calculation_amount"
 							value="{{@num_format(optional($transaction->tax)->amount)}}" data-default="{{$business_details->tax_calculation_amount}}">
 			            </div>
 			        </div>
 			    </div>
 			    <div class="col-md-4 col-md-offset-4 @if($transaction->type == 'sales_order') hide @endif">
-			    	<b>@lang( 'sale.order_tax' ):</b>(+) 
+			    	<b>@lang( 'sale.order_tax' ):</b>(+)
 					<span class="display_currency" id="order_tax">{{$transaction->tax_amount}}</span>
 			    </div>
 			    <div class="col-md-12">
@@ -560,15 +598,15 @@
 		        $is_shipping_custom_field_2_required = !empty($custom_labels['shipping']['is_custom_field_2_required']) && $custom_labels['shipping']['is_custom_field_2_required'] == 1 ? true : false;
 
 		        $shipping_custom_label_3 = !empty($custom_labels['shipping']['custom_field_3']) ? $custom_labels['shipping']['custom_field_3'] : '';
-		        
+
 		        $is_shipping_custom_field_3_required = !empty($custom_labels['shipping']['is_custom_field_3_required']) && $custom_labels['shipping']['is_custom_field_3_required'] == 1 ? true : false;
 
 		        $shipping_custom_label_4 = !empty($custom_labels['shipping']['custom_field_4']) ? $custom_labels['shipping']['custom_field_4'] : '';
-		        
+
 		        $is_shipping_custom_field_4_required = !empty($custom_labels['shipping']['is_custom_field_4_required']) && $custom_labels['shipping']['is_custom_field_4_required'] == 1 ? true : false;
 
 		        $shipping_custom_label_5 = !empty($custom_labels['shipping']['custom_field_5']) ? $custom_labels['shipping']['custom_field_5'] : '';
-		        
+
 		        $is_shipping_custom_field_5_required = !empty($custom_labels['shipping']['is_custom_field_5_required']) && $custom_labels['shipping']['is_custom_field_5_required'] == 1 ? true : false;
 	        @endphp
 
@@ -713,7 +751,7 @@
 		    	@if(!empty($pos_settings['amount_rounding_method']) && $pos_settings['amount_rounding_method'] > 0)
 		    	<small id="round_off"><br>(@lang('lang_v1.round_off'): <span id="round_off_text">0</span>)</small>
 				<br/>
-				<input type="hidden" name="round_off_amount" 
+				<input type="hidden" name="round_off_amount"
 					id="round_off_amount" value=0>
 				@endif
 		    	<div><b>@lang('sale.total_payable'): </b>
@@ -785,7 +823,7 @@
 	@can('sell.payments')
 		@component('components.widget', ['class' => 'box-solid', 'title' => __('purchase.add_payment')])
 			<div class="payment_row" id="payment_rows_div">
-			@foreach($payment_lines as $payment_line)			
+			@foreach($payment_lines as $payment_line)
 				@if($payment_line['is_return'] == 1)
 					@php
 						$change_return = $payment_line;
@@ -812,7 +850,7 @@
         		{!! Form::hidden("change_return", $change_return['amount'], ['class' => 'form-control change_return input_number', 'required', 'id' => "change_return"]); !!}
         		<!-- <span class="lead text-bold total_quantity">0</span> -->
         		@if(!empty($change_return['id']))
-            		<input type="hidden" name="change_return_id" 
+            		<input type="hidden" name="change_return_id"
             		value="{{$change_return['id']}}">
             	@endif
 			</div>
@@ -836,10 +874,10 @@
 	@include('contact.create', ['quick_add' => true])
 </div>
 <!-- /.content -->
-<div class="modal fade register_details_modal" tabindex="-1" role="dialog" 
+<div class="modal fade register_details_modal" tabindex="-1" role="dialog"
 	aria-labelledby="gridSystemModalLabel">
 </div>
-<div class="modal fade close_register_modal" tabindex="-1" role="dialog" 
+<div class="modal fade close_register_modal" tabindex="-1" role="dialog"
 	aria-labelledby="gridSystemModalLabel">
 </div>
 <!-- quick product modal -->

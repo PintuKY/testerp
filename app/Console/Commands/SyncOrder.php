@@ -404,8 +404,6 @@ class SyncOrder extends Command
                         'product_description' => ($product->description) ? $product->description : $product->short_description,
                         'sku' =>  $product->sku,
                         'created_by' =>  $admin_id,
-                        'enable_stock'    => 1,
-                        'alert_quantity' => 1,
                         'is_inactive' =>  1,
                         'status' =>  $product->status,
                     ]

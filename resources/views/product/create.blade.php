@@ -63,8 +63,8 @@
             <div class="form-group">
 
               <select class="form-control select2" id="delivery_days" name="delivery_days" required>
-                <option selected>Not Applicable</option>
-                @foreach(deliveryDays() as $key => $deliveryDays)
+                <option value="0" selected>Not Applicable</option>
+                @foreach(noOfDays() as $key => $deliveryDays)
                   <option value="{{$key}}">{{ $deliveryDays }}</option>
                 @endforeach
               </select>
@@ -97,14 +97,7 @@
 
         <div class="clearfix"></div>
 
-        <div class="col-sm-4">
-          <div class="form-group">
-          <br>
-            <label>
-              {!! Form::checkbox('enable_stock', 1, false, ['class' => 'input-icheck', 'id' => 'enable_stock']); !!} <strong>@lang('product.manage_stock')</strong>
-            </label>@show_tooltip(__('tooltip.enable_stock')) <p class="help-block"><i>@lang('product.enable_stock_help')</i></p>
-          </div>
-        </div>
+
         <div class="col-sm-4 print_section" id="alert_quantity_div">
           <div class="form-group">
             {!! Form::label('alert_quantity',  __('product.alert_quantity') . ':') !!} @show_tooltip(__('tooltip.alert_quantity'))

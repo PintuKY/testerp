@@ -136,14 +136,7 @@ class RecurringInvoice extends Command
 
                     //Update variation location details if status is final
                     if ($recurring_invoice->status == 'final') {
-                        foreach ($transaction->sell_lines as $sell_line) {
-                            $this->productUtil->decreaseProductQuantity(
-                                $sell_line->product_id,
-                                $sell_line->variation_id,
-                                $transaction->location_id,
-                                $sell_line->quantity
-                                );
-                        }
+
 
                         $business = ['id' => $transaction->business_id,
                                         'accounting_method' => $transaction->business->accounting_method,

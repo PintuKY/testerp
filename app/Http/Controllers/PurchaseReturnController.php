@@ -232,7 +232,7 @@ class PurchaseReturnController extends Controller
         if (!auth()->user()->can('purchase.update')) {
             abort(403, 'Unauthorized action.');
         }
-        
+
         try {
             $business_id = request()->session()->get('user.business_id');
 
@@ -261,16 +261,7 @@ class PurchaseReturnController extends Controller
                 $purchase_line->save();
                 $return_total += $purchase_line->purchase_price_inc_tax * $purchase_line->quantity_returned;
 
-                //Decrease quantity in variation location details
-                if ($old_return_qty != $purchase_line->quantity_returned) {
-                    $this->productUtil->decreaseProductQuantity(
-                        $purchase_line->product_id,
-                        $purchase_line->variation_id,
-                        $purchase->location_id,
-                        $purchase_line->quantity_returned,
-                        $old_return_qty
-                    );
-                }
+
             }
             $return_total_inc_tax = $return_total + $request->input('tax_amount');
 
@@ -415,7 +406,7 @@ class PurchaseReturnController extends Controller
                     $delete_purchase_line_ids = [];
                     foreach ($delete_purchase_lines as $purchase_line) {
                         $delete_purchase_line_ids[] = $purchase_line->id;
-                        $this->productUtil->updateProductQuantity($purchase_return->location_id, $purchase_line->product_id, $purchase_line->variation_id, $purchase_line->quantity_returned, 0, null, false);
+                        //$this->productUtil->updateProductQuantity($purchase_return->location_id, $purchase_line->product_id, $purchase_line->variation_id, $purchase_line->quantity_returned, 0, null, false);
                     }
                     SupplierPurchaseLine::where('supplier_transactions_id', $purchase_return->id)
                                 ->whereIn('id', $delete_purchase_line_ids)
@@ -429,7 +420,7 @@ class PurchaseReturnController extends Controller
 
                     $updated_purchase_lines = $parent_purchase->supplierPurchaseLines;
                     foreach ($updated_purchase_lines as $purchase_line) {
-                        $this->productUtil->updateProductQuantity($parent_purchase->location_id, $purchase_line->product_id, $purchase_line->variation_id, $purchase_line->quantity_returned, 0, null, false);
+                       // $this->productUtil->updateProductQuantity($parent_purchase->location_id, $purchase_line->product_id, $purchase_line->variation_id, $purchase_line->quantity_returned, 0, null, false);
                         $purchase_line->quantity_returned = 0;
                         $purchase_line->save();
                     }

@@ -202,13 +202,6 @@ class StockAdjustmentController extends Controller
                     }
                     $product_data[] = $adjustment_line;
 
-                    //Decrease available quantity
-                    $this->productUtil->decreaseProductQuantity(
-                        $product['product_id'],
-                        $product['variation_id'],
-                        $input_data['location_id'],
-                        $this->productUtil->num_uf($product['quantity'])
-                    );
                 }
 
                 $stock_adjustment = Transaction::create($input_data);
@@ -327,12 +320,12 @@ class StockAdjustmentController extends Controller
                 if (!empty($stock_adjustment_lines)) {
                     $line_ids = [];
                     foreach ($stock_adjustment_lines as $stock_adjustment_line) {
-                        $this->productUtil->updateProductQuantity(
+                        /*$this->productUtil->updateProductQuantity(
                             $stock_adjustment->location_id,
                             $stock_adjustment_line->product_id,
                             $stock_adjustment_line->variation_id,
                             $this->productUtil->num_f($stock_adjustment_line->quantity)
-                        );
+                        );*/
                         $line_ids[] = $stock_adjustment_line->id;
                     }
 
@@ -454,13 +447,6 @@ class StockAdjustmentController extends Controller
                 //Create stock adjustment line with the purchase line
                 $stock_adjustment->stock_adjustment_lines()->create($stock_adjustment_line);
 
-                //Decrease available quantity
-                $this->productUtil->decreaseProductQuantity(
-                    $purchase_line->product_id,
-                    $purchase_line->variation_id,
-                    $purchase_line->transaction->location_id,
-                    $qty_unsold
-                );
 
                 //Map Stock adjustment & Purchase.
                 $business = ['id' => $business_id,

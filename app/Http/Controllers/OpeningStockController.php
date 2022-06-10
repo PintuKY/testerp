@@ -210,7 +210,7 @@ class OpeningStockController extends Controller
                                         //Calculate transaction total
                                         $old_qty = $purchase_line->quantity;
 
-                                        $this->productUtil->updateProductQuantity($location_id, $product->id, $vid, $qty_remaining, $old_qty, null, false);
+                                        //$this->productUtil->updateProductQuantity($location_id, $product->id, $vid, $qty_remaining, $old_qty, null, false);
                                     }
                                 } else {
                                     if ($qty_remaining != 0) {
@@ -220,7 +220,7 @@ class OpeningStockController extends Controller
                                         $purchase_line->product_id = $product->id;
                                         $purchase_line->variation_id = $vid;
 
-                                        $this->productUtil->updateProductQuantity($location_id, $product->id, $vid, $qty_remaining, 0, null, false);
+                                        //$this->productUtil->updateProductQuantity($location_id, $product->id, $vid, $qty_remaining, 0, null, false);
                                     }
                                 }
                                 if (!is_null($purchase_line)) {
@@ -288,13 +288,6 @@ class OpeningStockController extends Controller
                                     foreach ($delete_purchase_lines as $delete_purchase_line) {
                                         $delete_purchase_line_ids[] = $delete_purchase_line->id;
 
-                                        //decrease deleted only if previous status was received
-                                        $this->productUtil->decreaseProductQuantity(
-                                            $delete_purchase_line->product_id,
-                                            $delete_purchase_line->variation_id,
-                                            $transaction->location_id,
-                                            $delete_purchase_line->quantity
-                                        );
                                     }
                                     //Delete deleted purchase lines
                                     PurchaseLine::where('transaction_id', $transaction->id)
@@ -324,7 +317,6 @@ class OpeningStockController extends Controller
                                 $delete_purchase_lines = $delete_transaction->purchase_lines;
 
                                 foreach ($delete_purchase_lines as $delete_purchase_line) {
-                                    $this->productUtil->decreaseProductQuantity($product->id, $delete_purchase_line->variation_id, $location_id, $delete_purchase_line->quantity);
                                     $delete_purchase_line->delete();
                                 }
 

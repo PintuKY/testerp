@@ -30,7 +30,7 @@ class CreateProductsTable extends Migration
             $table->integer('tax')->unsigned()->nullable();
             $table->foreign('tax')->references('id')->on('tax_rates');
             $table->enum('tax_type', ['inclusive', 'exclusive']);
-            $table->boolean('enable_stock')->default(0);
+            //$table->boolean('enable_stock')->default(0);
             $table->decimal('alert_quantity', 22, 4)->default(0);
             $table->string('sku');
             $table->enum('barcode_type', ['C39', 'C128', 'EAN-13', 'EAN-8', 'UPC-A', 'UPC-E', 'ITF-14']);

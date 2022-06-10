@@ -427,7 +427,7 @@ class SellReturnController extends Controller
                             $this->transactionUtil->updateQuantitySoldFromSellLine($sell_line, 0, $quantity_before);
 
                             // Update quantity in variation location details
-                            $this->productUtil->updateProductQuantity($sell_return->location_id, $sell_line->product_id, $sell_line->variation_id, 0, $quantity_before);
+                            //$this->productUtil->updateProductQuantity($sell_return->location_id, $sell_line->product_id, $sell_line->variation_id, 0, $quantity_before);
                         }
                     }
 

@@ -367,7 +367,7 @@ class ProductUtil extends Util
         $product = Product::find($product_id);
 
         //Check if stock is enabled or not.
-        if ($product->enable_stock == 1 && $qty_difference != 0) {
+        if ($qty_difference != 0) {
             $variation = Variation::where('id', $variation_id)
                 ->where('product_id', $product_id)
                 ->first();
@@ -397,71 +397,6 @@ class ProductUtil extends Util
     }
 
     /**
-     * Checks if products has manage stock enabled then Decrease quantity for product and its variations
-     *
-     * @param $product_id
-     * @param $variation_id
-     * @param $location_id
-     * @param $new_quantity
-     * @param $old_quantity = 0
-     *
-     * @return boolean
-     */
-    public function decreaseProductQuantity($product_id, $variation_id, $location_id, $new_quantity, $old_quantity = 0)
-    {
-        $qty_difference = $new_quantity - $old_quantity;
-
-        $product = Product::find($product_id);
-
-        //Check if stock is enabled or not.
-        if ($product->enable_stock == 1) {
-            //Decrement Quantity in variations location table
-            $details = VariationLocationDetails::where('variation_id', $variation_id)
-                ->where('product_id', $product_id)
-                ->where('location_id', $location_id)
-                ->first();
-
-            //If location details not exists create new one
-            if (empty($details)) {
-                $variation = Variation::find($variation_id);
-                $details = VariationLocationDetails::create([
-                    'product_id' => $product_id,
-                    'location_id' => $location_id,
-                    'variation_id' => $variation_id,
-                    'product_variation_id' => $variation->product_variation_id,
-                    'qty_available' => 0
-                ]);
-            }
-
-            $details->decrement('qty_available', $qty_difference);
-        }
-
-        return true;
-    }
-
-    /**
-     * Decrease the product quantity of combo sub-products
-     *
-     * @param $combo_details
-     * @param $location_id
-     *
-     * @return void
-     */
-    public function decreaseProductQuantityCombo($combo_details, $location_id)
-    {
-        //product_id = child product id
-        //variation id is child product variation id
-        foreach ($combo_details as $details) {
-            $this->decreaseProductQuantity(
-                $details['product_id'],
-                $details['variation_id'],
-                $location_id,
-                $details['quantity']
-            );
-        }
-    }
-
-    /**
      * Get all details for a product from its variation id
      *
      * @param int $variation_id
@@ -486,18 +421,17 @@ class ProductUtil extends Util
             ->where('variations.id', $variation_id);
 
         //Add condition for check of quantity. (if stock is not enabled or qty_available > 0)
-        if ($check_qty) {
+        /*if ($check_qty) {
             $query->where(function ($query) use ($location_id) {
                 $query->where('p.enable_stock', '!=', 1)
                     ->orWhere('vld.qty_available', '>', 0);
             });
-        }
+        }*/
 
-        if (!empty($location_id) && $check_qty) {
+        if (!empty($location_id)) {
             //Check for enable stock, if enabled check for location id.
             $query->where(function ($query) use ($location_id) {
-                $query->where('p.enable_stock', '!=', 1)
-                    ->orWhere('vld.location_id', $location_id);
+                $query->where('vld.location_id', $location_id);
             });
         }
 
@@ -508,7 +442,6 @@ class ProductUtil extends Util
             'p.brand_id',
             'p.category_id',
             'p.tax as tax_id',
-            'p.enable_stock',
             'p.enable_sr_no',
             'p.type as product_type',
             'p.name as product_actual_name',
@@ -563,10 +496,7 @@ class ProductUtil extends Util
 
             $product = $variation->product;
 
-            //Dont calculate stock if disabled
-            if ($product->enable_stock != 1) {
-                continue;
-            }
+
 
             $vld = $variation->variation_location_details
                 ->first();
@@ -611,7 +541,6 @@ class ProductUtil extends Util
                 'variation_id' => $value['variation_id'],
                 'product_id' => $variation->product_id,
                 'qty_required' => $this->num_uf($value['quantity']) * $multiplier,
-                'enable_stock' => $variation->product->enable_stock
             ];
         }
 
@@ -821,13 +750,13 @@ class ProductUtil extends Util
         if ($status_before == 'final' && $transaction->status == 'draft') {
             foreach ($input['products'] as $product) {
                 if (!empty($product['transaction_sell_lines_id'])) {
-                    $this->updateProductQuantity($input['location_id'], $product['product_id'], $product['variation_id'], $product['quantity'], 0, null, false);
+                    //$this->updateProductQuantity($input['location_id'], $product['product_id'], $product['variation_id'], $product['quantity'], 0, null, false);
 
                     //Adjust quantity for combo items.
                     if (isset($product['product_type']) && $product['product_type'] == 'combo') {
                         //Giving quantity in minus will increase the qty
                         foreach ($product['combo'] as $value) {
-                            $this->updateProductQuantity($input['location_id'], $value['product_id'], $value['variation_id'], $value['quantity'], 0, null, false);
+                            //$this->updateProductQuantity($input['location_id'], $value['product_id'], $value['variation_id'], $value['quantity'], 0, null, false);
                         }
 
                         // $this->updateEditedSellLineCombo($product['combo'], $input['location_id']);
@@ -838,37 +767,13 @@ class ProductUtil extends Util
             foreach ($input['products'] as $product) {
                 $uf_quantity = $uf_data ? $this->num_uf($product['quantity']) : $product['quantity'];
 
-                $this->decreaseProductQuantity(
-                    $product['product_id'],
-                    $product['variation_id'],
-                    $input['location_id'],
-                    $uf_quantity
-                );
 
-                //Adjust quantity for combo items.
-                if (isset($product['product_type']) && $product['product_type'] == 'combo') {
-                    $this->decreaseProductQuantityCombo($product['combo'], $input['location_id']);
-
-                    //$this->decreaseProductQuantityCombo($product['variation_id'], $input['location_id'], $uf_quantity);
-                }
             }
         } elseif ($status_before == 'final' && $transaction->status == 'final') {
             foreach ($input['products'] as $product) {
                 if (empty($product['transaction_sell_lines_id'])) {
                     $uf_quantity = $uf_data ? $this->num_uf($product['quantity']) : $product['quantity'];
-                    $this->decreaseProductQuantity(
-                        $product['product_id'],
-                        $product['variation_id'],
-                        $input['location_id'],
-                        $uf_quantity
-                    );
 
-                    //Adjust quantity for combo items.
-                    if (isset($product['product_type']) && $product['product_type'] == 'combo') {
-                        $this->decreaseProductQuantityCombo($product['combo'], $input['location_id']);
-
-                        //$this->decreaseProductQuantityCombo($product['variation_id'], $input['location_id'], $uf_quantity);
-                    }
                 }
             }
         }
@@ -1132,7 +1037,7 @@ class ProductUtil extends Util
                     $purchase_line->lot_number = $lot_number;
                     $purchase_lines[] = $purchase_line;
 
-                    $this->updateProductQuantity($location_id, $product->id, $variation_id, $qty_formated);
+                    //$this->updateProductQuantity($location_id, $product->id, $variation_id, $qty_formated);
                 }
 
                 //create transaction & purchase lines
@@ -1203,7 +1108,7 @@ class ProductUtil extends Util
 
                 //Increase quantity only if status is received
                 if ($transaction->status == 'received') {
-                    $this->updateProductQuantity($transaction->location_id, $data['product_id'], $data['variation_id'], $new_quantity_f, 0, $currency_details);
+                    //$this->updateProductQuantity($transaction->location_id, $data['product_id'], $data['variation_id'], $new_quantity_f, 0, $currency_details);
                 }
             }
 
@@ -1249,16 +1154,6 @@ class ProductUtil extends Util
             if ($delete_purchase_lines->count()) {
                 foreach ($delete_purchase_lines as $delete_purchase_line) {
                     $delete_purchase_line_ids[] = $delete_purchase_line->id;
-
-                    //decrease deleted only if previous status was received
-                    if ($before_status == 'received') {
-                        $this->decreaseProductQuantity(
-                            $delete_purchase_line->product_id,
-                            $delete_purchase_line->variation_id,
-                            $transaction->location_id,
-                            $delete_purchase_line->quantity
-                        );
-                    }
 
                     //If purchase order line set decrease quntity
                     if (!empty($delete_purchase_line->purchase_order_line_id)) {
@@ -1334,7 +1229,7 @@ class ProductUtil extends Util
 
                 //Increase quantity only if status is received
                 if ($supplier_transaction->status == 'received') {
-                    $this->updateProductQuantity($supplier_transaction->location_id, $data['product_id'], $data['variation_id'], $new_quantity_f, 0, $currency_details);
+                    //$this->updateProductQuantity($supplier_transaction->location_id, $data['product_id'], $data['variation_id'], $new_quantity_f, 0, $currency_details);
                 }
             }
 
@@ -1381,15 +1276,6 @@ class ProductUtil extends Util
                 foreach ($delete_purchase_lines as $delete_purchase_line) {
                     $delete_purchase_line_ids[] = $delete_purchase_line->id;
 
-                    //decrease deleted only if previous status was received
-                    if ($before_status == 'received') {
-                        $this->decreaseProductQuantity(
-                            $delete_purchase_line->product_id,
-                            $delete_purchase_line->variation_id,
-                            $supplier_transaction->location_id,
-                            $delete_purchase_line->quantity
-                        );
-                    }
 
                     //If purchase order line set decrease quntity
                     if (!empty($delete_purchase_line->purchase_order_line_id)) {
@@ -1457,17 +1343,11 @@ class ProductUtil extends Util
         //Update quantity for existing products
         if ($status_before == 'received' && $transaction->status == 'received') {
             //if status received update existing quantity
-            $this->updateProductQuantity($transaction->location_id, $product_id, $variation_id, $new_quantity_f, $old_qty, $currency_details);
+            //$this->updateProductQuantity($transaction->location_id, $product_id, $variation_id, $new_quantity_f, $old_qty, $currency_details);
         } elseif ($status_before == 'received' && $transaction->status != 'received') {
-            //decrease quantity only if status changed from received to not received
-            $this->decreaseProductQuantity(
-                $product_id,
-                $variation_id,
-                $transaction->location_id,
-                $old_quantity
-            );
+
         } elseif ($status_before != 'received' && $transaction->status == 'received') {
-            $this->updateProductQuantity($transaction->location_id, $product_id, $variation_id, $new_quantity_f, 0, $currency_details);
+            //$this->updateProductQuantity($transaction->location_id, $product_id, $variation_id, $new_quantity_f, 0, $currency_details);
         }
     }
 
@@ -1769,7 +1649,7 @@ class ProductUtil extends Util
     public function getSellProductDiscount($products, $business_id, $location_id, $is_cg = false, $price_group = null, $variation_id = null)
     {
         $now = Carbon::now()->toDateTimeString();
-
+        $discount = '';
         foreach ($products as $product) {
             //Search if both category and brand matches
             $query = Discount::where('business_id', $business_id)
@@ -1819,7 +1699,6 @@ class ProductUtil extends Util
             }
 
         }
-
         return $discount;
     }
 
@@ -1854,9 +1733,7 @@ class ProductUtil extends Util
                 }
             );
 
-        if (!is_null($not_for_selling)) {
-            $query->where('products.not_for_selling', $not_for_selling);
-        }
+
 
         if (!empty($price_group_id)) {
             $query->leftjoin(
@@ -1901,19 +1778,6 @@ class ProductUtil extends Util
                     if (in_array('lot', $search_fields)) {
                         $query->orWhere('pl.lot_number', 'like', '%' . $search_term . '%');
                     }
-
-                    if (in_array('product_custom_field1', $search_fields)) {
-                        $query->orWhere('product_custom_field1', 'like', '%' . $search_term . '%');
-                    }
-                    if (in_array('product_custom_field2', $search_fields)) {
-                        $query->orWhere('product_custom_field2', 'like', '%' . $search_term . '%');
-                    }
-                    if (in_array('product_custom_field3', $search_fields)) {
-                        $query->orWhere('product_custom_field3', 'like', '%' . $search_term . '%');
-                    }
-                    if (in_array('product_custom_field4', $search_fields)) {
-                        $query->orWhere('product_custom_field4', 'like', '%' . $search_term . '%');
-                    }
                 });
             }
 
@@ -1954,7 +1818,6 @@ class ProductUtil extends Util
             'products.id as product_id',
             'products.name',
             'products.type',
-            'products.enable_stock',
             'variations.id as variation_id',
             'variations.name as variation',
             'VLD.qty_available',

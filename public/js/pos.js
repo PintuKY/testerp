@@ -1605,8 +1605,6 @@ function pos_product_row(product_id = null, purchase_line_id = null, weighing_sc
                     //scroll bottom of items list
                     $(".pos_product_div").animate({scrollTop: $('.pos_product_div').prop("scrollHeight")}, 1000);
                     if (result.product && result.product.unit && result.product.unit.actual_name == "tingkat") {
-
-
                         var date = $('#transaction_date').val();
                         var dtes = new Date(date);
                         dtes.setDate(dtes.getDate() + 3);

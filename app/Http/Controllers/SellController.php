@@ -1452,12 +1452,12 @@ class SellController extends Controller
                 '=',
                 'pv.id'
             )
-            ->join(
+            /*->join(
                 'transaction_sell_lines_variants',
                 'transaction_sell_lines_variants.transaction_sell_lines_id',
                 '=',
                 'transaction_sell_lines.id'
-            )
+            )*/
             ->join(
                 'transaction_sell_lines_days',
                 'transaction_sell_lines_days.transaction_sell_lines_id',
@@ -1471,50 +1471,12 @@ class SellController extends Controller
             ->leftjoin('units', 'units.id', '=', 'p.unit_id')
             ->where('transaction_sell_lines.transaction_id', $id)
             ->with(['so_line'])
-            ->select(
-                DB::raw("IF(pv.is_dummy = 0, CONCAT(p.name, ' (', p.name, ':',variations.name, ')'), p.name) AS product_name"),
-                'p.id as product_id',
-                'p.name as product_actual_name',
-                'p.type as product_type',
-                'pv.name as product_variation_name',
-                'pv.is_dummy as is_dummy',
-                'variations.name as variation_name',
-                'variations.sub_sku',
-                'p.barcode_type',
-                /*'p.enable_sr_no',*/
-                'variations.id as variation_id',
-                'units.short_name as unit',
-                'units.allow_decimal as unit_allow_decimal',
-                'transaction_sell_lines.tax_id as tax_id',
-                'transaction_sell_lines.item_tax as item_tax',
-                'transaction_sell_lines.unit_price as default_sell_price',
-                'transaction_sell_lines.unit_price_inc_tax as sell_price_inc_tax',
-                'transaction_sell_lines.unit_price_before_discount as unit_price_before_discount',
-                'transaction_sell_lines.id as transaction_sell_lines_id',
-                'transaction_sell_lines.id',
-                'transaction_sell_lines.quantity as quantity_ordered',
-                'transaction_sell_lines.sell_line_note as sell_line_note',
-                'transaction_sell_lines.parent_sell_line_id',
-                'transaction_sell_lines.lot_no_line_id',
-                'transaction_sell_lines.line_discount_type',
-                'transaction_sell_lines.line_discount_amount',
-                'transaction_sell_lines.res_service_staff_id',
-                'transaction_sell_lines.number_of_days',
-                'transaction_sell_lines.time_slot',
-                'units.id as unit_id',
-                'transaction_sell_lines.sub_unit_id',
-                'transaction_sell_lines.so_line_id',
-                'transaction_sell_lines_variants.variation_templates_id',
-                'transaction_sell_lines_variants.variation_value_templates_id',
-                'transaction_sell_lines_variants.name',
-                'transaction_sell_lines_variants.value',
-                'transaction_sell_lines_days.day',
-                /*DB::raw('vld.qty_available + transaction_sell_lines.quantity AS qty_available')*/
-            )
+
             ->get();
         $transaction_sell_lines_id = [];
         if (!empty($sell_details)) {
             foreach ($sell_details as $key => $value) {
+
                 //If modifier or combo sell line then unset
                 if (!empty($sell_details[$key]->parent_sell_line_id)) {
                     unset($sell_details[$key]);
@@ -1524,7 +1486,7 @@ class SellController extends Controller
                         $sell_details[$key]->qty_available = $actual_qty_avlbl;
                         $value->qty_available = $actual_qty_avlbl;
                     }
-                    $number_of_days = $value->number_of_days;
+                    //$number_of_days = $value->number_of_days;
                     $time_slot = $value->time_slot;
                     $transaction_sell_lines_id[] = $value->transaction_sell_lines_id;
                     $transaction_sell_lines_days = TransactionSellLinesDay::where('transaction_sell_lines_id',$value->transaction_sell_lines_id)->first();
@@ -1699,7 +1661,7 @@ class SellController extends Controller
         $customer_due = $this->transactionUtil->getContactDue($transaction->contact_id, $transaction->business_id);
         $customer_due = $customer_due != 0 ? $this->transactionUtil->num_f($customer_due, true) : '';
         return view('sell.edit')
-            ->with(compact('business_details','number_of_days','time_slot' ,'transaction_sell_lines_id','taxes', 'sell_details', 'transaction', 'commission_agent', 'types', 'customer_groups', 'pos_settings', 'waiters', 'invoice_schemes', 'default_invoice_schemes', 'redeem_details', 'edit_discount', 'edit_price', 'shipping_statuses', 'statuses', 'sales_orders', 'payment_types', 'accounts', 'payment_lines', 'change_return', 'is_order_request_enabled', 'customer_due'));
+            ->with(compact('business_details',/*'number_of_days',*/'time_slot' ,'transaction_sell_lines_id','taxes', 'sell_details', 'transaction', 'commission_agent', 'types', 'customer_groups', 'pos_settings', 'waiters', 'invoice_schemes', 'default_invoice_schemes', 'redeem_details', 'edit_discount', 'edit_price', 'shipping_statuses', 'statuses', 'sales_orders', 'payment_types', 'accounts', 'payment_lines', 'change_return', 'is_order_request_enabled', 'customer_due','transaction_sell_lines_days'));
     }
 
 

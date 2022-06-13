@@ -390,7 +390,7 @@ class TransactionUtil extends Util
                     'so_line_id' => !empty($product['so_line_id']) ? $product['so_line_id'] : null,
                     'number_of_days' => ($product_data->delivery_days) ? $product_data->delivery_days : null,
                     'time_slot' => $product_delivery_date['time_slot'],
-                    'start_date' => $start_date,
+                    'start_date' => Carbon::parse($start_date)->format('Y-m-d'),
                     'delivery_date' => $delivery_date,
                     'delivery_time' => $delivery_time,
                 ];
@@ -597,7 +597,7 @@ class TransactionUtil extends Util
                                     'staff_notes' => $transaction->staff_note,
                                     'delivery_time' => $sell_day->delivery_time,
                                     'delivery_date' => ($i == 1) ? $getNextDate : $sDate->addDays($x),
-                                    'time_slot' => ($j == 1) ? 2 : 3,
+                                    'time_slot' => $sell_day->time_slot,
                                     'created_by' => Carbon::now(),
                                     'created_at' => Carbon::now(),
                                 ]

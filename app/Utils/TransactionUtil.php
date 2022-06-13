@@ -311,6 +311,7 @@ class TransactionUtil extends Util
                                 $edit_ids[] = $product['modifier_sell_line_id'][$key];
                             } else {
                                 if (!empty($product['modifier_price'][$key])) {
+                                    dd('aaa');
                                     $this_price = $uf_data ? $this->num_uf($product['modifier_price'][$key]) : $product['modifier_price'][$key];
                                     $modifier_quantity = isset($product['modifier_quantity'][$key]) ? $product['modifier_quantity'][$key] : 1;
                                     $modifiers_formatted[] = new TransactionSellLine([
@@ -347,8 +348,8 @@ class TransactionUtil extends Util
                 }
 
                 $uf_quantity = $uf_data ? $this->num_uf($product_delivery_date['quantity']) : $product_delivery_date['quantity'];
-                $uf_item_tax = $uf_data ? $this->num_uf($product['item_tax']) : $product['item_tax'];
-                $uf_unit_price_inc_tax = $uf_data ? $this->num_uf($product['unit_price_inc_tax']) : $product['unit_price_inc_tax'];
+                $uf_item_tax = $uf_data ? $this->num_uf($product_delivery_date['item_tax']) : $product_delivery_date['item_tax'];
+                $uf_unit_price_inc_tax = $uf_data ? $this->num_uf($product_delivery_date['unit_price_inc_tax']) : $product_delivery_date['unit_price_inc_tax'];
 
                 $line_discount_amount = 0;
                 if (!empty($product_delivery_date['line_discount_amount'])) {
@@ -379,7 +380,7 @@ class TransactionUtil extends Util
                     'line_discount_type' => !empty($product_delivery_date['line_discount_type']) ? $product_delivery_date['line_discount_type'] : null,
                     'line_discount_amount' => $line_discount_amount,
                     'item_tax' => $uf_item_tax / $multiplier,
-                    'tax_id' => $product['tax_id'],
+                    'tax_id' => $product_delivery_date['tax_id'],
                     'unit_price_inc_tax' => $uf_unit_price_inc_tax / $multiplier,
                     'sell_line_note' => !empty($product['sell_line_note']) ? $product['sell_line_note'] : '',
                     'sub_unit_id' => !empty($product_delivery_date['sub_unit_id']) ? $product_delivery_date['sub_unit_id'] : null,
@@ -408,6 +409,7 @@ class TransactionUtil extends Util
                     if (!empty($product['modifier'])) {
                         foreach ($product['modifier'] as $key => $value) {
                             if (!empty($product['modifier_price'][$key])) {
+                                dd('ccc');
                                 $this_price = $uf_data ? $this->num_uf($product['modifier_price'][$key]) : $product['modifier_price'][$key];
                                 $modifier_quantity = isset($product['modifier_quantity'][$key]) ? $product['modifier_quantity'][$key] : 1;
                                 $sell_line_modifiers[] = [

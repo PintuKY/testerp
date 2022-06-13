@@ -472,14 +472,6 @@ $(document).ready(function () {
             .remove();
         pos_total_row();
 
-        if($('#pos_table').find('tr').length == 2){
-            $('.time_slot').addClass('hide');
-            $('.brand_id').addClass('hide');
-            $('.deliverydays').addClass('hide');
-            $('.delivery_dates').addClass('hide');
-            $('.delivery_times').addClass('hide');
-        }
-
     });
 
     //Cancel the invoice
@@ -1640,10 +1632,10 @@ function pos_product_row(product_id = null, purchase_line_id = null, weighing_sc
                                 .find('.start_date').data("DateTimePicker").date(moment());
                         }
 
-                        $('.time_slot').removeClass('hide');
+                        $('.time_slot_'+result.product.id).removeClass('hide');
                         $('.brand_id').removeClass('hide');
-                        $('.deliverydays').removeClass('hide');
-                        $('.start_dates').removeClass('hide');
+                        $('.deliverydays_'+result.product.id).removeClass('hide');
+                        $('.start_dates_'+result.product.id).removeClass('hide');
                     }else{
                         var date = $('#transaction_date').val();
                         var dtes = new Date(date);
@@ -1663,8 +1655,8 @@ function pos_product_row(product_id = null, purchase_line_id = null, weighing_sc
                             $('.pos_table_'+result.product.id)
                                 .find('.delivery_date').data("DateTimePicker").date(moment());
                         }
-                        $('.delivery_dates').removeClass('hide');
-                        $('.delivery_times').removeClass('hide');
+                        $('.delivery_dates_'+result.product.id).removeClass('hide');
+                        $('.delivery_times_'+result.product.id).removeClass('hide');
                     }
                 } else {
                     toastr.error(result.msg);

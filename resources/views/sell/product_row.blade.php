@@ -374,9 +374,9 @@
                     @endif
                 </td>
                 <td class="text-center {{$hide_tax}}">
-                    {!! Form::hidden("products[$productData->id][item_tax]", @num_format($item_tax), ['class' => 'item_tax']); !!}
+                    {!! Form::hidden("product[$product_id][item_tax]", @num_format($item_tax), ['class' => 'item_tax']); !!}
 
-                    {!! Form::select("products[$productData->id][tax_id]", $tax_dropdown['tax_rates'], $tax_id, ['placeholder' => 'Select', 'class' => 'form-control tax_id'], $tax_dropdown['attributes']); !!}
+                    {!! Form::select("product[$product_id][tax_id]", $tax_dropdown['tax_rates'], $tax_id, ['placeholder' => 'Select', 'class' => 'form-control tax_id'], $tax_dropdown['attributes']); !!}
                 </td>
 
             @else
@@ -390,8 +390,47 @@
                     </td>
                 @endif
             @endif
+            @php
+                $hide_tax = 'hide';
+                if(session()->get('business.enable_inline_tax') == 1){
+                    $hide_tax = '';
+                }
+
+                $tax_id = $productData->product->tax_id;
+                $item_tax = !empty($productData->item_tax) ? $productData->item_tax : 0;
+                $unit_price_inc_tax = $productData->sell_price_inc_tax;
+
+                if(!empty($so_line)) {
+                    $tax_id = $so_line->tax_id;
+                    $item_tax = $so_line->item_tax;
+                }
+
+                if($hide_tax == 'hide'){
+                    $tax_id = null;
+                    $unit_price_inc_tax = $productData->default_sell_price;
+                }
+
+                $discount_type = !empty($productData->line_discount_type) ? $productData->line_discount_type : 'fixed';
+                $discount_amount = !empty($productData->line_discount_amount) ? $productData->line_discount_amount : 0;
+
+                if(!empty($discount)) {
+                    $discount_type = $discount->discount_type;
+                    $discount_amount = $discount->discount_amount;
+                }
+
+                if(!empty($so_line)) {
+                    $discount_type = $so_line->line_discount_type;
+                    $discount_amount = $so_line->line_discount_amount;
+                }
+
+                $sell_line_note = '';
+                if(!empty($product->sell_line_note)){
+                    $sell_line_note = $productData->sell_line_note;
+                }
+
+            @endphp
             <td class="{{$hide_tax}}">
-                <input type="text" name="products[{{$productData->id}}][unit_price_inc_tax]"
+                <input type="text" name="product[{{$product_id}}][unit_price_inc_tax]"
                        class="form-control pos_unit_price_inc_tax input_number"
                        value="{{@num_format($unit_price_inc_tax)}}"
                        @if(!$edit_price) readonly
@@ -499,7 +538,7 @@
     <div class="col-md-12 col-sm-12">
         <div class="box box-solid">
             <div class="box-body">
-                <div class="col-md-4 deliverydays hide">
+                <div class="col-md-4 deliverydays_{{$product_id}} hide">
                     <div class="form-group">
                         <label for="delivery_days">Delivery Days:*</label>
                         <br/>
@@ -516,7 +555,7 @@
                 <div class="clearfix"></div>
 
 
-                <div class="@if(!empty($commission_agent)) col-sm-4 @else col-sm-4 @endif start_dates hide">
+                <div class="@if(!empty($commission_agent)) col-sm-4 @else col-sm-4 @endif start_dates_{{$product_id}} hide">
                     <div class="form-group">
                         {!! Form::label('start_date', __('sale.start_date') . ':*') !!}
                         <div class="input-group">
@@ -528,7 +567,7 @@
                     </div>
                 </div>
                 <div class="clearfix"></div>
-                <div class="@if(!empty($commission_agent)) col-sm-4 @else col-sm-4 @endif delivery_dates hide">
+                <div class="@if(!empty($commission_agent)) col-sm-4 @else col-sm-4 @endif delivery_dates_{{$product_id}} hide">
                     <div class="form-group">
                         {!! Form::label('delivery_date', __('sale.delivery_date') . ':*') !!}
                         <div class="input-group">
@@ -540,7 +579,7 @@
                     </div>
                 </div>
                 <div class="clearfix"></div>
-                <div class="@if(!empty($commission_agent)) col-sm-4 @else col-sm-4 @endif delivery_times hide">
+                <div class="@if(!empty($commission_agent)) col-sm-4 @else col-sm-4 @endif delivery_times_{{$product_id}} hide">
                     <div class="form-group">
                         {!! Form::label('delivery_time', __('sale.delivery_time') . ':*') !!}
                         <div class="input-group">
@@ -553,7 +592,7 @@
                 </div>
                 <div class="clearfix"></div>
                 <div class="box-body">
-                    <div class="col-sm-6">
+                    <div class="col-sm-6 time_slot_{{$product_id}} hide">
                         <div class="form-group">
                             <label for="time_slot">Meal Type:*</label>
                             <div class="form-group">
@@ -599,7 +638,7 @@
                                         class="fa fa-plus text-success"></i></button></span>
                         </div>
 
-                        <input type="hidden" name="products[{{$productData->id}}][product_unit_id]"
+                        <input type="hidden" name="product[{{$product_id}}][product_unit_id]"
                                value="{{$productData->product->unit->id}}">
                         @if(count($sub_units) > 0)
 

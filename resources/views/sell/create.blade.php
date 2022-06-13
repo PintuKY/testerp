@@ -347,53 +347,8 @@
                                 $hide_tax = 'hide';
                             }
                         @endphp
-                        <div class="table-responsive">
-                            <table class="table table-condensed table-bordered table-striped table-responsive"
-                                   id="pos_table">
-                                <thead>
-                                <tr>
-                                    <th class="text-center">
-                                        @lang('sale.product')
-                                    </th>
-                                    <th class="text-center">
-                                        @lang('sale.qty')
-                                    </th>
-                                    @if(!empty($pos_settings['inline_service_staff']))
-                                        <th class="text-center">
-                                            @lang('restaurant.service_staff')
-                                        </th>
-                                    @endif
-                                    <th class="@if(!auth()->user()->can('edit_product_price_from_sale_screen')) hide @endif">
-                                        @lang('sale.unit_price')
-                                    </th>
-                                    <th class="@if(!auth()->user()->can('edit_product_discount_from_sale_screen')) hide @endif">
-                                        @lang('receipt.discount')
-                                    </th>
-                                    <th class="text-center {{$hide_tax}}">
-                                        @lang('sale.tax')
-                                    </th>
-                                    <th class="text-center {{$hide_tax}}">
-                                        @lang('sale.price_inc_tax')
-                                    </th>
-                                    @if(!empty($common_settings['enable_product_warranty']))
-                                        <th>@lang('lang_v1.warranty')</th>
-                                    @endif
-                                    <th class="text-center">
-                                        @lang('product.variation_name')
-                                    </th>
-                                    <th class="text-center">
-                                        @lang('product.variation_values')
-                                    </th>
-                                    <th class="text-center">
-                                        @lang('sale.subtotal')
-                                    </th>
-                                    <th class="text-center"><i class="fas fa-times" aria-hidden="true"></i></th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                </tbody>
-                            </table>
-                        </div>
+                        <div class="table-responsive pos">
+                            </div>
                         <div class="table-responsive">
                             <table class="table table-condensed table-bordered table-striped">
                                 <tr>
@@ -510,18 +465,7 @@
                     <input type="hidden" name="is_direct_sale" value="1">
                 @endcomponent
                 @component('components.widget', ['class' => 'box-solid'])
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            {!! Form::label('shipping_details', __('sale.shipping_details')) !!}
-                            {!! Form::textarea('shipping_details',null, ['class' => 'form-control','placeholder' => __('sale.shipping_details') ,'rows' => '3', 'cols'=>'30']); !!}
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            {!! Form::label('shipping_address', __('lang_v1.shipping_address')) !!}
-                            {!! Form::textarea('shipping_address',null, ['class' => 'form-control','placeholder' => __('lang_v1.shipping_address') ,'rows' => '3', 'cols'=>'30']); !!}
-                        </div>
-                    </div>
+
                     <div class="col-md-4">
                         <div class="form-group">
                             {!!Form::label('shipping_charges', __('sale.shipping_charges'))!!}
@@ -540,12 +484,7 @@
                             {!! Form::select('shipping_status',$shipping_statuses, null, ['class' => 'form-control','placeholder' => __('messages.please_select')]); !!}
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            {!! Form::label('delivered_to', __('lang_v1.delivered_to') . ':' ) !!}
-                            {!! Form::text('delivered_to', null, ['class' => 'form-control','placeholder' => __('lang_v1.delivered_to')]); !!}
-                        </div>
-                    </div>
+
                     @php
                         $shipping_custom_label_1 = !empty($custom_labels['shipping']['custom_field_1']) ? $custom_labels['shipping']['custom_field_1'] : '';
 

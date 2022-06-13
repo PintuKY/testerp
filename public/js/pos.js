@@ -118,7 +118,6 @@ $(document).ready(function () {
             $('#add_sell_form select[name="pay_term_type"]').val('');
             $('#edit_sell_form select[name="pay_term_type"]').val('');
         }
-
         update_shipping_address(data);
         $('#advance_balance_text').text(__currency_trans_from_en(data.balance), true);
         $('#advance_balance').val(data.balance);
@@ -177,13 +176,13 @@ $(document).ready(function () {
                             for_so = true;
                         }
 
-                        /*if ((ui.item.enable_stock == 1 && ui.item.qty_available > 0) ||
+                        if ((ui.item.enable_stock == 1 && ui.item.qty_available > 0) ||
                                 (ui.item.enable_stock == 0) || is_overselling_allowed || for_so) {
                             $(this)
                                 .data('ui-autocomplete')
                                 ._trigger('select', 'autocompleteselect', ui);
                             $(this).autocomplete('close');
-                        }*/
+                        }
                         $(this)
                             .data('ui-autocomplete')
                             ._trigger('select', 'autocompleteselect', ui);
@@ -466,6 +465,7 @@ $(document).ready(function () {
     );
 
     //Remove row on click on remove row
+
     $('table#pos_table tbody').on('click', 'i.pos_remove_row', function () {
         $(this)
             .parents('tr')
@@ -477,6 +477,7 @@ $(document).ready(function () {
             $('.brand_id').addClass('hide');
             $('.deliverydays').addClass('hide');
             $('.delivery_dates').addClass('hide');
+            $('.delivery_times').addClass('hide');
         }
 
     });
@@ -1026,7 +1027,11 @@ $(document).ready(function () {
         format: moment_date_format + ' ' + moment_time_format,
         ignoreReadonly: true,
     });
-    $('#delivery_date').datetimepicker({
+    $('#start_date').datetimepicker({
+        format: moment_date_format + ' ' + moment_time_format,
+        ignoreReadonly: true,
+    });
+    $('#delivery_date').datetimepicker( {
         format: moment_date_format + ' ' + moment_time_format,
         ignoreReadonly: true,
     });
@@ -1358,6 +1363,11 @@ $(document).ready(function () {
     }, 60000);
 });
 
+
+function pos_table_remove($id){
+    $('.pos_table_'+$id).remove();
+    pos_total_row();
+}
 function set_payment_type_dropdown() {
     var payment_settings = $('#location_id').data('default_payment_accounts');
     payment_settings = payment_settings ? payment_settings : [];
@@ -1556,11 +1566,13 @@ function pos_product_row(product_id = null, purchase_line_id = null, weighing_sc
             },
             dataType: 'json',
             success: function (result) {
-                console.log(result.product);
                 if (result.success) {
+                    //$('table#pos_table tbody')
+                    $('.pos')
+                        .append(result.html_content);
                     $('table#pos_table tbody')
-                        .append(result.html_content)
                         .find('input.pos_quantity');
+
                     //increment row count
                     $('input#product_row_count').val(parseInt(product_row) + 1);
                     var this_row = $('table#pos_table tbody')
@@ -1608,7 +1620,7 @@ function pos_product_row(product_id = null, purchase_line_id = null, weighing_sc
                         var date = $('#transaction_date').val();
                         var dtes = new Date(date);
                         dtes.setDate(dtes.getDate() + 3);
-                        $('#pos_table')
+                        $('.pos_table_'+result.product.id)
                             .find('input[type="checkbox"].input-icheck')
                             .each(function () {
                                 $(this).iCheck({
@@ -1616,20 +1628,43 @@ function pos_product_row(product_id = null, purchase_line_id = null, weighing_sc
                                     radioClass: 'iradio_square-blue',
                                 });
                             });
-                        $('#pos_table')
-                            .find('.delivery_date').datetimepicker({
+                        $('.pos_table_'+result.product.id)
+                            .find('.start_date').datetimepicker({
                             format: moment_date_format + ' ' + moment_time_format,
                             minDate: dtes,
-                            ignoreReadonly: true,
                         });
-                        if ($('#pos_table')
-                            .find('.delivery_date').length > 0) {
-                            $('#pos_table')
-                                .find('.delivery_date').data("DateTimePicker").date(moment());
+
+                        if ($('.pos_table_'+result.product.id)
+                            .find('.start_date').length > 0) {
+                            $('.pos_table_'+result.product.id)
+                                .find('.start_date').data("DateTimePicker").date(moment());
                         }
+
                         $('.time_slot').removeClass('hide');
                         $('.brand_id').removeClass('hide');
                         $('.deliverydays').removeClass('hide');
+                        $('.start_dates').removeClass('hide');
+                    }else{
+                        var date = $('#transaction_date').val();
+                        var dtes = new Date(date);
+                        dtes.setDate(dtes.getDate() + 3);
+                        $('.pos_table_'+result.product.id)
+                            .find('.delivery_date').datetimepicker({
+                            format: moment_date_format,
+                            minDate: dtes,
+                        });
+                        $('.pos_table_'+result.product.id)
+                            .find('.delivery_time').datetimepicker({
+                            format: moment_time_format,
+                        });
+
+                        if ($('.pos_table_'+result.product.id)
+                            .find('.delivery_date').length > 0) {
+                            $('.pos_table_'+result.product.id)
+                                .find('.delivery_date').data("DateTimePicker").date(moment());
+                        }
+                        $('.delivery_dates').removeClass('hide');
+                        $('.delivery_times').removeClass('hide');
                     }
                 } else {
                     toastr.error(result.msg);
@@ -1637,7 +1672,7 @@ function pos_product_row(product_id = null, purchase_line_id = null, weighing_sc
                         .focus()
                         .select();
                 }
-                $('.delivery_dates').removeClass('hide');
+
             },
         });
     }
@@ -1938,8 +1973,8 @@ function reset_pos_form() {
     if ($('#transaction_date').length > 0) {
         $('#transaction_date').data("DateTimePicker").date(moment());
     }
-    if ($('#delivery_date').length > 0) {
-        $('#delivery_date').data("DateTimePicker").date(moment());
+    if ($('.delivery_date').length > 0) {
+        $('.delivery_date').data("DateTimePicker").date(moment());
     }
     if ($('.paid_on').length > 0) {
         $('.paid_on').data("DateTimePicker").date(moment());

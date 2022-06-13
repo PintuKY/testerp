@@ -1216,6 +1216,7 @@ class SellController extends Controller
         $price_groups = SellingPriceGroup::forDropdown($business_id);
 
         $default_datetime = $this->businessUtil->format_date('now', true);
+        $default_time = $this->businessUtil->format_times(Carbon::parse(now())->format('H:i'));
 
         $pos_settings = empty($business_details->pos_settings) ? $this->businessUtil->defaultPosSettings() : json_decode($business_details->pos_settings, true);
 
@@ -1274,6 +1275,7 @@ class SellController extends Controller
                 'payment_types',
                 'price_groups',
                 'default_datetime',
+                'default_time',
                 'pos_settings',
                 'invoice_schemes',
                 'default_invoice_schemes',
@@ -2046,6 +2048,7 @@ class SellController extends Controller
      */
     public function updateShipping(Request $request, $id)
     {
+        dd($id);
         $is_admin = $this->businessUtil->is_admin(auth()->user());
 
         if (!$is_admin && !auth()->user()->hasAnyPermission(['access_shipping', 'access_own_shipping', 'access_commission_agent_shipping'])) {
@@ -2351,8 +2354,9 @@ class SellController extends Controller
                 $edit_price = auth()->user()->can('edit_product_price_from_pos_screen');
             }
             $default_datetime = $this->businessUtil->format_date('now', true);
+            $default_time = $this->businessUtil->format_times(Carbon::parse(now())->format('H:i'));
             $output['html_content'] = view('sell.product_row')
-                ->with(compact('product_id','default_datetime','productDatas', 'row_count', 'tax_dropdown', /*'enabled_modules',*/ 'pos_settings', 'sub_units', 'discount', 'waiters', 'edit_discount', 'edit_price', 'purchase_line_id', 'quantity', 'is_direct_sell', 'so_line', 'is_sales_order'))
+                ->with(compact('product_id','default_datetime','default_time','productDatas', 'row_count', 'tax_dropdown', /*'enabled_modules',*/ 'pos_settings', 'sub_units', 'discount', 'waiters', 'edit_discount', 'edit_price', 'purchase_line_id', 'quantity', 'is_direct_sell', 'so_line', 'is_sales_order'))
                 ->render();
         }
 

@@ -275,7 +275,22 @@ class Util
         if (session('business.time_format') == 12) {
             $time_format = 'h:i A';
         }
+        dd($time_format);
         return !empty($time) ? Carbon::createFromFormat('H:i:s', $time)->format($time_format) : null;
+    }
+    /**
+     * Converts time in business format to mysql format
+     *
+     * @param string $time
+     * @return strin
+     */
+    public function format_times($time)
+    {
+        $time_format = 'H:i';
+        if (session('business.time_format') == 12) {
+            $time_format = 'h:i';
+        }
+        return !empty($time) ? Carbon::createFromFormat('H:i', $time)->format($time_format) : null;
     }
 
     /**

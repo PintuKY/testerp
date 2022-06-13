@@ -240,6 +240,7 @@ class SellPosController extends Controller
         $shipping_statuses = $this->transactionUtil->shipping_statuses();
 
         $default_datetime = $this->businessUtil->format_date('now', true);
+        $default_time = $this->businessUtil->format_times(Carbon::parse(now())->format('H:i'));
 
         $featured_products = !empty($default_location) ? $default_location->getFeaturedProducts() : [];
 
@@ -279,6 +280,7 @@ class SellPosController extends Controller
                 'default_price_group_id',
                 'shipping_statuses',
                 'default_datetime',
+                'default_time',
                 'featured_products',
                 'sub_type',
                 'pos_module_data',
@@ -486,6 +488,7 @@ class SellPosController extends Controller
                 if ($input['status'] == 'final') {
                     //update product stock
                     foreach ($input['products'] as $product) {
+
                         $decrease_qty = $this->productUtil
                                     ->num_uf($product['quantity']);
                         if (!empty($product['base_unit_multiplier'])) {

@@ -577,6 +577,7 @@ class TransactionUtil extends Util
                         }
                         //$transaction_sell_lines_days = TransactionSellLinesDay::insert($days);
                     }else{
+                        $loop = 1;
                         for ($i = 1; $i <= $loop; $i++) {
                             MasterList::insert(
                                 [
@@ -596,7 +597,7 @@ class TransactionUtil extends Util
                                     'status' => $transaction->status,
                                     'staff_notes' => $transaction->staff_note,
                                     'delivery_time' => $sell_day->delivery_time,
-                                    'delivery_date' => ($i == 1) ? $getNextDate : $sDate->addDays($x),
+                                    'delivery_date' => $sell_day->delivery_date,
                                     'time_slot' => $sell_day->time_slot,
                                     'created_by' => Carbon::now(),
                                     'created_at' => Carbon::now(),
@@ -607,8 +608,6 @@ class TransactionUtil extends Util
                             }
                         }
                     }
-
-
                 }
             }
 

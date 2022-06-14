@@ -2165,6 +2165,7 @@ class SellController extends Controller
      */
     public function getProducts()
     {
+
         if (request()->ajax()) {
             $location_id = request()->input('location_id', null);
             $search_term = request()->input('term', '');
@@ -2172,7 +2173,7 @@ class SellController extends Controller
             if (in_array('sku', $search_fields)) {
                 $search_fields[] = 'sub_sku';
             }
-
+            $permitted_locations = auth()->user()->permitted_locations();
             $query = Product::active();
             //Include search
             if (!empty($search_term)) {
@@ -2182,10 +2183,29 @@ class SellController extends Controller
                     }
                 });
             }
+
+            if (!empty($location_id) && $location_id != 'none') {
+                if ($permitted_locations == 'all' || in_array($location_id, $permitted_locations)) {
+                    $query->whereHas('product_locations', function ($query) use ($location_id) {
+                        $query->where('product_locations.location_id', '=', $location_id);
+                    });
+                }
+            } elseif ($location_id == 'none') {
+                $query->doesntHave('product_locations');
+            } else {
+                if ($permitted_locations != 'all') {
+                    $query->whereHas('product_locations', function ($query) use ($permitted_locations) {
+                        $query->whereIn('product_locations.location_id', $permitted_locations);
+                    });
+                } else {
+                    $query->with('product_locations');
+                }
+            }
             $query->select(
                 'products.id as product_id',
                 'products.name',
                 'products.type',
+                'products.business_id',
             );
             $result = $query->get();
             return json_encode($result);

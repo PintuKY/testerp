@@ -1715,7 +1715,7 @@ function pos_total_row() {
     });
 
     //$('span.unit_price_total').html(unit_price_total);
-    $('span.price_total').html(__currency_trans_from_en(price_total, false));
+    $('span.price_total').html('$'+__currency_trans_from_en(price_total, false));
     calculate_billing_details(price_total);
 }
 
@@ -1918,7 +1918,7 @@ function reset_pos_form() {
     set_location();
 
     $('tr.product_row').remove();
-    $('span.total_quantity, span.price_total, span#total_discount, span#order_tax, span#total_payable, span#shipping_charges_amount').text(0);
+    $('span.total_quantity, span.price_total, span#total_discount, span#order_tax, span#total_payable, span#shipping_charges_amount').text('$'+0);
     $('span.total_payable_span', 'span.total_paying', 'span.balance_due').text(0);
 
     $('#modal_payment').find('.remove_payment_row').each(function () {
@@ -2207,7 +2207,7 @@ function productVariationsPriceCalculation($this) {
     //     price_total = price_total + modifier_subtotal;
     // });
 
-    $('.price_cal .price_total').html(priceTotal);
+    $('.price_cal .price_total').html('$'+priceTotal);
     $('.price_cal .total_quantity').html(totalQuantity);
     $('#final_total_input').val(priceTotal);
     $('#total_payable').html(priceTotal);
@@ -2248,7 +2248,7 @@ $(window).on("load", function () {
         $(this).find('.pos_line_total_text').html(sum);
         priceTotal += sum
     });
-    $('.price_total').html(priceTotal);
+    $('.price_total').html('$'+priceTotal);
     // console.log(priceTotal);
 });
 $(document).on('change', '#shipping_charges', function (e) {

@@ -289,8 +289,8 @@ $(document).ready(function () {
 
         __write_number(tr.find('input.pos_line_total'), line_total, false, 2);
         tr.find('span.pos_line_total_text').text(__currency_trans_from_en(line_total, true));
-
         //Change modifier quantity
+
         tr.find('.modifier_qty_text').each(function () {
             $(this).text(__currency_trans_from_en(entered_qty, false));
         });
@@ -323,6 +323,7 @@ $(document).ready(function () {
         __write_number(tr.find('input.pos_unit_price_inc_tax'), unit_price_inc_tax);
         __write_number(tr.find('input.pos_line_total'), line_total, false, 2);
         tr.find('span.pos_line_total_text').text(__currency_trans_from_en(line_total, true));
+
         pos_each_row(tr);
         pos_total_row();
         round_row_to_iraqi_dinnar(tr);
@@ -458,6 +459,7 @@ $(document).ready(function () {
             __write_number(tr.find('input.pos_unit_price_inc_tax'), unit_price_inc_tax);
             __write_number(tr.find('input.pos_line_total'), line_total, false, 2);
             tr.find('span.pos_line_total_text').text(__currency_trans_from_en(line_total, true));
+
             pos_each_row(tr);
             pos_total_row();
             round_row_to_iraqi_dinnar(tr);
@@ -2191,6 +2193,8 @@ function productVariationsPriceCalculation($this) {
     }
     finalAmount = variationValue + subTotal;
     $this.parents('.product_row').find('.pos_line_total_text').html('$' + finalAmount);
+
+
     $this.parents('.product_row').find('input.pos_line_total').val(finalAmount);
     $('table#pos_table tbody tr').each(function () {
         priceTotal = priceTotal + __read_number($(this).find('input.pos_line_total'));
@@ -2239,17 +2243,23 @@ $(document).on('change', '.product_row .product_pos_unit_price', function (e) {
 
 $(window).on("load", function () {
     let priceTotal = 0;
+    let priceTotals = 0;
     $('.product_row').each(function () {
         let posLineTotal = parseFloat($(this).find('.pos_line_total').val());
+        let posLineTotals = parseFloat($(this).find('.pos_line_totals').val().replace('$',''));
 
         let productVariationValue = parseFloat($(this).find('.product_variation_value').val());
         let sum = posLineTotal + productVariationValue;
+        let sums = posLineTotals;
         $(this).find('.pos_line_total').val(sum);
         $(this).find('.pos_line_total_text').html(sum);
+
         priceTotal += sum
+        priceTotals += sums
     });
+
     $('.price_total').html('$'+priceTotal);
-    // console.log(priceTotal);
+    $('.price_totals').html('$'+priceTotals);
 });
 $(document).on('change', '#shipping_charges', function (e) {
     let shippingCharge = parseInt($(this).val());
@@ -2312,6 +2322,7 @@ $('table#pos_table tbody').on('change', 'input.pos_line_total', function () {
     if (pos_form_validator) {
         pos_form_validator.element(quantity_element);
     }
+
     tr.find('span.pos_line_total_text').text(__currency_trans_from_en(subtotal, true));
 
     pos_total_row();

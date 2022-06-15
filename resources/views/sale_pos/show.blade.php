@@ -18,10 +18,11 @@
         if (!empty($sell->is_export) && !empty($sell->export_custom_fields_info)) {
             $export_custom_fields = $sell->export_custom_fields_info;
         }
+
       @endphp
       <div class="@if(!empty($export_custom_fields)) col-sm-3 @else col-sm-4 @endif">
         <b>@if($sell->type == 'sales_order') {{ __('restaurant.order_no') }} @else {{ __('sale.invoice_no') }} @endif:</b> #{{ $sell->invoice_no }}<br>
-        <b>{{ __('sale.status') }}:</b> 
+        <b>{{ __('sale.status') }}:</b>
           @if($sell->status == 'draft' && $sell->is_quotation == 1)
             {{ __('lang_v1.quotation') }}
           @else
@@ -63,9 +64,9 @@
         @if($sell->document_path)
           <br>
           <br>
-          <a href="{{$sell->document_path}}" 
+          <a href="{{$sell->document_path}}"
           download="{{$sell->document_name}}" class="btn btn-xs btn-success pull-left no-print">
-            <i class="fa fa-download"></i> 
+            <i class="fa fa-download"></i>
               &nbsp;{{ __('purchase.download_document') }}
           </a>
         @endif
@@ -93,7 +94,7 @@
               {{__('contact.landline')}}: {{ $sell->contact->landline }}
           @endif
         @endif
-        
+
       </div>
       <div class="@if(!empty($export_custom_fields)) col-sm-3 @else col-sm-4 @endif">
       @if(in_array('tables' ,$enabled_modules))
@@ -107,14 +108,13 @@
 
       <strong>@lang('sale.shipping'):</strong>
       <span class="label @if(!empty($shipping_status_colors[$sell->shipping_status])) {{$shipping_status_colors[$sell->shipping_status]}} @else {{'bg-gray'}} @endif">{{$shipping_statuses[$sell->shipping_status] ?? '' }}</span><br>
-      @if(!empty($sell->shipping_address()))
-        {{$sell->shipping_address()}}
-      @else
-        {{$sell->shipping_address ?? '--'}}
-      @endif
-      @if(!empty($sell->delivered_to))
-        <br><strong>@lang('lang_v1.delivered_to'): </strong> {{$sell->delivered_to}}
-      @endif
+          {!! $sell->contact->address_line_1 !!}, <br>
+          {!! $sell->contact->address_line_2 !!},<br>
+          {!! $sell->contact->shipping_city !!}
+          {!! $sell->contact->shipping_state !!}
+          {!! $sell->contact->shipping_country !!},<br>
+          {!! $sell->contact->shipping_zipcode !!}
+
       @if(!empty($sell->shipping_custom_field_1))
         <br><strong>{{$custom_labels['shipping']['custom_field_1'] ?? ''}}: </strong> {{$sell->shipping_custom_field_1}}
       @endif
@@ -237,7 +237,7 @@
                     ( {{ __('lang_v1.change_return') }} )
                   @endif
                 </td>
-                <td>@if($payment_line->note) 
+                <td>@if($payment_line->note)
                   {{ ucfirst($payment_line->note) }}
                   @else
                   --

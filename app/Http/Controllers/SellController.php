@@ -1319,7 +1319,7 @@ class SellController extends Controller
             ->where('id', $id)
             ->with(['contact', 'sell_lines' => function ($q) {
                 $q->whereNull('parent_sell_line_id');
-            }, 'sell_lines.product', 'sell_lines.product.unit', 'sell_lines.variations', 'sell_lines.variations.product_variation', 'payment_lines', 'sell_lines.modifiers', 'sell_lines.lot_details', 'tax', 'sell_lines.sub_unit', 'table', 'service_staff', 'sell_lines.service_staff', 'types_of_service',  'media']);
+            }, 'sell_lines.product', 'sell_lines.product.unit', 'sell_lines.variations', 'sell_lines.variations.product_variation', 'payment_lines', 'sell_lines.modifiers', 'sell_lines.lot_details', 'tax', 'sell_lines.sub_unit', 'table', 'service_staff', 'sell_lines.service_staff', 'types_of_service',  'media','sell_lines.transactionSellLinesVariants']);
 
         if (!auth()->user()->can('sell.view') && !auth()->user()->can('direct_sell.access') && auth()->user()->can('view_own_sell_only')) {
             $query->where('transactions.created_by', request()->session()->get('user.id'));
@@ -1333,7 +1333,11 @@ class SellController extends Controller
             ->get();
 
         $line_taxes = [];
+        $product_id = [];
+        $product_name = [];
         foreach ($sell->sell_lines as $key => $value) {
+            $product_id[]=$value->product_id;
+            $product_name[]=$value->product->name;
             if (!empty($value->sub_unit_id)) {
                 $formated_sell_line = $this->transactionUtil->recalculateSellLineTotals($business_id, $value);
                 $sell->sell_lines[$key] = $formated_sell_line;
@@ -1347,7 +1351,9 @@ class SellController extends Controller
                 }
             }
         }
-
+        $product_ids = array_unique($product_id);
+        $product_count = count($product_ids);
+        $product_names = array_unique($product_name);
         $payment_types = $this->transactionUtil->payment_types($sell->location_id, true);
         $order_taxes = [];
         if (!empty($sell->tax)) {
@@ -1388,7 +1394,9 @@ class SellController extends Controller
                 'statuses',
                 'status_color_in_activity',
                 'sales_orders',
-                'line_taxes'
+                'line_taxes',
+                'product_ids',
+                'product_names'
             ));
     }
 
@@ -1401,6 +1409,7 @@ class SellController extends Controller
      */
     public function edit($id)
     {
+
         if (!auth()->user()->can('direct_sell.update') && !auth()->user()->can('so.update')) {
             abort(403, 'Unauthorized action.');
         }
@@ -1434,7 +1443,6 @@ class SellController extends Controller
 
         $location_id = $transaction->location_id;
         $location_printer_type = BusinessLocation::find($location_id)->receipt_printer_type;
-
         $sell_details = TransactionSellLine::
         join(
             'products AS p',
@@ -1454,18 +1462,18 @@ class SellController extends Controller
                 '=',
                 'pv.id'
             )
-            /*->join(
+            ->join(
                 'transaction_sell_lines_variants',
                 'transaction_sell_lines_variants.transaction_sell_lines_id',
                 '=',
                 'transaction_sell_lines.id'
-            )*/
-            ->join(
+            )
+            /*->join(
                 'transaction_sell_lines_days',
                 'transaction_sell_lines_days.transaction_sell_lines_id',
                 '=',
                 'transaction_sell_lines.id'
-            )
+            )*/
             /*->leftjoin('variation_location_details AS vld', function ($join) use ($location_id) {
                 $join->on('variations.id', '=', 'vld.variation_id')
                     ->where('vld.location_id', '=', $location_id);
@@ -1473,12 +1481,55 @@ class SellController extends Controller
             ->leftjoin('units', 'units.id', '=', 'p.unit_id')
             ->where('transaction_sell_lines.transaction_id', $id)
             ->with(['so_line'])
-
+            ->select(
+                \Illuminate\Support\Facades\DB::raw("IF(pv.is_dummy = 0, CONCAT(p.name, ' (', pv.name, ':',variations.name, ')'), p.name) AS product_name"),
+                'p.id as product_id',
+                'p.name as product_actual_name',
+                'p.type as product_type',
+                'pv.name as product_variation_name',
+                'pv.is_dummy as is_dummy',
+                'variations.name as variation_name',
+                'variations.sub_sku',
+                'p.barcode_type',
+                'variations.id as variation_id',
+                'units.short_name as unit',
+                'units.allow_decimal as unit_allow_decimal',
+                'transaction_sell_lines.tax_id as tax_id',
+                'transaction_sell_lines.item_tax as item_tax',
+                'transaction_sell_lines.unit_price as default_sell_price',
+                'transaction_sell_lines.unit_price_before_discount as unit_price_before_discount',
+                'transaction_sell_lines.unit_price_inc_tax as sell_price_inc_tax',
+                'transaction_sell_lines.id as transaction_sell_lines_id',
+                'transaction_sell_lines.id',
+                'transaction_sell_lines.quantity as quantity_ordered',
+                'transaction_sell_lines.sell_line_note as sell_line_note',
+                'transaction_sell_lines.parent_sell_line_id',
+                'transaction_sell_lines.lot_no_line_id',
+                'transaction_sell_lines.line_discount_type',
+                'transaction_sell_lines.line_discount_amount',
+                'transaction_sell_lines.res_service_staff_id',
+                'transaction_sell_lines.time_slot',
+                'transaction_sell_lines.start_date',
+                'transaction_sell_lines.delivery_date',
+                'transaction_sell_lines.delivery_time',
+                'transaction_sell_lines.unit_price_inc_tax',
+                'transaction_sell_lines.unit_price_inc_tax',
+                'units.id as unit_id',
+                'transaction_sell_lines.sub_unit_id',
+                'transaction_sell_lines_variants.value',
+                'transaction_sell_lines_variants.name as transaction_sell_lines_variants_name',
+                /*DB::raw('vld.qty_available + transaction_sell_lines.quantity AS qty_available')*/
+            )
             ->get();
         $transaction_sell_lines_id = [];
+        $transaction_sell_lines_days = '';
+        $time_slot = '';
+        $product_id = [];
+        $product_name = [];
         if (!empty($sell_details)) {
             foreach ($sell_details as $key => $value) {
-
+                $product_id[]=$value->product_id;
+                $product_name[]=$value->product_actual_name;
                 //If modifier or combo sell line then unset
                 if (!empty($sell_details[$key]->parent_sell_line_id)) {
                     unset($sell_details[$key]);
@@ -1490,8 +1541,11 @@ class SellController extends Controller
                     }
                     //$number_of_days = $value->number_of_days;
                     $time_slot = $value->time_slot;
-                    $transaction_sell_lines_id[] = $value->transaction_sell_lines_id;
-                    $transaction_sell_lines_days = TransactionSellLinesDay::where('transaction_sell_lines_id',$value->transaction_sell_lines_id)->first();
+
+                    $transaction_sell_lines_days = TransactionSellLinesDay::where('transaction_sell_lines_id',$value->transaction_sell_lines_id)->select('day')->get();
+                    foreach($transaction_sell_lines_days as $days){
+                        $transaction_sell_lines_id[] = $days->day;
+                    }
                     $sell_details[$key]->formatted_qty_available = $this->productUtil->num_f($value->qty_available, false, null, true);
                     $lot_numbers = [];
                     if (request()->session()->get('business.enable_lot_number') == 1) {
@@ -1565,7 +1619,9 @@ class SellController extends Controller
                 }
             }
         }
-
+        $product_ids = array_unique($product_id);
+        $product_count = count($product_ids);
+        $product_names = array_unique($product_name);
         $commsn_agnt_setting = $business_details->sales_cmsn_agnt;
         $commission_agent = [];
         if ($commsn_agnt_setting == 'user') {
@@ -1662,8 +1718,10 @@ class SellController extends Controller
         $change_return = $this->dummyPaymentLine;
         $customer_due = $this->transactionUtil->getContactDue($transaction->contact_id, $transaction->business_id);
         $customer_due = $customer_due != 0 ? $this->transactionUtil->num_f($customer_due, true) : '';
+        $default_datetime = $this->businessUtil->format_date('now', true);
+        $default_time = $this->businessUtil->format_times(Carbon::parse(now())->format('H:i'));
         return view('sell.edit')
-            ->with(compact('business_details',/*'number_of_days',*/'time_slot' ,'transaction_sell_lines_id','taxes', 'sell_details', 'transaction', 'commission_agent', 'types', 'customer_groups', 'pos_settings', 'waiters', 'invoice_schemes', 'default_invoice_schemes', 'redeem_details', 'edit_discount', 'edit_price', 'shipping_statuses', 'statuses', 'sales_orders', 'payment_types', 'accounts', 'payment_lines', 'change_return', 'is_order_request_enabled', 'customer_due','transaction_sell_lines_days'));
+            ->with(compact('business_details','default_datetime','default_time',/*'number_of_days','transaction_sell_lines_id',*/'time_slot','taxes', 'sell_details', 'transaction', 'commission_agent', 'types', 'customer_groups', 'pos_settings', 'waiters', 'invoice_schemes', 'default_invoice_schemes', 'redeem_details', 'edit_discount', 'edit_price', 'shipping_statuses', 'statuses', 'sales_orders', 'payment_types', 'accounts', 'payment_lines', 'change_return', 'is_order_request_enabled', 'customer_due','transaction_sell_lines_days','transaction_sell_lines_id','product_ids','product_names','product_count'));
     }
 
 
@@ -2048,7 +2106,6 @@ class SellController extends Controller
      */
     public function updateShipping(Request $request, $id)
     {
-        dd($id);
         $is_admin = $this->businessUtil->is_admin(auth()->user());
 
         if (!$is_admin && !auth()->user()->hasAnyPermission(['access_shipping', 'access_own_shipping', 'access_commission_agent_shipping'])) {
@@ -2265,9 +2322,6 @@ class SellController extends Controller
             }
 
         } catch (\Exception $e) {
-            dd($e);
-            dd($e->getFile());
-            dd($e->getMessage());
             \Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
             $output['success'] = false;
             $output['msg'] = __('lang_v1.item_out_of_stock');

@@ -277,10 +277,12 @@ class TransactionUtil extends Util
         $combo_lines = [];
         $products_modified_combo = [];
         $variation_value_id = [];
-
+        $variation_value_data_id = [];
         foreach ($products as $variationId => $product) {
             $product_delivery_date = $input['product'][$product['product_id']];
-
+            if(array_key_exists('variation_value_id',$product)){
+                $variation_value_id[] = $product['variation_value_id'];
+            }
             $multiplier = 1;
             $product_data = Product::where('id', $product['product_id'])->first();
 
@@ -311,7 +313,7 @@ class TransactionUtil extends Util
                                 $edit_ids[] = $product['modifier_sell_line_id'][$key];
                             } else {
                                 if (!empty($product['modifier_price'][$key])) {
-                                    dd('aaa');
+
                                     $this_price = $uf_data ? $this->num_uf($product['modifier_price'][$key]) : $product['modifier_price'][$key];
                                     $modifier_quantity = isset($product['modifier_quantity'][$key]) ? $product['modifier_quantity'][$key] : 1;
                                     $modifiers_formatted[] = new TransactionSellLine([
@@ -329,7 +331,8 @@ class TransactionUtil extends Util
                         }
                     }
                 }
-            } else {
+            }
+            else {
                 $products_modified_combo[] = $product;
 
                 //calculate unit price and unit price before discount
@@ -346,11 +349,9 @@ class TransactionUtil extends Util
                         $unit_price = ((100 - $discount_amount) * $unit_price_before_discount) / 100;
                     }
                 }
-
                 $uf_quantity = $uf_data ? $this->num_uf($product_delivery_date['quantity']) : $product_delivery_date['quantity'];
                 $uf_item_tax = $uf_data ? $this->num_uf($product_delivery_date['item_tax']) : $product_delivery_date['item_tax'];
                 $uf_unit_price_inc_tax = $uf_data ? $this->num_uf($product_delivery_date['unit_price_inc_tax']) : $product_delivery_date['unit_price_inc_tax'];
-
                 $line_discount_amount = 0;
                 if (!empty($product_delivery_date['line_discount_amount'])) {
                     $line_discount_amount = $uf_data ? $this->num_uf($product_delivery_date['line_discount_amount']) : $product_delivery_date['line_discount_amount'];
@@ -409,7 +410,6 @@ class TransactionUtil extends Util
                     if (!empty($product['modifier'])) {
                         foreach ($product['modifier'] as $key => $value) {
                             if (!empty($product['modifier_price'][$key])) {
-                                dd('ccc');
                                 $this_price = $uf_data ? $this->num_uf($product['modifier_price'][$key]) : $product['modifier_price'][$key];
                                 $modifier_quantity = isset($product['modifier_quantity'][$key]) ? $product['modifier_quantity'][$key] : 1;
                                 $sell_line_modifiers[] = [
@@ -439,10 +439,10 @@ class TransactionUtil extends Util
 
                 //Update purchase order line quantity received
                 $this->updateSalesOrderLine($line['so_line_id'], $line['quantity'], 0);
-                $variation_value_id[] = $product['variation_value_id'];
+
+
             }
         }
-
         if (!is_object($transaction)) {
             $transaction = Transaction::findOrFail($transaction);
         }
@@ -453,6 +453,7 @@ class TransactionUtil extends Util
             $deleted_lines = TransactionSellLine::where('transaction_id', $transaction->id)
                 ->whereNotIn('id', $edit_ids)
                 ->select('id')->get()->toArray();
+
             $combo_delete_lines = TransactionSellLine::whereIn('parent_sell_line_id', $deleted_lines)->where('children_type', 'combo')->select('id')->get()->toArray();
             $deleted_lines = array_merge($deleted_lines, $combo_delete_lines);
 
@@ -463,9 +464,18 @@ class TransactionUtil extends Util
 
         $combo_lines = [];
         if (!empty($lines_formatted)) {
+
             $sell_line_data = $transaction->sell_lines()->saveMany($lines_formatted);
+
             $sell_line_data_ids = !empty($sell_line_data) ? array_column($sell_line_data, "id") : [];
-            $variation_value_datas = VariationValueTemplate::whereIn('id', $variation_value_id)->get();
+            //$variation_value_datas = VariationValueTemplate::whereIn('id', $variation_value_id)->get();
+
+            $variation_value_data = Variation::whereIn('id', $variation_value_id)->get();
+            foreach($variation_value_data as $vdata){
+                $variation_value_data_id[]=$vdata->variation_value_id;
+            }
+            $variation_value_datas = VariationValueTemplate::whereIn('id', $variation_value_data_id)->get();
+
             $data = [];
             $days = [];
             // Add transaction sell lines variants data
@@ -484,6 +494,7 @@ class TransactionUtil extends Util
             }
 
             $transaction_sell_lines_variants = TransactionSellLinesVariants::insert($data);
+
             $tra_sell_days = TransactionSellLine::with('product')->where(['transaction_id' => $transaction->id])->groupBy('product_id')->get();
 
             foreach ($tra_sell_days as $sell_day) {
@@ -524,7 +535,7 @@ class TransactionUtil extends Util
                                                 'shipping_address_line_2' => $transaction->contact->shipping_address_2,
                                                 'shipping_city' => $transaction->contact->shipping_city,
                                                 'shipping_state' => $transaction->contact->shipping_state,
-                                                'shipping_country' => $transaction->contact->shipping_country,
+                                                'shipping_country' => ($transaction->contact->shipping_country) ? $transaction->contact->shipping_country : null,
                                                 'shipping_zip_code' => $transaction->contact->shipping_zipcode,
                                                 'additional_notes' => !empty($transaction->additional_notes) ? $transaction->additional_notes : null,
                                                 'delivery_note' => $transaction->shipping_details,
@@ -555,7 +566,7 @@ class TransactionUtil extends Util
                                             'shipping_address_line_2' => $transaction->contact->shipping_address_2,
                                             'shipping_city' => $transaction->contact->shipping_city,
                                             'shipping_state' => $transaction->contact->shipping_state,
-                                            'shipping_country' => $transaction->contact->shipping_country,
+                                            'shipping_country' => ($transaction->contact->shipping_country) ? $transaction->contact->shipping_country : null,
                                             'shipping_zip_code' => $transaction->contact->shipping_zipcode,
                                             'additional_notes' => !empty($transaction->additional_notes) ? $transaction->additional_notes : null,
                                             'delivery_note' => $transaction->shipping_details,
@@ -577,6 +588,7 @@ class TransactionUtil extends Util
                         }
                         //$transaction_sell_lines_days = TransactionSellLinesDay::insert($days);
                     }else{
+                        $loop = 1;
                         for ($i = 1; $i <= $loop; $i++) {
                             MasterList::insert(
                                 [
@@ -588,7 +600,7 @@ class TransactionUtil extends Util
                                     'shipping_address_line_2' => $transaction->contact->shipping_address_2,
                                     'shipping_city' => $transaction->contact->shipping_city,
                                     'shipping_state' => $transaction->contact->shipping_state,
-                                    'shipping_country' => $transaction->contact->shipping_country,
+                                    'shipping_country' => ($transaction->contact->shipping_country) ? $transaction->contact->shipping_country : null,
                                     'shipping_zip_code' => $transaction->contact->shipping_zipcode,
                                     'additional_notes' => !empty($transaction->additional_notes) ? $transaction->additional_notes : null,
                                     'delivery_note' => $transaction->shipping_details,
@@ -596,7 +608,7 @@ class TransactionUtil extends Util
                                     'status' => $transaction->status,
                                     'staff_notes' => $transaction->staff_note,
                                     'delivery_time' => $sell_day->delivery_time,
-                                    'delivery_date' => ($i == 1) ? $getNextDate : $sDate->addDays($x),
+                                    'delivery_date' => $sell_day->delivery_date,
                                     'time_slot' => $sell_day->time_slot,
                                     'created_by' => Carbon::now(),
                                     'created_at' => Carbon::now(),
@@ -607,8 +619,6 @@ class TransactionUtil extends Util
                             }
                         }
                     }
-
-
                 }
             }
 

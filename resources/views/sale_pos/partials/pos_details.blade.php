@@ -8,9 +8,9 @@
 				</div>
 				<div class="col-sm-3 col-xs-6 d-inline-table" style="margin-bottom: 10px;">
 					<b>@lang('sale.total'):</b> &nbsp;
-					<span class="price_total">0</span>
+					<span class="price_total">$0</span>
 				</div>
-				<table class="table table-condensed" 
+				<table class="table table-condensed"
 					style="margin-bottom: 0px !important">
 					<tbody>
 					@php
@@ -33,7 +33,7 @@
 								@if($is_rp_enabled)
 									{{session('business.rp_name')}}
 								@endif
-								(-):</b> 
+								(-):</b>
 								<br/>
 								<i class="fas fa-pen cursor-pointer" id="pos-edit-discount" title="@lang('sale.edit_discount')" aria-hidden="true" data-toggle="modal" data-target="#posEditDiscountModal"></i>
 								<span id="total_discount">0</span>
@@ -54,7 +54,7 @@
 
 								<b>@lang('sale.order_tax')(+): @show_tooltip(__('tooltip.sale_tax'))</b>
 								<br/>
-								<i class="fas fa-pen cursor-pointer" title="@lang('sale.edit_order_tax')" aria-hidden="true" data-toggle="modal" data-target="#posEditOrderTaxModal" id="pos-edit-tax" ></i> 
+								<i class="fas fa-pen cursor-pointer" title="@lang('sale.edit_order_tax')" aria-hidden="true" data-toggle="modal" data-target="#posEditOrderTaxModal" id="pos-edit-tax" ></i>
 								<span id="order_tax">
 									@if(empty($edit))
 										0
@@ -63,23 +63,23 @@
 									@endif
 								</span>
 
-								<input type="hidden" name="tax_rate_id" 
-									id="tax_rate_id" 
-									value="@if(empty($edit)) {{$business_details->default_sales_tax}} @else {{$transaction->tax_id}} @endif" 
+								<input type="hidden" name="tax_rate_id"
+									id="tax_rate_id"
+									value="@if(empty($edit)) {{$business_details->default_sales_tax}} @else {{$transaction->tax_id}} @endif"
 									data-default="{{$business_details->default_sales_tax}}">
 
-								<input type="hidden" name="tax_calculation_amount" id="tax_calculation_amount" 
+								<input type="hidden" name="tax_calculation_amount" id="tax_calculation_amount"
 									value="@if(empty($edit)) {{@num_format($business_details->tax_calculation_amount)}} @else {{@num_format(optional($transaction->tax)->amount)}} @endif" data-default="{{$business_details->tax_calculation_amount}}">
 
 								</span>
 							</div>
-							
+
 							<!-- shipping -->
 							<div class="{{$col}} col-xs-6 d-inline-table">
 
 								<span class="@if($pos_settings['disable_discount'] != 0) hide @endif">
 
-								<b>@lang('sale.shipping')(+): @show_tooltip(__('tooltip.shipping'))</b> 
+								<b>@lang('sale.shipping')(+): @show_tooltip(__('tooltip.shipping'))</b>
 								<br/>
 								<i class="fas fa-pen cursor-pointer"  title="@lang('sale.shipping')" aria-hidden="true" data-toggle="modal" data-target="#posShippingModal"></i>
 								<span id="shipping_charges_amount">0</span>
@@ -99,7 +99,7 @@
 								<div class="col-sm-3 col-xs-6 d-inline-table">
 									<b>@lang('lang_v1.packing_charge')(+):</b>
 									<br/>
-									<i class="fas fa-pen cursor-pointer service_modal_btn"></i> 
+									<i class="fas fa-pen cursor-pointer service_modal_btn"></i>
 									<span id="packing_charge_text">
 										0
 									</span>
@@ -109,9 +109,9 @@
 								<b>@lang('sale.total_payable'):</b>
 								<small class="hide" id="round_off"><br>(@lang('lang_v1.round_off'): <span id="round_off_text"></span>)</small>
 								<br/>
-								<input type="hidden" name="round_off_amount" 
+								<input type="hidden" name="round_off_amount"
 									id="round_off_amount" value=0>
-								<input type="hidden" name="final_total" 
+								<input type="hidden" name="final_total"
 									id="final_total_input" value=0>
 								<span id="total_payable" class="text-success lead text-bold">0</span>
 								@if(empty($edit))
@@ -127,19 +127,19 @@
 						<td>
 							<div class="col-sm-2 col-xs-6 col-2px-padding">
 
-								<button type="button" 
-									class="btn btn-warning btn-block btn-flat @if($pos_settings['disable_draft'] != 0) hide @endif" 
+								<button type="button"
+									class="btn btn-warning btn-block btn-flat @if($pos_settings['disable_draft'] != 0) hide @endif"
 									id="pos-draft">@lang('sale.draft')</button>
 
-								<button type="button" 
-									class="btn btn-info btn-block btn-flat" 
+								<button type="button"
+									class="btn btn-info btn-block btn-flat"
 									id="pos-quotation">@lang('lang_v1.quotation')</button>
 							</div>
 							<div class="col-sm-3 col-xs-6 col-2px-padding">
 								@if(!empty($pos_settings['show_credit_sale_button']))
 									<input type="hidden" name="is_credit_sale" value="0" id="is_credit_sale">
-									<button type="button" 
-									class="btn bg-purple btn-block btn-flat no-print pos-express-finalize" 
+									<button type="button"
+									class="btn bg-purple btn-block btn-flat no-print pos-express-finalize"
 									data-pay_method="credit_sale"
 									title="@lang('lang_v1.tooltip_credit_sale')" >
 									<div class="text-center">
@@ -148,8 +148,8 @@
 	    							</div>
 									</button>
 								@else
-									<button type="button" 
-									class="btn bg-maroon btn-block btn-flat no-print @if(!empty($pos_settings['disable_suspend'])) pos-express-btn btn-lg @endif pos-express-finalize @if(!array_key_exists('card', $payment_types)) hide @endif" 
+									<button type="button"
+									class="btn bg-maroon btn-block btn-flat no-print @if(!empty($pos_settings['disable_suspend'])) pos-express-btn btn-lg @endif pos-express-finalize @if(!array_key_exists('card', $payment_types)) hide @endif"
 									data-pay_method="card"
 									title="@lang('lang_v1.tooltip_express_checkout_card')" >
 									<div class="text-center">
@@ -159,8 +159,8 @@
 									</button>
 								@endif
 								@if(empty($pos_settings['disable_suspend']))
-									<button type="button" 
-									class="btn bg-red btn-block btn-flat no-print pos-express-finalize" 
+									<button type="button"
+									class="btn bg-red btn-block btn-flat no-print pos-express-finalize"
 									data-pay_method="suspend"
 									title="@lang('lang_v1.tooltip_suspend')" >
 									<div class="text-center">
@@ -198,7 +198,7 @@
 
 				<!-- Button to perform various actions -->
 				<div class="row">
-					
+
 				</div>
 			</div>
 		</div>

@@ -556,19 +556,20 @@ class ProductUtil extends Util
      *
      * @return Mixed (false, array)
      */
-    public function calculateInvoiceTotal($products,$products_line, $tax_id, $discount = null, $uf_number = true)
+    public function calculateInvoiceTotal($products,$products_line, $tax_id,$uf_number = true)
     {
+
         if (empty($products)) {
             return false;
         }
 
-        $output = ['total_before_tax' => 0, 'tax' => 0, 'discount' => 0, 'final_total' => 0];
+        $output = ['total_before_tax' => 0, 'tax' => 0, 'final_total' => 0];
 
         //Sub Total
         foreach ($products as $product) {
             $product_line = $products_line[$product['product_id']];
-            $unit_price_inc_tax = $uf_number ? $this->num_uf($product_line['unit_price_inc_tax']) :
-                dd('qqq');
+            $unit_price_inc_tax = $uf_number ? $this->num_uf($product_line['unit_price_inc_tax']) : $product_line['unit_price_inc_tax'];
+
             $quantity = $uf_number ? $this->num_uf($product_line['quantity']) : $product_line['quantity'];
 
             $output['total_before_tax'] += $quantity * $unit_price_inc_tax;
@@ -586,14 +587,14 @@ class ProductUtil extends Util
         }
 
         //Calculate discount
-        if (is_array($discount)) {
+       /* if (is_array($discount)) {
             $discount_amount = $uf_number ? $this->num_uf($discount['discount_amount']) : $discount['discount_amount'];
             if ($discount['discount_type'] == 'fixed') {
                 $output['discount'] = $discount_amount;
             } else {
                 $output['discount'] = ($discount_amount / 100) * $output['total_before_tax'];
             }
-        }
+        }*/
 
         //Tax
         $output['tax'] = 0;
@@ -601,12 +602,12 @@ class ProductUtil extends Util
             $tax_details = TaxRate::find($tax_id);
             if (!empty($tax_details)) {
                 $output['tax_id'] = $tax_id;
-                $output['tax'] = ($tax_details->amount / 100) * ($output['total_before_tax'] - $output['discount']);
+                $output['tax'] = ($tax_details->amount / 100) * ($output['total_before_tax'] /*- $output['discount']*/);
             }
         }
 
         //Calculate total
-        $output['final_total'] = $output['total_before_tax'] + $output['tax'] - $output['discount'];
+        $output['final_total'] = $output['total_before_tax'] + $output['tax'] /*- $output['discount']*/;
 
         return $output;
     }

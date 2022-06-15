@@ -552,9 +552,6 @@
                         @endforeach
                     </div>
                 </div>
-                <div class="clearfix"></div>
-
-
                 <div class="@if(!empty($commission_agent)) col-sm-4 @else col-sm-4 @endif start_dates_{{$product_id}} hide">
                     <div class="form-group">
                         {!! Form::label('start_date', __('sale.start_date') . ':*') !!}
@@ -566,8 +563,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="clearfix"></div>
-                <div class="@if(!empty($commission_agent)) col-sm-4 @else col-sm-4 @endif delivery_dates_{{$product_id}} hide">
+
+                <div
+                    class="@if(!empty($commission_agent)) col-sm-4 @else col-sm-4 @endif delivery_dates_{{$product_id}} hide">
                     <div class="form-group">
                         {!! Form::label('delivery_date', __('sale.delivery_date') . ':*') !!}
                         <div class="input-group">
@@ -578,8 +576,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="clearfix"></div>
-                <div class="@if(!empty($commission_agent)) col-sm-4 @else col-sm-4 @endif delivery_times_{{$product_id}} hide">
+
+                <div
+                    class="@if(!empty($commission_agent)) col-sm-4 @else col-sm-4 @endif delivery_times_{{$product_id}} hide">
                     <div class="form-group">
                         {!! Form::label('delivery_time', __('sale.delivery_time') . ':*') !!}
                         <div class="input-group">
@@ -590,21 +589,19 @@
                         </div>
                     </div>
                 </div>
-                <div class="clearfix"></div>
-                <div class="box-body">
-                    <div class="col-sm-6 time_slot_{{$product_id}} hide">
+
+                <div class="col-sm-4 time_slot_{{$product_id}} hide">
+                    <div class="form-group">
+                        <label for="time_slot">Meal Type:*</label>
                         <div class="form-group">
-                            <label for="time_slot">Meal Type:*</label>
-                            <div class="form-group">
-                                <select class="form-control select2" id="time_slot"
-                                        name="product[{{$product_id}}][time_slot]"
-                                        required>
-                                    <option selected>please select</option>
-                                    @foreach(mealTypes() as $key => $deliveryDays)
-                                        <option value="{{$key}}">{{ $deliveryDays }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
+                            <select class="form-control select2" id="time_slot"
+                                    name="product[{{$product_id}}][time_slot]"
+                                    required>
+                                <option selected>please select</option>
+                                @foreach(mealTypes() as $key => $deliveryDays)
+                                    <option value="{{$key}}">{{ $deliveryDays }}</option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -646,7 +643,8 @@
                             <select name="product[{{$product_id}}][sub_unit_id]" class="form-control input-sm sub_unit">
                                 @foreach($sub_units as $key => $value)
                                     <option value="{{$key}}" data-multiplier="{{$value['multiplier']}}"
-                                            data-unit_name="{{$value['name']}}" data-allow_decimal="{{$value['allow_decimal']}}"
+                                            data-unit_name="{{$value['name']}}"
+                                            data-allow_decimal="{{$value['allow_decimal']}}"
                                             @if(!empty($productData->sub_unit_id) && $productData->sub_unit_id == $key) selected @endif>
                                         {{$value['name']}}
                                     </option>
@@ -665,12 +663,7 @@
                         {{-- Hidden fields for combo products --}}
                     </div>
                 </div>
-            </div>
-
-
-
-            <div class="box-body @if(!auth()->user()->can('edit_product_price_from_sale_screen')) hide @endif">
-                <div class="col-sm-6">
+                <div class="col-sm-6 @if(!auth()->user()->can('edit_product_price_from_sale_screen')) hide @endif">
                     <div class="form-group">
                         <label for="unit_price">Unit Price:*</label>
                         <div class="form-group">
@@ -684,21 +677,7 @@
                 </div>
             </div>
 
-            <div class="box-body @if(!$edit_discount) hide @endif">
-                <div class="col-sm-6">
-                    <div class="form-group">
-                        {!! Form::label('line_discount_amount','Discount Amount:*') !!}
-                        <div class="form-group">
-                            {!! Form::text("product[" . $product_id . "][line_discount_amount]", @num_format($discount_amount), ['class' => 'form-control input_number discount_amount']); !!}
-                            <br>
-                            {!! Form::select("product[" . $product_id . "][line_discount_type]", ['fixed' => __('lang_v1.fixed'), 'percentage' => __('lang_v1.percentage')], $discount_type , ['class' => 'form-control product_row_discount_type']); !!}
-                            @if(!empty($discount))
-                                <p class="help-block">{!! __('lang_v1.applied_discount_text', ['discount_name' => $discount->name, 'starts_at' => $discount->formated_starts_at, 'ends_at' => $discount->formated_ends_at]) !!}</p>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-            </div>
+
             <!-- /.box-body -->
         </div>
     </div>

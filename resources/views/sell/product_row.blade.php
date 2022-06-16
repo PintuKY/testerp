@@ -16,7 +16,7 @@
         $hide_tax = 'hide';
     }
 @endphp
-<table class="table table-condensed table-bordered table-striped table-responsive pos_table_{{$product_id}}"
+<table class="table table-condensed table-bordered table-striped table-responsive product_table pos_table_{{$product_id}}"
        id="pos_table">
     <thead>
     <tr>

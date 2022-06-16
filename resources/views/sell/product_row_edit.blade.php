@@ -318,7 +318,7 @@
         @endif
     @endif
     <td class="{{$hide_tax}} hide">
-        <input type="text" name="products[{{$product->variation_id}}][unit_price_inc_tax]"
+        <input type="text" name="product[{{$sell_line->product_id}}][unit_price_inc_tax]"
                class="form-control pos_unit_price_inc_tax input_number" value="{{@num_format($unit_price_inc_tax)}}"
                @if(!$edit_price) readonly
                @endif @if(!empty($pos_settings['enable_msp'])) data-rule-min-value="{{$unit_price_inc_tax}}"

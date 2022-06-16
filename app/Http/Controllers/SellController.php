@@ -1526,9 +1526,21 @@ class SellController extends Controller
         $time_slot = '';
         $product_id = [];
         $product_name = [];
+        $edit_product = [];
         if (!empty($sell_details)) {
             foreach ($sell_details as $key => $value) {
                 $product_id[]=$value->product_id;
+                $edit_product[$value->product_id] = [
+                    'start_date' => $value->start_date,
+                    'time_slot' => $value->time_slot,
+                    'delivery_date' => $value->delivery_date,
+                    'delivery_time' => $value->delivery_time,
+                    'unit_value' => $value->unit_value,
+                    'quantity' => $value->quantity_ordered,
+                    'unit' => $value->unit,
+                    'unit_id' => $value->unit_id,
+                    'default_sell_price' => $value->default_sell_price,
+                ];
                 $product_name[]=$value->product_actual_name;
                 //If modifier or combo sell line then unset
                 if (!empty($sell_details[$key]->parent_sell_line_id)) {
@@ -1542,9 +1554,9 @@ class SellController extends Controller
                     //$number_of_days = $value->number_of_days;
                     $time_slot = $value->time_slot;
 
-                    $transaction_sell_lines_days = TransactionSellLinesDay::where('transaction_sell_lines_id',$value->transaction_sell_lines_id)->select('day')->get();
+                    $transaction_sell_lines_days = TransactionSellLinesDay::where('transaction_sell_lines_id',$value->transaction_sell_lines_id)->get();
                     foreach($transaction_sell_lines_days as $days){
-                        $transaction_sell_lines_id[] = $days->day;
+                        $transaction_sell_lines_id[$value->product_id][] = $days->day;
                     }
                     $sell_details[$key]->formatted_qty_available = $this->productUtil->num_f($value->qty_available, false, null, true);
                     $lot_numbers = [];
@@ -1720,8 +1732,9 @@ class SellController extends Controller
         $customer_due = $customer_due != 0 ? $this->transactionUtil->num_f($customer_due, true) : '';
         $default_datetime = $this->businessUtil->format_date('now', true);
         $default_time = $this->businessUtil->format_times(Carbon::parse(now())->format('H:i'));
+
         return view('sell.edit')
-            ->with(compact('business_details','default_datetime','default_time',/*'number_of_days','transaction_sell_lines_id',*/'time_slot','taxes', 'sell_details', 'transaction', 'commission_agent', 'types', 'customer_groups', 'pos_settings', 'waiters', 'invoice_schemes', 'default_invoice_schemes', 'redeem_details', 'edit_discount', 'edit_price', 'shipping_statuses', 'statuses', 'sales_orders', 'payment_types', 'accounts', 'payment_lines', 'change_return', 'is_order_request_enabled', 'customer_due','transaction_sell_lines_days','transaction_sell_lines_id','product_ids','product_names','product_count'));
+            ->with(compact('edit_product','business_details','default_datetime','default_time',/*'number_of_days','transaction_sell_lines_id',*/'time_slot','taxes', 'sell_details', 'transaction', 'commission_agent', 'types', 'customer_groups', 'pos_settings', 'waiters', 'invoice_schemes', 'default_invoice_schemes', 'redeem_details', 'edit_discount', 'edit_price', 'shipping_statuses', 'statuses', 'sales_orders', 'payment_types', 'accounts', 'payment_lines', 'change_return', 'is_order_request_enabled', 'customer_due','transaction_sell_lines_days','transaction_sell_lines_id','product_ids','product_names','product_count'));
     }
 
 
@@ -2354,7 +2367,6 @@ class SellController extends Controller
          $waiters = [];
          $purchase_line_id='';*/
         foreach ($productDatas as $key => $productData) {
-
 
             if (!isset($productData->quantity_ordered)) {
                 $productData->quantity_ordered = $quantity;

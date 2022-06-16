@@ -564,10 +564,11 @@ class ProductUtil extends Util
         }
 
         $output = ['total_before_tax' => 0, 'tax' => 0, 'final_total' => 0];
-
         //Sub Total
         foreach ($products as $product) {
+
             $product_line = $products_line[$product['product_id']];
+
             $unit_price_inc_tax = $uf_number ? $this->num_uf($product_line['unit_price_inc_tax']) : $product_line['unit_price_inc_tax'];
 
             $quantity = $uf_number ? $this->num_uf($product_line['quantity']) : $product_line['quantity'];
@@ -584,6 +585,7 @@ class ProductUtil extends Util
                     $output['total_before_tax'] += $modifier_total;
                 }
             }
+
         }
 
         //Calculate discount
@@ -608,6 +610,7 @@ class ProductUtil extends Util
 
         //Calculate total
         $output['final_total'] = $output['total_before_tax'] + $output['tax'] /*- $output['discount']*/;
+
 
         return $output;
     }

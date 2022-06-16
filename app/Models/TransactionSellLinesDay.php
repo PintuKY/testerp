@@ -16,7 +16,7 @@ class TransactionSellLinesDay extends Model
     //     'day' => 'date:N',
     // ];
 
- 
+
 
 
 }

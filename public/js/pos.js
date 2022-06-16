@@ -177,7 +177,7 @@ $(document).ready(function () {
                         }
 
                         if ((ui.item.enable_stock == 1 && ui.item.qty_available > 0) ||
-                                (ui.item.enable_stock == 0) || is_overselling_allowed || for_so) {
+                            (ui.item.enable_stock == 0) || is_overselling_allowed || for_so) {
                             $(this)
                                 .data('ui-autocomplete')
                                 ._trigger('select', 'autocompleteselect', ui);
@@ -1021,15 +1021,30 @@ $(document).ready(function () {
         format: moment_date_format + ' ' + moment_time_format,
         ignoreReadonly: true,
     });
-    $('#start_date').datetimepicker({
-        format: moment_date_format + ' ' + moment_time_format,
-        ignoreReadonly: true,
+    $('.delivery_date').datetimepicker({
+        format: moment_date_format,
+        minDate:$('.deliveryDate').val(),
+        widgetPositioning:{
+            horizontal: 'auto',
+            vertical: 'bottom'
+        }
     });
-    $('#delivery_date').datetimepicker( {
-        format: moment_date_format + ' ' + moment_time_format,
+    $('.delivery_time').datetimepicker({
+        format: moment_time_format,
         ignoreReadonly: true,
+        widgetPositioning:{
+            horizontal: 'auto',
+            vertical: 'bottom'
+        }
     });
-
+    $('.start_date').datetimepicker({
+        format: moment_date_format + ' ' + moment_time_format,
+        minDate:$('.startDate').val(),
+        widgetPositioning:{
+            horizontal: 'auto',
+            vertical: 'bottom'
+        }
+    });
     //Direct sell submit
     sell_form = $('form#add_sell_form');
     if ($('form#edit_sell_form').length) {
@@ -1358,10 +1373,12 @@ $(document).ready(function () {
 });
 
 
-function pos_table_remove($id){
-    $('.pos_table_'+$id).remove();
+function pos_table_remove($id) {
+    $('.pos_table_' + $id).remove();
+    $("input[value='"+$id+"']").remove();
     pos_total_row();
 }
+
 function set_payment_type_dropdown() {
     var payment_settings = $('#location_id').data('default_payment_accounts');
     payment_settings = payment_settings ? payment_settings : [];
@@ -1614,7 +1631,7 @@ function pos_product_row(product_id = null, purchase_line_id = null, weighing_sc
                         var date = $('#transaction_date').val();
                         var dtes = new Date(date);
                         dtes.setDate(dtes.getDate() + 3);
-                        $('.pos_table_'+result.product.id)
+                        $('.pos_table_' + result.product.id)
                             .find('input[type="checkbox"].input-icheck')
                             .each(function () {
                                 $(this).iCheck({
@@ -1622,43 +1639,43 @@ function pos_product_row(product_id = null, purchase_line_id = null, weighing_sc
                                     radioClass: 'iradio_square-blue',
                                 });
                             });
-                        $('.pos_table_'+result.product.id)
+                        $('.pos_table_' + result.product.id)
                             .find('.start_date').datetimepicker({
                             format: moment_date_format + ' ' + moment_time_format,
                             minDate: dtes,
                         });
 
-                        if ($('.pos_table_'+result.product.id)
+                        if ($('.pos_table_' + result.product.id)
                             .find('.start_date').length > 0) {
-                            $('.pos_table_'+result.product.id)
+                            $('.pos_table_' + result.product.id)
                                 .find('.start_date').data("DateTimePicker").date(moment());
                         }
 
-                        $('.time_slot_'+result.product.id).removeClass('hide');
+                        $('.time_slot_' + result.product.id).removeClass('hide');
                         $('.brand_id').removeClass('hide');
-                        $('.deliverydays_'+result.product.id).removeClass('hide');
-                        $('.start_dates_'+result.product.id).removeClass('hide');
-                    }else{
+                        $('.deliverydays_' + result.product.id).removeClass('hide');
+                        $('.start_dates_' + result.product.id).removeClass('hide');
+                    } else {
                         var date = $('#transaction_date').val();
                         var dtes = new Date(date);
                         dtes.setDate(dtes.getDate() + 3);
-                        $('.pos_table_'+result.product.id)
+                        $('.pos_table_' + result.product.id)
                             .find('.delivery_date').datetimepicker({
                             format: moment_date_format,
                             minDate: dtes,
                         });
-                        $('.pos_table_'+result.product.id)
+                        $('.pos_table_' + result.product.id)
                             .find('.delivery_time').datetimepicker({
                             format: moment_time_format,
                         });
 
-                        if ($('.pos_table_'+result.product.id)
+                        if ($('.pos_table_' + result.product.id)
                             .find('.delivery_date').length > 0) {
-                            $('.pos_table_'+result.product.id)
+                            $('.pos_table_' + result.product.id)
                                 .find('.delivery_date').data("DateTimePicker").date(moment());
                         }
-                        $('.delivery_dates_'+result.product.id).removeClass('hide');
-                        $('.delivery_times_'+result.product.id).removeClass('hide');
+                        $('.delivery_dates_' + result.product.id).removeClass('hide');
+                        $('.delivery_times_' + result.product.id).removeClass('hide');
                     }
                 } else {
                     toastr.error(result.msg);
@@ -1711,13 +1728,12 @@ function pos_total_row() {
     $('span#shipping_charges_amount').text(
         __currency_trans_from_en(__read_number($('input#shipping_charges_modal')), false)
     );
-
     $('span.total_quantity').each(function () {
-        $(this).html(__number_f(total_quantity));
+        $(this).html(__number_f($('.product_table').length));
     });
 
     //$('span.unit_price_total').html(unit_price_total);
-    $('span.price_total').html('$'+__currency_trans_from_en(price_total, false));
+    $('span.price_total').html('$' + __currency_trans_from_en(price_total, false));
     calculate_billing_details(price_total);
 }
 
@@ -1920,7 +1936,7 @@ function reset_pos_form() {
     set_location();
 
     $('tr.product_row').remove();
-    $('span.total_quantity, span.price_total, span#total_discount, span#order_tax, span#total_payable, span#shipping_charges_amount').text('$'+0);
+    $('span.total_quantity, span.price_total, span#total_discount, span#order_tax, span#total_payable, span#shipping_charges_amount').text(0);
     $('span.total_payable_span', 'span.total_paying', 'span.balance_due').text(0);
 
     $('#modal_payment').find('.remove_payment_row').each(function () {
@@ -1969,6 +1985,9 @@ function reset_pos_form() {
     }
     if ($('.delivery_date').length > 0) {
         $('.delivery_date').data("DateTimePicker").date(moment());
+    }
+    if ($('.start_date').length > 0) {
+        $('.start_date').data("DateTimePicker").date(moment());
     }
     if ($('.paid_on').length > 0) {
         $('.paid_on').data("DateTimePicker").date(moment());
@@ -2138,9 +2157,9 @@ function pos_print(receipt) {
 
 $(document).on('click', '.input-number .product-quantity-up, .input-number .product-quantity-down', function () {
     let input = $(this).closest('.input-number').find('.pos_quantity');
-    let val = parseFloat($(this).parents('.product_row').find('.pos_quantity').val());
-    let max = parseFloat(input.attr('max'));
-    let min = parseFloat(input.attr('min'));
+    let val = parseFloat($(this).closest('.input-number').find('.pos_quantity').val());
+    let max = parseFloat(input.attr('data-max'));
+    let min = parseFloat(input.attr('data-min'));
     let step = 1;
     let quantity = 1;
 
@@ -2158,7 +2177,7 @@ $(document).on('click', '.input-number .product-quantity-up, .input-number .prod
         }
         quantity = val - step;
     }
-    let posQuantity = $(this).parents('.product_row').find('.pos_quantity').val(quantity);
+    let posQuantity = $(this).closest('.input-number').find('.pos_quantity').val(quantity);
     productVariationsPriceCalculation($(this));
 });
 
@@ -2211,8 +2230,9 @@ function productVariationsPriceCalculation($this) {
     //     price_total = price_total + modifier_subtotal;
     // });
 
-    $('.price_cal .price_total').html('$'+priceTotal);
-    $('.price_cal .total_quantity').html(totalQuantity);
+    $('.price_cal .price_total').html('$' + priceTotal);
+    //$('.price_cal .total_quantity').html(totalQuantity);
+    $('.price_cal .total_quantity').html($('.product_table').length);
     $('#final_total_input').val(priceTotal);
     $('#total_payable').html(priceTotal);
     $('#total_payable').val(priceTotal);
@@ -2246,7 +2266,7 @@ $(window).on("load", function () {
     let priceTotals = 0;
     $('.product_row').each(function () {
         let posLineTotal = parseFloat($(this).find('.pos_line_total').val());
-        let posLineTotals = parseFloat($(this).find('.pos_line_totals').val().replace('$',''));
+        let posLineTotals = parseFloat($(this).find('.pos_line_totals').val().replace('$', ''));
 
         let productVariationValue = parseFloat($(this).find('.product_variation_value').val());
         let sum = posLineTotal + productVariationValue;
@@ -2258,8 +2278,10 @@ $(window).on("load", function () {
         priceTotals += sums
     });
 
-    $('.price_total').html('$'+priceTotal);
-    $('.price_totals').html('$'+priceTotals);
+    $('.price_total').html('$' + priceTotal);
+    $('.price_totals').html('$' + priceTotals);
+
+
 });
 $(document).on('change', '#shipping_charges', function (e) {
     let shippingCharge = parseInt($(this).val());

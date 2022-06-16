@@ -341,7 +341,6 @@ class SellPosController extends Controller
                         ->with('status', $output);
                 }
             }
-
             if (!empty($input['products'])) {
                 $business_id = $request->session()->get('user.business_id');
 
@@ -1012,6 +1011,7 @@ class SellPosController extends Controller
      */
     public function update(Request $request, $id)
     {
+
         if (!auth()->user()->can('sell.update') && !auth()->user()->can('direct_sell.access') && !auth()->user()->can('so.update')) {
             abort(403, 'Unauthorized action.');
         }
@@ -1076,7 +1076,7 @@ class SellPosController extends Controller
                 $discount = ['discount_type' => $input['discount_type'],
                                 'discount_amount' => $input['discount_amount']
                             ];
-                $invoice_total = $this->productUtil->calculateInvoiceTotal($input['products'], $input['tax_rate_id'], $discount);
+                $invoice_total = $this->productUtil->calculateInvoiceTotal($input['products'], $input['product'],$input['tax_rate_id']);
 
                 if (!empty($request->input('transaction_date'))) {
                     $input['transaction_date'] = $this->productUtil->uf_date($request->input('transaction_date'), true);
@@ -1170,7 +1170,8 @@ class SellPosController extends Controller
                 $transaction = $this->transactionUtil->updateSellTransaction($id, $business_id, $input, $invoice_total, $user_id);
 
                 //Update Sell lines
-                $deleted_lines = $this->transactionUtil->createOrUpdateSellLines($input,$transaction, $input['products'], $input['location_id'], /*$input['number_of_days'],*/$input['time_slot'], $status_before,'');
+
+                $deleted_lines = $this->transactionUtil->createOrUpdateSellLines($input,$transaction, $input['products'], $input['location_id'], /*$input['number_of_days'],$input['time_slot'],*/ $status_before,'');
 
                 //Update update lines
                 $is_credit_sale = isset($input['is_credit_sale']) && $input['is_credit_sale'] == 1 ? true : false;

@@ -138,8 +138,10 @@ $multiplier = 1;
                                 {!! $transaction->contact->supplier_business_name ?? '' !!}, <br>
                                 {!! $transaction->contact->name ?? '' !!}, <br>
                                 {!!$transaction->contact->shipping_address ?? '' !!}<br>
-                                {{($transaction->contact->billing_phone) ? $transaction->contact->billing_phone :'' }}<br>
-                                {{($transaction->contact->billing_email) ? $transaction->contact->billing_email :'' }}<br>
+                                {{($transaction->contact->billing_phone) ? $transaction->contact->billing_phone :'' }}
+                                <br>
+                                {{($transaction->contact->billing_email) ? $transaction->contact->billing_email :'' }}
+                                <br>
                             </div>
                         </small>
                     </div>
@@ -359,72 +361,74 @@ $multiplier = 1;
                                     </thead>
                                     <tbody>
                                     @foreach($sell_details as $sell_line)
+
                                         @if($sell_line->product_id == $productId)
-                                        @php
-
-                                            $allow_decimal = true;
-                                            if($sell_line->unit_allow_decimal != 1) {
-                                                $allow_decimal = false;
-                                            }
-                                        @endphp
-                                        @php
-                                            $pos_unit_price = !empty($sell_line->unit_price_before_discount) ? $sell_line->unit_price_before_discount : $sell_line->default_sell_price;
-
-                                            if(!empty($so_line)) {
-                                                $pos_unit_price = $so_line->unit_price_before_discount;
-                                            }
-                                        @endphp
-                                        @if( session()->get('business.enable_lot_number') == 1 || session()->get('business.enable_product_expiry') == 1)
                                             @php
-                                                $lot_enabled = session()->get('business.enable_lot_number');
-                                                $exp_enabled = session()->get('business.enable_product_expiry');
-                                                $lot_no_line_id = '';
-                                                if(!empty($sell_line->lot_no_line_id)){
-                                                    $lot_no_line_id = $sell_line->lot_no_line_id;
+
+                                                $allow_decimal = true;
+                                                if($sell_line->unit_allow_decimal != 1) {
+                                                    $allow_decimal = false;
                                                 }
-
                                             @endphp
-                                            @if(!empty($sell_line->lot_numbers) && empty($is_sales_order))
-                                                @foreach($sell_line->lot_numbers as $lot_number)
-                                                    @php
-                                                        $selected = "";
-                                                        if($lot_number->purchase_line_id == $lot_no_line_id){
-                                                            $selected = "selected";
+                                            @php
+                                                $pos_unit_price = !empty($sell_line->unit_price_before_discount) ? $sell_line->unit_price_before_discount : $sell_line->default_sell_price;
 
-                                                            $max_qty_rule = $lot_number->qty_available;
-                                                            $max_qty_msg = __('lang_v1.quantity_error_msg_in_lot', ['qty'=> $lot_number->qty_formated, 'unit' => $product->unit  ]);
-                                                        }
+                                                if(!empty($so_line)) {
+                                                    $pos_unit_price = $so_line->unit_price_before_discount;
+                                                }
+                                            @endphp
+                                            @if( session()->get('business.enable_lot_number') == 1 || session()->get('business.enable_product_expiry') == 1)
+                                                @php
+                                                    $lot_enabled = session()->get('business.enable_lot_number');
+                                                    $exp_enabled = session()->get('business.enable_product_expiry');
+                                                    $lot_no_line_id = '';
+                                                    if(!empty($sell_line->lot_no_line_id)){
+                                                        $lot_no_line_id = $sell_line->lot_no_line_id;
+                                                    }
 
-                                                        $expiry_text = '';
-                                                        if($exp_enabled == 1 && !empty($lot_number->exp_date)){
-                                                            if( \Carbon\Carbon::now()->gt(\Carbon\Carbon::createFromFormat('Y-m-d', $lot_number->exp_date)) ){
-                                                                $expiry_text = '(' . __('report.expired') . ')';
+                                                @endphp
+                                                @if(!empty($sell_line->lot_numbers) && empty($is_sales_order))
+                                                    @foreach($sell_line->lot_numbers as $lot_number)
+                                                        @php
+                                                            $selected = "";
+                                                            if($lot_number->purchase_line_id == $lot_no_line_id){
+                                                                $selected = "selected";
+
+                                                                $max_qty_rule = $lot_number->qty_available;
+                                                                $max_qty_msg = __('lang_v1.quantity_error_msg_in_lot', ['qty'=> $lot_number->qty_formated, 'unit' => $product->unit  ]);
                                                             }
-                                                        }
 
-                                                        //preselected lot number if product searched by lot number
-                                                        if(!empty($purchase_line_id) && $purchase_line_id == $lot_number->purchase_line_id) {
-                                                            $selected = "selected";
+                                                            $expiry_text = '';
+                                                            if($exp_enabled == 1 && !empty($lot_number->exp_date)){
+                                                                if( \Carbon\Carbon::now()->gt(\Carbon\Carbon::createFromFormat('Y-m-d', $lot_number->exp_date)) ){
+                                                                    $expiry_text = '(' . __('report.expired') . ')';
+                                                                }
+                                                            }
 
-                                                            $max_qty_rule = $lot_number->qty_available;
-                                                            $max_qty_msg = __('lang_v1.quantity_error_msg_in_lot', ['qty'=> $lot_number->qty_formated, 'unit' => $product->unit  ]);
-                                                        }
-                                                    @endphp
-                                                @endforeach
+                                                            //preselected lot number if product searched by lot number
+                                                            if(!empty($purchase_line_id) && $purchase_line_id == $lot_number->purchase_line_id) {
+                                                                $selected = "selected";
+
+                                                                $max_qty_rule = $lot_number->qty_available;
+                                                                $max_qty_msg = __('lang_v1.quantity_error_msg_in_lot', ['qty'=> $lot_number->qty_formated, 'unit' => $product->unit  ]);
+                                                            }
+                                                        @endphp
+                                                    @endforeach
+                                                @endif
                                             @endif
-                                        @endif
 
-                                        @include('sell.product_row_edit', ['product' => $sell_line, 'row_count' => $loop->index, 'tax_dropdown' => $taxes, 'sub_units' => !empty($sell_line->unit_details) ? $sell_line->unit_details : [], 'action' => 'edit', 'is_direct_sell' => true, 'so_line' => $sell_line->so_line, 'is_sales_order' => $transaction->type == 'sales_order'])
+                                            @include('sell.product_row_edit', ['product' => $sell_line, 'row_count' => $loop->index, 'tax_dropdown' => $taxes, 'sub_units' => !empty($sell_line->unit_details) ? $sell_line->unit_details : [], 'action' => 'edit', 'is_direct_sell' => true, 'so_line' => $sell_line->so_line, 'is_sales_order' => $transaction->type == 'sales_order'])
                                         @endif
                                     @endforeach
                                     </tbody>
                                 </table>
-                                <div class="row pos_table_{{$sell_line->product_id}}">
+
+                                <div class="row pos_table_{{$productId}}">
                                     <div class="col-md-12 col-sm-12">
                                         <div class="box box-solid">
                                             <div class="box-body">
                                                 <div
-                                                    class="col-md-4 deliverydays_{{$sell_line->product_id}} @if($sell_line->unit != 'tingkat') hide @endif">
+                                                    class="col-md-4 deliverydays_{{$productId}} @if($edit_product[$productId]['unit'] != 'tingkat') hide @endif">
                                                     <div class="form-group">
                                                         <label for="delivery_days">Delivery Days:*</label>
                                                         <br/>
@@ -432,10 +436,10 @@ $multiplier = 1;
                                                             <div class="icheckbox_square-blue"
                                                                  style="position: relative;">
                                                                 <input class="input-icheck" id="has_purchase_due"
-                                                                       name="product[{{$sell_line->product_id}}][has_purchase_due][]"
+                                                                       name="product[{{$productId}}][has_purchase_due][]"
                                                                        type="checkbox" value="{{$key}}"
-                                                                       style="position: absolute; opacity: 0;"  {{ in_array($key,$transaction_sell_lines_id) ?
-     "checked" : '' }} >
+                                                                       style="position: absolute; opacity: 0;"  {{ in_array($key,$transaction_sell_lines_id[$productId]) ?
+     "checked" : '' }}>
                                                             </div>
                                                             <strong>{{ $deliveryDays }}</strong>
                                                             <br/>
@@ -443,55 +447,60 @@ $multiplier = 1;
                                                     </div>
                                                 </div>
                                                 <div
-                                                    class="@if(!empty($commission_agent)) col-sm-4 @else col-sm-4 @endif start_dates_{{$sell_line->product_id}} @if($sell_line->unit != 'tingkat') hide @endif">
+                                                    class="@if(!empty($commission_agent)) col-sm-4 @else col-sm-4 @endif start_dates_{{$productId}} @if($edit_product[$productId]['unit'] != 'tingkat') hide @endif">
                                                     <div class="form-group">
+
+                                                        <input type="hidden" class="startDate" name="startDate" value="{{($edit_product[$productId]['start_date'] != '0000-00-00' || $edit_product[$productId]['start_date'] != '') ? $edit_product[$productId]['start_date'] : $default_datetime}}">
+
                                                         {!! Form::label('start_date', __('sale.start_date') . ':*') !!}
                                                         <div class="input-group">
 							<span class="input-group-addon">
 								<i class="fa fa-calendar"></i>
 							</span>
-                                                            {!! Form::text("product[" . $sell_line->product_id . "][start_date]", $default_datetime, ['class' => 'form-control start_date', 'required']); !!}
+                                                            {!! Form::text("product[" . $productId . "][start_date]", ($edit_product[$productId]['start_date'] != '0000-00-00' || $edit_product[$productId]['start_date'] != '') ? $edit_product[$productId]['start_date'] : $default_datetime, ['class' => 'form-control start_date', 'readonly','required']); !!}
                                                         </div>
                                                     </div>
                                                 </div>
 
                                                 <div
-                                                    class="@if(!empty($commission_agent)) col-sm-4 @else col-sm-4 @endif delivery_dates_{{$sell_line->product_id}} @if($sell_line->unit == 'tingkat') hide @endif">
+                                                    class="@if(!empty($commission_agent)) col-sm-4 @else col-sm-4 @endif delivery_dates_{{$productId}} @if($edit_product[$productId]['unit'] == 'tingkat') hide @endif">
                                                     <div class="form-group">
+                                                        <input type="hidden" class="deliveryDate" name="deliveryDate" value="{{($edit_product[$productId]['delivery_date'] != '0000-00-00' || $edit_product[$productId]['delivery_date'] != '') ? $edit_product[$productId]['delivery_date'] : $default_datetime}}">
                                                         {!! Form::label('delivery_date', __('sale.delivery_date') . ':*') !!}
                                                         <div class="input-group">
-							<span class="input-group-addon">
-								<i class="fa fa-calendar"></i>
-							</span>
-                                                            {!! Form::text("product[" . $sell_line->product_id . "][delivery_date]", ($sell_line->delivery_date != '0000-00-00' || $sell_line->delivery_date != '') ? $sell_line->delivery_date : $default_datetime, ['class' => 'form-control delivery_date', 'required']); !!}
+                                                            <span class="input-group-addon">
+                                                                <i class="fa fa-calendar"></i>
+                                                            </span>
+                                                            {!! Form::text("product[" . $productId . "][delivery_date]", ($edit_product[$productId]['delivery_date'] != '0000-00-00' || $edit_product[$productId]['delivery_date'] != '') ? $edit_product[$productId]['delivery_date'] : $default_datetime, ['class' => 'form-control delivery_date', 'required']); !!}
                                                         </div>
                                                     </div>
                                                 </div>
 
                                                 <div
-                                                    class="@if(!empty($commission_agent)) col-sm-4 @else col-sm-4 @endif delivery_times_{{$sell_line->product_id}} @if($sell_line->unit == 'tingkat') hide @endif">
+                                                    class="@if(!empty($commission_agent)) col-sm-4 @else col-sm-4 @endif delivery_times_{{$productId}} @if($edit_product[$productId]['unit'] == 'tingkat') hide @endif">
                                                     <div class="form-group">
                                                         {!! Form::label('delivery_time', __('sale.delivery_time') . ':*') !!}
                                                         <div class="input-group">
 							<span class="input-group-addon">
 								<i class="fa fa-calendar"></i>
 							</span>
-                                                            {!! Form::text("product[" . $sell_line->product_id . "][delivery_time]", ($sell_line->delivery_time) ? $sell_line->delivery_time : $default_time, ['class' => 'form-control delivery_time', 'required']); !!}
+                                                            {!! Form::text("product[" . $productId . "][delivery_time]", ($edit_product[$productId]['delivery_time']) ? $edit_product[$productId]['delivery_time'] : $default_time, ['class' => 'form-control delivery_time', 'required']); !!}
                                                         </div>
                                                     </div>
                                                 </div>
 
                                                 <div
-                                                    class="col-sm-4 time_slot_{{$sell_line->product_id}} @if($sell_line->unit != 'tingkat') hide @endif">
+                                                    class="col-sm-4 time_slot_{{$productId}} @if($edit_product[$productId]['unit'] != 'tingkat') hide @endif">
                                                     <div class="form-group">
                                                         <label for="time_slot">Meal Type:*</label>
                                                         <div class="form-group">
-                                                            <select class="form-control select2" id="time_slot"                          name="product[{{$sell_line->product_id}}][time_slot]"
-                                                                    required>
+                                                            <select class="form-control select2" id="time_slot" name="product[{{$productId}}][time_slot]"
+                                                                    disabled>
                                                                 <option selected>please select</option>
                                                                 @foreach(mealTypes() as $key => $deliveryDays)
                                                                     <option
-                                                                        value="{{$key}}" @if($sell_line->time_slot == $key) selected @endif>{{ $deliveryDays }}</option>
+                                                                        value="{{$key}}"
+                                                                        @if($edit_product[$productId]['time_slot'] == $key) selected @endif>{{ $deliveryDays }}</option>
                                                                 @endforeach
                                                             </select>
                                                         </div>
@@ -508,8 +517,8 @@ $multiplier = 1;
                             class="fa fa-minus text-danger"></i></button></span>
                                                             <input id="quantity" type="text" data-min="1"
                                                                    class="form-control pos_quantity input_number mousetrap input_quantity"
-                                                                   value="{{@format_quantity($sell_line->quantity_ordered)}}"
-                                                                   name="product[{{$sell_line->product_id}}][quantity]"
+                                                                   value="{{@format_quantity($edit_product[$productId]['quantity'])}}"
+                                                                   name="product[{{$productId}}][quantity]"
                                                                    data-allow-overselling="@if(empty($pos_settings['allow_overselling'])){{'false'}}@else{{'true'}}@endif"
                                                                    @if($allow_decimal)
                                                                        data-decimal=1
@@ -528,18 +537,18 @@ $multiplier = 1;
                                                         </div>
 
                                                         <input type="hidden"
-                                                               name="product[{{$sell_line->product_id}}][product_unit_id]"
-                                                               value="{{$sell_line->product->unit->id}}">
+                                                               name="product[{{$productId}}][product_unit_id]"
+                                                               value="{{$edit_product[$productId]['unit_id']}}">
 
-                                                        {{$sell_line->product->unit->short_name}}
+                                                        {{$edit_product[$productId]['unit']}}
 
 
                                                         <input type="hidden" class="base_unit_multiplier"
-                                                               name="product[{{$sell_line->product_id}}][base_unit_multiplier]"
+                                                               name="product[{{$productId}}][base_unit_multiplier]"
                                                                value="{{$multiplier}}">
 
                                                         <input type="hidden" class="hidden_base_unit_sell_price"
-                                                               value="{{$sell_line->default_sell_price / $multiplier}}">
+                                                               value="{{$edit_product[$productId]['default_sell_price'] / $multiplier}}">
 
                                                         {{-- Hidden fields for combo products --}}
                                                     </div>
@@ -550,7 +559,7 @@ $multiplier = 1;
                                                         <label for="unit_price">Unit Price:*</label>
                                                         <div class="form-group">
                                                             <input type="text"
-                                                                   name="product[{{$sell_line->product_id}}][unit_price]"
+                                                                   name="product[{{$productId}}][unit_price]"
                                                                    class="form-control product_pos_unit_price input_number mousetrap"
                                                                    value="{{@num_format($pos_unit_price)}}"
                                                                    @if(!empty($pos_settings['enable_msp'])) data-rule-min-value="{{$pos_unit_price}}"
@@ -567,6 +576,7 @@ $multiplier = 1;
                                 </div>
                             @endforeach
                         </div>
+
                         <div class="table-responsive">
                             <table class="table table-condensed table-bordered table-striped table-responsive">
                                 <tr>
@@ -992,7 +1002,6 @@ $multiplier = 1;
     </div>
     <!-- quick product modal -->
     <div class="modal fade quick_add_product_modal" tabindex="-1" role="dialog" aria-labelledby="modalTitle"></div>
-
 
 @stop
 

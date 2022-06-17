@@ -244,6 +244,11 @@ class Transaction extends Model
         return $this->hasMany(\App\Models\CashRegisterTransaction::class);
     }
 
+    public function transaction_activity()
+    {
+        return $this->hasMany(\App\Models\TransactionActivity::class);
+    }
+
     public function media()
     {
         return $this->morphMany(\App\Models\Media::class, 'model');
@@ -358,6 +363,7 @@ class Transaction extends Model
         return [
             'final' => __('sale.final'),
             'draft' => __('sale.draft'),
+            'refund' => __('sale.refund'),
             /*'quotation' => __('lang_v1.quotation'),
             'proforma' => __('lang_v1.proforma')*/
         ];

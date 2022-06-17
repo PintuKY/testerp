@@ -25,6 +25,7 @@ return [
     'total_payable' => 'Total Payable',
     'cancel' => 'Cancel',
     'draft' => 'Draft',
+    'refund' => 'Refund',
     'finalize' => 'Pay & Checkout',
     'express_finalize' => 'Express <br/>Checkout',
     'product' => 'Product',
@@ -71,5 +72,10 @@ return [
     'edit_sale' => 'Edit Sale',
     'shipping' => 'Shipping',
     'shipping_details' => 'Shipping Details',
-    'shipping_charges' => 'Shipping Charges'
+    'shipping_charges' => 'Shipping Charges',
+    'add_user_comment' => 'Add a new comment',
+    'comment' => 'Comment',
+    'add_comment' => 'Add Comment',
+    'comment_added_success' => 'Comment added successfully',
+    'comment_deleted_success' => 'Comment deleted successfully',
 ];

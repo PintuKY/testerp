@@ -1835,6 +1835,8 @@ $(document).ready(function () {
         })
     });
 
+
+
     $(document).on('click', 'button.delete_business_location_button', function () {
         swal({
             title: LANG.sure,
@@ -2358,6 +2360,8 @@ $(document).ready(function () {
             }
         });
     });
+
+
 
     //Delete Sale
     $(document).on('click', '.delete-sale', function (e) {

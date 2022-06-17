@@ -11,6 +11,7 @@ use App\Models\InvoiceScheme;
 use App\Models\SellingPriceGroup;
 use App\Models\TaxRate;
 use App\Models\Transaction;
+use App\Models\TransactionActivity;
 use App\Models\TransactionSellLine;
 use App\Models\TransactionSellLinesDay;
 use App\Models\TypesOfService;
@@ -21,7 +22,6 @@ use App\Utils\ContactUtil;
 use App\Utils\ModuleUtil;
 use App\Utils\ProductUtil;
 use App\Utils\TransactionUtil;
-use App\Models\Warranty;
 use DB;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
@@ -1289,6 +1289,8 @@ class SellController extends Controller
             ));
     }
 
+
+
     /**
      * Store a newly created resource in storage.
      *
@@ -1299,6 +1301,7 @@ class SellController extends Controller
     {
         //
     }
+
 
     /**
      * Display the specified resource.
@@ -1317,7 +1320,7 @@ class SellController extends Controller
             ->pluck('name', 'id');
         $query = Transaction::where('business_id', $business_id)
             ->where('id', $id)
-            ->with(['contact', 'sell_lines' => function ($q) {
+            ->with(['contact','transaction_activity', 'sell_lines' => function ($q) {
                 $q->whereNull('parent_sell_line_id');
             }, 'sell_lines.product', 'sell_lines.product.unit', 'sell_lines.variations', 'sell_lines.variations.product_variation', 'payment_lines', 'sell_lines.modifiers', 'sell_lines.lot_details', 'tax', 'sell_lines.sub_unit', 'table', 'service_staff', 'sell_lines.service_staff', 'types_of_service',  'media','sell_lines.transactionSellLinesVariants']);
 
@@ -1327,10 +1330,25 @@ class SellController extends Controller
 
         $sell = $query->firstOrFail();
 
+        /*$p1 = DB::table('transactions_activity')
+            ->select('comment as comment','created_at as date');
+
+        $p2 = DB::table('activity_log')
+            ->select('description as comment','created_at as date');
+
+        $p = $p1->unionAll($p2);
+
+       $aa =  \Illuminate\Support\Facades\DB::table(\Illuminate\Support\Facades\DB::raw("({$p->toSql()}) AS p"))
+           ->groupBy('date')
+            ->mergeBindings($p)
+            ->paginate(10);
+        dd($aa);*/
+
         $activities = Activity::forSubject($sell)
             ->with(['causer', 'subject'])
             ->latest()
             ->get();
+
 
         $line_taxes = [];
         $product_id = [];
@@ -1400,6 +1418,56 @@ class SellController extends Controller
             ));
     }
 
+    /**
+     * List of transaction activity.
+     *
+     * @param int $id
+     * @return \Illuminate\Http\Response
+     */
+    public function transactionActivity($id)
+    {
+        if (!auth()->user()->can('direct_sell.update') && !auth()->user()->can('so.update')) {
+            abort(403, 'Unauthorized action.');
+        }
+        $business_id = request()->session()->get('user.business_id');
+
+        $business_details = $this->businessUtil->getDetails($business_id);
+
+        if (request()->ajax()) {
+            $business_id = request()->session()->get('user.business_id');
+
+            $sells = TransactionActivity::where('transaction_id',$id);
+            return Datatables::of($sells)
+                ->addColumn(
+                    'action', function ($row) {
+                        if($row->user_comment != ''){
+                            $html = '<div class="btn-group">
+                                <button type="button" class="btn btn-info dropdown-toggle btn-xs"
+                                    data-toggle="dropdown" aria-expanded="false">' .
+                                __("messages.actions") .
+                                '<span class="caret"></span><span class="sr-only">Toggle Dropdown
+                                    </span>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                                    ';
+
+                            if (auth()->user()->can('draft.delete') || auth()->user()->can('quotation.delete')) {
+                                $html .= '<li>
+                                <a href="' . action('TransactionActivityController@destroy', [$row->id]) . '" class="delete-activity"><i class="fas fa-trash"></i>' . __("messages.delete") . '</a>
+                                </li>';
+                            }
+
+                            $html .= '</ul></div>';
+
+                            return $html;
+                        }
+                        return 'NA';
+
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+    }
 
     /**
      * Show the form for editing the specified resource.
@@ -1433,7 +1501,7 @@ class SellController extends Controller
         $taxes = TaxRate::forBusinessDropdown($business_id, true, true);
 
         $transaction = Transaction::where('business_id', $business_id)
-            ->with(['price_group', 'types_of_service', 'media', 'media.uploaded_by_user'])
+            ->with(['price_group', 'types_of_service', 'media', 'media.uploaded_by_user','transaction_activity'])
             ->whereIn('type', ['sell', 'sales_order'])
             ->findorfail($id);
 

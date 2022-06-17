@@ -123,6 +123,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::post('/sells/pos/get-types-of-service-details', 'SellPosController@getTypesOfServiceDetails');
     Route::get('/sells/subscriptions', 'SellPosController@listSubscriptions');
     Route::get('/sells/duplicate/{id}', 'SellController@duplicateSell');
+    Route::get('/sells/transaction-activity/{id}', 'SellController@transactionActivity');
     Route::get('/sells/drafts', 'SellController@getDrafts')->name('sells.drafts');
     Route::get('/sells/convert-to-draft/{id}', 'SellPosController@convertToInvoice');
     Route::get('/sells/convert-to-proforma/{id}', 'SellPosController@convertToProforma');
@@ -131,6 +132,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/sells/draft-dt', 'SellController@getDraftDatables');
 
     Route::resource('sells', 'SellController')->except(['show']);
+    Route::resource('transaction_activity', 'TransactionActivityController');
     Route::resource('masters', 'SellController@master');
 
     Route::get('/import-sales', 'ImportSalesController@index')->name('sales.import');

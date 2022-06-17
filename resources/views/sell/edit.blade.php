@@ -438,7 +438,7 @@ $multiplier = 1;
                                                                 <input class="input-icheck" id="has_purchase_due"
                                                                        name="product[{{$productId}}][has_purchase_due][]"
                                                                        type="checkbox" value="{{$key}}"
-                                                                       style="position: absolute; opacity: 0;"  {{ in_array($key,$transaction_sell_lines_id[$productId]) ?
+                                                                       style="position: absolute; opacity: 0;" {{ in_array($key,$transaction_sell_lines_id[$productId]) ?
      "checked" : '' }}>
                                                             </div>
                                                             <strong>{{ $deliveryDays }}</strong>
@@ -450,7 +450,8 @@ $multiplier = 1;
                                                     class="@if(!empty($commission_agent)) col-sm-4 @else col-sm-4 @endif start_dates_{{$productId}} @if($edit_product[$productId]['unit'] != 'tingkat') hide @endif">
                                                     <div class="form-group">
 
-                                                        <input type="hidden" class="startDate" name="startDate" value="{{($edit_product[$productId]['start_date'] != '0000-00-00' || $edit_product[$productId]['start_date'] != '') ? $edit_product[$productId]['start_date'] : $default_datetime}}">
+                                                        <input type="hidden" class="startDate" name="startDate"
+                                                               value="{{($edit_product[$productId]['start_date'] != '0000-00-00' || $edit_product[$productId]['start_date'] != '') ? $edit_product[$productId]['start_date'] : $default_datetime}}">
 
                                                         {!! Form::label('start_date', __('sale.start_date') . ':*') !!}
                                                         <div class="input-group">
@@ -465,7 +466,8 @@ $multiplier = 1;
                                                 <div
                                                     class="@if(!empty($commission_agent)) col-sm-4 @else col-sm-4 @endif delivery_dates_{{$productId}} @if($edit_product[$productId]['unit'] == 'tingkat') hide @endif">
                                                     <div class="form-group">
-                                                        <input type="hidden" class="deliveryDate" name="deliveryDate" value="{{($edit_product[$productId]['delivery_date'] != '0000-00-00' || $edit_product[$productId]['delivery_date'] != '') ? $edit_product[$productId]['delivery_date'] : $default_datetime}}">
+                                                        <input type="hidden" class="deliveryDate" name="deliveryDate"
+                                                               value="{{($edit_product[$productId]['delivery_date'] != '0000-00-00' || $edit_product[$productId]['delivery_date'] != '') ? $edit_product[$productId]['delivery_date'] : $default_datetime}}">
                                                         {!! Form::label('delivery_date', __('sale.delivery_date') . ':*') !!}
                                                         <div class="input-group">
                                                             <span class="input-group-addon">
@@ -494,7 +496,8 @@ $multiplier = 1;
                                                     <div class="form-group">
                                                         <label for="time_slot">Meal Type:*</label>
                                                         <div class="form-group">
-                                                            <select class="form-control select2" id="time_slot" name="product[{{$productId}}][time_slot]"
+                                                            <select class="form-control select2" id="time_slot"
+                                                                    name="product[{{$productId}}][time_slot]"
                                                                     disabled>
                                                                 <option selected>please select</option>
                                                                 @foreach(mealTypes() as $key => $deliveryDays)
@@ -976,10 +979,40 @@ $multiplier = 1;
                 @endcomponent
             @endcan
         @endif
+
+        @if($transaction->transaction_activity)
+            @component('components.widget', ['class' => 'box-solid', 'title' => __('lang_v1.transaction_activity')])
+                @slot('tool')
+                    <div class="box-tools">
+                        <button type="button" class="btn btn-block btn-primary btn-modal"
+                                data-href="{{action('TransactionActivityController@create')}}"
+                                data-container=".transaction_activity_add_modals">
+                            <i class="fa fa-plus"></i> @lang( 'messages.add' )</button>
+
+                    </div>
+                @endslot
+                <div class="row col-sm-12 pos_product_div" style="min-height: 0">
+                    <div class="table-responsive">
+                    <table class="table table-bordered table-striped ajax_view"
+                           id="transaction_activity">
+                        <thead>
+                        <tr>
+                            <th>@lang('lang_v1.date')</th>
+                            <th>@lang('lang_v1.comment')</th>
+                            <th>@lang('lang_v1.user_comment')</th>
+                            <th>@lang('messages.action')</th>
+                        </tr>
+                        </thead>
+                    </table>
+                </div>
+                </div>
+            @endcomponent
+        @endif
         <div class="row">
             <div class="col-md-12 text-center">
                 {!! Form::hidden('is_save_and_print', 0, ['id' => 'is_save_and_print']); !!}
-                <button type="button" class="btn btn-primary btn-big" id="submit-sell">@lang('messages.update')</button>
+                <button type="button" class="btn btn-primary btn-big"
+                        id="submit-sell">@lang('messages.update')</button>
                 <button type="button" id="save-and-print"
                         class="btn btn-success btn-big">@lang('lang_v1.update_and_print')</button>
             </div>
@@ -989,6 +1022,10 @@ $multiplier = 1;
         @endif
         {!! Form::close() !!}
     </section>
+
+    <div class="modal fade transaction_activity_add_modals" tabindex="-1" role="dialog"
+         aria-labelledby="gridSystemModalLabel">
+    </div>
 
     <div class="modal fade contact_modal" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel">
         @include('contact.create', ['quick_add' => true])
@@ -1014,7 +1051,94 @@ $multiplier = 1;
         <script src="{{ asset('js/restaurant.js?v=' . $asset_v) }}"></script>
     @endif
     <script type="text/javascript">
+
+
         $(document).ready(function () {
+            //transaction activity CRUD
+            $('.transaction_activity_add_modals').on('shown.bs.modal', function() {
+                $('.transaction_activity_add_modals').find('#transaction_ids').val('{{$transaction->id}}');
+            });
+            //transaction activity
+            transaction_activity = $('#transaction_activity').DataTable({
+                processing: true,
+                serverSide: true,
+                bPaginate: false,
+                buttons: [],
+                ajax: '/sells/transaction-activity/{{$transaction->id}}',
+                columns: [
+                    {data: 'created_at', name: 'created_at'},
+                    {data: 'comment', name: 'comment'},
+                    {data: 'user_comment', name: 'user_comment'},
+                    {data: 'action', name: 'action'},
+                ],
+            });
+            $('.transaction_activity_add_modals').on('shown.bs.modal', function (e) {
+                $('form#user_comment_add_form')
+                    .submit(function (e) {
+                        e.preventDefault();
+                    })
+                    .validate({
+                        rules: {
+                            user_comment: {
+                                required: true,
+                            },
+                        },
+                        submitHandler: function (form) {
+                            e.preventDefault();
+                            var data = $(form).serialize();
+
+                            $.ajax({
+                                method: 'POST',
+                                url: $(form).attr('action'),
+                                dataType: 'json',
+                                data: data,
+                                beforeSend: function (xhr) {
+                                    __disable_submit_button($(form).find('button[type="submit"]'));
+                                },
+                                success: function (result) {
+                                    if (result.success == true) {
+                                        $('div.transaction_activity_add_modals').modal('hide');
+                                        toastr.success(result.msg);
+                                        transaction_activity.ajax.reload();
+                                    } else {
+                                        toastr.error(result.msg);
+                                    }
+                                },
+                            });
+                        },
+                    });
+
+
+            });
+
+            //delete trasaction activity
+            $(document).on('click', '.delete-activity', function (e) {
+                e.preventDefault();
+                swal({
+                    title: LANG.sure,
+                    icon: 'warning',
+                    buttons: true,
+                    dangerMode: true,
+                }).then(willDelete => {
+                    if (willDelete) {
+                        var href = $(this).attr('href');
+                        var is_suspended = $(this).hasClass('is_suspended');
+                        $.ajax({
+                            method: 'DELETE',
+                            url: href,
+                            dataType: 'json',
+                            success: function (result) {
+                                if (result.success == true) {
+                                    toastr.success(result.msg);
+                                    transaction_activity.ajax.reload();
+                                } else {
+                                    toastr.error(result.msg);
+                                }
+                            },
+                        });
+                    }
+                });
+            });
             $('#shipping_documents').fileinput({
                 showUpload: false,
                 showPreview: false,

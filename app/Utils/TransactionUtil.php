@@ -976,6 +976,7 @@ class TransactionUtil extends Util
 
             TransactionSellLine::whereIn('id', $transaction_line_ids)
                 ->delete();
+
         }
     }
 
@@ -1515,15 +1516,16 @@ class TransactionUtil extends Util
             }
 
             $lines = $transaction->sell_lines()->whereNull('parent_sell_line_id')->with($sell_line_relations)->get();
-
+            $product_id = [];
             foreach ($lines as $key => $value) {
+                $product_id[] = $value->product_id;
                 if (!empty($value->sub_unit_id)) {
                     $formated_sell_line = $this->recalculateSellLineTotals($business_details->id, $value);
 
                     $lines[$key] = $formated_sell_line;
                 }
             }
-
+            $output['product_id'] = array_unique($product_id);
             $output['item_discount_label'] = $il->common_settings['item_discount_label'] ?? '';
             $output['tax_summary_label'] = $il->common_settings['tax_summary_label'] ?? '';
             $details = $this->_receiptDetailsSellLines($lines, $il, $business_details);
@@ -2192,6 +2194,7 @@ class TransactionUtil extends Util
             $line_array = [
                 //Field for 1st column
                 'name' => $product->name,
+                'product_id' => $product->id,
                 'variation' => (empty($variation->name) || $variation->name == 'DUMMY') ? '' : $variation->name,
                 'product_variation' => (empty($product_variation->name) || $product_variation->name == 'DUMMY') ? '' : $product_variation->name,
                 //Field for 2nd column
@@ -6032,6 +6035,7 @@ class TransactionUtil extends Util
 
         //Get receipt details
         $receipt_details = $this->getReceiptDetails($transaction_id, $transaction->location_id, $invoice_layout, $business_details, $location_details, $receipt_printer_type);
+
         $currency_details = [
             'symbol' => $business_details->currency_symbol,
             'thousand_separator' => $business_details->thousand_separator,

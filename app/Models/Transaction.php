@@ -4,13 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Log;
 
 class Transaction extends Model
 {
-    //Transaction types = ['purchase','sell','expense','stock_adjustment','sell_transfer','purchase_transfer','opening_stock','sell_return','opening_balance','purchase_return', 'payroll', 'expense_refund', 'sales_order', 'purchase_order']
-
-    //Transaction status = ['received','pending','ordered','draft','final', 'in_transit', 'completed']
-
+    use SoftDeletes;
 
     /**
      * The attributes that aren't mass assignable.
@@ -46,8 +45,10 @@ class Transaction extends Model
     {
         return $this->hasMany(\App\Models\TransactionSellLine::class);
     }
-
-
+    public function master_list()
+    {
+        return $this->hasMany(\App\Models\MasterList::class);
+    }
 
     public function contact()
     {
@@ -405,5 +406,21 @@ class Transaction extends Model
         }
 
         return $sales_orders;
+    }
+
+    // this is a recommended way to declare event handlers
+    public static function boot() {
+        parent::boot();
+
+        static::deleting(function($transaction) { // before delete() method call this
+            $transaction->transaction_activity()->delete();
+            $transaction->payment_lines()->delete();
+            $transaction->sell_lines()->delete();
+            $transaction->master_list()->delete();
+            $transaction->sell_lines->each(function ($item) {
+                $item->delete();
+            });
+        });
+
     }
 }

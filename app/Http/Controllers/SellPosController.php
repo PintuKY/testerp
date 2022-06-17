@@ -2624,6 +2624,7 @@ class SellPosController extends Controller
 
         $receipt_contents = $this->transactionUtil->getPdfContentsForGivenTransaction($business_id, $id);
         $receipt_details = $receipt_contents['receipt_details'];
+
         $location_details = $receipt_contents['location_details'];
         $is_email_attachment = false;
 

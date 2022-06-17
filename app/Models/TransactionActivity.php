@@ -17,4 +17,8 @@ class TransactionActivity extends Model
     {
         return Carbon::parse($value)->format('Y-m-d H:i:s');
     }
+    public function transaction()
+    {
+        return $this->belongsTo(\App\Models\Transaction::class);
+    }
 }

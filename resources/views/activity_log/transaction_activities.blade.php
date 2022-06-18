@@ -1,19 +1,20 @@
-@if(!empty($activities))
+@if(!empty($sell->transaction_activity))
 <table class="table table-condensed">
     <tr>
         <th>@lang('lang_v1.date')</th>
         <th>@lang('messages.action')</th>
-        <th>@lang('lang_v1.by')</th>
-        <th>@lang('lang_v1.note')</th>
+        <th>@lang('lang_v1.comment')</th>
+        <th>@lang('lang_v1.user_comment')</th>
     </tr>
-    @forelse($activities as $activity)
+    @forelse($sell->transaction_activity as $activity)
         <tr>
             <td>{{@format_datetime($activity->created_at)}}</td>
             <td>
-                {{__('lang_v1.' . $activity->description)}}
+                Added
             </td>
             <td>
-                {{$activity->causer->user_full_name ?? ''}}
+                {{($activity->comment) ? $activity->comment : 'NA'}}
+                {{--{{$activity->causer->user_full_name ?? ''}}
                 @if(!empty($activity->getExtraProperty('from_api')))
                     <br>
                     <span class="label bg-gray">{{$activity->getExtraProperty('from_api')}}</span>
@@ -21,10 +22,11 @@
 
                 @if(!empty($activity->getExtraProperty('is_automatic')))
                     <span class="label bg-gray">@lang('lang_v1.automatic')</span>
-                @endif
+                @endif--}}
             </td>
             <td>
-                @if(!empty($activity_type))
+                {{($activity->user_comment) ? $activity->user_comment : 'NA'}}
+                {{--@if(!empty($activity_type))
                     @if($activity_type == 'sell')
                         @include('sale_pos.partials.activity_row')
                     @elseif($activity_type == 'purchase')
@@ -48,7 +50,7 @@
 
                 @if(!empty($activity->getExtraProperty('mobile')))
                     <b>@lang('business.mobile'): </b> {{$activity->getExtraProperty('mobile')}}
-                @endif
+                @endif--}}
             </td>
         </tr>
     @empty

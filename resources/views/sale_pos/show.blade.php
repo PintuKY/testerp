@@ -395,6 +395,8 @@
       <div class="col-md-12">
             <strong>{{ __('lang_v1.activities') }}:</strong><br>
             @includeIf('activity_log.activities', ['activity_type' => 'sell'])
+            <strong>{{ __('lang_v1.transaction_activities') }}:</strong><br>
+            @includeIf('activity_log.transaction_activities')
         </div>
     </div>
   </div>

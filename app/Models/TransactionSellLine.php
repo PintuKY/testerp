@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class TransactionSellLine extends Model
 {
+    use SoftDeletes;
     /**
      * The attributes that aren't mass assignable.
      *
@@ -108,5 +110,13 @@ class TransactionSellLine extends Model
     public function so_line()
     {
         return $this->belongsTo(\App\Models\TransactionSellLine::class, 'so_line_id');
+    }
+    // this is a recommended way to declare event handlers
+    public static function boot() {
+        parent::boot();
+        self::deleting(function($transaction_sell_line) {
+            $transaction_sell_line->sell_lines_days()->delete();
+            $transaction_sell_line->transactionSellLinesVariants()->delete();
+        });
     }
 }

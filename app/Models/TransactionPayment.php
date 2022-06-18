@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Events\TransactionPaymentDeleted;
 use App\Events\TransactionPaymentUpdated;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class TransactionPayment extends Model
 {
+    use SoftDeletes;
     /**
      * The attributes that aren't mass assignable.
      *

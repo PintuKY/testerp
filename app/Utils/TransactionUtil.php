@@ -288,7 +288,6 @@ class TransactionUtil extends Util
         $tra_day = [];
         $tra_sell_days = TransactionSellLine::with('product', 'sell_lines_days')->where(['transaction_id' => $transaction->id])->groupBy('product_id')->get();
 
-
         foreach ($products as $variationId => $product) {
             //$transaction_sell_lines_id[] = $product['transaction_sell_lines_id'];
             $product_delivery_date = $input['product'][$product['product_id']];
@@ -393,6 +392,7 @@ class TransactionUtil extends Util
                 }
 
                 $line = [
+                    'product_name' => $product_data->name,
                     'product_id' => $product['product_id'],
                     'variation_id' => $variationId,
                     'quantity' => $uf_quantity * $multiplier,
@@ -1509,7 +1509,7 @@ class TransactionUtil extends Util
         $output['lines'] = [];
         $total_exempt = 0;
         if (in_array($transaction_type, ['sell', 'sales_order'])) {
-            $sell_line_relations = ['modifiers', 'sub_unit'];
+            $sell_line_relations = ['modifiers', 'sub_unit','transactionSellLinesVariants'];
 
             if ($is_lot_number_enabled == 1) {
                 $sell_line_relations[] = 'lot_details';
@@ -1517,8 +1517,10 @@ class TransactionUtil extends Util
 
             $lines = $transaction->sell_lines()->whereNull('parent_sell_line_id')->with($sell_line_relations)->get();
             $product_id = [];
+            $product_name = [];
             foreach ($lines as $key => $value) {
                 $product_id[] = $value->product_id;
+                $product_name[] = $value->product_name;
                 if (!empty($value->sub_unit_id)) {
                     $formated_sell_line = $this->recalculateSellLineTotals($business_details->id, $value);
 
@@ -1526,6 +1528,7 @@ class TransactionUtil extends Util
                 }
             }
             $output['product_id'] = array_unique($product_id);
+            $output['product_name'] = array_unique($product_name);
             $output['item_discount_label'] = $il->common_settings['item_discount_label'] ?? '';
             $output['tax_summary_label'] = $il->common_settings['tax_summary_label'] ?? '';
             $details = $this->_receiptDetailsSellLines($lines, $il, $business_details);
@@ -2168,6 +2171,7 @@ class TransactionUtil extends Util
      */
     protected function _receiptDetailsSellLines($lines, $il, $business_details)
     {
+
         $is_lot_number_enabled = $business_details->enable_lot_number;
         $is_product_expiry_enabled = $business_details->enable_product_expiry;
 
@@ -2181,6 +2185,7 @@ class TransactionUtil extends Util
             $product = $line->product;
             $variation = $line->variations;
             $product_variation = $line->variations->product_variation;
+            $line_variation = $line->transactionSellLinesVariants;
             $unit = $line->product->unit;
             $brand = $line->product->brand;
             $cat = $line->product->category;
@@ -2192,15 +2197,16 @@ class TransactionUtil extends Util
                 $unit_name = $line->sub_unit->short_name;
             }
             $line_array = [
-                //Field for 1st column
-                'name' => $product->name,
-                'product_id' => $product->id,
+                //Field for 1st coslumn
+                'name' => $line->product_name,
+                'product_id' => $line->product_id,
                 'variation' => (empty($variation->name) || $variation->name == 'DUMMY') ? '' : $variation->name,
                 'product_variation' => (empty($product_variation->name) || $product_variation->name == 'DUMMY') ? '' : $product_variation->name,
                 //Field for 2nd column
                 'quantity' => $this->num_f($line->quantity, false, $business_details, true),
                 'quantity_uf' => $line->quantity,
-                'units' => $unit_name,
+                //'units' => $unit_name,
+                'units' => $line->transactionSellLinesVariants[0]->name,
 
                 'unit_price' => $this->num_f($line->unit_price, false, $business_details),
                 'unit_price_uf' => $line->unit_price,
@@ -2209,7 +2215,7 @@ class TransactionUtil extends Util
                 'tax_unformatted' => $line->item_tax,
                 'tax_name' => !empty($tax_details) ? $tax_details->name : null,
                 'tax_percent' => !empty($tax_details) ? $tax_details->amount : null,
-
+                'tran_sell_var_value' => $line->transactionSellLinesVariants[0]->value,
                 //Field for 3rd column
                 'unit_price_inc_tax' => $this->num_f($line->unit_price_inc_tax, false, $business_details),
                 'unit_price_inc_tax_uf' => $line->unit_price_inc_tax,

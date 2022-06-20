@@ -1,7 +1,7 @@
 <!-- Fix for scroll issue in new booking -->
 <style type="text/css">
   .modal {
-    overflow-y:auto; 
+    overflow-y:auto;
   }
 </style>
 <div class="modal-dialog" role="document">
@@ -16,7 +16,7 @@
 
     <div class="modal-body">
         <div>
-            <strong>@lang('lang_v1.available_tags'):</strong> 
+            <strong>@lang('lang_v1.available_tags'):</strong>
             @include('notification_template.partials.tags', ['tags' => $tags])
         </div>
         <div class="box-group" id="accordion">
@@ -109,7 +109,7 @@
                 </div>
             @endif
         </div>
-        
+
         @if(!empty($transaction))
             {!! Form::hidden('transaction_id', $transaction->id); !!}
         @endif
@@ -144,7 +144,7 @@
             selector: 'textarea#email_body',
         });
     }
-    
+
   $(document).ready(function(){
     //initialize iCheck
     $('input[type="checkbox"].input-icheck, input[type="radio"].input-icheck').iCheck({

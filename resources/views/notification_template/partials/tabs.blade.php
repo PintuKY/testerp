@@ -16,7 +16,7 @@
                     @if(!empty($value['extra_tags']))
                         <strong>@lang('lang_v1.available_tags'):</strong>
                         @include('notification_template.partials.tags', ['tags' => $value['extra_tags']])
-                    
+
                     @endif
                     @if(!empty($value['help_text']))
                     <p class="help-block">{{$value['help_text']}}</p>
@@ -26,7 +26,7 @@
                     <div class="form-group">
                         {!! Form::label($key . '_subject',
                         __('lang_v1.email_subject').':') !!}
-                        {!! Form::text('template_data[' . $key . '][subject]', 
+                        {!! Form::text('template_data[' . $key . '][subject]',
                         $value['subject'], ['class' => 'form-control'
                         , 'placeholder' => __('lang_v1.email_subject'), 'id' => $key . '_subject']); !!}
                     </div>
@@ -35,7 +35,7 @@
                     <div class="form-group">
                         {!! Form::label($key . '_cc',
                         'CC:') !!}
-                        {!! Form::email('template_data[' . $key . '][cc]', 
+                        {!! Form::email('template_data[' . $key . '][cc]',
                         $value['cc'], ['class' => 'form-control'
                         , 'placeholder' => 'CC', 'id' => $key . '_cc']); !!}
                     </div>
@@ -44,7 +44,7 @@
                     <div class="form-group">
                         {!! Form::label($key . '_bcc',
                         'BCC:') !!}
-                        {!! Form::email('template_data[' . $key . '][bcc]', 
+                        {!! Form::email('template_data[' . $key . '][bcc]',
                         $value['bcc'], ['class' => 'form-control'
                         , 'placeholder' => 'BCC', 'id' => $key . '_bcc']); !!}
                     </div>
@@ -53,7 +53,7 @@
                     <div class="form-group">
                         {!! Form::label($key . '_email_body',
                         __('lang_v1.email_body').':') !!}
-                        {!! Form::textarea('template_data[' . $key . '][email_body]', 
+                        {!! Form::textarea('template_data[' . $key . '][email_body]',
                         $value['email_body'], ['class' => 'form-control ckeditor'
                         , 'placeholder' => __('lang_v1.email_body'), 'id' => $key . '_email_body', 'rows' => 6]); !!}
                     </div>
@@ -62,7 +62,7 @@
                     <div class="form-group">
                         {!! Form::label($key . '_sms_body',
                         __('lang_v1.sms_body').':') !!}
-                        {!! Form::textarea('template_data[' . $key . '][sms_body]', 
+                        {!! Form::textarea('template_data[' . $key . '][sms_body]',
                         $value['sms_body'], ['class' => 'form-control'
                         , 'placeholder' => __('lang_v1.sms_body'), 'id' => $key . '_sms_body', 'rows' => 6]); !!}
                     </div>
@@ -71,7 +71,7 @@
                     <div class="form-group">
                         {!! Form::label($key . '_whatsapp_text',
                         __('lang_v1.whatsapp_text').':') !!}
-                        {!! Form::textarea('template_data[' . $key . '][whatsapp_text]', 
+                        {!! Form::textarea('template_data[' . $key . '][whatsapp_text]',
                         $value['whatsapp_text'], ['class' => 'form-control'
                         , 'placeholder' => __('lang_v1.whatsapp_text'), 'id' => $key . '_whatsapp_text', 'rows' => 6]); !!}
                     </div>

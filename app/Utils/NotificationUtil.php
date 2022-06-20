@@ -38,6 +38,7 @@ class NotificationUtil extends Util
         $business = Business::findOrFail($business_id);
         $data['email_settings'] = $business->email_settings;
         $data['sms_settings'] = $business->sms_settings;
+
         $whatsapp_link = '';
         if (!empty($notification_template)) {
             if (!empty($notification_template->auto_send) || !empty($notification_template->auto_send_sms) || !empty($notification_template->auto_send_wa_notif) ) {

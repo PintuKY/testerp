@@ -128,4 +128,14 @@ class Business extends Model
 
         return $address;
     }
+
+    public static function forDropdown()
+    {
+        $businesses = Business::get();
+        $dropdown = [];
+        foreach ($businesses as $business) {
+            $dropdown[$business->id] = $business->name;
+        }
+        return $dropdown;
+    }
 }

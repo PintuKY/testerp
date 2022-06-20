@@ -7,6 +7,10 @@ return [
     'delivery_note' => 'Delivery Note',
     'hp_number' => 'HP Number',
     'driver_name' => 'Driver Name',
-    'postel_code' => 'Postel Code',
+    'contacts_name' => 'Name',
+    'postal' => 'Postel Code',
+    'address' => 'Address',
     'id' => 'ID',
+    'type' => 'Type',
+
 ];

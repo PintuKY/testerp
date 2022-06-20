@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\MasterListExport;
+use App\Models\Business;
+use App\Models\BusinessLocation;
 use App\Models\MasterList;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
@@ -14,25 +17,34 @@ class MasterController extends Controller
      */
     public function index()
     {
+        $role = 'user';
+        $masterListCols = config('masterlist.'.$role.'_columns');
         $business_id = request()->session()->get('user.business_id');
+
         if (request()->ajax()) {
             $sells = MasterList::with(['transaction_sell_lines' => function($query){
                 $query->with('transactionSellLinesVariants');
-            }]);
+            }, 'transasction']);
+
+            if (!empty(request()->start_date) && !empty(request()->end_date)) {
+                $start = request()->start_date;
+                $end =  request()->end_date;
+                $sells->whereDate('master_list.delivery_date', '>=', $start)
+                        ->whereDate('master_list.delivery_date', '<=', $end);
+            }
+
+            if (!empty(request()->type)) {
+                $type = request()->type;
+                $sells->where('master_list.time_slot', '=', $type);
+            }
+
+            if (!empty(request()->location)) {
+                $sells->whereHas('transasction' , function ($query) {
+                    $query->where('business_id', request()->location);
+                });
+            }
 
             return Datatables::of($sells)
-                ->addColumn(
-                    'action',
-                    '<div class="btn-group">
-                    <button type="button" class="btn btn-info dropdown-toggle btn-xs"
-                        data-toggle="dropdown" aria-expanded="false">' .
-                        __("messages.actions") .
-                        '<span class="caret"></span><span class="sr-only">Toggle Dropdown
-                        </span>
-                    </button>
-
-                    </div>'
-                )
                 ->addColumn('pax', function ($row) {
                     $pax = [];
                     if (isset($row->transaction_sell_lines->transactionSellLinesVariants)) {
@@ -58,18 +70,27 @@ class MasterController extends Controller
                     }
                     return implode(',', $addon);
                 })
-                ->editColumn(
-                    'hp_number',
-                    '8df98sdf8dsif'
-                )
-                ->editColumn(
-                    'driver_name',
-                    'driver name'
-                )
-                ->rawColumns(['pax', 'addon', 'hp_number', 'driver_name', 'action'])
+
+                ->addColumn('address', function ($row) {
+                    return $row->shipping_address_line_1;
+                })
+                ->addColumn('postal', function ($row) {
+                    return $row->shipping_zip_code;
+                 })
+                ->addColumn('remark', function ($row) {
+                    return 'fsfsfsfsd';
+                 })
+                 ->addColumn('hp_number', function ($row) {
+                    return 'fsfsfsf';
+                 })
+                ->addColumn('driver_name', function ($row) {
+                    return 'Amar';
+                 })
                 ->make(true);
         }
-        return view('master.index');
+        $business_locations = Business::forDropdown();
+        $type = config('masterlist.product_type');
+        return view('master.index',compact('masterListCols','business_locations','type'));
 
     }
 
@@ -81,6 +102,11 @@ class MasterController extends Controller
     public function create()
     {
         //
+    }
+
+    public function exportExcel($type)
+    {
+        return \Excel::download(new MasterListExport, 'masterList.'.$type);
     }
 
     /**

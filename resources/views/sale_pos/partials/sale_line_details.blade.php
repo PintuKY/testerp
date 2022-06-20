@@ -1,4 +1,3 @@
-
 @foreach($product_ids as $key=>$productId)
     <table class="table bg-gray">
     <tr class="bg-green">
@@ -88,7 +87,7 @@
                     </td>
                     <td>
                         <span class="display_currency"
-                              data-currency_symbol="true">{{ $sell_line->transactionSellLinesVariants[0]->value }}</span>
+                              data-currency_symbol="true">{{ $sell_line->transactionSellLineVarisants[0]->value }}</span>
                     </td>
                 </tr>
             @endforeach

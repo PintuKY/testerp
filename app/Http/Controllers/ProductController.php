@@ -787,7 +787,6 @@ class ProductController extends Controller
                                     ->count();
                 if ($count > 0) {
                     $can_be_deleted = false;
-                    dd('bbb');
                     $error_msg = __('lang_v1.purchase_already_exist');
                 } else {
                     //Check if any opening stock sold

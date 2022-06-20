@@ -52,8 +52,7 @@ class NotificationTemplate extends Model
                     ['{business_name}', '{business_logo}'],
                     ['{invoice_number}', '{invoice_url}', '{total_amount}', '{paid_amount}', '{due_amount}', '{cumulative_due_amount}', '{due_date}'],
                     ['{location_name}', '{location_address}', '{location_email}', '{location_phone}', '{location_custom_field_1}', '{location_custom_field_2}', '{location_custom_field_3}', '{location_custom_field_4}'],
-                    ['{contact_name}', '{contact_custom_field_1}', '{contact_custom_field_2}','{contact_custom_field_3}','{contact_custom_field_4}', '{contact_custom_field_5}', '{contact_custom_field_6}', '{contact_custom_field_7}', '{contact_custom_field_8}', '{contact_custom_field_9}', '{contact_custom_field_10}'],
-                    ['{sell_custom_field_1}', '{sell_custom_field_2}', '{sell_custom_field_3}', '{sell_custom_field_4}'],
+                    ['{contact_name}'],
                     ['{shipping_custom_field_1}', '{shipping_custom_field_2}', '{shipping_custom_field_3}', '{shipping_custom_field_4}', '{shipping_custom_field_5}']
                 ]
             ],
@@ -62,7 +61,7 @@ class NotificationTemplate extends Model
                 'extra_tags' => [
                     ['{business_name}', '{business_logo}'],
                     ['{invoice_number}', '{payment_ref_number}', '{received_amount}'],
-                    ['{contact_name}', '{contact_custom_field_1}', '{contact_custom_field_2}','{contact_custom_field_3}','{contact_custom_field_4}', '{contact_custom_field_5}', '{contact_custom_field_6}', '{contact_custom_field_7}', '{contact_custom_field_8}', '{contact_custom_field_9}', '{contact_custom_field_10}'],
+                    ['{contact_name}'],
                 ],
             ],
             'payment_reminder' => [
@@ -70,7 +69,7 @@ class NotificationTemplate extends Model
                 'extra_tags' => [
                     ['{business_name}', '{business_logo}'],
                     ['{invoice_number}', '{due_amount}', '{cumulative_due_amount}', '{due_date}'],
-                    ['{contact_name}', '{contact_custom_field_1}', '{contact_custom_field_2}','{contact_custom_field_3}','{contact_custom_field_4}', '{contact_custom_field_5}', '{contact_custom_field_6}', '{contact_custom_field_7}', '{contact_custom_field_8}', '{contact_custom_field_9}', '{contact_custom_field_10}']
+                    ['{contact_name}']
 
                 ]
             ],
@@ -84,7 +83,7 @@ class NotificationTemplate extends Model
                     ['{business_name}', '{business_logo}'],
                     ['{invoice_number}', '{total_amount}', '{quote_url}'],
                     ['{location_name}', '{location_address}', '{location_email}', '{location_phone}', '{location_custom_field_1}', '{location_custom_field_2}', '{location_custom_field_3}', '{location_custom_field_4}'],
-                    ['{contact_name}', '{contact_custom_field_1}', '{contact_custom_field_2}','{contact_custom_field_3}','{contact_custom_field_4}', '{contact_custom_field_5}', '{contact_custom_field_6}', '{contact_custom_field_7}', '{contact_custom_field_8}', '{contact_custom_field_9}', '{contact_custom_field_10}']
+                    ['{contact_name}']
 
                 ]
             ],
@@ -99,7 +98,7 @@ class NotificationTemplate extends Model
                 'extra_tags' => [
                     ['{business_name}', '{business_logo}'],
                     ['{balance_due}'],
-                    ['{contact_name}', '{contact_custom_field_1}', '{contact_custom_field_2}','{contact_custom_field_3}','{contact_custom_field_4}', '{contact_custom_field_5}', '{contact_custom_field_6}', '{contact_custom_field_7}', '{contact_custom_field_8}', '{contact_custom_field_9}', '{contact_custom_field_10}']
+                    ['{contact_name}']
                 ]
             ],
         ];
@@ -115,7 +114,7 @@ class NotificationTemplate extends Model
                     ['{order_ref_number}', '{total_amount}', '{received_amount}', '{due_amount}'],
                     ['{location_name}', '{location_address}', '{location_email}', '{location_phone}', '{location_custom_field_1}', '{location_custom_field_2}', '{location_custom_field_3}', '{location_custom_field_4}'],
                     ['{purchase_custom_field_1}', '{purchase_custom_field_2}', '{purchase_custom_field_3}', '{purchase_custom_field_4}', '{contact_business_name}'],
-                    ['{contact_name}', '{contact_custom_field_1}', '{contact_custom_field_2}','{contact_custom_field_3}','{contact_custom_field_4}', '{contact_custom_field_5}', '{contact_custom_field_6}', '{contact_custom_field_7}', '{contact_custom_field_8}', '{contact_custom_field_9}', '{contact_custom_field_10}'],
+                    ['{contact_name}'],
                     ['{shipping_custom_field_1}', '{shipping_custom_field_2}', '{shipping_custom_field_3}', '{shipping_custom_field_4}', '{shipping_custom_field_5}']
                 ]
             ],
@@ -124,7 +123,7 @@ class NotificationTemplate extends Model
                 'extra_tags' => [
                     ['{business_name}', '{business_logo}'],
                     ['{order_ref_number}', '{payment_ref_number}', '{paid_amount}'],
-                    ['{contact_name}', '{contact_business_name}', '{contact_custom_field_1}', '{contact_custom_field_2}','{contact_custom_field_3}','{contact_custom_field_4}', '{contact_custom_field_5}', '{contact_custom_field_6}', '{contact_custom_field_7}', '{contact_custom_field_8}', '{contact_custom_field_9}', '{contact_custom_field_10}']
+                    ['{contact_name}']
                 ]
             ],
             'items_received' => [
@@ -132,7 +131,7 @@ class NotificationTemplate extends Model
                 'extra_tags' => [
                     ['{business_name}', '{business_logo}'],
                     ['{order_ref_number}'],
-                    ['{contact_business_name}', '{contact_name}', '{contact_custom_field_1}', '{contact_custom_field_2}','{contact_custom_field_3}','{contact_custom_field_4}', '{contact_custom_field_5}', '{contact_custom_field_6}', '{contact_custom_field_7}', '{contact_custom_field_8}', '{contact_custom_field_9}', '{contact_custom_field_10}']
+                    ['{contact_business_name}', '{contact_name}']
                 ]
             ],
             'items_pending' => [
@@ -140,7 +139,7 @@ class NotificationTemplate extends Model
                 'extra_tags' => [
                     ['{business_name}', '{business_logo}'],
                     ['{order_ref_number}'],
-                    ['{contact_business_name}', '{contact_name}', '{contact_custom_field_1}', '{contact_custom_field_2}','{contact_custom_field_3}','{contact_custom_field_4}', '{contact_custom_field_5}', '{contact_custom_field_6}', '{contact_custom_field_7}', '{contact_custom_field_8}', '{contact_custom_field_9}', '{contact_custom_field_10}']
+                    ['{contact_business_name}', '{contact_name}']
                 ],
             ],
         ];
@@ -158,7 +157,7 @@ class NotificationTemplate extends Model
                 ['{business_name}', '{business_logo}'],
                 ['{table}', '{start_time}', '{end_time}', '{service_staff}', '{correspondent}'],
                 ['{location}', '{location_name}', '{location_address}', '{location_email}', '{location_phone}', '{location_custom_field_1}', '{location_custom_field_2}', '{location_custom_field_3}', '{location_custom_field_4}'],
-                ['{contact_name}', '{contact_custom_field_1}', '{contact_custom_field_2}','{contact_custom_field_3}','{contact_custom_field_4}', '{contact_custom_field_5}', '{contact_custom_field_6}', '{contact_custom_field_7}', '{contact_custom_field_8}', '{contact_custom_field_9}', '{contact_custom_field_10}']
+                ['{contact_name}']
             ];
     }
 

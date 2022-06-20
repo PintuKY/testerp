@@ -275,7 +275,6 @@ class Util
         if (session('business.time_format') == 12) {
             $time_format = 'h:i A';
         }
-        dd($time_format);
         return !empty($time) ? Carbon::createFromFormat('H:i:s', $time)->format($time_format) : null;
     }
     /**
@@ -469,7 +468,6 @@ class Util
     {
         $sms_settings = $data['sms_settings'];
         $sms_service = isset($sms_settings['sms_service']) ? $sms_settings['sms_service'] : 'other';
-
         if ($sms_service == 'nexmo') {
             return $this->sendSmsViaNexmo($data);
         }
@@ -477,7 +475,6 @@ class Util
         if ($sms_service == 'twilio') {
             return $this->sendSmsViaTwilio($data);
         }
-
         $request_data = [
             $sms_settings['send_to_param_name'] => $data['mobile_number'],
             $sms_settings['msg_param_name'] => $data['sms_body'],
@@ -543,7 +540,7 @@ class Util
 
             $response = $client->post($sms_settings['url'], $options);
         }
-
+dd($response);
         return $response;
     }
 

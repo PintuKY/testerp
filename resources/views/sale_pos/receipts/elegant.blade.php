@@ -221,16 +221,6 @@
 
 			<p class="text-right ">
 
-			@if(!empty($receipt_details->brand_label) || !empty($receipt_details->repair_brand))
-				@if(!empty($receipt_details->brand_label))
-					<span class="pull-left">
-						<strong>{!! $receipt_details->brand_label !!}</strong>
-					</span>
-				@endif
-				{{$receipt_details->repair_brand}}<br>
-	        @endif
-
-
 	        @if(!empty($receipt_details->device_label) || !empty($receipt_details->repair_device))
 				@if(!empty($receipt_details->device_label))
 					<span class="pull-left">
@@ -331,7 +321,7 @@
 </div>
 <div class="row  mt-5">
 	<div class="col-xs-12">
-        @foreach($receipt_details->product_id as $productId)
+        @foreach($receipt_details->product_id as $key => $productId)
 		<table class="table table-bordered table-no-top-cell-border table-slim mb-12">
 			<thead>
 				<tr style="background-color: #357ca5 !important; color: white !important; font-size: 20px !important" class="table-no-side-cell-border table-no-top-cell-border text-center">
@@ -351,7 +341,7 @@
 						@endphp
 					@endif
 					<td style="background-color: #357ca5 !important; color: white !important; width: {{$p_width}}% !important">
-						{{$receipt_details->table_product_label}}
+						{{$receipt_details->table_product_label}} ({{$receipt_details->product_name[$key]}})
 					</td>
 
 					@if($receipt_details->show_cat_code == 1)
@@ -369,6 +359,7 @@
 					$subtotal = 0;
 				@endphp
 				@foreach($receipt_details->lines as $line)
+<?php //dd($line);?>
                     @if($line['product_id'] == $productId)
 					<tr>
 						<td class="text-center">
@@ -378,8 +369,8 @@
 							@if(!empty($line['image']))
 								<img src="{{$line['image']}}" alt="Image" width="50" style="float: left; margin-right: 8px;">
 							@endif
-                            {{$line['name']}} {{$line['product_variation']}} {{$line['variation']}}
-                            @if(!empty($line['sub_sku'])), {{$line['sub_sku']}} @endif @if(!empty($line['brand'])), {{$line['brand']}} @endif
+                            {{$line['product_variation']}} {{$line['variation']}}
+
                             @if(!empty($line['product_custom_fields'])), {{$line['product_custom_fields']}} @endif
                             @if(!empty($line['sell_line_note']))
                             <br>
@@ -400,7 +391,7 @@
 
 
 						<td class="text-right">
-							{{$line['line_total_exc_tax_uf']}}
+							$ {{ $line['tran_sell_var_value'] }}
 						</td>
 					</tr>
 					@if(!empty($line['modifiers']))
@@ -490,7 +481,7 @@
 							{!! $receipt_details->total_quantity_label !!}
 						</td>
 						<td class="text-right">
-							{{$receipt_details->total_quantity}}
+							{{count($receipt_details->product_id)}}
 						</td>
 					</tr>
 				@endif
@@ -499,8 +490,9 @@
 						{!! $receipt_details->subtotal_label !!}
 					</td>
 					<td class="text-right">
-						{{$receipt_details->subtotal_exc_tax}}
+                        {{$receipt_details->total}}
 					</td>
+
 				</tr>
 
 				<!-- Shipping Charges -->

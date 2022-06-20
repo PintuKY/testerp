@@ -12,7 +12,7 @@
 */
 
 use App\Http\Controllers\Api\ManageDataOfProductOrderAndCustomerController;
-use App\Http\Controllers\Api\MasterListController;
+// use App\Http\Controllers\Api\MasterListController;
 
 include_once('install_r.php');
 
@@ -466,3 +466,4 @@ Route::get('sync/products/{business_location_id}', [ManageDataOfProductOrderAndC
 Route::get('sync/customers/{business_location_id}', [ManageDataOfProductOrderAndCustomerController::class,'syncCustomerDetails'])->name('sync.customers');
 Route::get('sync/all', [ManageDataOfProductOrderAndCustomerController::class,'syncAllDetails'])->name('sync.all');
 // Route::get('create/master/list', [MasterListController::class,'createMasterList']);
+Route::get('master/export/{type}', 'MasterController@exportExcel')->name('exportExcel');

@@ -1,3 +1,4 @@
+
 @extends('layouts.app')
 @section('title', __('lang_v1.master_list'))
 
@@ -9,44 +10,32 @@
     </h1>
 </section>
 
-@component('components.widget', ['class' => 'box-primary', 'title' => __('lang_v1.master_list')])
-@include('master.partials.master_list')
-@endcomponent
-
 <!-- Main content -->
-{{-- <section class="content no-print">
+<section class="content no-print">
     @component('components.filters', ['title' => __('report.filters')])
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="form-group">
-                {!! Form::label('sell_list_filter_location_id',  __('purchase.business_location') . ':') !!}
+                {!! Form::label('master_list_filter_location_id',  __('purchase.business_location') . ':') !!}
 
-                {!! Form::select('sell_list_filter_location_id', $business_locations, null, ['class' => 'form-control select2', 'style' => 'width:100%', 'placeholder' => __('lang_v1.all') ]); !!}
+                {!! Form::select('master_list_filter_location_id', $business_locations, null, ['class' => 'form-control select2', 'style' => 'width:100%', 'placeholder' => __('lang_v1.all') ]); !!}
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="form-group">
-                {!! Form::label('sell_list_filter_customer_id',  __('contact.customer') . ':') !!}
-                {!! Form::select('sell_list_filter_customer_id', $customers, null, ['class' => 'form-control select2', 'style' => 'width:100%', 'placeholder' => __('lang_v1.all')]); !!}
+                {!! Form::label('master_list_type',  __('master.type') . ':') !!}
+                {!! Form::select('master_list_type', $type, null, ['class' => 'form-control select2', 'style' => 'width:100%', 'placeholder' => __('lang_v1.all')]); !!}
             </div>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="form-group">
-                {!! Form::label('sell_list_filter_date_range', __('report.date_range') . ':') !!}
-                {!! Form::text('sell_list_filter_date_range', null, ['placeholder' => __('lang_v1.select_a_date_range'), 'class' => 'form-control', 'readonly']); !!}
+                {!! Form::label('master_list_filter_date_range', __('report.date_range') . ':') !!}
+                {!! Form::text('master_list_filter_date_range', null, ['placeholder' => __('lang_v1.select_a_date_range'), 'class' => 'form-control', 'readonly']); !!}
             </div>
         </div>
-        @can('access_sell_return')
-        <div class="col-md-3">
-            <div class="form-group">
-                {!! Form::label('created_by',  __('report.user') . ':') !!}
-                {!! Form::select('created_by', $sales_representative, null, ['class' => 'form-control select2', 'style' => 'width:100%']); !!}
-            </div>
-        </div>
-        @endcan
     @endcomponent
-    @component('components.widget', ['class' => 'box-primary', 'title' => __('lang_v1.sell_return')])
-        @include('sell_return.partials.sell_return_list')
+    @component('components.widget', ['class' => 'box-primary', 'title' => __('lang_v1.master_list')])
+    @include('master.partials.master_list')
     @endcomponent
     <div class="modal fade payment_modal" tabindex="-1" role="dialog"
         aria-labelledby="gridSystemModalLabel">
@@ -55,48 +44,91 @@
     <div class="modal fade edit_payment_modal" tabindex="-1" role="dialog"
         aria-labelledby="gridSystemModalLabel">
     </div>
-</section> --}}
+</section>
 
 <!-- /.content -->
 @stop
 @section('javascript')
+<script src="{{ asset('js/payment.js?v=' . $asset_v) }}"></script>
 <script>
     $(document).ready(function(){
-        console.log('test');
-        master_table = $('#master_table').DataTable({
-            processing: true,
-            serverSide: true,
-            aaSorting: [[0, 'desc']],
-            "ajax": {
-                "url": "/master",
-                "data": {},
-            },
-            columnDefs: [ {
-                "targets": [7, 8],
-                "orderable": false,
-                "searchable": false
-            } ],
-            columns: [
-                { data: 'id', name: 'id'  },
-                { data: 'contacts_name', name: 'contacts_name'},
-                { data: 'shipping_address_line_1', name: 'shipping_address_line_1'},
-                { data: 'shipping_zip_code', name: 'shipping_zip_code'},
-                { data: 'pax', name: 'pax'},
-                { data: 'addon', name: 'addon'},
-                { data: 'delivery_note', name: 'delivery_note'},
-                { data: 'staff_notes', name: 'staff_notes'},
-                { data: 'hp_number', name: 'hp_number'},
-                { data: 'driver_name', name: 'driver_name'},
-                { data: 'action', name: 'action'}
-            ],
-
+        $('#master_list_filter_date_range').daterangepicker(
+            dateRangeSettings,
+            function (start, end) {
+                $('#master_list_filter_date_range').val(start.format(moment_date_format) + ' ~ ' + end.format(moment_date_format));
+                master_table.ajax.reload();
+            }
+        );
+        $('#master_list_filter_date_range').on('cancel.daterangepicker', function(ev, picker) {
+            $('#master_list_filter_date_range').val('');
+            master_table.ajax.reload();
         });
-        $(document).on('change', '#sell_list_filter_location_id, #sell_list_filter_customer_id, #created_by',  function() {
-            sell_return_table.ajax.reload();
+
+        var columns = @json($masterListCols);
+            var masterListCols = columns;
+            master_table = $('#master_table').DataTable({
+                processing: true,
+                serverSide: true,
+                aaSorting: [
+                    [0, 'desc']
+                ],
+                "ajax": {
+                    "url": "/master",
+                    "data": function ( d ) {
+                        if($('#master_list_filter_date_range').val()) {
+                            var start = $('#master_list_filter_date_range').data('daterangepicker').startDate.format('YYYY-MM-DD');
+                            var end = $('#master_list_filter_date_range').data('daterangepicker').endDate.format('YYYY-MM-DD');
+                            d.start_date = start;
+                            d.end_date = end;
+                        }
+                        if($('#master_list_type').val()) {
+                            var type = $('#master_list_type').val();
+                            d.type = type;
+                        }
+                        if($('#master_list_filter_location_id').val()) {
+                            var location = $('#master_list_filter_location_id').val();
+                            d.location = location;
+                        }
+                    }
+                },
+                columns: masterListCols,
+
+            });
+
+        $(document).on('change', '#master_list_filter_location_id, #master_list_type',  function() {
+            master_table.ajax.reload();
         });
     })
 
+    // $(document).on('click', 'a.delete_sell_return', function(e) {
+    //     e.preventDefault();
+    //     swal({
+    //         title: LANG.sure,
+    //         icon: 'warning',
+    //         buttons: true,
+    //         dangerMode: true,
+    //     }).then(willDelete => {
+    //         if (willDelete) {
+    //             var href = $(this).attr('href');
+    //             var data = $(this).serialize();
 
+    //             $.ajax({
+    //                 method: 'DELETE',
+    //                 url: href,
+    //                 dataType: 'json',
+    //                 data: data,
+    //                 success: function(result) {
+    //                     if (result.success == true) {
+    //                         toastr.success(result.msg);
+    //                         sell_return_table.ajax.reload();
+    //                     } else {
+    //                         toastr.error(result.msg);
+    //                     }
+    //                 },
+    //             });
+    //         }
+    //     });
+    // });
 </script>
 
 @endsection

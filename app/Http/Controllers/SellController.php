@@ -8,6 +8,7 @@ use App\Models\BusinessLocation;
 use App\Models\Contact;
 use App\Models\CustomerGroup;
 use App\Models\InvoiceScheme;
+use App\Models\MasterList;
 use App\Models\SellingPriceGroup;
 use App\Models\TaxRate;
 use App\Models\Transaction;
@@ -405,8 +406,7 @@ class SellController extends Controller
 
                         if ($row->type == 'sell') {
                             if (auth()->user()->can("print_invoice")) {
-                                $html .= '<li><a href="#" class="print-invoice" data-href="' . route('sell.printInvoice', [$row->id]) . '"><i class="fas fa-print" aria-hidden="true"></i> ' . __("lang_v1.print_invoice") . '</a></li>
-                                    <li><a href="#" class="print-invoice" data-href="' . route('sell.printInvoice', [$row->id]) . '?package_slip=true"><i class="fas fa-file-alt" aria-hidden="true"></i> ' . __("lang_v1.packing_slip") . '</a></li>';
+                                $html .= '<li><a href="#" class="print-invoice" data-href="' . route('sell.printInvoice', [$row->id]) . '"><i class="fas fa-print" aria-hidden="true"></i> ' . __("lang_v1.print_invoice") . '</a></li>';
                             }
                             $html .= '<li class="divider"></li>';
                             if (!$only_shipments) {
@@ -941,8 +941,7 @@ class SellController extends Controller
 
                         if ($row->type == 'sell') {
                             if (auth()->user()->can("print_invoice")) {
-                                $html .= '<li><a href="#" class="print-invoice" data-href="' . route('sell.printInvoice', [$row->id]) . '"><i class="fas fa-print" aria-hidden="true"></i> ' . __("lang_v1.print_invoice") . '</a></li>
-                                    <li><a href="#" class="print-invoice" data-href="' . route('sell.printInvoice', [$row->id]) . '?package_slip=true"><i class="fas fa-file-alt" aria-hidden="true"></i> ' . __("lang_v1.packing_slip") . '</a></li>';
+                                $html .= '<li><a href="#" class="print-invoice" data-href="' . route('sell.printInvoice', [$row->id]) . '"><i class="fas fa-print" aria-hidden="true"></i> ' . __("lang_v1.print_invoice") . '</a></li>';
                             }
                             $html .= '<li class="divider"></li>';
                             if (!$only_shipments) {
@@ -1290,7 +1289,6 @@ class SellController extends Controller
     }
 
 
-
     /**
      * Store a newly created resource in storage.
      *
@@ -1320,9 +1318,9 @@ class SellController extends Controller
             ->pluck('name', 'id');
         $query = Transaction::where('business_id', $business_id)
             ->where('id', $id)
-            ->with(['contact','transaction_activity', 'sell_lines' => function ($q) {
+            ->with(['contact', 'transaction_activity', 'sell_lines' => function ($q) {
                 $q->whereNull('parent_sell_line_id');
-            }, 'sell_lines.product', 'sell_lines.product.unit', 'sell_lines.variations', 'sell_lines.variations.product_variation', 'payment_lines', 'sell_lines.modifiers', 'sell_lines.lot_details', 'tax', 'sell_lines.sub_unit', 'table', 'service_staff', 'sell_lines.service_staff', 'types_of_service',  'media','sell_lines.transactionSellLinesVariants']);
+            }, 'sell_lines.product', 'sell_lines.product.unit', 'sell_lines.variations', 'sell_lines.variations.product_variation', 'payment_lines', 'sell_lines.modifiers', 'sell_lines.lot_details', 'tax', 'sell_lines.sub_unit', 'table', 'service_staff', 'sell_lines.service_staff', 'types_of_service', 'media', 'sell_lines.transactionSellLinesVariants']);
 
         if (!auth()->user()->can('sell.view') && !auth()->user()->can('direct_sell.access') && auth()->user()->can('view_own_sell_only')) {
             $query->where('transactions.created_by', request()->session()->get('user.id'));
@@ -1354,8 +1352,8 @@ class SellController extends Controller
         $product_id = [];
         $product_name = [];
         foreach ($sell->sell_lines as $key => $value) {
-            $product_id[]=$value->product_id;
-            $product_name[]=$value->product->name;
+            $product_id[] = $value->product_id;
+            $product_name[] = $value->product->name;
             if (!empty($value->sub_unit_id)) {
                 $formated_sell_line = $this->transactionUtil->recalculateSellLineTotals($business_id, $value);
                 $sell->sell_lines[$key] = $formated_sell_line;
@@ -1436,32 +1434,32 @@ class SellController extends Controller
         if (request()->ajax()) {
             $business_id = request()->session()->get('user.business_id');
 
-            $sells = TransactionActivity::where('transaction_id',$id);
+            $sells = TransactionActivity::where('transaction_id', $id);
             return Datatables::of($sells)
                 ->addColumn(
                     'action', function ($row) {
-                        if($row->user_comment != ''){
-                            $html = '<div class="btn-group">
+                    if ($row->user_comment != '') {
+                        $html = '<div class="btn-group">
                                 <button type="button" class="btn btn-info dropdown-toggle btn-xs"
                                     data-toggle="dropdown" aria-expanded="false">' .
-                                __("messages.actions") .
-                                '<span class="caret"></span><span class="sr-only">Toggle Dropdown
+                            __("messages.actions") .
+                            '<span class="caret"></span><span class="sr-only">Toggle Dropdown
                                     </span>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-right" role="menu">
                                     ';
 
-                            if (auth()->user()->can('draft.delete') || auth()->user()->can('quotation.delete')) {
-                                $html .= '<li>
+                        if (auth()->user()->can('draft.delete') || auth()->user()->can('quotation.delete')) {
+                            $html .= '<li>
                                 <a href="' . action('TransactionActivityController@destroy', [$row->id]) . '" class="delete-activity"><i class="fas fa-trash"></i>' . __("messages.delete") . '</a>
                                 </li>';
-                            }
-
-                            $html .= '</ul></div>';
-
-                            return $html;
                         }
-                        return 'NA';
+
+                        $html .= '</ul></div>';
+
+                        return $html;
+                    }
+                    return 'NA';
 
                 })
                 ->rawColumns(['action'])
@@ -1501,9 +1499,11 @@ class SellController extends Controller
         $taxes = TaxRate::forBusinessDropdown($business_id, true, true);
 
         $transaction = Transaction::where('business_id', $business_id)
-            ->with(['price_group', 'types_of_service', 'media', 'media.uploaded_by_user','transaction_activity'])
+            ->with(['price_group', 'types_of_service', 'media', 'media.uploaded_by_user', 'transaction_activity'])
             ->whereIn('type', ['sell', 'sales_order'])
             ->findorfail($id);
+        $total_compensate = MasterList::where(['transaction_id' => $transaction->id])->whereNotNull('cancel_reason')->count();
+        $master_list = MasterList::where('transaction_id', $transaction->id)->get();
 
         if ($transaction->type == 'sales_order' && !auth()->user()->can('so.update')) {
             abort(403, 'Unauthorized action.');
@@ -1586,7 +1586,7 @@ class SellController extends Controller
                 'transaction_sell_lines.sub_unit_id',
                 'transaction_sell_lines_variants.value',
                 'transaction_sell_lines_variants.name as transaction_sell_lines_variants_name',
-                /*DB::raw('vld.qty_available + transaction_sell_lines.quantity AS qty_available')*/
+            /*DB::raw('vld.qty_available + transaction_sell_lines.quantity AS qty_available')*/
             )
             ->get();
         $transaction_sell_lines_id = [];
@@ -1597,7 +1597,7 @@ class SellController extends Controller
         $edit_product = [];
         if (!empty($sell_details)) {
             foreach ($sell_details as $key => $value) {
-                $product_id[]=$value->product_id;
+                $product_id[] = $value->product_id;
                 $edit_product[$value->product_id] = [
                     'start_date' => $value->start_date,
                     'time_slot' => $value->time_slot,
@@ -1609,7 +1609,7 @@ class SellController extends Controller
                     'unit_id' => $value->unit_id,
                     'default_sell_price' => $value->default_sell_price,
                 ];
-                $product_name[]=$value->product_actual_name;
+                $product_name[] = $value->product_actual_name;
                 //If modifier or combo sell line then unset
                 if (!empty($sell_details[$key]->parent_sell_line_id)) {
                     unset($sell_details[$key]);
@@ -1622,8 +1622,8 @@ class SellController extends Controller
                     //$number_of_days = $value->number_of_days;
                     $time_slot = $value->time_slot;
 
-                    $transaction_sell_lines_days = TransactionSellLinesDay::where('transaction_sell_lines_id',$value->transaction_sell_lines_id)->get();
-                    foreach($transaction_sell_lines_days as $days){
+                    $transaction_sell_lines_days = TransactionSellLinesDay::where('transaction_sell_lines_id', $value->transaction_sell_lines_id)->get();
+                    foreach ($transaction_sell_lines_days as $days) {
                         $transaction_sell_lines_id[$value->product_id][] = $days->day;
                     }
                     $sell_details[$key]->formatted_qty_available = $this->productUtil->num_f($value->qty_available, false, null, true);
@@ -1774,11 +1774,11 @@ class SellController extends Controller
         }
 
         $sales_orders = [];
-        if(!empty($pos_settings['enable_sales_order']) || $is_order_request_enabled) {
+        if (!empty($pos_settings['enable_sales_order']) || $is_order_request_enabled) {
             $sales_orders = Transaction::where('business_id', $business_id)
                 ->where('type', 'sales_order')
                 ->where('contact_id', $transaction->contact_id)
-                ->where( function($q) use($transaction){
+                ->where(function ($q) use ($transaction) {
                     $q->where('status', '!=', 'completed');
 
                     if (!empty($transaction->sales_order_ids)) {
@@ -1802,9 +1802,70 @@ class SellController extends Controller
         $default_time = $this->businessUtil->format_times(Carbon::parse(now())->format('H:i'));
 
         return view('sell.edit')
-            ->with(compact('edit_product','business_details','default_datetime','default_time',/*'number_of_days','transaction_sell_lines_id',*/'time_slot','taxes', 'sell_details', 'transaction', 'commission_agent', 'types', 'customer_groups', 'pos_settings', 'waiters', 'invoice_schemes', 'default_invoice_schemes', 'redeem_details', 'edit_discount', 'edit_price', 'shipping_statuses', 'statuses', 'sales_orders', 'payment_types', 'accounts', 'payment_lines', 'change_return', 'is_order_request_enabled', 'customer_due','transaction_sell_lines_days','transaction_sell_lines_id','product_ids','product_names','product_count'));
+            ->with(compact('master_list', 'edit_product', 'business_details', 'default_datetime', 'default_time',/*'number_of_days','transaction_sell_lines_id',*/ 'time_slot', 'taxes', 'sell_details', 'transaction', 'commission_agent', 'types', 'customer_groups', 'pos_settings', 'waiters', 'invoice_schemes', 'default_invoice_schemes', 'redeem_details', 'edit_discount', 'edit_price', 'shipping_statuses', 'statuses', 'sales_orders', 'payment_types', 'accounts', 'payment_lines', 'change_return', 'is_order_request_enabled', 'customer_due', 'transaction_sell_lines_days', 'transaction_sell_lines_id', 'product_ids', 'product_names', 'product_count', 'total_compensate'));
     }
 
+    public function getMasterList($id)
+    {
+        if (request()->ajax()) {
+            $sells = MasterList::with(['transaction_sell_lines' => function ($query) {
+                $query->with('transactionSellLinesVariants');
+            }])->where('transaction_id', $id);
+
+            return Datatables::of($sells)
+                ->addColumn(
+                    'action', function ($row) {
+                    $html = '';
+                    return $html;
+                }
+                )
+                ->addColumn('pax', function ($row) {
+                    $pax = [];
+                    if (isset($row->transaction_sell_lines->transactionSellLinesVariants)) {
+                        foreach ($row->transaction_sell_lines->transactionSellLinesVariants as $value) {
+                            if (str_contains($value->name, 'Serving Pax')) {
+                                $pax[] = $value->value;
+                            }
+                        }
+                    }
+                    return implode(',', $pax);
+                })
+                ->addColumn('cancel_reason', function ($row) {
+                    return getReasonName($row->cancel_reason);
+                })
+                ->addColumn('compensate', function ($row) {
+                    if ($row->is_compensate == 0) {
+                        $data = 'No';
+                    } else {
+                        $data = 'Yes';
+                    }
+                    return $data;
+                })
+                ->addColumn('addon', function ($row) {
+                    $addon = [];
+                    if (isset($row->transaction_sell_lines->transactionSellLinesVariants)) {
+                        foreach ($row->transaction_sell_lines->transactionSellLinesVariants as $value) {
+                            if (str_contains($value->name, 'Add on')) {
+                                $addon_pax = ($value->value != 'None') ? '+' . $value->value : '';
+                                $addon[] = str_replace("Add on:", "", $value->name) . '' . $addon_pax;
+                            }
+                        }
+
+                    }
+                    return implode(',', $addon);
+                })
+                ->editColumn(
+                    'hp_number',
+                    '8df98sdf8dsif'
+                )
+                ->editColumn(
+                    'driver_name',
+                    'driver name'
+                )
+                ->rawColumns(['pax', 'addon', 'hp_number', 'driver_name', 'action'])
+                ->make(true);
+        }
+    }
 
 
     /**
@@ -2388,7 +2449,7 @@ class SellController extends Controller
 
             $output = $this->getSellLineRow($product_id, $location_id, $quantity, $row_count, $is_direct_sell, $so_line = null, $price_group);
 
-            $output['product'] = Product::with('unit')->where('id',$product_id)->first();
+            $output['product'] = Product::with('unit')->where('id', $product_id)->first();
             if ($this->transactionUtil->isModuleEnabled('modifiers') && !$is_direct_sell) {
                 $variation = Variation::find($product_id);
                 $business_id = request()->session()->get('user.business_id');
@@ -2510,7 +2571,7 @@ class SellController extends Controller
             $default_datetime = $this->businessUtil->format_date('now', true);
             $default_time = $this->businessUtil->format_times(Carbon::parse(now())->format('H:i'));
             $output['html_content'] = view('sell.product_row')
-                ->with(compact('product_id','default_datetime','default_time','productDatas', 'row_count', 'tax_dropdown', /*'enabled_modules',*/ 'pos_settings', 'sub_units', 'discount', 'waiters', 'edit_discount', 'edit_price', 'purchase_line_id', 'quantity', 'is_direct_sell', 'so_line', 'is_sales_order'))
+                ->with(compact('product_id', 'default_datetime', 'default_time', 'productDatas', 'row_count', 'tax_dropdown', /*'enabled_modules',*/ 'pos_settings', 'sub_units', 'discount', 'waiters', 'edit_discount', 'edit_price', 'purchase_line_id', 'quantity', 'is_direct_sell', 'so_line', 'is_sales_order'))
                 ->render();
         }
 

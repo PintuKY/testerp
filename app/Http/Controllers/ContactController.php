@@ -472,14 +472,14 @@ class ContactController extends Controller
 
                 return $html;
             })
-            ->editColumn('credit_limit', function ($row) {
+            /*->editColumn('credit_limit', function ($row) {
                 $html = __('lang_v1.no_limit');
                 if (!is_null($row->credit_limit)) {
                     $html = '<span data-orig-value="' . $row->credit_limit . '">' . $this->transactionUtil->num_f($row->credit_limit, true) . '</span>';
                 }
 
                 return $html;
-            })
+            })*/
             ->editColumn('pay_term', '
                 @if(!empty($pay_term_type) && !empty($pay_term_number))
                     {{$pay_term_number}}
@@ -525,7 +525,7 @@ class ContactController extends Controller
         if (!$reward_enabled) {
             $contacts->removeColumn('total_rp');
         }
-        return $contacts->rawColumns(['action', 'opening_balance', 'credit_limit', 'pay_term', 'due', 'return_due', 'name', 'balance'])
+        return $contacts->rawColumns(['action', 'opening_balance', 'pay_term', 'due', 'return_due', 'name', 'balance'])
             ->make(true);
     }
 
@@ -778,7 +778,7 @@ class ContactController extends Controller
                     $input['dob'] = $this->commonUtil->uf_date($input['dob']);
                 }
 
-                $input['credit_limit'] = $request->input('credit_limit') != '' ? $this->commonUtil->num_uf($request->input('credit_limit')) : null;
+                //$input['credit_limit'] = $request->input('credit_limit') != '' ? $this->commonUtil->num_uf($request->input('credit_limit')) : null;
 
                 $business_id = $request->session()->get('user.business_id');
 
@@ -793,6 +793,7 @@ class ContactController extends Controller
                 $this->contactUtil->activityLog($output['data'], 'edited');
 
             } catch (\Exception $e) {
+                dd($e->getMessage());
                 \Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
                 $output = ['success' => false,

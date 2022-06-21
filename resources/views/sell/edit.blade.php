@@ -1008,6 +1008,27 @@ $multiplier = 1;
                 </div>
             @endcomponent
         @endif
+
+        @if($master_list)
+            @component('components.widget', ['class' => 'box-solid', 'title' => __('lang_v1.master_list')])
+                @slot('tool')
+                    <div class="box-tools">
+                        <button type="button" class="btn btn-block btn-primary btn-modal"
+                                data-href="{{action('MasterController@create')}}"
+                                data-container=".master_list_compensate_add_modals" @if($total_compensate == 0) disabled @endif>
+                            <i class="fa fa-plus"></i> @lang( 'master.add_compensate' )</button>
+                    </div>
+                @endslot
+                <div class="row col-sm-12 pos_product_div" style="min-height: 0">
+                    <div class="table-responsive">
+                            <input type="hidden" id="transaction_id" name="transaction_id" value="{{$transaction->id}}">
+                            @include('master.partials.master_list')
+
+                    </div>
+                </div>
+            @endcomponent
+        @endif
+
         <div class="row">
             <div class="col-md-12 text-center">
                 {!! Form::hidden('is_save_and_print', 0, ['id' => 'is_save_and_print']); !!}
@@ -1024,6 +1045,9 @@ $multiplier = 1;
     </section>
 
     <div class="modal fade transaction_activity_add_modals" tabindex="-1" role="dialog"
+         aria-labelledby="gridSystemModalLabel">
+    </div>
+    <div class="modal fade master_list_compensate_add_modals" tabindex="-1" role="dialog"
          aria-labelledby="gridSystemModalLabel">
     </div>
 
@@ -1046,125 +1070,17 @@ $multiplier = 1;
     <script src="{{ asset('js/pos.js?v=' . $asset_v) }}"></script>
     <script src="{{ asset('js/product.js?v=' . $asset_v) }}"></script>
     <script src="{{ asset('js/opening_stock.js?v=' . $asset_v) }}"></script>
+    <script src="{{ asset('js/transaction_compensate.js?v=' . $asset_v) }}"></script>
     <!-- Call restaurant module if defined -->
     @if(in_array('tables' ,$enabled_modules) || in_array('modifiers' ,$enabled_modules) || in_array('service_staff' ,$enabled_modules))
         <script src="{{ asset('js/restaurant.js?v=' . $asset_v) }}"></script>
     @endif
-    <script type="text/javascript">
-
-
-        $(document).ready(function () {
-            //transaction activity CRUD
-            $('.transaction_activity_add_modals').on('shown.bs.modal', function() {
-                $('.transaction_activity_add_modals').find('#transaction_ids').val('{{$transaction->id}}');
-            });
-            //transaction activity
-            transaction_activity = $('#transaction_activity').DataTable({
-                processing: true,
-                serverSide: true,
-                bPaginate: false,
-                buttons: [],
-                ajax: '/sells/transaction-activity/{{$transaction->id}}',
-                columns: [
-                    {data: 'created_at', name: 'created_at'},
-                    {data: 'comment', name: 'comment'},
-                    {data: 'user_comment', name: 'user_comment'},
-                    {data: 'action', name: 'action'},
-                ],
-            });
-            $('.transaction_activity_add_modals').on('shown.bs.modal', function (e) {
-                $('form#user_comment_add_form')
-                    .submit(function (e) {
-                        e.preventDefault();
-                    })
-                    .validate({
-                        rules: {
-                            user_comment: {
-                                required: true,
-                            },
-                        },
-                        submitHandler: function (form) {
-                            e.preventDefault();
-                            var data = $(form).serialize();
-
-                            $.ajax({
-                                method: 'POST',
-                                url: $(form).attr('action'),
-                                dataType: 'json',
-                                data: data,
-                                beforeSend: function (xhr) {
-                                    __disable_submit_button($(form).find('button[type="submit"]'));
-                                },
-                                success: function (result) {
-                                    if (result.success == true) {
-                                        $('div.transaction_activity_add_modals').modal('hide');
-                                        toastr.success(result.msg);
-                                        transaction_activity.ajax.reload();
-                                    } else {
-                                        toastr.error(result.msg);
-                                    }
-                                },
-                            });
-                        },
-                    });
-
-
-            });
-
-            //delete trasaction activity
-            $(document).on('click', '.delete-activity', function (e) {
-                e.preventDefault();
-                swal({
-                    title: LANG.sure,
-                    icon: 'warning',
-                    buttons: true,
-                    dangerMode: true,
-                }).then(willDelete => {
-                    if (willDelete) {
-                        var href = $(this).attr('href');
-                        var is_suspended = $(this).hasClass('is_suspended');
-                        $.ajax({
-                            method: 'DELETE',
-                            url: href,
-                            dataType: 'json',
-                            success: function (result) {
-                                if (result.success == true) {
-                                    toastr.success(result.msg);
-                                    transaction_activity.ajax.reload();
-                                } else {
-                                    toastr.error(result.msg);
-                                }
-                            },
-                        });
-                    }
-                });
-            });
-            $('#shipping_documents').fileinput({
-                showUpload: false,
-                showPreview: false,
-                browseLabel: LANG.file_browse_label,
-                removeLabel: LANG.remove,
-            });
-
-            $('#is_export').on('change', function () {
-                if ($(this).is(':checked')) {
-                    $('div.export_div').show();
-                } else {
-                    $('div.export_div').hide();
-                }
-            });
-
-            $('#status').change(function () {
-                if ($(this).val() == 'final') {
-                    $('#payment_rows_div').removeClass('hide');
-                } else {
-                    $('#payment_rows_div').addClass('hide');
-                }
-            });
-            $('.paid_on').datetimepicker({
-                format: moment_date_format + ' ' + moment_time_format,
-                ignoreReadonly: true,
-            });
+    <script>
+        $('.transaction_activity_add_modals').on('shown.bs.modal', function() {
+            $('.transaction_activity_add_modals').find('#transaction_ids').val('{{$transaction->id}}');
+        });
+        $('.master_list_compensate_add_modals').on('shown.bs.modal', function() {
+            $('.master_list_compensate_add_modals').find('#transaction_ids').val('{{$transaction->id}}');
         });
     </script>
 @endsection

@@ -1370,6 +1370,8 @@ $(document).ready(function () {
             $('span.curr_datetime').html(__current_datetime());
         }
     }, 60000);
+
+
 });
 
 

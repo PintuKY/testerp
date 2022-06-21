@@ -47,13 +47,15 @@ class TransactionUtil extends Util
      *
      * @return boolean
      */
-    public function createSellTransaction($business_id, $input, $invoice_total, $user_id, $uf_data = true)
+    public function createSellTransaction($contact, $business_id, $input, $invoice_total, $user_id, $uf_data = true)
     {
         $sale_type = !empty($input['type']) ? $input['type'] : 'sell';
         $invoice_scheme_id = !empty($input['invoice_scheme_id']) ? $input['invoice_scheme_id'] : null;
         $invoice_no = !empty($input['invoice_no']) ? $input['invoice_no'] : $this->getInvoiceNumber($business_id, $input['status'], $input['location_id'], $invoice_scheme_id, $sale_type);
 
         $final_total = $uf_data ? $this->num_uf($input['final_total']) : $input['final_total'];
+
+        $shipping_address = $contact->shipping_address_1.','.($contact->shipping_address_2)?$contact->shipping_address_2.',' :''.$contact->shipping_city.','.$contact->shipping_state.','.$contact->shipping_country.','.$contact->shipping_zipcode;
         $transaction = Transaction::create([
             'business_id' => $business_id,
             'location_id' => $input['location_id'],
@@ -84,7 +86,12 @@ class TransactionUtil extends Util
             'commission_agent' => $input['commission_agent'] ?? null,
             'is_quotation' => isset($input['is_quotation']) ? $input['is_quotation'] : 0,
             /*'shipping_details' => isset($input['shipping_details']) ? $input['shipping_details'] : null,
-            'shipping_address' => isset($input['shipping_address']) ? $input['shipping_address'] : null,*/
+            */
+            'billing_address_line_1' => $contact->address_line_1,
+            'billing_address_line_2' => $contact->address_line_2,
+            'shipping_address_line_1' => $contact->shipping_address_1,
+            'shipping_address_line_2' => $contact->shipping_address_2,
+            'shipping_address' => $shipping_address,
             'shipping_status' => isset($input['shipping_status']) ? $input['shipping_status'] : null,
             /*'delivered_to' => isset($input['delivered_to']) ? $input['delivered_to'] : null,*/
             'shipping_charges' => isset($input['shipping_charges']) ? $uf_data ? $this->num_uf($input['shipping_charges']) : $input['shipping_charges'] : 0,
@@ -591,7 +598,7 @@ class TransactionUtil extends Util
     public function transactionDayUpdate($sell_days, $transaction, $new_days, $master_list_less, $master_list_less_id, $product, $old_value, $new_value)
     {
         TransactionActivity::insert([
-            'type' => 1,
+            'type' => TransactionActivityTypes()['DaysUpdate'],
             'transaction_id' => $transaction->id,
             'comment' => 'old_value is==' . $old_value . 'and new_value is==' . $new_value,
             'created_at' => Carbon::now()->toDateTimeString(),

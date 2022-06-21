@@ -4,7 +4,7 @@
         {!! Form::open(['url' => action('TransactionActivityController@store'), 'method' => 'post', 'id' => 'user_comment_add_form' ]) !!}
 
         <input type="hidden" name="transaction_id" id="transaction_ids" value="">
-        <input type="hidden" name="type"  value="2">
+        <input type="hidden" name="type"  value="{{TransactionActivityTypes()['UserComment']}}">
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             <h4 class="modal-title">@lang( 'sale.add_user_comment' )</h4>

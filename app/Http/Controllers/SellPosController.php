@@ -383,6 +383,7 @@ class SellPosController extends Controller
                 //Customer group details
                 $contact_id = $request->get('contact_id', null);
                 $cg = $this->contactUtil->getCustomerGroup($business_id, $contact_id);
+
                 $input['customer_group_id'] = (empty($cg) || empty($cg->id)) ? null : $cg->id;
 
                 //set selling price group id
@@ -460,7 +461,8 @@ class SellPosController extends Controller
                 //upload document
                 $input['document'] = $this->transactionUtil->uploadFile($request, 'sell_document', 'documents');
 
-                $transaction = $this->transactionUtil->createSellTransaction($business_id, $input, $invoice_total, $user_id);
+                $contact = Contact::findOrFail($input['contact_id']);
+                $transaction = $this->transactionUtil->createSellTransaction($contact,$business_id, $input, $invoice_total, $user_id);
 
                 //Upload Shipping documents
                 Media::uploadMedia($business_id, $transaction, $request, 'shipping_documents', false, 'shipping_document');
@@ -588,7 +590,6 @@ class SellPosController extends Controller
                         ];
             }
         } catch (\Exception $e) {
-            dd($e->getMessage());
             DB::rollBack();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
             $msg = trans("messages.something_went_wrong");
@@ -654,8 +655,6 @@ class SellPosController extends Controller
         $location_id,
         $transaction_id,
         $printer_type = null,
-        $is_package_slip = false,
-        $from_pos_screen = true,
         $invoice_layout_id = null
     ) {
         $output = ['is_enabled' => false,
@@ -669,7 +668,7 @@ class SellPosController extends Controller
         $business_details = $this->businessUtil->getDetails($business_id);
         $location_details = BusinessLocation::find($location_id);
 
-        if ($from_pos_screen && $location_details->print_receipt_on_invoice != 1) {
+        if ($location_details->print_receipt_on_invoice != 1) {
             return $output;
         }
         //Check if printing of invoice is enabled or not.
@@ -690,12 +689,6 @@ class SellPosController extends Controller
             'decimal_separator' => $business_details->decimal_separator,
         ];
         $receipt_details->currency = $currency_details;
-
-        if ($is_package_slip) {
-            $output['html_content'] = view('sale_pos.receipts.packing_slip', compact('receipt_details'))->render();
-            return $output;
-        }
-
         $output['print_title'] = $receipt_details->invoice_no;
         //If print type browser - return the content, printer - return printer config data, and invoice format config
         if ($receipt_printer_type == 'printer') {
@@ -1292,7 +1285,6 @@ class SellPosController extends Controller
                         ];
             }
         } catch (\Exception $e) {
-            dd($e->getMessage());
             DB::rollBack();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
             $output = ['success' => 0,
@@ -1541,7 +1533,6 @@ class SellPosController extends Controller
                 }
             }
         } catch (\Exception $e) {
-            dd($e->getMessage());
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
 
             $output['success'] = false;
@@ -1663,9 +1654,8 @@ class SellPosController extends Controller
                     $printer_type = $transaction->location->receipt_printer_type;
                 }
 
-                $is_package_slip = !empty($request->input('package_slip')) ? true : false;
-                $invoice_layout_id = $transaction->is_direct_sale ? $transaction->location->sale_invoice_layout_id : null;
-                $receipt = $this->receiptContent($business_id, $transaction->location_id, $transaction_id, $printer_type, $is_package_slip, false, $invoice_layout_id);
+               $invoice_layout_id = $transaction->is_direct_sale ? $transaction->location->sale_invoice_layout_id : null;
+                $receipt = $this->receiptContent($business_id, $transaction->location_id, $transaction_id, $printer_type, false, $invoice_layout_id);
 
                 if (!empty($receipt)) {
                     $output = ['success' => 1, 'receipt' => $receipt];

@@ -302,6 +302,7 @@ return [
    'cat_code_label' => 'Category or HSN code label',
    'list_sell_return' => 'List Sell Return',
    'sell_return' => 'Sell Return',
+    'master_list' => 'Master List',
    'layout_credit_note' => 'Credit Note / Sell Return Details',
    'cn_heading' => 'Heading',
    'cn_no_label' => 'Reference Number',

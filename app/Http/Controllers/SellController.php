@@ -1595,6 +1595,7 @@ class SellController extends Controller
         $product_id = [];
         $product_name = [];
         $edit_product = [];
+        //dd($sell_details);
         if (!empty($sell_details)) {
             foreach ($sell_details as $key => $value) {
                 $product_id[] = $value->product_id;
@@ -1800,72 +1801,14 @@ class SellController extends Controller
         $customer_due = $customer_due != 0 ? $this->transactionUtil->num_f($customer_due, true) : '';
         $default_datetime = $this->businessUtil->format_date('now', true);
         $default_time = $this->businessUtil->format_times(Carbon::parse(now())->format('H:i'));
-
+        $default_date = $this->businessUtil->format_dates(Carbon::parse(now())->format('Y-m-d'));
+        $role = 'sell';
+        $masterListCols = config('masterlist.'.$role.'_columns');
         return view('sell.edit')
-            ->with(compact('master_list', 'edit_product', 'business_details', 'default_datetime', 'default_time',/*'number_of_days','transaction_sell_lines_id',*/ 'time_slot', 'taxes', 'sell_details', 'transaction', 'commission_agent', 'types', 'customer_groups', 'pos_settings', 'waiters', 'invoice_schemes', 'default_invoice_schemes', 'redeem_details', 'edit_discount', 'edit_price', 'shipping_statuses', 'statuses', 'sales_orders', 'payment_types', 'accounts', 'payment_lines', 'change_return', 'is_order_request_enabled', 'customer_due', 'transaction_sell_lines_days', 'transaction_sell_lines_id', 'product_ids', 'product_names', 'product_count', 'total_compensate'));
+            ->with(compact('masterListCols','master_list', 'edit_product', 'business_details', 'default_datetime', 'default_time','default_date',/*'number_of_days','transaction_sell_lines_id',*/ 'time_slot', 'taxes', 'sell_details', 'transaction', 'commission_agent', 'types', 'customer_groups', 'pos_settings', 'waiters', 'invoice_schemes', 'default_invoice_schemes', 'redeem_details', 'edit_discount', 'edit_price', 'shipping_statuses', 'statuses', 'sales_orders', 'payment_types', 'accounts', 'payment_lines', 'change_return', 'is_order_request_enabled', 'customer_due', 'transaction_sell_lines_days', 'transaction_sell_lines_id', 'product_ids', 'product_names', 'product_count', 'total_compensate'));
     }
 
-    public function getMasterList($id)
-    {
-        if (request()->ajax()) {
-            $sells = MasterList::with(['transaction_sell_lines' => function ($query) {
-                $query->with('transactionSellLinesVariants');
-            }])->where('transaction_id', $id);
 
-            return Datatables::of($sells)
-                ->addColumn(
-                    'action', function ($row) {
-                    $html = '';
-                    return $html;
-                }
-                )
-                ->addColumn('pax', function ($row) {
-                    $pax = [];
-                    if (isset($row->transaction_sell_lines->transactionSellLinesVariants)) {
-                        foreach ($row->transaction_sell_lines->transactionSellLinesVariants as $value) {
-                            if (str_contains($value->name, 'Serving Pax')) {
-                                $pax[] = $value->value;
-                            }
-                        }
-                    }
-                    return implode(',', $pax);
-                })
-                ->addColumn('cancel_reason', function ($row) {
-                    return getReasonName($row->cancel_reason);
-                })
-                ->addColumn('compensate', function ($row) {
-                    if ($row->is_compensate == 0) {
-                        $data = 'No';
-                    } else {
-                        $data = 'Yes';
-                    }
-                    return $data;
-                })
-                ->addColumn('addon', function ($row) {
-                    $addon = [];
-                    if (isset($row->transaction_sell_lines->transactionSellLinesVariants)) {
-                        foreach ($row->transaction_sell_lines->transactionSellLinesVariants as $value) {
-                            if (str_contains($value->name, 'Add on')) {
-                                $addon_pax = ($value->value != 'None') ? '+' . $value->value : '';
-                                $addon[] = str_replace("Add on:", "", $value->name) . '' . $addon_pax;
-                            }
-                        }
-
-                    }
-                    return implode(',', $addon);
-                })
-                ->editColumn(
-                    'hp_number',
-                    '8df98sdf8dsif'
-                )
-                ->editColumn(
-                    'driver_name',
-                    'driver name'
-                )
-                ->rawColumns(['pax', 'addon', 'hp_number', 'driver_name', 'action'])
-                ->make(true);
-        }
-    }
 
 
     /**

@@ -53,7 +53,7 @@ class SyncOrder extends Command
         return true;
     }
 
-     /**
+    /**
      * syncOrderDetails
      *
      * @return void
@@ -63,7 +63,7 @@ class SyncOrder extends Command
         $i = 1;
         while (true) {
             try {
-                $orderEndpoint = config("api.order_endpoint") . '?page=' . $i . '&orderby=date&order=desc';
+                $orderEndpoint = config("api.order_endpoint") . '?page=' . $i . '&orderby=date&order=desc&after=' . now()->subDays(config("api.api_setting_90_days_to_sync_order"));
                 $orders = getData(getConfiguration($bussiness_location_id), $orderEndpoint);
                 if (count($orders) <= 0) {
                     break;
@@ -71,61 +71,75 @@ class SyncOrder extends Command
                 $customerId = null;
                 $transection = null;
                 foreach ($orders as $order) {
-                    if ($order->date_created >= now()->subDays(config("api.api_setting_days_to_sync_order"))) {
-                        if (Transaction::where('web_order_id', $order->id)->exists()) {
-                            $transection = Transaction::where('web_order_id', $order->id)->first();
-                            Transaction::where('web_order_id', $order->id)->update([
-                                'status' =>  $order->status,
-                            ]);
+                    // if ($order->id > 37493 && $order->id < 37498) {
+                    if (Transaction::where('web_order_id', $order->id)->exists()) {
+                        $transection = Transaction::where('web_order_id', $order->id)->first();
+                        Transaction::where('web_order_id', $order->id)->update([
+                            'status' =>  $order->status,
+                        ]);
+                    } else {
+                        if (Contact::where('contact_id', $order->customer_id)->exists()) {
+                            $customerId = Contact::where('contact_id', $order->customer_id)->value('id');
                         } else {
-                            if (Contact::where('contact_id', $order->customer_id)->exists()) {
-                                $customerId = Contact::where('contact_id', $order->customer_id)->value('id');
-                            } else {
-                                if ($order->customer_id != 0) {
-                                    $customerId = $this->createCustomer($order->customer_id, $bussiness_location_id);
-                                }
+                            if ($order->customer_id != 0) {
+                                $customerId = $this->createCustomer($order->customer_id, $bussiness_location_id);
                             }
+                        }
 
-                            $transection = $this->createTransection($order, $bussiness_location_id, $customerId);
+                        $transection = $this->createTransection($order, $bussiness_location_id, $customerId);
 
-                            $timeSlot = null;
-                            $startDate = null;
-                            $lineItems = $order->line_items ?? [];
-                            $product_id = null;
-                            foreach ($lineItems as $lineItem) {
-                                if (Product::where('product_id', $lineItem->product_id)->exists()) {
-                                    $product_id = Product::where('product_id', $lineItem->product_id)->value('id');
+                        $timeSlot = null;
+                        $startDate = null;
+                        $lineItems = $order->line_items ?? [];
+                        $product_id = null;
+                        foreach ($lineItems as $lineItem) {
+                            if (Product::where('product_id', $lineItem->product_id)->exists()) {
+                                $product_id = Product::where('product_id', $lineItem->product_id)->value('id');
+                            } else {
+                                $product_id = $this->createProduct($lineItem->product_id, $bussiness_location_id);
+                            }
+                            $metaData = $lineItem->meta_data ?? [];
+                            if ($this->checkStartDateExistOrNot($lineItem->meta_data)) {
+
+                                if (!str_contains(str_replace(' ', '', $lineItem->name), 'LunchOrDinner')) {
+                                    $timeSlot = '3';
                                 } else {
-                                    $product_id = $this->createProduct($lineItem->product_id, $bussiness_location_id);
-                                }
-
-                                $metaData = $lineItem->meta_data ?? [];
-                                foreach ($metaData as $meta) {
-                                    if ($meta->key == 'Time Slot') {
-                                        $timeSlot = $meta->value;
-                                    }
-                                    if ($meta->key == 'Start Date') {
-                                        $startDate = $meta->value;
-                                    }
-                                }
-                                $transactionSellLine = $this->createTransactionSellLine($transection, $product_id, $lineItem, $timeSlot, $startDate);
-
-                                foreach ($lineItems as $lineItem) {
-                                    $metaData = $lineItem->meta_data ?? [];
                                     foreach ($metaData as $meta) {
-                                        if ($meta->key == 'Delivery Days') {
-                                            $deliveryDays = explode(', ', $meta->value);
-                                            foreach (array_unique($deliveryDays) as $deliveryDay) {
-                                                TransactionSellLinesDay::create(
-                                                    [
-                                                        'transaction_sell_lines_id' => $transactionSellLine->id,
-                                                        'day' => $this->getDayNumber($deliveryDay),
-                                                    ]
-                                                );
+                                        if ($meta->key == 'Time Slot') {
+                                            if (str_contains($meta->value, 'Lunch')) {
+                                                $timeSlot = '1';
+                                            } else {
+                                                $timeSlot = '2';
                                             }
                                         }
+                                        if ($meta->key == 'Start Date') {
+                                            $startDate = $meta->value;
+                                        }
+                                    }
+                                }
+                            } else {
+                                $timeSlot = '0';
+                            }
 
-                                        if ($meta->key != 'Delivery Days' && $meta->key != 'Time Slot' && $meta->key != 'Start Date') {
+                            $transactionSellLine = $this->createTransactionSellLine($transection, $product_id, $lineItem, $timeSlot, $startDate);
+
+                            foreach ($lineItems as $lineItem) {
+                                $metaData = $lineItem->meta_data ?? [];
+                                foreach ($metaData as $meta) {
+                                    if ($meta->key == 'Delivery Days') {
+                                        $deliveryDays = explode(', ', $meta->value);
+                                        foreach (array_unique($deliveryDays) as $deliveryDay) {
+                                            TransactionSellLinesDay::create(
+                                                [
+                                                    'transaction_sell_lines_id' => $transactionSellLine->id,
+                                                    'day' => $this->getDayNumber($deliveryDay),
+                                                ]
+                                            );
+                                        }
+                                    }
+
+                                    if ($meta->key != 'Delivery Days' && $meta->key != 'Time Slot' && $meta->key != 'Start Date' && $meta->key != 'Delivery Time' && $meta->key != 'Delivery Date') {
+                                        if (gettype($meta->value) === 'string') {
                                             TransactionSellLinesVariant::create(
                                                 [
                                                     'transaction_sell_lines_id' => $transactionSellLine->id,
@@ -137,35 +151,62 @@ class SyncOrder extends Command
                                     }
                                 }
                             }
-                            $is_refund = 0;
-                            $this->createTransactionPayment($order, $bussiness_location_id, $transection, $is_refund);
                         }
-                        if (count($order->refunds) > 0) {
-                            foreach ($order->refunds as $refund) {
-                                $is_refund = 1;
-                                $this->createTransactionPayment($order, $bussiness_location_id, $transection, $is_refund, $refund);
-                            }
-                            MasterList::where('transaction_id', $transection->id)->where('delivery_date' > $transection->date_created)->update([
-                                'status' => 0,
-                                'additional_notes' => 'reason',
-                            ]);
-                        }
-                        if (!MasterList::where('transaction_id', $transection->id)->exists()) {
-                            $this->createMasterList($transection);
-                        }
+                        $is_refund = 0;
+                        $this->createTransactionPayment($order, $bussiness_location_id, $transection, $is_refund);
                     }
+                    if (count($order->refunds) > 0) {
+                        foreach ($order->refunds as $refund) {
+                            $is_refund = 1;
+                            $this->createTransactionPayment($order, $bussiness_location_id, $transection, $is_refund, $refund);
+                        }
+                        MasterList::where('transaction_id', $transection->id)->where('delivery_date' > $transection->date_created)->update([
+                            'status' => 0,
+                            'additional_notes' => 'reason',
+                        ]);
+                    }
+                    if (!MasterList::where('transaction_id', $transection->id)->exists()) {
+                        $this->createMasterList($transection);
+                    } else {
+                        MasterList::where('transaction_id', $transection->id)->update([
+                            'shipping_address_line_1' => $transection->shipping_address_line_1 ?? 'shipping_address_line_1',
+                            'shipping_address_line_2' => $transection->shipping_address_line_2 ?? null,
+                            'shipping_city' => $transection->shipping_city ?? 'shipping_city',
+                            'shipping_state' => $transection->shipping_state ?? 'shipping_state',
+                            'shipping_country' => $transection->shipping_country ?? 'shipping_country',
+                            'shipping_zip_code' => $transection->shipping_zip_code ?? 'shipping_zip_code',
+                            'additional_notes' => $transection->additional_notes ?? 'additional_notes',
+                            'hpnumber' => 'hpnumber',
+                            'status' => 1,
+                            'additional_notes' => 'additional_notes',
+                        ]);
+                    }
+                    // }
                 }
             } catch (Exception $e) {
                 dd('Ex. - ', $e, $orderEndpoint);
-            }
-            if ($i >= 1) {
-                break;
             }
             $i++;
         }
     }
 
-        /**
+    /**
+     * checkStartDateExistOrNot
+     *
+     * @param  mixed $metaData
+     * @return void
+     */
+    public function checkStartDateExistOrNot($metaData)
+    {
+        foreach ($metaData as $meta) {
+            if ($meta->key == 'Start Date') {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * createTransection
      *
      * @param  mixed $order
@@ -231,7 +272,7 @@ class SyncOrder extends Command
     }
 
 
-        /**
+    /**
      * createTransactionSellLine
      *
      * @param  mixed $transection
@@ -241,9 +282,23 @@ class SyncOrder extends Command
      * @param  mixed $startDate
      * @return object
      */
-    public function createTransactionSellLine($transection, $product_id, $lineItem, $timeSlot, $startDate)
+    public function createTransactionSellLine($transection, $product_id, $lineItem, $timeSlot, $startDate = null)
     {
         try {
+            $metaData = $lineItem->meta_data ?? [];
+            $delivery_date = null;
+            $delivery_time = null;
+            if ($metaData) {
+                foreach ($metaData as $item) {
+                    if ($item->key === 'Delivery Date') {
+                        $delivery_date = $item->value;
+                    }
+
+                    if ($item->key === 'Delivery Time') {
+                        $delivery_time = $item->value;
+                    }
+                }
+            }
             $transactionSellLine = TransactionSellLine::create(
                 [
                     'transaction_id' => $transection->id,
@@ -256,6 +311,8 @@ class SyncOrder extends Command
                     'quantity_returned' => 0,
                     'unit_price_before_discount' => $lineItem->subtotal,
                     'unit_price' => $lineItem->price,
+                    'delivery_date'    =>  Carbon::parse($delivery_date)->format('Y-m-d'),
+                    'delivery_time' => Carbon::parse($delivery_time)->format('h:i:s'),
                 ]
             );
             return $transactionSellLine;
@@ -265,7 +322,7 @@ class SyncOrder extends Command
     }
 
 
-       /**
+    /**
      * createTransactionPayment
      *
      * @param  mixed $order
@@ -308,7 +365,7 @@ class SyncOrder extends Command
     }
 
 
-      /**
+    /**
      * createCustomer
      *
      * @return void
@@ -381,6 +438,8 @@ class SyncOrder extends Command
                         'product_description' => ($product->description) ? $product->description : $product->short_description,
                         'sku' =>  $product->sku,
                         'created_by' =>  $admin_id,
+                        'enable_stock'    => 1,
+                        'alert_quantity' => 1,
                         'is_inactive' =>  1,
                         'status' =>  $product->status,
                     ]
@@ -426,7 +485,7 @@ class SyncOrder extends Command
         }
     }
 
-       /**
+    /**
      * getCategoryId
      *
      * @param  mixed $categoryName
@@ -437,7 +496,7 @@ class SyncOrder extends Command
         return Category::where('name', $categoryName)->value('id');
     }
 
-        /**
+    /**
      * getDayNumber
      *
      * @return void
@@ -447,7 +506,7 @@ class SyncOrder extends Command
         return getDayNumberByDayName($day);
     }
 
-      /**
+    /**
      * createMasterList
      *
      * @param  mixed $transaction
@@ -456,33 +515,27 @@ class SyncOrder extends Command
     public function createMasterList($transaction)
     {
         try {
-            // $transections = Transaction::with('contact', 'sell_lines', 'sell_lines.sell_lines_days')->has('sell_lines.sell_lines_days')->get();
-            // foreach ($transections as $key => $transaction) {
             foreach ($transaction->sell_lines as $key => $saleLine) {
-                foreach ($saleLine->sell_lines_days as $key => $saleLineDay) {
-                    $delivery_date = $this->getDeliveryDate($saleLine, $saleLineDay);
-                    $masterList = MasterList::create(
-                        [
-                            'transaction_sell_lines_id' => $saleLineDay->transaction_sell_lines_id,
-                            'transaction_id' => $transaction->id,
-                            'contacts_id' => $transaction->contact->id,
-                            'contacts_name' => $transaction->contact->name,
-                            'shipping_address_line_1' => $transaction->shipping_address_line_1,
-                            'shipping_address_line_2' => $transaction->shipping_address_line_2,
-                            'shipping_city' => $transaction->shipping_city,
-                            'shipping_state' => $transaction->shipping_state,
-                            'shipping_country' => $transaction->shipping_country,
-                            'shipping_zip_code' => $transaction->shipping_zip_code,
-                            'additional_notes' => $transaction->additional_notes,
-                            'delivery_note' => 'dummy',
-                            'delivery_date' => $delivery_date,
-                            'delivery_time' => 'dummy',
-                            'shipping_phone' => 'dummy',
-                            'status' => 1,
-                            'staff_notes' => ($transaction->staff_note) ? $transaction->staff_note : 'dummy',
-                            'created_by' => 1,
-                        ]
-                    );
+                $delivery_date = $saleLine->delivery_date;
+                $timeSlot = $saleLine->time_slot;
+                $transaction_sell_lines_id = $saleLine->id;
+                $delivery_time = $saleLine->delivery_time;
+                if ($timeSlot === '3') {
+                    $timeSlots = [1, 2];
+                    foreach ($timeSlots as $value) {
+                        $this->storeMasterList($transaction, $transaction_sell_lines_id, $delivery_date, $delivery_time, $value);
+                    }
+                } else {
+                    if (isset($saleLine->delivery_date) && isset($saleLine->delivery_time) && !filled($saleLine->sell_lines_days)) {
+                        $this->storeMasterList($transaction, $transaction_sell_lines_id, $delivery_date, $delivery_time, $timeSlot);
+                    } else {
+                        foreach ($saleLine->sell_lines_days as $key => $saleLineDay) {
+                            $delivery_date = $this->getDeliveryDate($saleLine, $saleLineDay);
+                            $transaction_sell_lines_id = $saleLineDay->transaction_sell_lines_id;
+                            $delivery_time = null;
+                            $this->storeMasterList($transaction, $transaction_sell_lines_id, $delivery_date, $delivery_time, $timeSlot);
+                        }
+                    }
                 }
             }
             return true;
@@ -490,6 +543,41 @@ class SyncOrder extends Command
             dd('Ex. - ', $e);
         }
     }
+
+
+    /**
+     * storeMasterList
+     *
+     * @return void
+     */
+    public function storeMasterList($transaction, $transaction_sell_lines_id, $delivery_date = null, $delivery_time = null, $timeSlot)
+    {
+        $masterList = MasterList::create(
+            [
+                'transaction_sell_lines_id' => $transaction_sell_lines_id,
+                'transaction_id' => $transaction->id,
+                'contacts_id' => isset($transaction->contact->id) ? $transaction->contact->id : 'contact_id',
+                'contacts_name' => isset($transaction->contact->name) ? $transaction->contact->name : 'contact_name',
+                'shipping_address_line_1' => $transaction->shipping_address_line_1 ?? 'shipping_address_line_1',
+                'shipping_address_line_2' => $transaction->shipping_address_line_2 ?? null,
+                'shipping_city' => $transaction->shipping_city ?? 'shipping_city',
+                'shipping_state' => $transaction->shipping_state ?? 'shipping_state',
+                'shipping_country' => $transaction->shipping_country ?? 'shipping_country',
+                'shipping_zip_code' => $transaction->shipping_zip_code ?? 'shipping_zip_code',
+                'additional_notes' => $transaction->additional_notes ?? 'additional_notes',
+                'delivery_note' => 'delivery_note',
+                'delivery_date'    =>  Carbon::parse($delivery_date)->format('Y-m-d'),
+                'delivery_time' => Carbon::parse($delivery_time)->format('h:i:s'),
+                'shipping_phone' => 'shipping_phone',
+                'status' => 1,
+                'staff_notes' => ($transaction->staff_note) ? $transaction->staff_note : 'staff_note',
+                'created_by' => 1,
+                'time_slot' => $timeSlot,
+            ]
+        );
+        return true;
+    }
+
 
     /**
      * getDeliveryDate
@@ -518,5 +606,4 @@ class SyncOrder extends Command
         }
         return $delivery_date;
     }
-
 }

@@ -22,4 +22,10 @@ class MasterList extends Model
         return $this->hasOne(\App\Models\TransactionSellLine::class, 'id', 'transaction_sell_lines_id');
     }
 
+    public function transasction()
+    {
+        return $this->hasOne(\App\Models\Transaction::class, 'id', 'transaction_id');
+    }
+    // transaction_sell_lines_id
+
 }

@@ -325,7 +325,7 @@ $multiplier = 1;
                             }
                         @endphp
 
-
+<?php //dd($product_ids);?>
                         <div class="table-responsive">
                             @foreach($product_ids as $key=>$productId)
                                 <table
@@ -422,11 +422,11 @@ $multiplier = 1;
                                     @endforeach
                                     </tbody>
                                 </table>
-
                                 <div class="row pos_table_{{$productId}}">
                                     <div class="col-md-12 col-sm-12">
                                         <div class="box box-solid">
                                             <div class="box-body">
+                                                @if(array_key_exists($productId,$transaction_sell_lines_id))
                                                 <div
                                                     class="col-md-4 deliverydays_{{$productId}} @if($edit_product[$productId]['unit'] != 'tingkat') hide @endif">
                                                     <div class="form-group">
@@ -446,6 +446,7 @@ $multiplier = 1;
                                                         @endforeach
                                                     </div>
                                                 </div>
+                                                @endif
                                                 <div
                                                     class="@if(!empty($commission_agent)) col-sm-4 @else col-sm-4 @endif start_dates_{{$productId}} @if($edit_product[$productId]['unit'] != 'tingkat') hide @endif">
                                                     <div class="form-group">
@@ -465,15 +466,17 @@ $multiplier = 1;
 
                                                 <div
                                                     class="@if(!empty($commission_agent)) col-sm-4 @else col-sm-4 @endif delivery_dates_{{$productId}} @if($edit_product[$productId]['unit'] == 'tingkat') hide @endif">
+
                                                     <div class="form-group">
                                                         <input type="hidden" class="deliveryDate" name="deliveryDate"
-                                                               value="{{($edit_product[$productId]['delivery_date'] != '0000-00-00' || $edit_product[$productId]['delivery_date'] != '') ? $edit_product[$productId]['delivery_date'] : $default_datetime}}">
+                                                               value="{{($edit_product[$productId]['delivery_date'] != '0000-00-00' || $edit_product[$productId]['delivery_date'] != '') ? $edit_product[$productId]['delivery_date'] : $default_date}}">
+
                                                         {!! Form::label('delivery_date', __('sale.delivery_date') . ':*') !!}
                                                         <div class="input-group">
-                                                            <span class="input-group-addon">
-                                                                <i class="fa fa-calendar"></i>
-                                                            </span>
-                                                            {!! Form::text("product[" . $productId . "][delivery_date]", ($edit_product[$productId]['delivery_date'] != '0000-00-00' || $edit_product[$productId]['delivery_date'] != '') ? $edit_product[$productId]['delivery_date'] : $default_datetime, ['class' => 'form-control delivery_date', 'required']); !!}
+							<span class="input-group-addon">
+								<i class="fa fa-calendar"></i>
+							</span>
+                                                            {!! Form::text("product[" . $productId . "][delivery_date]", ($edit_product[$productId]['delivery_date'] != '0000-00-00' || $edit_product[$productId]['delivery_date'] != '') ? $edit_product[$productId]['delivery_date'] : $default_date, ['class' => 'form-control delivery_date', 'readonly','required']); !!}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -486,7 +489,7 @@ $multiplier = 1;
 							<span class="input-group-addon">
 								<i class="fa fa-calendar"></i>
 							</span>
-                                                            {!! Form::text("product[" . $productId . "][delivery_time]", ($edit_product[$productId]['delivery_time']) ? $edit_product[$productId]['delivery_time'] : $default_time, ['class' => 'form-control delivery_time', 'required']); !!}
+                                                            {!! Form::text("product[" . $productId . "][delivery_time]", ($edit_product[$productId]['delivery_time']) ? $edit_product[$productId]['delivery_time'] : $default_time, ['class' => 'form-control delivery_time', 'readonly','required']); !!}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1023,7 +1026,6 @@ $multiplier = 1;
                     <div class="table-responsive">
                             <input type="hidden" id="transaction_id" name="transaction_id" value="{{$transaction->id}}">
                             @include('master.partials.master_list')
-
                     </div>
                 </div>
             @endcomponent
@@ -1081,6 +1083,86 @@ $multiplier = 1;
         });
         $('.master_list_compensate_add_modals').on('shown.bs.modal', function() {
             $('.master_list_compensate_add_modals').find('#transaction_ids').val('{{$transaction->id}}');
+        });
+        var transaction_id = $('#transaction_id').val();
+        var columns = @json($masterListCols);
+        var masterListCols = columns;
+        master_table = $('#master_table').DataTable({
+            processing: true,
+            serverSide: true,
+            aaSorting: [
+                [0, 'desc']
+            ],
+            "ajax": {
+                "url": "/master_list/"+transaction_id,
+                "data": function ( d ) {
+                    if($('#master_list_filter_date_range').val()) {
+                        var start = $('#master_list_filter_date_range').data('daterangepicker').startDate.format('YYYY-MM-DD');
+                        var end = $('#master_list_filter_date_range').data('daterangepicker').endDate.format('YYYY-MM-DD');
+                        d.start_date = start;
+                        d.end_date = end;
+                    }
+                    if($('#master_list_type').val()) {
+                        var type = $('#master_list_type').val();
+                        d.type = type;
+                    }
+                    if($('#master_list_filter_location_id').val()) {
+                        var location = $('#master_list_filter_location_id').val();
+                        d.location = location;
+                    }
+                }
+            },
+            columns: masterListCols,
+
+        });
+
+        $('.master_list_compensate_add_modals').on('shown.bs.modal', function (e) {
+            var dtes = new Date();
+            dtes.setDate(dtes.getDate() + 1);
+            $('.delivery_dates').datetimepicker({
+                format: moment_date_format + ' ' + moment_time_format,
+                minDate: dtes,
+                widgetPositioning:{
+                    horizontal: 'auto',
+                    vertical: 'bottom'
+                }
+            });
+            $('form#compensate')
+                .submit(function (e) {
+                    e.preventDefault();
+                })
+                .validate({
+                    rules: {
+                        cancel_reason: {
+                            required: true,
+                        },
+                    },
+                    submitHandler: function (form) {
+                        e.preventDefault();
+                        var data = $(form).serialize();
+
+                        $.ajax({
+                            method: 'POST',
+                            url: $(form).attr('action'),
+                            dataType: 'json',
+                            data: data,
+                            beforeSend: function (xhr) {
+                                __disable_submit_button($(form).find('button[type="submit"]'));
+                            },
+                            success: function (result) {
+                                if (result.success == true) {
+                                    $('div.master_list_compensate_add_modals').modal('hide');
+                                    toastr.success(result.msg);
+                                    master_table.ajax.reload();
+                                } else {
+                                    toastr.error(result.msg);
+                                }
+                            },
+                        });
+                    },
+                });
+
+
         });
     </script>
 @endsection

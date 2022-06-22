@@ -12,7 +12,7 @@
 */
 
 use App\Http\Controllers\Api\ManageDataOfProductOrderAndCustomerController;
-use App\Http\Controllers\Api\MasterListController;
+// use App\Http\Controllers\Api\MasterListController;
 
 include_once('install_r.php');
 
@@ -437,6 +437,7 @@ Route::middleware(['EcomApi'])->prefix('api/ecom')->group(function () {
     Route::post('orders', 'SellPosController@placeOrdersApi');
 });
 Route::resource('master', 'MasterController');
+
 //common route
 Route::middleware(['auth'])->group(function () {
     Route::get('/logout', 'Auth\LoginController@logout')->name('logout');
@@ -449,7 +450,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone'])
     Route::get('/purchases/{id}', 'PurchaseController@show');
     Route::get('/download-purchase-order/{id}/pdf', 'PurchaseOrderController@downloadPdf')->name('purchaseOrder.downloadPdf');
     Route::get('/sells/{id}', 'SellController@show');
-    Route::get('/master_list/{id}', 'SellController@getMasterList');
+    Route::get('/master_list/{id}', 'MasterController@getMasterList');
     Route::get('/sells/{transaction_id}/print', 'SellPosController@printInvoice')->name('sell.printInvoice');
     Route::get('/download-sells/{transaction_id}/pdf', 'SellPosController@downloadPdf')->name('sell.downloadPdf');
     Route::get('/download-quotation/{id}/pdf', 'SellPosController@downloadQuotationPdf')
@@ -466,3 +467,4 @@ Route::get('sync/products/{business_location_id}', [ManageDataOfProductOrderAndC
 Route::get('sync/customers/{business_location_id}', [ManageDataOfProductOrderAndCustomerController::class,'syncCustomerDetails'])->name('sync.customers');
 Route::get('sync/all', [ManageDataOfProductOrderAndCustomerController::class,'syncAllDetails'])->name('sync.all');
 // Route::get('create/master/list', [MasterListController::class,'createMasterList']);
+Route::get('master/export/{type}', 'MasterController@exportExcel')->name('exportExcel');

@@ -20,7 +20,7 @@
         @can('driver.create')
             @slot('tool')
                 <div class="box-tools">
-                    <a class="btn btn-block btn-primary" 
+                    <a class="btn btn-block btn-primary"
                     href="{{action('DriverController@create')}}" >
                     <i class="fa fa-plus"></i> @lang( 'messages.add' )</a>
                  </div>
@@ -47,7 +47,7 @@
         @endcan
     @endcomponent
 
-    <div class="modal fade user_modal" tabindex="-1" role="dialog" 
+    <div class="modal fade user_modal" tabindex="-1" role="dialog"
     	aria-labelledby="gridSystemModalLabel">
     </div>
 

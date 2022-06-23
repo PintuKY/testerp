@@ -114,7 +114,6 @@
             <li><a href="{{route('sales.import')}}"><i class="fa fas fa-file-import"></i> <span>Import Sales</span></a>
                 <li><a href="{{route('master.index')}}"><i class="fa fas fa-file-import"></i> <span>Master List</span></a>
             </li>
-
         </ul>
     </li>
     <li class="treeview" id="tour_step6">

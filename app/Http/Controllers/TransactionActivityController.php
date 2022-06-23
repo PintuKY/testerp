@@ -52,7 +52,7 @@ class TransactionActivityController extends Controller
         if (!auth()->user()->can('direct_sell.update') && !auth()->user()->can('so.update')) {
             abort(403, 'Unauthorized action.');
         }
-        return view('sell.UserCommentCreate');
+        return view('sell.partials.user_comment_create');
     }
 
     /**
@@ -76,7 +76,6 @@ class TransactionActivityController extends Controller
             }
 
             $input = $request->only(['user_comment','transaction_id','type']);
-
 
             $transaction_activity = TransactionActivity::create($input);
 

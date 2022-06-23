@@ -281,7 +281,7 @@ class Util
      * Converts time in business format to mysql format
      *
      * @param string $time
-     * @return strin
+     * @return string
      */
     public function format_times($time)
     {
@@ -291,6 +291,18 @@ class Util
         }
         return !empty($time) ? Carbon::createFromFormat('H:i', $time)->format($time_format) : null;
     }
+    /**
+     * Converts date in business format to mysql format
+     *
+     * @param string $time
+     * @return string
+     */
+    public function format_dates($time)
+    {
+        $time_format = 'Y-m-d';
+        return !empty($time) ? Carbon::createFromFormat('Y-m-d', $time)->format($time_format) : null;
+    }
+
 
     /**
      * Converts date in mysql format to business format

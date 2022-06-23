@@ -18,7 +18,6 @@
         if (!empty($sell->is_export) && !empty($sell->export_custom_fields_info)) {
             $export_custom_fields = $sell->export_custom_fields_info;
         }
-
       @endphp
       <div class="@if(!empty($export_custom_fields)) col-sm-3 @else col-sm-4 @endif">
         <b>@if($sell->type == 'sales_order') {{ __('restaurant.order_no') }} @else {{ __('sale.invoice_no') }} @endif:</b> #{{ $sell->invoice_no }}<br>
@@ -401,9 +400,6 @@
     </div>
   </div>
   <div class="modal-footer">
-    @if($sell->type != 'sales_order')
-    <a href="#" class="print-invoice btn btn-success" data-href="{{route('sell.printInvoice', [$sell->id])}}?package_slip=true"><i class="fas fa-file-alt" aria-hidden="true"></i> @lang("lang_v1.packing_slip")</a>
-    @endif
     @can('print_invoice')
       <a href="#" class="print-invoice btn btn-primary" data-href="{{route('sell.printInvoice', [$sell->id])}}"><i class="fa fa-print" aria-hidden="true"></i> @lang("lang_v1.print_invoice")</a>
     @endcan

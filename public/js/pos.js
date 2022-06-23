@@ -1021,17 +1021,24 @@ $(document).ready(function () {
         format: moment_date_format + ' ' + moment_time_format,
         ignoreReadonly: true,
     });
-    $('.delivery_date').datetimepicker({
+/*    $('.delivery_date').datetimepicker({
         format: moment_date_format,
         minDate:$('.deliveryDate').val(),
         widgetPositioning:{
             horizontal: 'auto',
             vertical: 'bottom'
         }
-    });
+    })
+    $('.delivery_dates').datetimepicker({
+        format: moment_date_format,
+        minDate:$('.deliveryDate').val(),
+        widgetPositioning:{
+            horizontal: 'auto',
+            vertical: 'bottom'
+        }
+    });*/
     $('.delivery_time').datetimepicker({
         format: moment_time_format,
-        ignoreReadonly: true,
         widgetPositioning:{
             horizontal: 'auto',
             vertical: 'bottom'
@@ -1370,6 +1377,8 @@ $(document).ready(function () {
             $('span.curr_datetime').html(__current_datetime());
         }
     }, 60000);
+
+
 });
 
 
@@ -1578,7 +1587,6 @@ function pos_product_row(product_id = null, purchase_line_id = null, weighing_sc
             dataType: 'json',
             success: function (result) {
                 if (result.success) {
-                    //$('table#pos_table tbody')
                     $('.pos')
                         .append(result.html_content);
                     $('table#pos_table tbody')

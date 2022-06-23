@@ -325,7 +325,7 @@ $multiplier = 1;
                             }
                         @endphp
 
-
+<?php //dd($product_ids);?>
                         <div class="table-responsive">
                             @foreach($product_ids as $key=>$productId)
                                 <table
@@ -422,11 +422,11 @@ $multiplier = 1;
                                     @endforeach
                                     </tbody>
                                 </table>
-
                                 <div class="row pos_table_{{$productId}}">
                                     <div class="col-md-12 col-sm-12">
                                         <div class="box box-solid">
                                             <div class="box-body">
+                                                @if(array_key_exists($productId,$transaction_sell_lines_id))
                                                 <div
                                                     class="col-md-4 deliverydays_{{$productId}} @if($edit_product[$productId]['unit'] != 'tingkat') hide @endif">
                                                     <div class="form-group">
@@ -446,6 +446,7 @@ $multiplier = 1;
                                                         @endforeach
                                                     </div>
                                                 </div>
+                                                @endif
                                                 <div
                                                     class="@if(!empty($commission_agent)) col-sm-4 @else col-sm-4 @endif start_dates_{{$productId}} @if($edit_product[$productId]['unit'] != 'tingkat') hide @endif">
                                                     <div class="form-group">
@@ -465,15 +466,17 @@ $multiplier = 1;
 
                                                 <div
                                                     class="@if(!empty($commission_agent)) col-sm-4 @else col-sm-4 @endif delivery_dates_{{$productId}} @if($edit_product[$productId]['unit'] == 'tingkat') hide @endif">
+
                                                     <div class="form-group">
                                                         <input type="hidden" class="deliveryDate" name="deliveryDate"
-                                                               value="{{($edit_product[$productId]['delivery_date'] != '0000-00-00' || $edit_product[$productId]['delivery_date'] != '') ? $edit_product[$productId]['delivery_date'] : $default_datetime}}">
+                                                               value="{{($edit_product[$productId]['delivery_date'] != '0000-00-00' || $edit_product[$productId]['delivery_date'] != '') ? $edit_product[$productId]['delivery_date'] : $default_date}}">
+
                                                         {!! Form::label('delivery_date', __('sale.delivery_date') . ':*') !!}
                                                         <div class="input-group">
-                                                            <span class="input-group-addon">
-                                                                <i class="fa fa-calendar"></i>
-                                                            </span>
-                                                            {!! Form::text("product[" . $productId . "][delivery_date]", ($edit_product[$productId]['delivery_date'] != '0000-00-00' || $edit_product[$productId]['delivery_date'] != '') ? $edit_product[$productId]['delivery_date'] : $default_datetime, ['class' => 'form-control delivery_date', 'required']); !!}
+							<span class="input-group-addon">
+								<i class="fa fa-calendar"></i>
+							</span>
+                                                            {!! Form::text("product[" . $productId . "][delivery_date]", ($edit_product[$productId]['delivery_date'] != '0000-00-00' || $edit_product[$productId]['delivery_date'] != '') ? $edit_product[$productId]['delivery_date'] : $default_date, ['class' => 'form-control delivery_date', 'readonly','required']); !!}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -486,7 +489,7 @@ $multiplier = 1;
 							<span class="input-group-addon">
 								<i class="fa fa-calendar"></i>
 							</span>
-                                                            {!! Form::text("product[" . $productId . "][delivery_time]", ($edit_product[$productId]['delivery_time']) ? $edit_product[$productId]['delivery_time'] : $default_time, ['class' => 'form-control delivery_time', 'required']); !!}
+                                                            {!! Form::text("product[" . $productId . "][delivery_time]", ($edit_product[$productId]['delivery_time']) ? $edit_product[$productId]['delivery_time'] : $default_time, ['class' => 'form-control delivery_time', 'readonly','required']); !!}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1008,6 +1011,26 @@ $multiplier = 1;
                 </div>
             @endcomponent
         @endif
+
+        @if($master_list)
+            @component('components.widget', ['class' => 'box-solid', 'title' => __('lang_v1.master_list')])
+                @slot('tool')
+                    <div class="box-tools">
+                        <button type="button" class="btn btn-block btn-primary btn-modal"
+                                data-href="{{action('MasterController@create')}}"
+                                data-container=".master_list_compensate_add_modals" @if($total_compensate == 0) disabled @endif>
+                            <i class="fa fa-plus"></i> @lang( 'master.add_compensate' )</button>
+                    </div>
+                @endslot
+                <div class="row col-sm-12 pos_product_div" style="min-height: 0">
+                    <div class="table-responsive">
+                            <input type="hidden" id="transaction_id" name="transaction_id" value="{{$transaction->id}}">
+                            @include('master.partials.master_list')
+                    </div>
+                </div>
+            @endcomponent
+        @endif
+
         <div class="row">
             <div class="col-md-12 text-center">
                 {!! Form::hidden('is_save_and_print', 0, ['id' => 'is_save_and_print']); !!}
@@ -1024,6 +1047,9 @@ $multiplier = 1;
     </section>
 
     <div class="modal fade transaction_activity_add_modals" tabindex="-1" role="dialog"
+         aria-labelledby="gridSystemModalLabel">
+    </div>
+    <div class="modal fade master_list_compensate_add_modals" tabindex="-1" role="dialog"
          aria-labelledby="gridSystemModalLabel">
     </div>
 
@@ -1046,125 +1072,97 @@ $multiplier = 1;
     <script src="{{ asset('js/pos.js?v=' . $asset_v) }}"></script>
     <script src="{{ asset('js/product.js?v=' . $asset_v) }}"></script>
     <script src="{{ asset('js/opening_stock.js?v=' . $asset_v) }}"></script>
+    <script src="{{ asset('js/transaction_compensate.js?v=' . $asset_v) }}"></script>
     <!-- Call restaurant module if defined -->
     @if(in_array('tables' ,$enabled_modules) || in_array('modifiers' ,$enabled_modules) || in_array('service_staff' ,$enabled_modules))
         <script src="{{ asset('js/restaurant.js?v=' . $asset_v) }}"></script>
     @endif
-    <script type="text/javascript">
+    <script>
+        $('.transaction_activity_add_modals').on('shown.bs.modal', function() {
+            $('.transaction_activity_add_modals').find('#transaction_ids').val('{{$transaction->id}}');
+        });
+        $('.master_list_compensate_add_modals').on('shown.bs.modal', function() {
+            $('.master_list_compensate_add_modals').find('#transaction_ids').val('{{$transaction->id}}');
+        });
+        var transaction_id = $('#transaction_id').val();
+        var columns = @json($masterListCols);
+        var masterListCols = columns;
+        master_table = $('#master_table').DataTable({
+            processing: true,
+            serverSide: true,
+            aaSorting: [
+                [0, 'desc']
+            ],
+            "ajax": {
+                "url": "/master_list/"+transaction_id,
+                "data": function ( d ) {
+                    if($('#master_list_filter_date_range').val()) {
+                        var start = $('#master_list_filter_date_range').data('daterangepicker').startDate.format('YYYY-MM-DD');
+                        var end = $('#master_list_filter_date_range').data('daterangepicker').endDate.format('YYYY-MM-DD');
+                        d.start_date = start;
+                        d.end_date = end;
+                    }
+                    if($('#master_list_type').val()) {
+                        var type = $('#master_list_type').val();
+                        d.type = type;
+                    }
+                    if($('#master_list_filter_location_id').val()) {
+                        var location = $('#master_list_filter_location_id').val();
+                        d.location = location;
+                    }
+                }
+            },
+            columns: masterListCols,
 
+        });
 
-        $(document).ready(function () {
-            //transaction activity CRUD
-            $('.transaction_activity_add_modals').on('shown.bs.modal', function() {
-                $('.transaction_activity_add_modals').find('#transaction_ids').val('{{$transaction->id}}');
+        $('.master_list_compensate_add_modals').on('shown.bs.modal', function (e) {
+            var dtes = new Date();
+            dtes.setDate(dtes.getDate() + 1);
+            $('.delivery_dates').datetimepicker({
+                format: moment_date_format + ' ' + moment_time_format,
+                minDate: dtes,
+                widgetPositioning:{
+                    horizontal: 'auto',
+                    vertical: 'bottom'
+                }
             });
-            //transaction activity
-            transaction_activity = $('#transaction_activity').DataTable({
-                processing: true,
-                serverSide: true,
-                bPaginate: false,
-                buttons: [],
-                ajax: '/sells/transaction-activity/{{$transaction->id}}',
-                columns: [
-                    {data: 'created_at', name: 'created_at'},
-                    {data: 'comment', name: 'comment'},
-                    {data: 'user_comment', name: 'user_comment'},
-                    {data: 'action', name: 'action'},
-                ],
-            });
-            $('.transaction_activity_add_modals').on('shown.bs.modal', function (e) {
-                $('form#user_comment_add_form')
-                    .submit(function (e) {
+            $('form#compensate')
+                .submit(function (e) {
+                    e.preventDefault();
+                })
+                .validate({
+                    rules: {
+                        cancel_reason: {
+                            required: true,
+                        },
+                    },
+                    submitHandler: function (form) {
                         e.preventDefault();
-                    })
-                    .validate({
-                        rules: {
-                            user_comment: {
-                                required: true,
-                            },
-                        },
-                        submitHandler: function (form) {
-                            e.preventDefault();
-                            var data = $(form).serialize();
+                        var data = $(form).serialize();
 
-                            $.ajax({
-                                method: 'POST',
-                                url: $(form).attr('action'),
-                                dataType: 'json',
-                                data: data,
-                                beforeSend: function (xhr) {
-                                    __disable_submit_button($(form).find('button[type="submit"]'));
-                                },
-                                success: function (result) {
-                                    if (result.success == true) {
-                                        $('div.transaction_activity_add_modals').modal('hide');
-                                        toastr.success(result.msg);
-                                        transaction_activity.ajax.reload();
-                                    } else {
-                                        toastr.error(result.msg);
-                                    }
-                                },
-                            });
-                        },
-                    });
-
-
-            });
-
-            //delete trasaction activity
-            $(document).on('click', '.delete-activity', function (e) {
-                e.preventDefault();
-                swal({
-                    title: LANG.sure,
-                    icon: 'warning',
-                    buttons: true,
-                    dangerMode: true,
-                }).then(willDelete => {
-                    if (willDelete) {
-                        var href = $(this).attr('href');
-                        var is_suspended = $(this).hasClass('is_suspended');
                         $.ajax({
-                            method: 'DELETE',
-                            url: href,
+                            method: 'POST',
+                            url: $(form).attr('action'),
                             dataType: 'json',
+                            data: data,
+                            beforeSend: function (xhr) {
+                                __disable_submit_button($(form).find('button[type="submit"]'));
+                            },
                             success: function (result) {
                                 if (result.success == true) {
+                                    $('div.master_list_compensate_add_modals').modal('hide');
                                     toastr.success(result.msg);
-                                    transaction_activity.ajax.reload();
+                                    master_table.ajax.reload();
                                 } else {
                                     toastr.error(result.msg);
                                 }
                             },
                         });
-                    }
+                    },
                 });
-            });
-            $('#shipping_documents').fileinput({
-                showUpload: false,
-                showPreview: false,
-                browseLabel: LANG.file_browse_label,
-                removeLabel: LANG.remove,
-            });
 
-            $('#is_export').on('change', function () {
-                if ($(this).is(':checked')) {
-                    $('div.export_div').show();
-                } else {
-                    $('div.export_div').hide();
-                }
-            });
 
-            $('#status').change(function () {
-                if ($(this).val() == 'final') {
-                    $('#payment_rows_div').removeClass('hide');
-                } else {
-                    $('#payment_rows_div').addClass('hide');
-                }
-            });
-            $('.paid_on').datetimepicker({
-                format: moment_date_format + ' ' + moment_time_format,
-                ignoreReadonly: true,
-            });
         });
     </script>
 @endsection

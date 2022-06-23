@@ -26,6 +26,19 @@ return [
         ['data'=>'addon' , 'name' => 'Addon'],
         ['data'=>'address' , 'name' => 'Address'],
         ['data'=>'postal' , 'name' => 'Postal Code'],
+        ['data'=>'cancel_reason' , 'name' => 'Cancel Reason'],
+        ['data'=>'compensate' , 'name' => 'Compensate'],
+        ['data'=>'action' , 'name' => 'Action'],
+    ],
+    'sell_columns' => [
+        ['data'=>'id' , 'name' => 'Id'],
+        ['data'=>'contacts_name' , 'name' => 'Name'],
+        ['data'=>'pax' , 'name' => 'Pax'],
+        ['data'=>'addon' , 'name' => 'Addon'],
+        ['data'=>'address' , 'name' => 'Address'],
+        ['data'=>'postal' , 'name' => 'Postal Code'],
+        ['data'=>'cancel_reason' , 'name' => 'cancel_reason'],
+        ['data'=>'compensate' , 'name' => 'compensate'],
     ],
 
     'product_type' => [

@@ -156,6 +156,43 @@ function variationTypes(){
     return $data;
 }
 
+// Transaction actity type
+function TransactionActivityTypes(){
+    $data = [
+        'DaysUpdate' => '1',
+        'UserComment' => '2'
+    ];
+    return $data;
+}
+
+// Transaction actity type
+function reasonCancelOrder(){
+    $data = [
+        '1' => 'Food Not Cooked',
+        '2' => 'Not Packaged',
+        '3' => 'Wrong Delivery',
+    ];
+    return $data;
+}
+
+function getReasonName($day)
+{
+    $dayName = '';
+    switch ($day) {
+        case ('1'):
+            $dayName = 'Food Not Cooked';
+            break;
+        case ('2'):
+            $dayName = 'Not Packaged';
+            break;
+        case ('3'):
+            $dayName = 'Wrong Delivery';
+            break;
+        default:
+            $dayName = 'NA';
+    }
+    return $dayName;
+}
 // MEal types lists
 function mealTypes(){
     $data = [
@@ -163,6 +200,24 @@ function mealTypes(){
         '1' => 'Lunch',
         '2' => 'Dinner',
         '3' => 'Both'
+    ];
+    return $data;
+}
+
+// compensate types lists
+function compensateTypes(){
+    $data = [
+        '0' => 'No',
+        '1' => 'Yes',
+    ];
+    return $data;
+}
+
+// MEal types lists for compensate
+function compensateMealTypes(){
+    $data = [
+        '1' => 'Lunch',
+        '2' => 'Dinner',
     ];
     return $data;
 }

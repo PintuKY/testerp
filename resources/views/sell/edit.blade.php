@@ -1113,7 +1113,6 @@ $multiplier = 1;
                 }
             },
             columns: masterListCols,
-
         });
 
         $('.master_list_compensate_add_modals').on('shown.bs.modal', function (e) {

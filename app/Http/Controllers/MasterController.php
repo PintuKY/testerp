@@ -114,6 +114,7 @@ class MasterController extends Controller
                     }
                     return implode(',', $addon);
                 })
+
                 ->addColumn('address', function ($row) {
                     return $row->shipping_address_line_1;
                 })
@@ -177,16 +178,15 @@ class MasterController extends Controller
                     return $data;
                 })
                 ->addColumn('pax', function ($row) {
-                    $pax = [];
+                    $pax = '';
                     if (isset($row->transaction_sell_lines->transactionSellLinesVariants)) {
                         foreach ($row->transaction_sell_lines->transactionSellLinesVariants as $value) {
                             if (str_contains($value->name, 'Serving Pax')) {
-                                $pax[] = $value->value;
+                                $pax = $value->pax;
                             }
                         }
-
                     }
-                    return implode(',', $pax);
+                    return $pax;
                 })
                 ->addColumn('addon', function ($row) {
                     $addon = [];
@@ -194,7 +194,7 @@ class MasterController extends Controller
                         foreach ($row->transaction_sell_lines->transactionSellLinesVariants as $value) {
                             if (str_contains($value->name, 'Add on')) {
                                 $addon_pax = ($value->value != 'None') ? '+' . $value->value : '';
-                                $addon[] = str_replace("Add on:", "", $value->name) . '' . $addon_pax;
+                                $addon[] = $value->addon;
                             }
                         }
 

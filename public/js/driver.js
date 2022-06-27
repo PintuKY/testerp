@@ -1,10 +1,25 @@
 
 //Driver table
 $(document).ready( function(){
+    sessionStorage.removeItem('filter_name');
+    sessionStorage.removeItem('filter_start_date');
+    sessionStorage.removeItem('filter_end_date');
     var driver_table = $('#driver_table').DataTable({
         processing: true,
         serverSide: true,
-        ajax: '/driver',
+        "ajax": {
+            "url": "/driver",
+            "data": function ( d ) {
+                if($('#driver_list_filter_date_range').val()) {
+                    var start = $('#driver_list_filter_date_range').data('daterangepicker').startDate.format('YYYY-MM-DD');
+                    var end = $('#driver_list_filter_date_range').data('daterangepicker').endDate.format('YYYY-MM-DD');
+                    d.start_date = start;
+                    d.end_date = end;
+                }
+                d.driver_name = $('#driver_list_filter_name').val();
+                d = __datatable_ajax_callback(d);
+            }
+        },
         columnDefs: [ {
             "targets": [4],
             "orderable": false,
@@ -19,9 +34,19 @@ $(document).ready( function(){
             {"data":"city"},
             {"data":"state"},
             {"data":"country"},
+            {"data":"driver_type"},
             {"data":"action"}
         ]
     });
+
+    $('#driver_list_filter_date_range').daterangepicker(
+        dateRangeSettings,
+        function (start, end) {
+            $('#driver_list_filter_date_range').val(start.format(moment_date_format) + ' ~ ' + end.format(moment_date_format));
+            driver_table.ajax.reload();
+        }
+    );
+
     $(document).on('click', 'button.delete_driver_button', function(){
         swal({
             title: LANG.sure,
@@ -50,7 +75,28 @@ $(document).ready( function(){
             }
             });
     });
+    $(document).on('change', '#driver_list_filter_name',  function() {
+        driver_table.ajax.reload();
+    });
+
+    $(document).on('click', '.edit_all',  function() {
+        if($('#driver_list_filter_date_range').val()) {
+            var start = $('#driver_list_filter_date_range').data('daterangepicker').startDate.format('YYYY-MM-DD');
+            var end = $('#driver_list_filter_date_range').data('daterangepicker').endDate.format('YYYY-MM-DD');
+            $('#filter_start_date').val(start);
+            $('#filter_end_date').val(end);
+        }
+        var filter_name = $('#driver_list_filter_name').val()
+        $('#filter_name').val(filter_name);
+        console.log(start);
+        console.log(end);
+        console.log(filter_name);
+
+
+
+    });
 });
+
 $('form#driver_add_form').validate({
     rules: {
         name: {

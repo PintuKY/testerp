@@ -421,6 +421,5 @@ class Transaction extends Model
                 $item->delete();
             });
         });
-
     }
 }

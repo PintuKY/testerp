@@ -419,10 +419,11 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::resource('/suppliers/payments', 'SupplierTransactionPaymentController');
 
     //Driver module...
-    Route::resource('driver', 'DriverController');
     Route::post('/driver/check-mobile', 'DriverController@checkMobile');
     Route::post('/driver/check-email', 'DriverController@checkEmail');
-
+    Route::get('/driver/edit_all', 'DriverController@editAll');
+    Route::post('/driver/update/all', 'DriverController@updateAll');
+    Route::resource('driver', 'DriverController');
 
 });
 

@@ -64,7 +64,7 @@
             master_table.ajax.reload();
         });
 
-        var columns = @json($masterListCols);
+            var columns = @json($masterListCols);
             var masterListCols = columns;
             master_table = $('#master_table').DataTable({
                 processing: true,

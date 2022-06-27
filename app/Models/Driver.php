@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Utils\AppConstant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -14,11 +15,15 @@ class Driver extends Model
     protected $guarded = ['id'];
 
 
+    public function driverAttendance()
+    {
+        return $this->hasOne(DriverAttendance::class, 'driver_id', 'id');
+    }
     /**
     * Get the Only Active Driver.
     */
     public function scopeActive($query)
     {
-        return $query->where('status', 'active');
+        return $query->where('status', AppConstant::STATUS_ACTIVE);
     }
 }

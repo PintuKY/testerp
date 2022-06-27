@@ -203,7 +203,7 @@
                     @endphp
                     @if(!empty($productData->lot_numbers) && empty($is_sales_order))
                         <select class="form-control lot_number input-sm" name="products[{{$row_count}}][lot_no_line_id]"
-                                @if(!empty($product->transaction_sell_lines_id)) disabled @endif>
+                                @if(!empty($productData->transaction_sell_lines_id)) disabled @endif>
                             <option value="">@lang('lang_v1.lot_n_expiry')</option>
                             @foreach($productData->lot_numbers as $lot_number)
                                 @php
@@ -253,7 +253,7 @@
 
             <td class="hide">
                 If edit then transaction sell lines will be present
-                @if(!empty($product->transaction_sell_lines_id))
+                @if(!empty($productData->transaction_sell_lines_id))
                     <input type="hidden" name="products[{{$productData->id}}][transaction_sell_lines_id]"
                            class="form-control" value="{{$productData->transaction_sell_lines_id}}">
                 @endif
@@ -497,7 +497,7 @@
 
     </tbody>
 </table>
-@if(!empty($product->transaction_sell_lines_id))
+@if(!empty($productData->transaction_sell_lines_id))
     <input type="hidden" name="products[{{$productData->id}}][transaction_sell_lines_id]"
            class="form-control" value="{{$productData->transaction_sell_lines_id}}">
 @endif

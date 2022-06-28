@@ -120,6 +120,7 @@ return [
     'pending' => 'Pending',
     'ordered' => 'Ordered',
     'search_product_placeholder' => 'Enter Product name / SKU / Scan bar code',
+    'search_ingredient_placeholder' => 'Enter Ingredient name',
     'fixed' => 'Fixed',
     'percentage' => 'Percentage',
     'select_location' => 'Select location',

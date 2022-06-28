@@ -355,7 +355,66 @@ function country()
     ];
     return $data;
 }
+function ingredientMeasure()
+{
+    $data = [
+        'g' => 'gram',
+        'kg' => 'kilogram',
+        'lb' => 'pound',
+        'mg' => 'milligram',
+        'oz' => 'ounce',
+        'doz' => 'dozen',
+        'gal' => 'gallon',
+        'mL' => 'milliliter',
+        'L' => 'liter',
+        'large' => 'large',
+        'small' => 'small',
+    ];
+    return $data;
+}
 
+function getingredientMeasure($measure)
+{
+    $measure_type = 0;
+    switch ($measure) {
+        case ('small'):
+            $measure_type = 'small';
+            break;
+        case ('large'):
+            $measure_type = 'large';
+            break;
+        case ('L'):
+            $measure_type = 'liter';
+            break;
+        case ('mL'):
+            $measure_type = 'milliliter';
+            break;
+        case ('gal'):
+            $measure_type = 'gallon';
+            break;
+        case ('doz'):
+            $measure_type = 'dozen';
+            break;
+        case ('oz'):
+            $measure_type = 'oz';
+            break;
+        case ('mg'):
+            $measure_type = 'milligram';
+            break;
+        case ('lb'):
+            $measure_type = 'pound';
+            break;
+        case ('kg'):
+            $measure_type = 'kilogram';
+            break;
+        case ('g'):
+            $measure_type = 'gram';
+            break;
+        default:
+            $measure_type = '';
+    }
+    return $measure_type;
+}
 if (!function_exists('getDayNumberByDayName')) {
 
     function getDayNumberByDayName($day)

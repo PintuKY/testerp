@@ -295,6 +295,15 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
 
     Route::resource('selling-price-group', 'SellingPriceGroupController');
 
+    Route::get('ingredients/activate-deactivate/{id}', 'IngredientController@activateDeactivate');
+    Route::get('export-ingredients', 'IngredientController@export');
+    Route::post('import-ingredients', 'IngredientController@import');
+
+    Route::resource('ingredients', 'IngredientController');
+    Route::get('menu/ingredients/list', 'MenuController@getIngredients');
+    Route::get('menu/get_ingredients_row/{id}', 'MenuController@getIngRow');
+    Route::resource('menu', 'MenuController');
+
     Route::resource('notification-templates', 'NotificationTemplateController')->only(['index', 'store']);
     Route::get('notification/get-template/{transaction_id}/{template_for}', 'NotificationController@getTemplate');
     Route::post('notification/send', 'NotificationController@send');

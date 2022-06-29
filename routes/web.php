@@ -431,8 +431,11 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::post('/driver/check-mobile', 'DriverController@checkMobile');
     Route::post('/driver/check-email', 'DriverController@checkEmail');
     Route::get('/driver/edit_all', 'DriverController@editAll');
+    Route::get('/driver/attendence', 'DriverController@driverAttendence');
     Route::post('/driver/update/all', 'DriverController@updateAll');
+    Route::resource('driver/attendence', 'DriverAttendenceController');
     Route::resource('driver', 'DriverController');
+
 
 });
 

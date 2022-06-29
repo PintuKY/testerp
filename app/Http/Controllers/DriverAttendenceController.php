@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Yajra\DataTables\Facades\DataTables;
 
-class DriverController extends Controller
+class DriverAttendenceController extends Controller
 {
 
      /**
@@ -41,52 +41,58 @@ class DriverController extends Controller
         if (!auth()->user()->can('driver.view') && !auth()->user()->can('user.create')) {
             abort(403, 'Unauthorized action.');
         }
-
-        $driver_name_list = Driver::pluck('name','id')->toArray();
-        Session::forget('filter_name');
-        Session::forget('filter_start_date');
-        Session::forget('filter_end_date');
-        $driver_name = (request()->driver_name)?request()->driver_name:'';
-        $start_date = (request()->start_date)?request()->start_date:'';
-        $end_date = (request()->end_date)?request()->end_date:'';
-        Session::put('filter_name',$driver_name);
-        Session::put('filter_start_date',$start_date);
-        Session::put('filter_end_date',$end_date);
+        $default_date = $this->businessUtil->format_dates(Carbon::parse(now())->format('Y-m-d'));
+        $driver = DriverAttendance::with('driver');
         if (request()->ajax()) {
-            $driver = Driver::with('driverAttendance');
-            if (!empty(request()->driver_name)) {
-                $driver->where('id', request()->driver_name);
+            if (!empty(\request()->select_date) && !empty(\request()->select_date)) {
+                $driver->whereDate('attendance_date', '=', \request()->select_date);
             }
-
-            if (!empty(request()->start_date) && !empty(request()->end_date)) {
-                $start = request()->start_date;
-                $end = request()->end_date;
-                $driver->whereHas('driverAttendance', function ($query) use($start,$end){
-                    $query->whereDate('attendance_date', '>=', $start)
-                        ->whereDate('attendance_date', '<=', $end);
-                });
-            }
-            return DataTables::of($driver)
+            $drivers = $driver->get();
+            return DataTables::of($drivers)
                 ->addColumn(
                     'action',
                     '@can("driver.update")
-                        <a href="{{action(\'DriverController@edit\', [$id])}}" class="btn btn-xs btn-primary"><i class="glyphicon glyphicon-edit"></i> @lang("messages.edit")</a>
+                        <a href="{{action(\'DriverAttendenceController@edit\', [$id])}}" class="btn btn-xs btn-primary"><i class="glyphicon glyphicon-edit"></i> @lang("messages.edit")</a>
                         &nbsp;
                     @endcan
                     @can("driver.delete")
-                        <button data-href="{{action(\'DriverController@destroy\', [$id])}}" class="btn btn-xs btn-danger delete_driver_button"><i class="glyphicon glyphicon-trash"></i> @lang("messages.delete")</button>
+                        <button data-href="{{action(\'DriverAttendenceController@destroy\', [$id])}}" class="btn btn-xs btn-danger delete_driver_attendence_button"><i class="glyphicon glyphicon-trash"></i> @lang("messages.delete")</button>
                     @endcan'
                 )->editColumn('driver_type',function ($row){
-                    $type = getDriverType($row->driver_type);
+                    $type = getDriverType($row->driver->driver_type);
                     return $type;
+                })->editColumn('is_half_day',function ($row){
+                    if($row->is_half_day == \App\Utils\AppConstant::HALF_DAY_YES){
+                        $half_day = 'Yes';
+                    }else{
+                        $half_day = 'No';
+                    }
+                    return $half_day;
                 })
-                // ->filterColumn('name', function ($query, $keyword) {
-                //     $query->where('name',, $keyword]);
-                // })
+                ->editColumn('in_or_out',function ($row){
+                    if($row->in_or_out == \App\Utils\AppConstant::ATTENDANCE_IN){
+                        $in_or_out = 'In';
+                    }else{
+                        $in_or_out = 'Out';
+                    }
+                    return $in_or_out;
+                })->editColumn('name',function ($row){
+                    return $row->driver->name;
+                })
+                ->editColumn('email',function ($row){
+                    return $row->driver->email;
+                })->editColumn('leave_reason',function ($row){
+                    return getLeaveReasonType($row->leave_reason);
+                })->editColumn('attendance_date',function ($row){
+                    return $row->attendance_date;
+                })->editColumn('leave_reason_description',function ($row){
+                    return $row->leave_reason_description;
+                })
                 ->make(true);
-        }
 
-        return view('driver.index')->with(compact('driver_name_list','driver_name','start_date','end_date'));
+        }
+        return view('driver.partials.driver_attendence')
+            ->with(compact('default_date', ));
     }
 
     /**
@@ -158,16 +164,10 @@ class DriverController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $driver = Driver::findOrFail($id);
+        $driver = DriverAttendance::with('driver')->where('id',$id)->first();
 
-        if ($driver->status == AppConstant::STATUS_ACTIVE) {
-            $is_checked_checkbox = true;
-        } else {
-            $is_checked_checkbox = false;
-        }
-
-        return view('driver.edit')
-                ->with(compact('driver', 'is_checked_checkbox'));
+        return view('driver.attendence_edit')
+                ->with(compact('driver'));
     }
 
     /**
@@ -175,39 +175,6 @@ class DriverController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function editAll()
-    {
-        if (!auth()->user()->can('driver.update')) {
-            abort(403, 'Unauthorized action.');
-        }
-        $filter_name = Session::get('filter_name');
-        $filter_start_date = Session::get('filter_start_date');
-        $filter_end_date = Session::get('filter_end_date');
-
-        Log::info($filter_start_date);
-        Log::info($filter_end_date);
-        Log::info($filter_name);
-        $driver = DriverAttendance::with('driver');
-
-        if (!empty(\request()->select_date) && !empty(\request()->select_date)) {
-            $driver->whereDate('attendance_date', '>=', \request()->select_date)
-                    ->whereDate('attendance_date', '<=', \request()->select_date);
-        }
-        $drivers = $driver->get();
-        /*switch ($val){
-            case AppConstant::YESTERDAY:
-                $drivers = DriverAttendance::with('driver')->where('attendance_date', '=', Carbon::yesterday()->format('Y-m-d'))->get();
-
-                break;
-            case AppConstant::ALL:
-                $drivers = DriverAttendance::with('driver')->get();
-                break;
-            Default:
-                break;
-        }*/
-        return view('driver.partials.edit_all')
-            ->with(compact('drivers', ));
-    }
 
     public function show(){
 
@@ -226,30 +193,25 @@ class DriverController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $request->validate([
-            'name' => 'required',
-            'email' => 'required|unique:drivers,email,'.$id,
-            'phone' => 'required|unique:drivers,phone,'.$id,
-            'address_line_1' => 'required',
-            'city' => 'required',
-            'state' => 'required',
-            'country' => 'required',
-            'driver_type' => 'required',
-        ]);
-
         try {
-            $driver_details = $request->only(['name', 'email','phone','address_line_1','address_line_2','city','state','country','is_active','driver_type']);
-            $driver_details['status'] = !empty($request->input('is_active')) ? $request->input('is_active') : AppConstant::STATUS_INACTIVE;
-            $driver = driver::findOrFail($id);
-            $driver->update($driver_details);
-            $this->moduleUtil->activityLog($driver, 'edited', null, ['name' => $driver->name]);
+
+            $driver = DriverAttendance::where('id',$id)->update(
+               [
+                   "attendance_date" => ($request->attendence_date) ? $request->attendence_date : '',
+                   "leave_reason" => $request->leave_reason,
+                   "in_or_out" => ($request->in_or_out) ? $request->in_or_out : '0',
+                   "is_half_day" => ($request->is_half_day) ? $request->is_half_day : '0',
+                   "leave_reason_description" => $request->leave_reason_description,
+               ]
+            );
+
             $output = ['success' => 1,'msg' => __("driver.driver_update_success")];
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
             $output = ['success' => 0,'msg' => $e->getMessage()];
         }
-        return redirect('driver')->with('status', $output);
+        return redirect('driver/attendence')->with('status', $output);
     }
     /**
      * Update all the specified resource in storage.
@@ -298,8 +260,7 @@ class DriverController extends Controller
         }
         if (request()->ajax()) {
             try {
-                $driver = Driver::findOrFail($id);
-                $this->moduleUtil->activityLog($driver, 'deleted', null, ['name' => $driver->name, 'id' => $driver->id]);
+                $driver = DriverAttendance::findOrFail($id);
                 $driver->delete();
                 $output = ['success' => true,'msg' => __("driver.driver_delete_success")];
             } catch (\Exception $e) {

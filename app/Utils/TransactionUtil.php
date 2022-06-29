@@ -550,6 +550,7 @@ class TransactionUtil extends Util
             $variation_value = [];
             foreach($variation_value_data_id as $data){
                 $variation_value_datas = VariationValueTemplate::with('variationTemplate')->where('id', $data)->first();
+
                 TransactionSellLinesVariants::insert(
                     ['transaction_sell_lines_id' => $sell_line_data_ids[$sell_line_ids],
                         'variation_templates_id' => $variation_value_datas->variation_template_id,

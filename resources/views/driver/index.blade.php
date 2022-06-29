@@ -35,7 +35,11 @@
                                 data-container=".driver_edit_modals">
                             <i class="fa fa-plus"></i> @lang( 'driver.edit_all_driver' )</button>
                     </div>
-
+                    <div class="box-tools">
+                        <a class="btn btn-block btn-primary"
+                           href="{{action('DriverAttendenceController@index')}}">
+                            @lang( 'driver.driver_attendence' )</a>
+                    </div>
 
                 @endslot
             @endcan
@@ -52,7 +56,6 @@
                             <th>@lang( 'driver.city' )</th>
                             <th>@lang( 'driver.state' )</th>
                             <th>@lang( 'driver.country' )</th>
-                            <th>@lang( 'driver.driver_type' )</th>
                             <th>@lang( 'messages.action' )</th>
                         </tr>
                         </thead>
@@ -76,31 +79,27 @@
     <script>
         var half_day_yes = '{{\App\Utils\AppConstant::HALF_DAY_YES}}';
         var half_day_no = '{{\App\Utils\AppConstant::HALF_DAY_NO}}';
-        $(document).on('change', '.is_half_day', function() {
+        $(document).on('change', '.is_half_day', function () {
             var checkbox = $(this), // Selected or current checkbox
                 value = checkbox.val(); // Value of checkbox
 
-            if (checkbox.is(':checked'))
-            {
-               $(this).val(half_day_yes);
-            }else
-            {
+            if (checkbox.is(':checked')) {
+                $(this).val(half_day_yes);
+            } else {
                 $(this).val(half_day_no);
             }
         });
         var attendance_in = '{{\App\Utils\AppConstant::ATTENDANCE_IN}}';
         var attendance_out = '{{\App\Utils\AppConstant::ATTENDANCE_OUT}}';
-        $(document).on('change', '.in_or_out', function() {
+        $(document).on('change', '.in_or_out', function () {
             var checkbox = $(this), // Selected or current checkbox
                 value = checkbox.val(); // Value of checkbox
 
-            if (checkbox.is(':checked'))
-            {
+            if (checkbox.is(':checked')) {
                 $(this).val(attendance_in);
-            }else
-            {
+            } else {
                 $(this).val(attendance_out);
             }
         });
-</script>
+    </script>
 @endsection

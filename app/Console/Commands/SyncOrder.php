@@ -139,12 +139,15 @@ class SyncOrder extends Command
                                     }
 
                                     if ($meta->key != 'Delivery Days' && $meta->key != 'Time Slot' && $meta->key != 'Start Date' && $meta->key != 'Delivery Time' && $meta->key != 'Delivery Date') {
-                                        if (gettype($meta->value) === 'string') {
+                                        if (gettype($meta->value) === 'string' || gettype($meta->value) === 'integer' ) {
                                             TransactionSellLinesVariant::create(
                                                 [
                                                     'transaction_sell_lines_id' => $transactionSellLine->id,
-                                                    'name' => $meta->key,
-                                                    'value' => $meta->value,
+                                                    /*'name' => $meta->key,
+                                                    'value' => $meta->value,*/
+                                                    'pax' => $meta->key,
+                                                    'addon' => $meta->value,
+
                                                 ]
                                             );
                                         }

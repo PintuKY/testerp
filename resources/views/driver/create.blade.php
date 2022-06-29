@@ -41,7 +41,7 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             {!! Form::label('address_line_1', __('lang_v1.address_line_1') . ':*') !!}
-                            {!! Form::text('address_line_1', null, ['class' => 'form-control', 'placeholder' => __('lang_v1.address_line_1'), 'rows' => 3]); !!}
+                            {!! Form::text('address_line_1', null, ['class' => 'form-control', 'required','placeholder' => __('lang_v1.address_line_1'), 'rows' => 3]); !!}
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -57,7 +57,7 @@
                   <span class="input-group-addon">
                       <i class="fa fa-map-marker"></i>
                   </span>
-                                {!! Form::text('city', null, ['class' => 'form-control', 'placeholder' => __('driver.city')]); !!}
+                                {!! Form::text('city', null, ['class' => 'form-control', 'required','placeholder' => __('driver.city')]); !!}
                             </div>
                         </div>
                     </div>
@@ -68,7 +68,7 @@
                   <span class="input-group-addon">
                       <i class="fa fa-map-marker"></i>
                   </span>
-                                {!! Form::text('state', null, ['class' => 'form-control', 'placeholder' => __('driver.state')]); !!}
+                                {!! Form::text('state', null, ['class' => 'form-control','required', 'placeholder' => __('driver.state')]); !!}
                             </div>
                         </div>
                     </div>
@@ -79,14 +79,14 @@
                   <span class="input-group-addon">
                       <i class="fa fa-globe"></i>
                   </span>
-                                {!! Form::text('country', null, ['class' => 'form-control', 'placeholder' => __('driver.country')]); !!}
+                                {!! Form::text('country', null, ['class' => 'form-control', 'required','placeholder' => __('driver.country')]); !!}
                             </div>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
                             {!! Form::label('driver_type',__('driver.driver_type') . ':') !!}
-                            {!! Form::select('driver_type', driverTypes(), null, ['placeholder' => 'Select Please', 'class' => 'form-control select2', 'style' => 'width:100%']); !!}
+                            {!! Form::select('driver_type', driverTypes(), null, ['placeholder' => 'Select Please', 'class' => 'form-control select2', 'required','style' => 'width:100%']); !!}
                         </div>
                     </div>
 
@@ -95,7 +95,7 @@
                             <div class="checkbox">
                                 <br/>
                                 <label>
-                                    {!! Form::checkbox('is_active', \App\Utils\AppConstant::STATUS_ACTIVE, true, ['class' => 'input-icheck status']); !!} {{ __('lang_v1.status_for_user') }}
+                                    {!! Form::checkbox('is_active', \App\Utils\AppConstant::STATUS_ACTIVE, true, ['class' => 'input-icheck status','required']); !!} {{ __('lang_v1.status_for_user') }}
                                 </label>
                                 @show_tooltip(__('lang_v1.tooltip_enable_user_active'))
                             </div>

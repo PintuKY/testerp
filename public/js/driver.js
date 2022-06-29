@@ -88,12 +88,6 @@ $(document).ready( function(){
         }
         var filter_name = $('#driver_list_filter_name').val()
         $('#filter_name').val(filter_name);
-        console.log(start);
-        console.log(end);
-        console.log(filter_name);
-
-
-
     });
 });
 

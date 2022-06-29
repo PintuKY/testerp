@@ -41,21 +41,7 @@
                         <div class="table-responsive ing">
 
                         </div>
-                        <div class="table-responsive">
-                            <table class="table table-condensed table-bordered table-striped">
-                                <tr>
-                                    <td class="price_cal">
-                                        <div class="pull-right">
-                                            <b>@lang('sale.item'):</b>
-                                            <span class="total_quantity">0</span>
-                                            &nbsp;&nbsp;&nbsp;&nbsp;
-                                            <b>@lang('sale.total'): </b>
-                                            <span class="price_total">$0</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
+
                     </div>
                 @endcomponent
 

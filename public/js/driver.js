@@ -60,7 +60,6 @@ $(document).ready( function(){
             {"data":"city"},
             {"data":"state"},
             {"data":"country"},
-            {"data":"driver_type"},
             {"data":"action"}
         ]
     });

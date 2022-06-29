@@ -56,7 +56,6 @@
                             <th>@lang( 'driver.city' )</th>
                             <th>@lang( 'driver.state' )</th>
                             <th>@lang( 'driver.country' )</th>
-                            <th>@lang( 'driver.driver_type' )</th>
                             <th>@lang( 'messages.action' )</th>
                         </tr>
                         </thead>

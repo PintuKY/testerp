@@ -70,7 +70,13 @@ $(document).ready( function(){
         "ajax": {
             "url": "/driver/attendence",
             "data": function ( d ) {
-                d.select_date = $('.select_date').val();
+                if($('#driver_list_filter_date_range').val()) {
+                    var start = $('#driver_list_filter_date_range').data('daterangepicker').startDate.format('YYYY-MM-DD');
+                    var end = $('#driver_list_filter_date_range').data('daterangepicker').endDate.format('YYYY-MM-DD');
+                    d.start_date = start;
+                    d.end_date = end;
+                }
+                /*d.select_date = $('.select_date').val();*/
             }
         },
         columnDefs: [ {
@@ -100,6 +106,7 @@ $(document).ready( function(){
         function (start, end) {
             $('#driver_list_filter_date_range').val(start.format(moment_date_format) + ' ~ ' + end.format(moment_date_format));
             driver_table.ajax.reload();
+            driver_attendence_table.ajax.reload();
         }
     );
 

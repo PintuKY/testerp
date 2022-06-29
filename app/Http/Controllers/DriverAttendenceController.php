@@ -43,9 +43,17 @@ class DriverAttendenceController extends Controller
         }
         $default_date = $this->businessUtil->format_dates(Carbon::parse(now())->format('Y-m-d'));
         $driver = DriverAttendance::with('driver');
+
         if (request()->ajax()) {
-            if (!empty(\request()->select_date) && !empty(\request()->select_date)) {
+            /*if (!empty(\request()->select_date) && !empty(\request()->select_date)) {
                 $driver->whereDate('attendance_date', '=', \request()->select_date);
+            }*/
+            if (!empty(request()->start_date) && !empty(request()->end_date)) {
+                $start = request()->start_date;
+                $end = request()->end_date;
+                $driver->whereDate('attendance_date', '>=', $start)
+                        ->whereDate('attendance_date', '<=', $end);
+
             }
             $drivers = $driver->get();
             return DataTables::of($drivers)

@@ -12,7 +12,7 @@
     <!-- Main content -->
     <section class="content">
         @component('components.filters', ['title' => __('report.filters')])
-            <div class="col-md-3">
+            {{--<div class="col-md-3">
                 <div class="form-group">
                     {!! Form::label('select_date', __('driver.select_date') . ':*') !!}
                     <div class="input-group">
@@ -22,7 +22,16 @@
                         {!! Form::text("select_date", $default_date, ['class' => 'form-control select_date', 'required']); !!}
                     </div>
                 </div>
-            </div>
+
+            </div>--}}
+            @if(empty($only) || in_array('driver_list_filter_date_range', $only))
+                <div class="col-md-3">
+                    <div class="form-group">
+                        {!! Form::label('driver_list_filter_date_range', __('report.date_range') . ':') !!}
+                        {!! Form::text('driver_list_filter_date_range', null, ['placeholder' => __('lang_v1.select_a_date_range'), 'class' => 'form-control', 'readonly']); !!}
+                    </div>
+                </div>
+            @endif
         @endcomponent
 
         @component('components.widget', ['class' => 'box-primary', 'title' => __( 'lang_v1.all_sales')])

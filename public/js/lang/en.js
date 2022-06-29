@@ -21,6 +21,7 @@ LANG = {
     'this_financial_year': 'Current financial year',
     'clear': 'Clear',
     'no_products_added': 'No Products added, add some products first',
+    'no_ingredient_added': 'No Ingredients added, add some ingredients first',
     'some_error_in_input_field': 'Invalid inputs, Check & try again!!',
     'confirm_delete_expense_category': 'This category along with all expenses under this category will be deleted.',
     'confirm_delete_expense': 'This expense will be deleted.',

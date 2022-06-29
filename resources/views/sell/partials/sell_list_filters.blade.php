@@ -73,7 +73,7 @@
         <div class="checkbox">
             <label>
                 <br>
-              {!! Form::checkbox('only_subscriptions', 1, false, 
+              {!! Form::checkbox('only_subscriptions', 1, false,
               [ 'class' => 'input-icheck', 'id' => 'only_subscriptions']); !!} {{ __('lang_v1.subscriptions') }}
             </label>
         </div>

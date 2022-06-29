@@ -2,6 +2,7 @@
 
 namespace App\Console;
 
+use App\Console\Commands\DriverAttendance;
 use App\Console\Commands\UpdateDinnerMasterList;
 use App\Console\Commands\UpdateStatusDeliveredOther;
 use App\Console\Commands\UpdateStatusDeliveredTingkat;
@@ -19,6 +20,7 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         UpdateStatusDeliveredTingkat::class,
         UpdateStatusDeliveredOther::class,
+        DriverAttendance::class,
     ];
     /**
      * Define the application's command schedule.
@@ -30,6 +32,7 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('lunch:orderUpdateStatus')->twiceDaily(AppConstant::DELIVERED_LUNCH_STATUS_TIME,AppConstant::DELIVERED_DINNER_STATUS_TIME);
         $schedule->command('other:orderUpdateStatus')->everyTwoHours();
+        $schedule->command('driver:attendance')->dailyAt('10:00');
     }
 
     /**

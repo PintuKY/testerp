@@ -48,6 +48,10 @@
                     <span>Variations</span></a></li>
             <li><a href="{{route('selling-price-group.index')}}"><i class="fa fas fa-circle"></i> <span>Selling Price Group</span></a>
             </li>
+            <li><a href="{{route('ingredients.index')}}"><i class="fa fas fa-circle"></i> <span>Ingredient</span></a>
+            </li>
+            <li><a href="{{route('menu.index')}}"><i class="fa fas fa-circle"></i> <span>Menu</span></a>
+            </li>
             <li><a href="{{route('units.index')}}"><i class="fa fas fa-balance-scale"></i> <span>Units</span></a></li>
             <li><a href="{{route('taxonomies.index',['type' => 'product'])}}"><i class="fa fas fa-tags"></i> <span>Categories</span></a>
             </li>
@@ -112,7 +116,7 @@
             <li><a href="{{route('shipments')}}"><i class="fa fas fa-truck"></i> <span>Shipments</span></a></li>
             <li><a href="{{route('discount.index')}}"><i class="fa fas fa-percent"></i> <span>Discounts</span></a></li>
             <li><a href="{{route('sales.import')}}"><i class="fa fas fa-file-import"></i> <span>Import Sales</span></a>
-                <li><a href="{{route('master.index')}}"><i class="fa fas fa-file-import"></i> <span>Master List</span></a>
+            <li><a href="{{route('master.index')}}"><i class="fa fas fa-file-import"></i> <span>Master List</span></a>
             </li>
         </ul>
     </li>

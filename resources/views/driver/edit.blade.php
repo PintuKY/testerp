@@ -84,7 +84,14 @@
               </div>
           </div>
         </div>
-        <div class="col-md-4">
+            <div class="col-md-6">
+                <div class="form-group">
+                    {!! Form::label('driver_type',__('driver.driver_type') . ':') !!}
+                    {!! Form::select('driver_type', driverTypes(), $driver->driver_type, ['placeholder' => 'Select Please', 'class' => 'form-control select2', 'style' => 'width:100%']); !!}
+                </div>
+            </div>
+
+            <div class="col-md-4">
           <div class="form-group">
             <div class="checkbox">
               <br/>

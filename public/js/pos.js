@@ -135,7 +135,170 @@ $(document).ready(function () {
     });
 
     set_default_customer();
+    if ($('#search_ingredient').length) {
+        //Add Product
+        $('#search_ingredient')
+            .autocomplete({
+                delay: 1000,
+                source: function (request, response) {
+                    var price_group = '';
+                    var search_fields = [];
+                    $('.search_fields:checked').each(function (i) {
+                        search_fields[i] = $(this).val();
+                    });
 
+                    $.getJSON(
+                        '/menu/ingredients/list',
+                        {
+                            term: request.term,
+                            search_fields: search_fields
+                        },
+                        response
+                    );
+                },
+                minLength: 2,
+                response: function (event, ui) {
+
+
+                    if (ui.content.length == 1) {
+                        ui.item = ui.content[0];
+
+                        $(this)
+                            .data('ui-autocomplete')
+                            ._trigger('select', 'autocompleteselect', ui);
+
+                    } else if (ui.content.length == 0) {
+
+                        toastr.error(LANG.no_products_found);
+                        $('input#search_ingredient').select();
+                    }
+                },
+                focus: function (event, ui) {
+                    if (ui.item.qty_available <= 0) {
+                        return false;
+                    }
+                },
+                select: function (event, ui) {
+                    var searched_term = $(this).val();
+                    var is_overselling_allowed = false;
+                    if ($('input#is_overselling_allowed').length) {
+                        is_overselling_allowed = true;
+                    }
+
+
+
+                    $.ajax({
+                        method: 'GET',
+                        url: '/menu/get_ingredients_row/' + ui.item.product_id,
+                        async: false,
+                        dataType: 'json',
+                        success: function (result) {
+                            if($(".ingredient_table_" + ui.item.product_id).length == 0) {
+                                $('.ing')
+                                    .append(result.html_content);
+                            }else{
+                            }
+                            console.log(result);
+                            /*if (result.success) {
+                                $('.ing')
+                                    .append(result.html_content);
+
+                                //increment row count
+                                var this_row = $('table#ingredient_table tbody')
+                                    .find('tr')
+                                    .last();
+                                pos_each_row(this_row);
+
+                                //For initial discount if present
+                                var line_total = __read_number(this_row.find('input.pos_line_total'));
+                                this_row.find('span.pos_line_total_text').text(line_total);
+
+                                //pos_total_row();
+
+                                //Check if multipler is present then multiply it when a new row is added.
+                                if (__getUnitMultiplier(this_row) > 1) {
+                                    this_row.find('select.sub_unit').trigger('change');
+                                }
+
+                                $('input#search_product')
+                                    .focus()
+                                    .select();
+
+                                //Used in restaurant module
+                                if (result.html_modifier) {
+                                    $('table#ingredient_table tbody')
+                                        .find('tr')
+                                        .last()
+                                        .find('td:first')
+                                        .append(result.html_modifier);
+                                }
+
+                                //scroll bottom of items list
+                                $(".pos_product_div").animate({scrollTop: $('.pos_product_div').prop("scrollHeight")}, 1000);
+
+                            } else {
+                                toastr.error(result.msg);
+                                $('input#search_ingredient')
+                                    .focus()
+                                    .select();
+                            }*/
+                        },
+                    });
+
+                },
+            })
+            .autocomplete('instance')._renderItem = function (ul, item) {
+            var is_overselling_allowed = false;
+            if ($('input#is_overselling_allowed').length) {
+                is_overselling_allowed = true;
+            }
+
+            var for_so = false;
+            if ($('#sale_type').length && $('#sale_type').val() == 'sales_order') {
+                for_so = true;
+            }
+
+            if (item.enable_stock == 1 && item.qty_available <= 0 && !is_overselling_allowed && !for_so) {
+                var string = '<li class="ui-state-disabled">' + item.name;
+                if (item.type == 'variable') {
+                    string += '-' + item.variation;
+                }
+                var selling_price = item.selling_price;
+                if (item.variation_group_price) {
+                    selling_price = item.variation_group_price;
+                }
+                string +=
+                    ' (' +
+                    item.sub_sku +
+                    ')' +
+                    '<br> Price: ' +
+                    selling_price +
+                    ' (Out of stock) </li>';
+                return $(string).appendTo(ul);
+            } else {
+                var string = '<div>' + item.name;
+                if (item.type == 'variable') {
+                    string += '-' + item.variation;
+                }
+
+                var selling_price = item.selling_price;
+                if (item.variation_group_price) {
+                    selling_price = item.variation_group_price;
+                }
+
+                string += ' (' + item.sub_sku + ')' + '<br> Price: ' + selling_price;
+                if (item.enable_stock == 1) {
+                    var qty_available = __currency_trans_from_en(item.qty_available, false, false, __currency_precision, true);
+                    string += ' - ' + qty_available + item.unit;
+                }
+                string += '</div>';
+
+                return $('<li>')
+                    .append(string)
+                    .appendTo(ul);
+            }
+        };
+    }
     if ($('#search_product').length) {
         //Add Product
         $('#search_product')
@@ -473,7 +636,12 @@ $(document).ready(function () {
             .parents('tr')
             .remove();
         pos_total_row();
-
+    });
+    $('table#ingredient_table tbody').on('click', 'i.ing_remove_row', function () {
+        console.log($(this));
+        $(this)
+            .parents('tr')
+            .remove();
     });
 
     //Cancel the invoice
@@ -1052,14 +1220,32 @@ $(document).ready(function () {
             vertical: 'bottom'
         }
     });
-    //Direct sell submit
+
+
+    menu_form = $('form#add_menu_form');
+    if ($('form#edit_menu_form').length) {
+        menu_form = $('form#edit_menu_form');
+    }
+    menu_form_validator = menu_form.validate();
+    $('button#submit-menu').click(function (e) {
+        //Check if product is present or not.
+        if ($('table#ingredient_table tbody').find('.ing_row').length <= 0) {
+            toastr.warning(LANG.no_ingredient_added);
+            return false;
+        }
+        if (menu_form.valid()) {
+            window.onbeforeunload = null;
+            $(this).attr('disabled', true);
+            menu_form.submit();
+        }
+    });
+//Direct sell submit
     sell_form = $('form#add_sell_form');
     if ($('form#edit_sell_form').length) {
         sell_form = $('form#edit_sell_form');
         pos_total_row();
     }
     sell_form_validator = sell_form.validate();
-
     $('button#submit-sell, button#save-and-print').click(function (e) {
         //Check if product is present or not.
         if ($('table#pos_table tbody').find('.product_row').length <= 0) {
@@ -1160,6 +1346,19 @@ $(document).ready(function () {
 
     //Press enter on search product to jump into last quantty and vice-versa
     $('#search_product').keydown(function (e) {
+        var key = e.which;
+        if (key == 9) {
+            // the tab key code
+            e.preventDefault();
+            if ($('#pos_table tbody tr').length > 0) {
+                $('#pos_table tbody tr:last')
+                    .find('input.pos_quantity')
+                    .focus()
+                    .select();
+            }
+        }
+    });
+    $('#search_ingredient').keydown(function (e) {
         var key = e.which;
         if (key == 9) {
             // the tab key code
@@ -1388,6 +1587,10 @@ function pos_table_remove($id) {
     pos_total_row();
 }
 
+function ing_table_remove($id) {
+    $('.ingredient_table_' + $id).remove();
+    $("input[value='"+$id+"']").remove();
+}
 function set_payment_type_dropdown() {
     var payment_settings = $('#location_id').data('default_payment_accounts');
     payment_settings = payment_settings ? payment_settings : [];
@@ -1915,7 +2118,11 @@ function isValidPosForm() {
         error = '<span class="error">' + LANG.no_products + '</span>';
         $(error).insertAfter($('input#search_product').parent('div'));
     }
-
+    if ($('tr.ing_row').length == 0) {
+        flag = false;
+        error = '<span class="error">' + LANG.no_products + '</span>';
+        $(error).insertAfter($('input#search_ingredient').parent('div'));
+    }
     return flag;
 }
 

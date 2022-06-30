@@ -9,10 +9,7 @@ use App\Utils\BusinessUtil;
 use App\Utils\ModuleUtil;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Session;
 use Yajra\DataTables\Facades\DataTables;
 
 class DriverAttendenceController extends Controller
@@ -55,8 +52,8 @@ class DriverAttendenceController extends Controller
                         ->whereDate('attendance_date', '<=', $end);
 
             }
-            $drivers = $driver->get();
-            return DataTables::of($drivers)
+           // $drivers = $driver->get();
+            return DataTables::of($driver)
                 ->addColumn(
                     'action',
                     '@can("driver.update")

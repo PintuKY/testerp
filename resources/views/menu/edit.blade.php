@@ -31,8 +31,6 @@
                 </div>
 
                 <div class="clearfix"></div>
-
-
                 @php
                     $default_location = null;
                     if(count($business_locations) == 1){

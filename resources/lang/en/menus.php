@@ -23,4 +23,5 @@ return [
     'add_menu' => 'Add Menu',
     'recipe' => 'Recipe',
 
+
  ];

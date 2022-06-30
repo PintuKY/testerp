@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BusinessLocation;
 use App\Models\Category;
+use App\Models\Driver;
 use App\Models\Ingredient;
 use App\Models\Menu;
 use App\Models\MenuItem;
@@ -44,10 +45,27 @@ class MenuController extends Controller
         // if (!auth()->user()->can('product.create')) {
         //     abort(403, 'Unauthorized action.');
         // }
-
+        $menu = Menu::active()->with(['location','recipe','category'])->get();
+        $business_id = request()->session()->get('user.business_id');
+        //Get all business locations
+        $business_locations = BusinessLocation::forDropdown($business_id);
+        $categories = Category::forDropdown($business_id, 'product');
+        $recipe = Recipe::active()->pluck('name', 'id')->toArray();
+        $menu_name_list = Menu::pluck('name','id')->toArray();
         if (request()->ajax()) {
             $menu = Menu::active()->with(['location','recipe','category'])->select(['id', 'name','business_location_id','category_id','recipe_id']);
-
+            if (!empty(request()->menu_list_filter_name)) {
+                $menu->where('id', request()->menu_list_filter_name);
+            }
+            if (!empty(request()->menu_list_location)) {
+                $menu->where('business_location_id', request()->menu_list_location);
+            }
+            if (!empty(request()->menu_list_category)) {
+                $menu->where('category_id', request()->menu_list_category);
+            }
+            if (!empty(request()->menu_list_recipe)) {
+                $menu->where('recipe_id', request()->menu_list_recipe);
+            }
             return Datatables::of($menu)
                 ->addColumn(
                     'action',
@@ -69,8 +87,8 @@ class MenuController extends Controller
                 ->removeColumn('status')
                 ->make(true);
         }
-
-        return view('menu.index');
+        return view('menu.index')
+            ->with(compact('menu_name_list','menu', 'recipe', 'categories', 'business_locations'));
     }
 
     /**

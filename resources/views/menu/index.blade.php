@@ -15,6 +15,9 @@
 
     <!-- Main content -->
     <section class="content">
+        @component('components.filters', ['title' => __('report.filters')])
+            @include('menu.partials.menu_list_filters')
+        @endcomponent
         @if (session('notification') || !empty($notification))
             <div class="row">
                 <div class="col-sm-12">
@@ -29,6 +32,7 @@
                 </div>
             </div>
         @endif
+
         @component('components.widget', ['class' => 'box-primary', 'title' => __( 'menus.all_menu' )])
                 @slot('tool')
 
@@ -63,7 +67,16 @@
             var menu_table = $('#menu_table').DataTable({
                 processing: true,
                 serverSide: true,
-                ajax: '/menu',
+                "ajax": {
+                    "url": "/menu",
+                    "data": function ( d ) {
+                        d.menu_list_filter_name = $('#menu_list_filter_name').val();
+                        d.menu_list_location = $('#menu_list_location').val();
+                        d.menu_list_category = $('#menu_list_category').val();
+                        d.menu_list_recipe = $('#menu_list_recipe').val();
+                        d = __datatable_ajax_callback(d);
+                    }
+                },
                 columnDefs: [{
                     "targets": 1,
                     "orderable": false,
@@ -76,6 +89,11 @@
                     {data: 'recipe_id', name: 'recipe_id'},
                     {data: 'action', name: 'action'},
                 ]
+            });
+
+
+            $(document).on('change', '#menu_list_filter_name, #menu_list_location, #menu_list_category, #menu_list_recipe',  function() {
+                menu_table.ajax.reload();
             });
 
             $(document).on('submit', 'form#selling_price_group_form', function (e) {
@@ -127,23 +145,6 @@
                     }
                 });
             });
-
-            $(document).on('click', 'button.activate_deactivate_spg', function () {
-                var href = $(this).data('href');
-                $.ajax({
-                    url: href,
-                    dataType: "json",
-                    success: function (result) {
-                        if (result.success == true) {
-                            toastr.success(result.msg);
-                            menu_table.ajax.reload();
-                        } else {
-                            toastr.error(result.msg);
-                        }
-                    }
-                });
-            });
-
         });
     </script>
 @endsection

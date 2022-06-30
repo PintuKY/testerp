@@ -300,8 +300,9 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::post('import-ingredients', 'IngredientController@import');
 
     Route::resource('ingredients', 'IngredientController');
-    Route::get('menu/ingredients/list', 'MenuController@getIngredients');
-    Route::get('menu/get_ingredients_row/{id}', 'MenuController@getIngRow');
+    Route::get('recipe/ingredients/list', 'RecipeController@getIngredients');
+    Route::get('recipe/get_ingredients_row/{id}', 'RecipeController@getIngRow');
+    Route::resource('recipe', 'RecipeController');
     Route::resource('menu', 'MenuController');
 
     Route::resource('notification-templates', 'NotificationTemplateController')->only(['index', 'store']);

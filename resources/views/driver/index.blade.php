@@ -20,22 +20,36 @@
         @component('components.filters', ['title' => __('report.filters')])
             @include('driver.partials.driver_list_filters')
         @endcomponent
+            @if (session('notification') || !empty($notification))
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="alert alert-danger alert-dismissible">
+                            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                            @if(!empty($notification['msg']))
+                                {{$notification['msg']}}
+                            @elseif(session('notification.msg'))
+                                {{ session('notification.msg') }}
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            @endif
         @component('components.widget', ['class' => 'box-primary', 'title' => __( 'driver.all_drivers' )])
             @can('driver.create')
                 @slot('tool')
-                    <div class="box-tools">
+                    <div class="box-tools margin-r-5">
                         <a class="btn btn-block btn-primary"
                            href="{{action('DriverController@create')}}">
                             <i class="fa fa-plus"></i> @lang( 'messages.add' )</a>
                     </div>
 
-                    <div class="box-tools">
+                    <div class="box-tools margin-r-5">
                         <button type="button" class="btn btn-block btn-primary btn-modal"
                                 data-href="{{action('DriverController@editAll')}}"
                                 data-container=".driver_edit_modals">
                             <i class="fa fa-plus"></i> @lang( 'driver.edit_all_driver' )</button>
                     </div>
-                    <div class="box-tools">
+                    <div class="box-tools margin-r-5">
                         <a class="btn btn-block btn-primary"
                            href="{{action('DriverAttendenceController@index')}}">
                             @lang( 'driver.driver_attendence' )</a>

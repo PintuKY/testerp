@@ -20,10 +20,17 @@ class Menu extends Model
     {
         return $query->where('menus.status', 1);
     }
-
-    public function menu_items()
+    public function location()
     {
-        return $this->hasMany(MenuItem::class, 'menu_id', 'id');
+        return $this->hasOne(\App\Models\BusinessLocation::class, 'id','business_location_id');
+    }
+    public function category()
+    {
+        return$this->hasOne(Category::class,'id','category_id');
+    }
+    public function recipe()
+    {
+        return$this->hasOne(Recipe::class,'id','recipe_id');
     }
 
 }

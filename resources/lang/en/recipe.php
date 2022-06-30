@@ -16,12 +16,11 @@ return [
     'measure_type' => 'Measure Type',
     'ingredient_name' => 'Ingredient Name',
     'edit_menu' => 'Edit Menu',
+    'edit_recipe' => 'Edit Recipe',
     'menu' => 'Menu',
-    'menu_name' => 'Menu Name',
+    'recipe' => 'recipe',
     'quantity' => 'Quantity',
-    'all_menu' => 'All Menu',
-    'add_menu' => 'Add Menu',
-    'recipe' => 'Recipe',
-
+    'all_recipe' => 'All Recipe',
+    'add_recipe' => 'Add Recipe',
 
  ];

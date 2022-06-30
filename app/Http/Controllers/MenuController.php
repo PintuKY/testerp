@@ -2,20 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BusinessLocation;
+use App\Models\Category;
+use App\Models\Driver;
 use App\Models\Ingredient;
 use App\Models\Menu;
 use App\Models\MenuItem;
+use App\Models\Recipe;
 use App\Models\SellingPriceGroup;
-use App\Models\TaxRate;
 use App\Utils\Util;
-use App\Models\Variation;
-use App\Models\VariationGroupPrice;
 use Carbon\Carbon;
-use DB;
-use Excel;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Spatie\Permission\Models\Permission;
 use Yajra\DataTables\Facades\DataTables;
 
 class MenuController extends Controller
@@ -48,35 +45,50 @@ class MenuController extends Controller
         // if (!auth()->user()->can('product.create')) {
         //     abort(403, 'Unauthorized action.');
         // }
-
+        $menu = Menu::active()->with(['location','recipe','category'])->get();
+        $business_id = request()->session()->get('user.business_id');
+        //Get all business locations
+        $business_locations = BusinessLocation::forDropdown($business_id);
+        $categories = Category::forDropdown($business_id, 'product');
+        $recipe = Recipe::active()->pluck('name', 'id')->toArray();
+        $menu_name_list = Menu::pluck('name','id')->toArray();
         if (request()->ajax()) {
-            $menu = Menu::with('menu_items')->select(['id', 'name']);
-
+            $menu = Menu::active()->with(['location','recipe','category'])->select(['id', 'name','business_location_id','category_id','recipe_id']);
+            if (!empty(request()->menu_list_filter_name)) {
+                $menu->where('id', request()->menu_list_filter_name);
+            }
+            if (!empty(request()->menu_list_location)) {
+                $menu->where('business_location_id', request()->menu_list_location);
+            }
+            if (!empty(request()->menu_list_category)) {
+                $menu->where('category_id', request()->menu_list_category);
+            }
+            if (!empty(request()->menu_list_recipe)) {
+                $menu->where('recipe_id', request()->menu_list_recipe);
+            }
             return Datatables::of($menu)
                 ->addColumn(
                     'action',
-
                     '<a class="btn btn-xs btn-primary" href="{{action(\'MenuController@edit\', [$id])}}"><i class="glyphicon glyphicon-edit"></i> @lang("messages.edit")</a>
 
                         <button data-href="{{action(\'MenuController@destroy\', [$id])}}" class="btn btn-xs btn-danger delete_spg_button"><i class="glyphicon glyphicon-trash"></i> @lang("messages.delete")</button>'
-                )/*->addColumn('ingredient_name',function ($row){
-                    if($row->menu_items->ingredient_id != null){
-                        $name = Ingredient::where('id',$row->menu_items->ingredient_id)->first();
-                        $ing_name = $name->name;
-                    }else{
-                        $ing_name = 'NA';
-                    }
-                    return $ing_name;
-                })->addColumn('measure_type',function ($row){
-
-                    return getingredientMeasure($row->menu_items->measure_type);
-                })*/
+                )->editColumn('business_location_id', function ($row){
+                    $location_id = $row->location->name;
+                    return $location_id;
+                 })
+                ->editColumn('category_id', function ($row){
+                    $category_id = $row->category->name;
+                    return $category_id;
+                })
+                ->editColumn('recipe_id', function ($row){
+                    $recipe_id = $row->recipe->name;
+                    return $recipe_id;
+                })
                 ->removeColumn('status')
-                /*->removeColumn('id')*/
                 ->make(true);
         }
-
-        return view('menu.index');
+        return view('menu.index')
+            ->with(compact('menu_name_list','menu', 'recipe', 'categories', 'business_locations'));
     }
 
     /**
@@ -89,9 +101,12 @@ class MenuController extends Controller
         if (!auth()->user()->can('product.create')) {
             abort(403, 'Unauthorized action.');
         }
-        $parent_ingredient = Ingredient::whereNull('ingredient_parent_id')->active()->pluck('name', 'id')->toArray();
-
-        return view('menu.create')->with(compact('parent_ingredient'));
+        $business_id = request()->session()->get('user.business_id');
+        //Get all business locations
+        $business_locations = BusinessLocation::forDropdown($business_id);
+        $categories = Category::forDropdown($business_id, 'product');
+        $recipe = Recipe::active()->pluck('name', 'id')->toArray();
+        return view('menu.create')->with(compact('recipe', 'categories', 'business_locations'));
     }
 
     /**
@@ -107,26 +122,18 @@ class MenuController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
+        $request->validate([
+            'name' => 'required',
+            'business_location_id' => 'required',
+            'category_id' => 'required',
+            'recipe_id' => 'required',
+        ]);
         try {
-            $input = $request->menu;
-            if (sizeof($input)) {
-                $menu = Menu::create([
-                    'name' => $request->name,
-                    'created_at' => Carbon::now(),
-                    'updated_at' => Carbon::now()
-                ]);
-                foreach ($input as $key => $item) {
-                    $spg = MenuItem::create([
-                        'menu_id' => $menu->id,
-                        'ingredient_id' => $key,
-                        'measure_type' => $item['measure_type'],
-                        'quantity' => $item['quantity'],
-                        'created_at' => Carbon::now(),
-                        'updated_at' => Carbon::now()
-                    ]);
+            $input = $request->only(['name', 'business_location_id', 'category_id', 'recipe_id']);
+            $input['created_at'] = Carbon::now();
+            $input['updated_at'] = Carbon::now();
+            Menu::insert($input);
 
-                }
-            }
             $output = ['success' => true,
                 'data' => '',
                 'msg' => __("lang_v1.added_success")
@@ -139,7 +146,6 @@ class MenuController extends Controller
                 'msg' => __("messages.something_went_wrong")
             ];
         }
-
         return redirect()
             ->action('MenuController@index')
             ->with('status', $output);
@@ -167,16 +173,14 @@ class MenuController extends Controller
         if (!auth()->user()->can('product.create')) {
             abort(403, 'Unauthorized action.');
         }
-        $menu = Menu::with(['menu_items', 'menu_items.ingredient'])->where('id', $id)->first();
-        $ing_id = [];
-        foreach ($menu->menu_items as $item) {
-            $ing_id[] = $item->ingredient_id;
-        }
-        $selected_ingredient = Ingredient::whereIn('id', $ing_id)->get();
-
-        $parent_ingredient = Ingredient::whereNull('ingredient_parent_id')->active()->pluck('name', 'id')->toArray();
+        $menu = Menu::with(['location','recipe','category'])->where('id', $id)->first();
+        $business_id = request()->session()->get('user.business_id');
+        //Get all business locations
+        $business_locations = BusinessLocation::forDropdown($business_id);
+        $categories = Category::forDropdown($business_id, 'product');
+        $recipe = Recipe::active()->pluck('name', 'id')->toArray();
         return view('menu.edit')
-            ->with(compact('menu', 'selected_ingredient', 'parent_ingredient'));
+            ->with(compact('menu', 'recipe', 'categories', 'business_locations'));
 
     }
 
@@ -194,61 +198,9 @@ class MenuController extends Controller
             abort(403, 'Unauthorized action.');
         }
         try {
-            $input = $request->menu;
+            $input = $request->only(['name', 'business_location_id', 'category_id', 'recipe_id']);
 
-            if (sizeof($input)) {
-                $menu = Menu::findOrFail($id);
-                $menu->name = $request->name;
-                $menu->save();
-                $ingredient_id = [];
-                $menu_item = MenuItem::where(['menu_id'=>$id])->pluck('ingredient_id')->toArray();
-
-                foreach ($input as $key => $item) {
-                    $ingredient_id[] = $key;
-
-                    /*if($menu_item){
-                        MenuItem::where('id',$menu_item->id)->update([
-                            'measure_type' => $item['measure_type'],
-                            'quantity' => $item['quantity'],
-                        ]);
-                    }else{
-                        $spg = MenuItem::create([
-                            'menu_id' => $menu->id,
-                            'ingredient_id' => $key,
-                            'measure_type' => $item['measure_type'],
-                            'quantity' => $item['quantity'],
-                            'created_at' => Carbon::now(),
-                            'updated_at' => Carbon::now()
-                        ]);
-                    }*/
-                }
-                $old_val = $menu_item;
-                $new_val = $ingredient_id;
-                sort($new_val);
-                sort($old_val);
-                $old_value = implode(',', $old_val);
-                $new_value = implode(',', $new_val);
-                if ($new_val != $old_val) {
-                    MenuItem::where('menu_id',$id)->delete();
-                    foreach ($input as $key => $item) {
-                        MenuItem::create([
-                            'menu_id' => $menu->id,
-                            'ingredient_id' => $key,
-                            'measure_type' => $item['measure_type'],
-                            'quantity' => $item['quantity'],
-                            'created_at' => Carbon::now(),
-                            'updated_at' => Carbon::now()
-                        ]);
-                    }
-                }else{
-                    foreach ($input as $key => $item) {
-                        MenuItem::where(['menu_id'=> $id, 'ingredient_id'=>$key])->update([
-                            'measure_type' => $item['measure_type'],
-                            'quantity' => $item['quantity'],
-                        ]);
-                    }
-                }
-            }
+            Menu::where('id', $id)->update($input);
 
             $output = ['success' => true,
                 'msg' => __("lang_v1.updated_success")
@@ -293,45 +245,6 @@ class MenuController extends Controller
 
             return $output;
         }
-    }
-
-    public function getIngredients()
-    {
-
-        if (request()->ajax()) {
-            $search_term = request()->input('term', '');
-            $search_fields = request()->get('search_fields', ['name']);
-
-            $query = Ingredient::whereNotNull('ingredient_parent_id')->active();
-            //Include search
-            if (!empty($search_term)) {
-                $query->where(function ($query) use ($search_term, $search_fields) {
-                    if (in_array('name', $search_fields)) {
-                        $query->where('ingredients.name', 'like', '%' . $search_term . '%');
-                    }
-                });
-            }
-            $query->select(
-                'ingredients.id as product_id',
-                'ingredients.name',
-            );
-            $result = $query->get();
-            return json_encode($result);
-        }
-    }
-
-    public function getIngRow($id)
-    {
-        if ($id != '') {
-            $ingredient = Ingredient::where('id', $id)->first();
-            $output['html_content'] = view('menu.product_row')
-                ->with(compact('ingredient'))
-                ->render();
-        } else {
-            $output['html_content'] = '';
-        }
-        $output['success'] = true;
-        return $output;
     }
 
 }

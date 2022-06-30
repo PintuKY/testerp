@@ -42,6 +42,7 @@ return [
     'edit_all_driver'=> 'Edit All Driver',
     'driver_attendence'=> 'Driver Attendence',
     'edit_driver_attendence'=> 'Edit Driver Attendence',
+    'add_driver_attendence'=> 'Add Driver Attendence',
     'attendence'=> 'Attendence',
     'attendence_date'=> 'Attendence Date',
     'select_date'=> 'Select Date',

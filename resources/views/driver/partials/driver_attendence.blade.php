@@ -36,12 +36,12 @@
 
         @component('components.widget', ['class' => 'box-primary', 'title' => __( 'lang_v1.all_sales')])
 
-                @slot('tool')
-                    <div class="box-tools">
-                        <a class="btn btn-block btn-primary" href="{{action('DriverAttendenceController@create')}}">
-                            <i class="fa fa-plus"></i> @lang('messages.add')</a>
-                    </div>
-                @endslot
+            @slot('tool')
+                <div class="box-tools">
+                    <a class="btn btn-block btn-primary" href="{{action('DriverAttendenceController@create')}}">
+                        <i class="fa fa-plus"></i> @lang('messages.add')</a>
+                </div>
+            @endslot
 
             <table class="table table-bordered table-striped ajax_view" id="driver_attendence">
                 <thead>
@@ -63,4 +63,89 @@
 @stop
 @section('javascript')
     <script src="{{ asset('js/driver.js?v=' . $asset_v) }}"></script>
+    <script>
+        $(document).ready(function () {
+            var driver_attendence_table = $('#driver_attendence').DataTable({
+                processing: true,
+                serverSide: true,
+                "ajax": {
+                    "url": "/driver/attendence",
+                    "data": function (d) {
+                        if ($('#driver_list_filter_date_range').val()) {
+                            var start = $('#driver_list_filter_date_range').data('daterangepicker').startDate.format('YYYY-MM-DD');
+                            var end = $('#driver_list_filter_date_range').data('daterangepicker').endDate.format('YYYY-MM-DD');
+                            d.start_date = start;
+                            d.end_date = end;
+                        }
+                        /*d.select_date = $('.select_date').val();*/
+                    }
+                },
+                columnDefs: [{
+                    "targets": [0, 1, 2],
+                    "orderable": false,
+                    "searchable": false
+                }],
+                columns: [
+                    {data: 'name', name: 'name'},
+                    {data: 'email', name: 'email'},
+                    {data: 'in_or_out', name: 'in_or_out'},
+                    {data: 'attendance_date', name: 'attendance_date'},
+                    {data: 'is_half_day', name: 'is_half_day'},
+                    {data: 'leave_reason', name: 'leave_reason'},
+                    {data: 'leave_reason_description', name: 'leave_reason_description'},
+                    {data: 'action', name: 'action'},
+                ]
+            });
+
+            $('.select_date').on('dp.change', function (e) {
+                driver_attendence_table.ajax.reload();
+            })
+
+            $('#driver_list_filter_date_range').daterangepicker(
+                dateRangeSettings,
+                function (start, end) {
+                    $('#driver_list_filter_date_range').val(start.format(moment_date_format) + ' ~ ' + end.format(moment_date_format));
+                    driver_table.ajax.reload();
+                    driver_attendence_table.ajax.reload();
+                }
+            );
+            $(document).on('click', 'button.delete_driver_attendence_button', function () {
+                swal({
+                    title: LANG.sure,
+                    text: LANG.confirm_delete_user,
+                    icon: "warning",
+                    buttons: true,
+                    dangerMode: true,
+                }).then((willDelete) => {
+                    if (willDelete) {
+                        var href = $(this).data('href');
+                        var data = $(this).serialize();
+                        $.ajax({
+                            method: "DELETE",
+                            url: href,
+                            dataType: "json",
+                            data: data,
+                            success: function (result) {
+                                if (result.success == true) {
+                                    toastr.success(result.msg);
+                                    driver_attendence_table.ajax.reload();
+                                } else {
+                                    toastr.error(result.msg);
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+
+            $('.attendence_date').datetimepicker({
+                format: 'YYYY-MM-DD',
+                widgetPositioning: {
+                    horizontal: 'auto',
+                    vertical: 'bottom'
+                }
+            })
+        })
+
+    </script>
 @endsection

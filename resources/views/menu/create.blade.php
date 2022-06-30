@@ -1,87 +1,85 @@
 @extends('layouts.app')
-
-@section('title', __('sale.pos_sale'))
+@section('title', __('menus.menu'))
 
 @section('content')
-    <section class="content no-print">
 
-        {!! Form::open(['url' => action('MenuController@store'), 'method' => 'post', 'id' => 'add_menu_form' ]) !!}
-        <div class="row mb-12">
-            <div class="col-md-12 col-sm-12">
-                @component('components.widget', ['class' => 'box-solid'])
-                    <div class="col-sm-10 col-sm-offset-1">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <h1>@lang('menus.menu')</h1>
+        <!-- <ol class="breadcrumb">
+            <li><a href="#"><i class="fa fa-dashboard"></i> Level</a></li>
+            <li class="active">Here</li>
+        </ol> -->
+    </section>
 
-                        <div class="form-group">
-                            {!! Form::label('name', __( 'ingredient.name' ) . ':*') !!}
-                            {!! Form::text('name', null, ['class' => 'form-control', 'required', 'placeholder' => __( 'ingredient.name' ) ]); !!}
-                        </div>
+    <!-- Main content -->
+    <section class="content">
+        @php
+            $form_class = '';
+        @endphp
+        {!! Form::open(['url' => action('MenuController@store'), 'method' => 'post',
+            'id' => 'product_add_form','class' => 'product_form', 'files' => true ]) !!}
+        @component('components.widget', ['class' => 'box-primary'])
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        {!! Form::label('name', __('menus.menu_name') . ':*') !!}
+                        {!! Form::text('name', null, ['class' => 'form-control', 'required',
+                        'placeholder' => __('menus.menu_name')]); !!}
+                    </div>
+                </div>
 
-                        <div class="form-group">
-                            <div class="input-group">
-                                <div class="input-group-btn">
-                                    <button type="button" class="btn btn-default bg-white btn-flat" data-toggle="modal"
-                                            data-target="#configure_search_modal"
-                                            title="{{__('lang_v1.configure_product_search')}}"><i
-                                            class="fas fa-search-plus"></i></button>
-                                </div>
+                <div class="clearfix"></div>
 
-                                {!! Form::text('search_ingredient', null, ['class' => 'form-control mousetrap', 'id' => 'search_ingredient', 'placeholder' => __('lang_v1.search_ingredient_placeholder'),
-                                'autofocus' => true,
-                                ]); !!}
-                                <span class="input-group-btn">
 
-							</span>
+                @php
+                    $default_location = null;
+                    if(count($business_locations) == 1){
+                      $default_location = array_key_first($business_locations->toArray());
+                    }
+                @endphp
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        {!! Form::label('business_location_id', __('business.business_locations') . ':') !!} @show_tooltip(__('lang_v1.product_location_help'))
+                        {!! Form::select('business_location_id', $business_locations, $default_location, ['class' => 'form-control select2', 'id' => 'product_locations']); !!}
+                    </div>
+                </div>
+
+                <div class="col-sm-4 @if(!session('business.enable_category')) hide @endif">
+                    <div class="form-group">
+                        {!! Form::label('category_id', __('product.category') . ':*') !!}
+                        {!! Form::select('category_id', $categories, null, ['placeholder' => __('messages.please_select'), 'class' => 'form-control select2']); !!}
+                    </div>
+                </div>
+                <div class="clearfix"></div>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        {!! Form::label('recipe_id', __('menus.recipe') . ':*') !!}
+                        {!! Form::select('recipe_id', $recipe, null, ['placeholder' => __('messages.please_select'), 'class' => 'form-control select2']); !!}
+                    </div>
+                </div>
+                <div class="clearfix"></div>
+            </div>
+        @endcomponent
+
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <input type="hidden" name="submit_type" id="submit_type">
+                        <div class="text-center">
+                            <div class="btn-group">
+                                <button type="submit" value="submit" class="btn btn-primary submit_product_form">@lang('messages.save')</button>
                             </div>
                         </div>
                     </div>
-
-                    <div class="row col-sm-12 ing_product_div" style="min-height: 0">
-
-
-                        <div class="table-responsive ing">
-
-                        </div>
-
-                    </div>
-                @endcomponent
-
-            </div>
-        </div>
-        <div class="row">
-
-            <div class="col-sm-12 text-center">
-                <button type="button" id="submit-menu" class="btn btn-primary btn-big">@lang('messages.save')</button>
-
-            </div>
-        </div>
+                </div>
+                <div class="clearfix"></div>
         {!! Form::close() !!}
+
     </section>
-
-    <!-- This will be printed -->
-
-
-    <!-- /.content -->
-    <div class="modal fade register_details_modal" tabindex="-1" role="dialog"
-         aria-labelledby="gridSystemModalLabel">
-    </div>
-    <div class="modal fade close_register_modal" tabindex="-1" role="dialog"
-         aria-labelledby="gridSystemModalLabel">
-    </div>
-    <!-- quick product modal -->
-    <div class="modal fade quick_add_product_modal" tabindex="-1" role="dialog" aria-labelledby="modalTitle"></div>
-
-    <div class="modal fade" id="expense_modal" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel">
-    </div>
-
-    @include('menu.configure_search_modal')
-
-@stop
+@endsection
 
 @section('javascript')
-    <script src="{{ asset('js/pos.js?v=' . $asset_v) }}"></script>
-    <script src="{{ asset('js/product.js?v=' . $asset_v) }}"></script>
-    @include('sale_pos.partials.keyboard_shortcuts')
-
-    <!-- Call restaurant module if defined -->
-
+    @php $asset_v = env('APP_VERSION'); @endphp
+    <script src="{{ asset('js/menu.js?v=' . $asset_v) }}"></script>
 @endsection

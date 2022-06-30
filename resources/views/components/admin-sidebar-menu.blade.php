@@ -50,6 +50,8 @@
             </li>
             <li><a href="{{route('ingredients.index')}}"><i class="fa fas fa-circle"></i> <span>Ingredient</span></a>
             </li>
+            <li><a href="{{route('recipe.index')}}"><i class="fa fas fa-circle"></i> <span>Recipe</span></a>
+            </li>
             <li><a href="{{route('menu.index')}}"><i class="fa fas fa-circle"></i> <span>Menu</span></a>
             </li>
             <li><a href="{{route('units.index')}}"><i class="fa fas fa-balance-scale"></i> <span>Units</span></a></li>

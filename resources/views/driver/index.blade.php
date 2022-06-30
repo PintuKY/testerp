@@ -23,19 +23,19 @@
         @component('components.widget', ['class' => 'box-primary', 'title' => __( 'driver.all_drivers' )])
             @can('driver.create')
                 @slot('tool')
-                    <div class="box-tools">
+                    <div class="box-tools margin-r-5">
                         <a class="btn btn-block btn-primary"
                            href="{{action('DriverController@create')}}">
                             <i class="fa fa-plus"></i> @lang( 'messages.add' )</a>
                     </div>
 
-                    <div class="box-tools">
+                    <div class="box-tools margin-r-5">
                         <button type="button" class="btn btn-block btn-primary btn-modal"
                                 data-href="{{action('DriverController@editAll')}}"
                                 data-container=".driver_edit_modals">
                             <i class="fa fa-plus"></i> @lang( 'driver.edit_all_driver' )</button>
                     </div>
-                    <div class="box-tools">
+                    <div class="box-tools margin-r-5">
                         <a class="btn btn-block btn-primary"
                            href="{{action('DriverAttendenceController@index')}}">
                             @lang( 'driver.driver_attendence' )</a>

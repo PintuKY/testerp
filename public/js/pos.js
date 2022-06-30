@@ -148,7 +148,7 @@ $(document).ready(function () {
                     });
 
                     $.getJSON(
-                        '/menu/ingredients/list',
+                        '/recipe/ingredients/list',
                         {
                             term: request.term,
                             search_fields: search_fields
@@ -189,7 +189,7 @@ $(document).ready(function () {
 
                     $.ajax({
                         method: 'GET',
-                        url: '/menu/get_ingredients_row/' + ui.item.product_id,
+                        url: '/recipe/get_ingredients_row/' + ui.item.product_id,
                         async: false,
                         dataType: 'json',
                         success: function (result) {

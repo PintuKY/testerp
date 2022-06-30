@@ -1,11 +1,11 @@
 @extends('layouts.app')
-@section('title', __('menus.menu'))
+@section('title', __('recipe.recipe'))
 
 @section('content')
 
     <!-- Content Header (Page header) -->
     <section class="content-header">
-        <h1>@lang( 'menus.menu' )
+        <h1>@lang( 'recipe.recipe' )
         </h1>
         <!-- <ol class="breadcrumb">
             <li><a href="#"><i class="fa fa-dashboard"></i> Level</a></li>
@@ -33,18 +33,15 @@
                 @slot('tool')
 
                     <div class="box-tools">
-                        <a class="btn btn-block btn-primary" href="{{action('MenuController@create')}}">
+                        <a class="btn btn-block btn-primary" href="{{action('RecipeController@create')}}">
                             <i class="fa fa-plus"></i> @lang('messages.add')</a>
                     </div>
                 @endslot
             <div class="table-responsive">
-                <table class="table table-bordered table-striped" id="menu_table">
+                <table class="table table-bordered table-striped" id="selling_price_group_table">
                     <thead>
                     <tr>
                         <th>@lang( 'menus.name' )</th>
-                        <th>@lang( 'business.business_locations' )</th>
-                        <th>@lang( 'product.category' )</th>
-                        <th>@lang( 'menus.recipe' )</th>
                         <th>@lang( 'messages.action' )</th>
                     </tr>
                     </thead>
@@ -59,23 +56,22 @@
 @section('javascript')
     <script type="text/javascript">
         $(document).ready(function () {
-            //menu_table
-            var menu_table = $('#menu_table').DataTable({
+
+
+            //selling_price_group_table
+            var selling_price_group_table = $('#selling_price_group_table').DataTable({
                 processing: true,
                 serverSide: true,
-                ajax: '/menu',
+                ajax: '/recipe',
                 columnDefs: [{
                     "targets": 1,
                     "orderable": false,
                     "searchable": false
                 }],
                 columns: [
-                    {data: 'name', name: 'name'},
-                    {data: 'business_location_id', name: 'business_location_id'},
-                    {data: 'category_id', name: 'category_id'},
-                    {data: 'recipe_id', name: 'recipe_id'},
-                    {data: 'action', name: 'action'},
-                ]
+                    {data: 'name'},
+                    {data: 'action',name:'action'},
+                ],
             });
 
             $(document).on('submit', 'form#selling_price_group_form', function (e) {
@@ -91,7 +87,7 @@
                         if (result.success == true) {
                             $('div.view_modal').modal('hide');
                             toastr.success(result.msg);
-                            menu_table.ajax.reload();
+                            selling_price_group_table.ajax.reload();
                         } else {
                             toastr.error(result.msg);
                         }
@@ -118,7 +114,7 @@
                             success: function (result) {
                                 if (result.success == true) {
                                     toastr.success(result.msg);
-                                    menu_table.ajax.reload();
+                                    selling_price_group_table.ajax.reload();
                                 } else {
                                     toastr.error(result.msg);
                                 }
@@ -136,7 +132,7 @@
                     success: function (result) {
                         if (result.success == true) {
                             toastr.success(result.msg);
-                            menu_table.ajax.reload();
+                            selling_price_group_table.ajax.reload();
                         } else {
                             toastr.error(result.msg);
                         }

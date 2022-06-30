@@ -28,7 +28,7 @@
                 <div class="col-md-3">
                     <div class="form-group">
                         {!! Form::label('driver_list_filter_date_range', __('report.date_range') . ':') !!}
-                        {!! Form::text('driver_list_filter_date_range', null, ['placeholder' => __('lang_v1.select_a_date_range'), 'class' => 'form-control', 'readonly']); !!}
+                        {!! Form::text('driver_list_filter_date_range', null, ['placeholder' => __('lang_v1.select_a_date_range'), 'class' => 'form-control']); !!}
                     </div>
                 </div>
             @endif
@@ -38,7 +38,7 @@
 
                 @slot('tool')
                     <div class="box-tools">
-                        <a class="btn btn-block btn-primary" href="{{action('DriverController@create')}}">
+                        <a class="btn btn-block btn-primary" href="{{action('DriverAttendenceController@create')}}">
                             <i class="fa fa-plus"></i> @lang('messages.add')</a>
                     </div>
                 @endslot
@@ -48,7 +48,6 @@
                 <tr>
                     <th class="text-center">@lang('driver.name')</th>
                     <th class="text-center">@lang('driver.email')</th>
-                    <th class="text-center">@lang('driver.driver_type')</th>
                     <th class="text-center">@lang('driver.attendence')</th>
                     <th class="text-center">@lang('driver.attendence_date')</th>
                     <th class="text-center">@lang('driver.half_day')</th>

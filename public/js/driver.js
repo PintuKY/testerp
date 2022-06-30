@@ -87,7 +87,6 @@ $(document).ready( function(){
         columns: [
             {data: 'name', name: 'name'},
             {data: 'email', name: 'email'},
-            {data: 'driver_type', name: 'driver_type'},
             {data: 'in_or_out', name: 'in_or_out'},
             {data: 'attendance_date', name: 'attendance_date'},
             {data: 'is_half_day', name: 'is_half_day'},
@@ -168,6 +167,7 @@ $(document).ready( function(){
     });
     $(document).on('change', '#driver_list_filter_name',  function() {
         driver_table.ajax.reload();
+        driver_attendence_table.ajax.reload();
     });
 
     $(document).on('click', '.edit_all',  function() {

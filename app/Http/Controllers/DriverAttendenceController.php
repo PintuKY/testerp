@@ -66,10 +66,7 @@ class DriverAttendenceController extends Controller
                     @can("driver.delete")
                         <button data-href="{{action(\'DriverAttendenceController@destroy\', [$id])}}" class="btn btn-xs btn-danger delete_driver_attendence_button"><i class="glyphicon glyphicon-trash"></i> @lang("messages.delete")</button>
                     @endcan'
-                )->editColumn('driver_type',function ($row){
-                    $type = getDriverType($row->driver->driver_type);
-                    return $type;
-                })->editColumn('is_half_day',function ($row){
+                )->editColumn('is_half_day',function ($row){
                     if($row->is_half_day == \App\Utils\AppConstant::HALF_DAY_YES){
                         $half_day = 'Yes';
                     }else{
@@ -114,7 +111,10 @@ class DriverAttendenceController extends Controller
         if (!auth()->user()->can('driver.create')) {
             abort(403, 'Unauthorized action.');
         }
-        return view('driver.create');
+        $driver = Driver::active()->pluck('name','id')->toArray();
+        $default_date = $this->businessUtil->format_dates(Carbon::parse(now())->format('Y-m-d'));
+
+        return view('driver.attendence_create')->with(compact('driver', 'default_date'));
     }
 
     /**
@@ -131,19 +131,17 @@ class DriverAttendenceController extends Controller
 
         $request->validate([
             'name' => 'required',
-            'email' => 'required|unique:drivers,email',
-            'phone' => 'required|unique:drivers,phone',
-            'address_line_1' => 'required',
-            'city' => 'required',
-            'state' => 'required',
-            'country' => 'required',
-            'driver_type' => 'required',
+            'attendence_date' => 'required',
         ]);
-
         try {
-            $driver_details = $request->only(['name', 'email','phone','address_line_1','address_line_2','city','state','country','is_active','driver_type']);
-            $driver_details['status'] = !empty($request->input('is_active')) ? $request->input('is_active') : AppConstant::STATUS_INACTIVE;
-            $driver = Driver::create($driver_details);
+            $driver_details = $request->only(['name']);
+            $driver_details['driver_id'] = !empty($request->input('name')) ? $request->input('name') : '';
+            $driver_details['attendance_date'] = !empty($request->input('attendence_date')) ? $request->input('attendence_date') : Carbon::parse(now())->format('Y-m-d');
+            $driver_details['leave_reason'] = !empty($request->input('leave_reason')) ? $request->input('leave_reason') : '';
+            $driver_details['in_or_out'] = !empty($request->input('in_or_out')) ? $request->input('in_or_out') : '';
+            $driver_details['is_half_day'] = !empty($request->input('is_half_day')) ? $request->input('is_half_day') : '';
+            $driver_details['leave_reason_description'] = !empty($request->input('leave_reason_description')) ? $request->input('leave_reason_description') : '';
+            $driver = DriverAttendance::create($driver_details);
 
             $output = ['success' => 1,
                         'msg' => __("driver.driver_added")
@@ -157,7 +155,7 @@ class DriverAttendenceController extends Controller
                     ];
         }
 
-        return redirect('driver')->with('status', $output);
+        return redirect('driver/attendence')->with('status', $output);
     }
 
     /**

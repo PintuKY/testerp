@@ -92,6 +92,7 @@ class ContactUtil extends Util
 
     public function createNewContact($input)
     {
+
         //Check Contact id
         $count = 0;
         if (!empty($input['contact_id'])) {
@@ -107,7 +108,6 @@ class ContactUtil extends Util
                 //Generate reference number
                 $input['contact_id'] = $this->generateReferenceNumber('contacts', $ref_count, $input['business_id']);
             }
-
             $contact = Contact::create($input);
 
             $output = ['success' => true,

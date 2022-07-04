@@ -87,12 +87,7 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             {{ Form::label('kitchen_location_id', __('kitchen.kitchen_locations') . ':*') }}
-                            <div class="input-group">
-                                <span class="input-group-addon">
-                                    <i class="fa fa-globe"></i>
-                                </span>
-                                {!! Form::select('kitchen_location_id', $kitchens, null, ['placeholder' => 'Select Please', 'class' => 'form-control select2', 'required','style' => 'width:100%']); !!}
-                            </div>
+                            {{ Form::select('kitchen_location_id', $kitchens, null, ['placeholder' => 'Select Please', 'class' => 'form-control select2', 'required','style' => 'width:100%']); }}
                         </div>
                     </div>
                     
@@ -106,7 +101,6 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <div class="checkbox">
-                                <br/>
                                 <label>
                                     {!! Form::checkbox('is_active', \App\Utils\AppConstant::STATUS_ACTIVE, true, ['class' => 'input-icheck status','required']); !!} {{ __('lang_v1.status_for_user') }}
                                 </label>

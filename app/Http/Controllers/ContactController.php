@@ -10,6 +10,7 @@ use App\Notifications\CustomerNotification;
 use App\Models\PurchaseLine;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Utils\AppConstant;
 use App\Utils\ContactUtil;
 use App\Utils\ModuleUtil;
 use App\Utils\NotificationUtil;
@@ -573,6 +574,7 @@ class ContactController extends Controller
      */
     public function store(Request $request)
     {
+        //dd($request->all());
         if (!auth()->user()->can('supplier.create') && !auth()->user()->can('customer.create') && !auth()->user()->can('customer.view_own') && !auth()->user()->can('supplier.view_own')) {
             abort(403, 'Unauthorized action.');
         }
@@ -614,6 +616,7 @@ class ContactController extends Controller
 
             $input['business_id'] = $business_id;
             $input['created_by'] = $request->session()->get('user.id');
+            $input['type'] = AppConstant::CUSTOMER;
 
 
             $output = $this->contactUtil->createNewContact($input);

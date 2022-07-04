@@ -26,6 +26,7 @@ class AppConstant
     const PART_TIME = 2;
     const ALL = 'all';
     const YESTERDAY = 'yesterday';
+    const CUSTOMER = 'customer';
 
 }
 

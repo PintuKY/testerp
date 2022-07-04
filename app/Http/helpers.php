@@ -162,7 +162,8 @@ function TransactionActivityTypes()
 {
     $data = [
         'DaysUpdate' => '1',
-        'UserComment' => '2'
+        'UserComment' => '2',
+        'Auto' => '3'
     ];
     return $data;
 }

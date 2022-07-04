@@ -6,6 +6,7 @@ use App\Exports\MasterListExport;
 use App\Models\Business;
 use App\Models\BusinessLocation;
 use App\Models\MasterList;
+use App\Models\TransactionActivity;
 use App\Utils\AppConstant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
@@ -273,6 +274,14 @@ class MasterController extends Controller
                 $output = ['success' => true,
                     'msg' => __("master.master_list_compensate_add_success")
                 ];
+
+                TransactionActivity::insert([
+                    'type' => TransactionActivityTypes()['Auto'],
+                    'transaction_id' => $request->transaction_id,
+                    'comment' => 'compensate added for '. $compensate->delivery_date ,
+                    'created_at' => Carbon::now()->toDateTimeString(),
+                    'updated_at' => Carbon::now()->toDateTimeString()
+                ]);
             } else {
                 $output = ['success' => false,
                     'msg' => __("master.master_list_compensate_not_add")

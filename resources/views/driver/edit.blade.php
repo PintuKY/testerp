@@ -84,6 +84,14 @@
               </div>
           </div>
         </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+              {{ Form::label('kitchen_location_id', __('kitchen.kitchen_locations') . ':*') }}
+              {{ Form::select('kitchen_location_id', $kitchens, $driver->kitchen_location_id, ['placeholder' => 'Select Please', 'class' => 'form-control select2', 'required','style' => 'width:100%']); }}
+          </div>
+        </div>
+
             <div class="col-md-6">
                 <div class="form-group">
                     {!! Form::label('driver_type',__('driver.driver_type') . ':') !!}

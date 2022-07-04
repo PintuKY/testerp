@@ -190,27 +190,33 @@ class DriverController extends Controller
         $filter_start_date = Session::get('filter_start_date');
         $filter_end_date = Session::get('filter_end_date');
 
-        Log::info($filter_start_date);
-        Log::info($filter_end_date);
-        Log::info($filter_name);
+        $driver_name = (request()->driver_name)?request()->driver_name:'';
+        $start_date = (request()->start_date)?request()->start_date:'';
+        $end_date = (request()->end_date)?request()->end_date:'';
+        Session::put('filter_name',$driver_name);
+        Session::put('filter_start_date',$start_date);
+        Session::put('filter_end_date',$end_date);
         $driver = DriverAttendance::with('driver');
 
-        if (!empty(\request()->select_date) && !empty(\request()->select_date)) {
+
+        if (!empty(request()->driver_name)) {
+            $driver->where('id', request()->driver_name);
+        }
+
+        if (!empty(request()->start_date) && !empty(request()->end_date)) {
+            $start = request()->start_date;
+            $end = request()->end_date;
+            $driver->whereHas('driverAttendance', function ($query) use($start,$end){
+                $query->whereDate('attendance_date', '>=', $start)
+                    ->whereDate('attendance_date', '<=', $end);
+            });
+        }
+
+       /* if (!empty(\request()->select_date) && !empty(\request()->select_date)) {
             $driver->whereDate('attendance_date', '>=', \request()->select_date)
                     ->whereDate('attendance_date', '<=', \request()->select_date);
-        }
-        $drivers = $driver->get();
-        /*switch ($val){
-            case AppConstant::YESTERDAY:
-                $drivers = DriverAttendance::with('driver')->where('attendance_date', '=', Carbon::yesterday()->format('Y-m-d'))->get();
-
-                break;
-            case AppConstant::ALL:
-                $drivers = DriverAttendance::with('driver')->get();
-                break;
-            Default:
-                break;
         }*/
+        $drivers = $driver->get();
         return view('driver.partials.edit_all')
             ->with(compact('drivers', ));
     }

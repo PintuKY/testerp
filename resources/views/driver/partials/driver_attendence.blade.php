@@ -105,7 +105,6 @@
                 dateRangeSettings,
                 function (start, end) {
                     $('#driver_list_filter_date_range').val(start.format(moment_date_format) + ' ~ ' + end.format(moment_date_format));
-                    driver_table.ajax.reload();
                     driver_attendence_table.ajax.reload();
                 }
             );

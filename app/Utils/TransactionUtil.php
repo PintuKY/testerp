@@ -612,10 +612,23 @@ class TransactionUtil extends Util
 
     public function transactionDayUpdate($sell_days, $transaction, $new_days, $master_list_less, $master_list_less_id, $product, $old_value, $new_value)
     {
+        $old = explode(',',$old_value);
+        $old_values=[];
+        foreach($old as $value){
+            $old_values[] = getDayNameByDayNumber($value);
+        }
+        $olds= implode(',',$old_values);
+        $new = explode(',',$new_value);
+        $new_values=[];
+        foreach($new as $value){
+            $new_values[] = getDayNameByDayNumber($value);
+        }
+        $news= implode(',',$new_values);
+
         TransactionActivity::insert([
             'type' => TransactionActivityTypes()['DaysUpdate'],
             'transaction_id' => $transaction->id,
-            'comment' => 'old_value is==' . $old_value . 'and new_value is==' . $new_value,
+            'comment' => 'old_value is =>' . $olds . ' and new_value is =>' . $news,
             'created_at' => Carbon::now()->toDateTimeString(),
             'updated_at' => Carbon::now()->toDateTimeString()
         ]);

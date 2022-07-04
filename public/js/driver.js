@@ -57,6 +57,7 @@ $(document).ready( function(){
             {"data":"phone"},
             {"data":"address_line_1"},
             {"data":"address_line_2"},
+            {"data":"kitchen_location_id"},
             {"data":"city"},
             {"data":"state"},
             {"data":"country"},

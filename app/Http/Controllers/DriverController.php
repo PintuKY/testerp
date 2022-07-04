@@ -54,7 +54,7 @@ class DriverController extends Controller
         Session::put('filter_start_date',$start_date);
         Session::put('filter_end_date',$end_date);
         if (request()->ajax()) {
-            $driver = Driver::with('driverAttendance');
+            $driver = Driver::with('driverAttendance','kitchenLocation');
             if (!empty(request()->driver_name)) {
                 $driver->where('id', request()->driver_name);
             }
@@ -80,6 +80,8 @@ class DriverController extends Controller
                 )->editColumn('driver_type',function ($row){
                     $type = getDriverType($row->driver_type);
                     return $type;
+                })->editColumn('kitchen_location_id',function ($row){
+                    return $row->kitchenLocation->name ?? null;
                 })
                 // ->filterColumn('name', function ($query, $keyword) {
                 //     $query->where('name',, $keyword]);

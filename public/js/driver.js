@@ -227,6 +227,9 @@ $('form#driver_edit_form').validate({
         country: {
         required: true,
         },
+        kitchen_location: {
+        required: true,
+        },
         status: {
         required: true,
         },

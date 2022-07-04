@@ -1312,7 +1312,6 @@ class SellController extends Controller
         // if (!auth()->user()->can('sell.view') && !auth()->user()->can('direct_sell.access') && !auth()->user()->can('view_own_sell_only')) {
         //     abort(403, 'Unauthorized action.');
         // }
-
         $business_id = request()->session()->get('user.business_id');
         $taxes = TaxRate::where('business_id', $business_id)
             ->pluck('name', 'id');
@@ -1328,25 +1327,10 @@ class SellController extends Controller
 
         $sell = $query->firstOrFail();
 
-        /*$p1 = DB::table('transactions_activity')
-            ->select('comment as comment','created_at as date');
-
-        $p2 = DB::table('activity_log')
-            ->select('description as comment','created_at as date');
-
-        $p = $p1->unionAll($p2);
-
-       $aa =  \Illuminate\Support\Facades\DB::table(\Illuminate\Support\Facades\DB::raw("({$p->toSql()}) AS p"))
-           ->groupBy('date')
-            ->mergeBindings($p)
-            ->paginate(10);
-        dd($aa);*/
-
         $activities = Activity::forSubject($sell)
             ->with(['causer', 'subject'])
             ->latest()
             ->get();
-
 
         $line_taxes = [];
         $product_id = [];

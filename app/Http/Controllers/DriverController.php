@@ -211,17 +211,6 @@ class DriverController extends Controller
                     ->whereDate('attendance_date', '<=', \request()->select_date);
         }*/
         $drivers = $driver->get();
-        /*switch ($val){
-            case AppConstant::YESTERDAY:
-                $drivers = DriverAttendance::with('driver')->where('attendance_date', '=', Carbon::yesterday()->format('Y-m-d'))->get();
-
-                break;
-            case AppConstant::ALL:
-                $drivers = DriverAttendance::with('driver')->get();
-                break;
-            Default:
-                break;
-        }*/
         return view('driver.partials.edit_all')
             ->with(compact('drivers', ));
     }

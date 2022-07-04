@@ -258,7 +258,7 @@ class MasterController extends Controller
             abort(403, 'Unauthorized action.');
         }
         try {
-            $total_cansel_sell = MasterList::where(['transaction_id' => $request->transaction_id, 'is_compensate' => AppConstant::COMPENSATE_NO, 'status' => AppConstant::STATUS_CANCEL])->whereNotNull('cancel_reason')->count();
+            $total_cansel_sell = MasterList::where(['transaction_id' => $request->transaction_id, 'is_compensate' => AppConstant::COMPENSATE_NO/*, 'status' => AppConstant::STATUS_CANCEL*/])->whereNotNull('cancel_reason')->count();
             $total_compensate = MasterList::where(['transaction_id' => $request->transaction_id, 'is_compensate' => AppConstant::COMPENSATE_YES])->count();
             $compensates = $total_cansel_sell - $total_compensate;
             if ($compensates > 0) {

@@ -96,13 +96,14 @@
                 @else
                     {!! $product_name !!}
                 @endif
+
                 <input type="hidden" class="enable_sr_no" value="{{$productData->product->enable_sr_no}}">
                 <input type="hidden"
                        class="product_type"
                        name="products[{{$productData->id}}][product_type]"
                        value="{{$productData->product->type}}">
-
                 @php
+
                     $hide_tax = 'hide';
                     if(session()->get('business.enable_inline_tax') == 1){
                         $hide_tax = '';
@@ -144,6 +145,7 @@
                 @if(!empty($discount))
                     {!! Form::hidden("products[$row_count][discount_id]", $discount->id); !!}
                 @endif
+
 
                 @php
                     $warranty_id = !empty($action) && $action == 'edit' && !empty($productData->warranties->first())  ? $productData->warranties->first()->id : $productData->warranty_id;
@@ -243,6 +245,7 @@
                         </select>
                     @endif
                 @endif
+
                 @if(!empty($is_direct_sell))
                     <br>
                     <textarea class="form-control" name="products[{{$productData->id}}][sell_line_note]"
@@ -438,27 +441,36 @@
                        data-msg-min-value="{{__('lang_v1.minimum_selling_price_error_msg', ['price' => @num_format($unit_price_inc_tax)])}}" @endif>
             </td>
 
-            @if(!empty($productData->product_variation) && $productData->product_variation->variation_template->type == 1)
-                <td class="text-center v-center">
-                    <h5>{{$productData->product_variation->variation_template->name}}</h5>
-                    <select class="form-control select_variation_value select2" required
-                            name="products[{{$productData->id}}][variation_value_id]">
-                        <option value="">Please Select</option>
-                        @foreach ($selected_variation as $key => $product_variation_name_data)
-                            <option value="{{$product_variation_name_data->id}}"
-                                    data-price="{{number_format($product_variation_name_data->default_sell_price,2,'.')}}"
-                                    data-products-variation-id="{{$productData->id}}">{{$product_variation_name_data->name}}
-                                - ${{number_format($product_variation_name_data->default_sell_price,2,'.')}}</option>
-                        @endforeach
-                    </select>
-                </td>
-                {{--<td class="text-center v-center">
-                    <input type="text" class="product_selectd_variation_value" value="" readonly required>
-                </td>--}}
+            @if(!empty($productData->product_variation) && $productData->product_variation != null)
+                @if(!empty($productData->product_variation->variation_template) && $productData->product_variation->variation_template->type == 1)
+
+                    <td class="text-center v-center">
+                        <h5>{{$productData->product_variation->variation_template->name}}</h5>
+                        <select class="form-control select_variation_value select2" required
+                                name="products[{{$productData->id}}][variation_value_id]">
+                            <option value="">Please Select</option>
+                            @foreach ($selected_variation as $key => $product_variation_name_data)
+                                <option value="{{$product_variation_name_data->id}}"
+                                        data-price="{{number_format($product_variation_name_data->default_sell_price,2,'.')}}"
+                                        data-products-variation-id="{{$productData->id}}">{{$product_variation_name_data->name}}
+                                    - ${{number_format($product_variation_name_data->default_sell_price,2,'.')}}</option>
+                            @endforeach
+                        </select>
+                    </td>
+                    {{--<td class="text-center v-center">
+                        <input type="text" class="product_selectd_variation_value" value="" readonly required>
+                    </td>--}}
+                    @endif
+
+
             @endif
 
-            @if( isset($productData->product_variation) && $productData->product_variation->variation_template->type == 2)
-                <td>
+
+                @if(!empty($productData->product_variation) && $productData->product_variation != null)
+                    @if(!empty($productData->product_variation->variation_template) && $productData->product_variation->variation_template->type == 2)
+
+
+                    <td>
                     <h5>{{$productData->product_variation->variation_template->name}}</h5>
                     @foreach($selected_variation as $key => $product_variation_name_data)
                         <label class="radio-inline">
@@ -474,6 +486,7 @@
                 {{--<td>
                     <input type="text" class="product_radio_variation_value" value="" readonly required>
                 </td>--}}
+            @endif
             @endif
             <td class="text-center">
                 @php
@@ -497,6 +510,7 @@
 
     </tbody>
 </table>
+
 @if(!empty($productData->transaction_sell_lines_id))
     <input type="hidden" name="products[{{$productData->id}}][transaction_sell_lines_id]"
            class="form-control" value="{{$productData->transaction_sell_lines_id}}">
@@ -534,6 +548,7 @@
         @endphp
     @endif
 @endforeach
+
 <div class="row pos_table_{{$product_id}}">
     <div class="col-md-12 col-sm-12">
         <div class="box box-solid">
@@ -606,6 +621,7 @@
                     </div>
                 </div>
             </div>
+
             <div class="box-body">
                 <div class="col-sm-6">
                     <div class="form-group">
@@ -682,4 +698,6 @@
         </div>
     </div>
 </div>
+
+
 

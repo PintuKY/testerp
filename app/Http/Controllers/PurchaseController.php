@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
 use Spatie\Activitylog\Models\Activity;
 use Excel;
+use App\Models\KitchenLocation;
 
 class PurchaseController extends Controller
 {
@@ -65,11 +66,6 @@ class PurchaseController extends Controller
         $business_id = request()->session()->get('user.business_id');
         if (request()->ajax()) {
             $purchases = $this->transactionUtil->getListPurchases($business_id);
-
-            $permitted_locations = auth()->user()->permitted_locations();
-            if ($permitted_locations != 'all') {
-                $purchases->whereIn('transactions.location_id', $permitted_locations);
-            }
 
             if (!empty(request()->supplier_id)) {
                 $purchases->where('contacts.id', request()->supplier_id);
@@ -212,12 +208,12 @@ class PurchaseController extends Controller
                 ->make(true);
         }
 
-        $business_locations = BusinessLocation::forDropdown($business_id);
+        $kitchen_locations = KitchenLocation::pluck('name','id'); 
         $suppliers = Contact::suppliersDropdown($business_id, false);
         $orderStatuses = $this->productUtil->orderStatuses();
 
         return view('purchase.index')
-            ->with(compact('business_locations', 'suppliers', 'orderStatuses'));
+            ->with(compact('kitchen_locations', 'suppliers', 'orderStatuses'));
     }
 
     /**
@@ -242,10 +238,7 @@ class PurchaseController extends Controller
                         ->ExcludeForTaxGroup()
                         ->get();
         $orderStatuses = $this->productUtil->orderStatuses();
-        $business_locations = BusinessLocation::forDropdown($business_id, false, true);
-        $bl_attributes = $business_locations['attributes'];
-        $business_locations = $business_locations['locations'];
-
+        $kitchen_locations = KitchenLocation::pluck('name', 'id');
         $currency_details = $this->transactionUtil->purchaseCurrencyDetails($business_id);
 
         $default_purchase_status = null;
@@ -275,7 +268,7 @@ class PurchaseController extends Controller
         $common_settings = !empty(session('business.common_settings')) ? session('business.common_settings') : [];
 
         return view('purchase.create')
-            ->with(compact('taxes', 'orderStatuses', 'business_locations', 'currency_details', 'default_purchase_status', 'customer_groups', 'types', 'shortcuts', 'payment_line', 'payment_types', 'accounts', 'bl_attributes', 'common_settings'));
+            ->with(compact('taxes', 'orderStatuses','kitchen_locations', 'currency_details', 'default_purchase_status', 'customer_groups', 'types', 'shortcuts', 'payment_line', 'payment_types', 'accounts', 'common_settings'));
     }
 
     /**

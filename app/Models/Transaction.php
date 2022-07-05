@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Log;
+use App\Models\kitchenLocation;
 
 class Transaction extends Model
 {
@@ -62,7 +63,7 @@ class Transaction extends Model
 
     public function location()
     {
-        return $this->belongsTo(\App\Models\BusinessLocation::class, 'location_id');
+        return $this->belongsTo(kitchenLocation::class, 'location_id');
     }
 
     public function business()

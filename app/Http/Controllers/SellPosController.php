@@ -353,11 +353,12 @@ class SellPosController extends Controller
 
                 $user_id = $request->session()->get('user.id');
 
-                /*$discount = ['discount_type' => $input['discount_type'],
+                $discount = ['discount_type' => $input['discount_type'],
                                 'discount_amount' => $input['discount_amount']
-                            ];*/
+                            ];
 
-                $invoice_total = $this->productUtil->calculateInvoiceTotal($input['products'], $input['product'], $input['tax_rate_id']);
+                $invoice_total = $this->productUtil->calculateInvoiceTotal($discount,$input['products'], $input['product'], $input['tax_rate_id']);
+
                 DB::beginTransaction();
 
                 if (empty($request->input('transaction_date'))) {
@@ -1070,7 +1071,7 @@ class SellPosController extends Controller
                 $discount = ['discount_type' => $input['discount_type'],
                                 'discount_amount' => $input['discount_amount']
                             ];
-                $invoice_total = $this->productUtil->calculateInvoiceTotal($input['products'], $input['product'],$input['tax_rate_id']);
+                $invoice_total = $this->productUtil->calculateInvoiceTotal($discount,$input['products'], $input['product'],$input['tax_rate_id']);
 
                 if (!empty($request->input('transaction_date'))) {
                     $input['transaction_date'] = $this->productUtil->uf_date($request->input('transaction_date'), true);

@@ -13,7 +13,7 @@
 
 <tr class="variation_row">
     <td>
-        {!! Form::select('product_variation[' . $row_index .'][variation_template_id]', $variation_templates, null, ['class' => 'form-control input-sm variation_template', 'required']); !!}
+        {!! Form::select('product_variation[' . $row_index .'][variation_template_id]', $variation_templates, $variation_templates_selected, ['class' => 'form-control input-sm variation_template', 'required']); !!}
         <input type="hidden" class="row_index" value="{{$row_index}}">
     </td>
 

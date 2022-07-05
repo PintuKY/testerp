@@ -254,7 +254,7 @@
             <tr>
               <th>{{ __('sale.total') }}: </th>
               <td></td>
-              <td><span class="display_currency pull-right" data-currency_symbol="true">{{ $sell->total_before_tax }}</span></td>
+              <td><span class="display_currency pull-right" data-currency_symbol="true">{{ $sell->total }}</span></td>
             </tr>
             <tr>
               <th>{{ __('sale.discount') }}:</th>

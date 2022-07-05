@@ -260,33 +260,34 @@ $(document).ready(function () {
 
             if (item.enable_stock == 1 && item.qty_available <= 0 && !is_overselling_allowed && !for_so) {
                 var string = '<li class="ui-state-disabled">' + item.name;
-                if (item.type == 'variable') {
+               /* if (item.type == 'variable') {
                     string += '-' + item.variation;
-                }
+                }*/
                 var selling_price = item.selling_price;
                 if (item.variation_group_price) {
                     selling_price = item.variation_group_price;
                 }
+                var business_name = $('#select_location_id').find(":selected").text()
                 string +=
-                    ' (' +
-                    item.sub_sku +
+                    ' (Business Location: ' +
+                    business_name +
                     ')' +
-                    '<br> Price: ' +
-                    selling_price +
-                    ' (Out of stock) </li>';
+                    '<br> Type: ' +
+                    item.type +
+                    '</li>';
                 return $(string).appendTo(ul);
             } else {
                 var string = '<div>' + item.name;
-                if (item.type == 'variable') {
+                /*if (item.type == 'variable') {
                     string += '-' + item.variation;
-                }
+                }*/
 
                 var selling_price = item.selling_price;
                 if (item.variation_group_price) {
                     selling_price = item.variation_group_price;
                 }
-
-                string += ' (' + item.sub_sku + ')' + '<br> Price: ' + selling_price;
+                var business_name = $('#select_location_id').find(":selected").text()
+                string += ' (Business Location: ' + business_name + ')' + '<br> Type: ' + item.type;
                 if (item.enable_stock == 1) {
                     var qty_available = __currency_trans_from_en(item.qty_available, false, false, __currency_precision, true);
                     string += ' - ' + qty_available + item.unit;
@@ -339,7 +340,7 @@ $(document).ready(function () {
                             for_so = true;
                         }
 
-                        if ((ui.item.enable_stock == 1 && ui.item.qty_available > 0) ||
+                        /*if ((ui.item.enable_stock == 1 && ui.item.qty_available > 0) ||
                             (ui.item.enable_stock == 0) || is_overselling_allowed || for_so) {
                             $(this)
                                 .data('ui-autocomplete')
@@ -348,7 +349,7 @@ $(document).ready(function () {
                         }
                         $(this)
                             .data('ui-autocomplete')
-                            ._trigger('select', 'autocompleteselect', ui);
+                            ._trigger('select', 'autocompleteselect', ui);*/
                     } else if (ui.content.length == 0) {
                         toastr.error(LANG.no_products_found);
                         $('input#search_product').select();
@@ -360,6 +361,7 @@ $(document).ready(function () {
                     }
                 },
                 select: function (event, ui) {
+                    console.log('aaa');
                     var searched_term = $(this).val();
                     var is_overselling_allowed = false;
                     if ($('input#is_overselling_allowed').length) {
@@ -394,33 +396,35 @@ $(document).ready(function () {
 
             if (item.enable_stock == 1 && item.qty_available <= 0 && !is_overselling_allowed && !for_so) {
                 var string = '<li class="ui-state-disabled">' + item.name;
-                if (item.type == 'variable') {
+                /*if (item.type == 'variable') {
                     string += '-' + item.variation;
-                }
+                }*/
                 var selling_price = item.selling_price;
                 if (item.variation_group_price) {
                     selling_price = item.variation_group_price;
                 }
+
+                var business_name = $('#select_location_id').find(":selected").text()
                 string +=
-                    ' (' +
-                    item.sub_sku +
+                    ' (Business Location: ' +
+                    business_name +
                     ')' +
-                    '<br> Price: ' +
-                    selling_price +
-                    ' (Out of stock) </li>';
+                    '<br> Type: ' +
+                    item.type +
+                    '</li>';
                 return $(string).appendTo(ul);
             } else {
                 var string = '<div>' + item.name;
-                if (item.type == 'variable') {
+                /*if (item.type == 'variable') {
                     string += '-' + item.variation;
-                }
+                }*/
 
                 var selling_price = item.selling_price;
                 if (item.variation_group_price) {
                     selling_price = item.variation_group_price;
                 }
-
-                string += ' (' + item.sub_sku + ')' + '<br> Price: ' + selling_price;
+                var business_name = $('#select_location_id').find(":selected").text()
+                string += ' (Business Location: ' + business_name + ')' + '<br> Type: ' + item.type;
                 if (item.enable_stock == 1) {
                     var qty_available = __currency_trans_from_en(item.qty_available, false, false, __currency_precision, true);
                     string += ' - ' + qty_available + item.unit;
@@ -2446,6 +2450,7 @@ function productVariationsPriceCalculation($this) {
     // });
 
     $('.price_cal .price_total').html('$' + priceTotal);
+    $('#total').val(priceTotal);
     //$('.price_cal .total_quantity').html(totalQuantity);
     $('.price_cal .total_quantity').html($('.product_table').length);
     $('#final_total_input').val(priceTotal);
@@ -2494,6 +2499,8 @@ $(window).on("load", function () {
     });
 
     $('.price_total').html('$' + priceTotal);
+    $('#total').val(priceTotal);
+    $('#total').val(priceTotals);
     $('.price_totals').html('$' + priceTotals);
 
 

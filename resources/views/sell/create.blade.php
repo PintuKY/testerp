@@ -59,6 +59,8 @@
         @if(!empty($sale_type))
             <input type="hidden" id="sale_type" name="type" value="{{$sale_type}}">
         @endif
+
+        <input type="hidden" class="total" id="total" name="total" value="">
         <div class="row">
             <div class="col-md-12 col-sm-12">
                 @component('components.widget', ['class' => 'box-solid'])

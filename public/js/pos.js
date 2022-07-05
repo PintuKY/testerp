@@ -361,7 +361,6 @@ $(document).ready(function () {
                     }
                 },
                 select: function (event, ui) {
-                    console.log('aaa');
                     var searched_term = $(this).val();
                     var is_overselling_allowed = false;
                     if ($('input#is_overselling_allowed').length) {
@@ -2397,6 +2396,7 @@ $(document).on('click', '.input-number .product-quantity-up, .input-number .prod
         quantity = val - step;
     }
     let posQuantity = $(this).closest('.input-number').find('.pos_quantity').val(quantity);
+
     productVariationsPriceCalculation($(this));
 });
 
@@ -2404,18 +2404,25 @@ function productVariationsPriceCalculation($this) {
     let unitPrice = parseFloat($this.parents('.product_row').find('.product_pos_unit_price').val());
     let posQuantity = $this.parents('.product_row').find('.pos_quantity').val();
     let subTotal = posQuantity * unitPrice;
+
     let priceTotal = 0;
     let totalQuantity = 0;
     let rowDiscountType = $this.parents('.product_row').find('select.product_row_discount_type').find('option:selected').val();
     let rowDiscountAmount = parseFloat($this.parents('.product_row').find('input.discount_amount').val());
     let discountAmount = posQuantity * rowDiscountAmount;
 
+    //edit
+    let unitPrice_edit = parseFloat($('.product_pos_unit_price').val());
+    let posQuantity_edit = $('.pos_quantity').val();
+    let subTotal_edit = posQuantity_edit * unitPrice_edit;
     var variationValue = 0;
     if (rowDiscountAmount > 0) {
         if (rowDiscountType == 'fixed') {
             subTotal = subTotal - discountAmount;
+            subTotal_edit = subTotal_edit - discountAmount;
         } else {
             subTotal = (subTotal * rowDiscountAmount) / 100;
+            subTotal_edit = (subTotal_edit * rowDiscountAmount) / 100;
         }
     }
 
@@ -2430,10 +2437,13 @@ function productVariationsPriceCalculation($this) {
         $this.parents('.product_row').find('.product_radio_variation_value').html(variationValue);
     }
     finalAmount = variationValue + subTotal;
+    finalAmount_edit = variationValue + subTotal_edit;
     $this.parents('.product_row').find('.pos_line_total_text').html('$' + finalAmount);
+    $this.find('.pos_line_total_text').html('$' + finalAmount_edit);
 
 
     $this.parents('.product_row').find('input.pos_line_total').val(finalAmount);
+    $this.find('input.pos_line_total').val(finalAmount_edit);
     $('table#pos_table tbody tr').each(function () {
         priceTotal = priceTotal + __read_number($(this).find('input.pos_line_total'));
     });
@@ -2441,16 +2451,12 @@ function productVariationsPriceCalculation($this) {
         totalQuantity = totalQuantity + __read_number($(this).find('input.pos_quantity'));
     });
 
-    // Go through the modifier prices.
-    // $('input.modifiers_price').each(function() {
-    //     var modifier_price = __read_number($this);
-    //     var modifier_quantity = $this.closest('.product_modifier').find('.modifiers_quantity').val();
-    //     var modifier_subtotal = modifier_price * modifier_quantity;
-    //     price_total = price_total + modifier_subtotal;
-    // });
-
+    console.log('var===='+priceTotal);
     $('.price_cal .price_total').html('$' + priceTotal);
     $('#total').val(priceTotal);
+
+    $('.price_totals').html('$' + subTotal);
+
     //$('.price_cal .total_quantity').html(totalQuantity);
     $('.price_cal .total_quantity').html($('.product_table').length);
     $('#final_total_input').val(priceTotal);
@@ -2497,11 +2503,13 @@ $(window).on("load", function () {
         priceTotal += sum
         priceTotals += sums
     });
-
+    console.log('var1====='+priceTotals);
     $('.price_total').html('$' + priceTotal);
     $('#total').val(priceTotal);
     $('#total').val(priceTotals);
-    $('.price_totals').html('$' + priceTotals);
+    var quantity = $('.pos_quantity').val();
+    var total_value = (priceTotals * parseInt(quantity));
+    $('.price_totals').html('$' + total_value);
 
 
 });

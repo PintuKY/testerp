@@ -288,6 +288,7 @@ class TransactionUtil extends Util
         $products_modified_combo = [];
         $variation_value_id = [];
         $variation_value_data_id = [];
+        $variation_value = [];
         $transaction_Sell_lines = [];
         $tra_sell_line_day_data = [];
         $tra_sell_line_data_new = [];
@@ -542,17 +543,17 @@ class TransactionUtil extends Util
             foreach($variation_value_id as $id){
                 $variation_value_data = Variation::where('id', $id)->first();
                 $variation_value_data_id[] = $variation_value_data->variation_value_id;
+                $variation_value[] = $variation_value_data->default_sell_price;
             }
-
-
+           /* echo "<pre>";print_r($variation_value_data_id);
+            dd($variation_value);*/
             /*$variation_value_data = Variation::whereIn('id', $variation_value_id)->get();
             foreach ($variation_value_data as $vdata) {
                 $variation_value_data_id[] = $vdata->variation_value_id;
             }*/
-            $variation_value = [];
-            foreach($variation_value_data_id as $data){
-                $variation_value_datas = VariationValueTemplate::with('variationTemplate')->where('id', $data)->first();
 
+            foreach($variation_value_data_id as $key => $data){
+                $variation_value_datas = VariationValueTemplate::with('variationTemplate')->where('id', $data)->first();
                 TransactionSellLinesVariants::insert(
                     ['transaction_sell_lines_id' => $sell_line_data_ids[$sell_line_ids],
                         'variation_templates_id' => $variation_value_datas->variation_template_id,
@@ -560,16 +561,14 @@ class TransactionUtil extends Util
                         'pax' => $variation_value_datas->variationTemplate->name,
                         'addon' => $variation_value_datas->name. '(+ $'.$variation_value_data->value.')',
                         'name' => $variation_value_datas->name,
-                        'value' => $variation_value_datas->value,
+                        //'value' => $variation_value_datas->value,
+                        'value' => $variation_value[$key],
                         'created_at' => Carbon::now(),
                         'updated_at' => Carbon::now(),
                     ]
                 );
                 $sell_line_ids++;
             }
-
-
-
             $tra_sell_days = TransactionSellLine::with('product')->where(['transaction_id' => $transaction->id])->groupBy('product_id')->get();
             //master list add
             foreach ($tra_sell_days as $sell_day) {

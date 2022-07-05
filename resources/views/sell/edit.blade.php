@@ -371,10 +371,10 @@ $multiplier = 1;
                                                 }
                                             @endphp
                                             @php
-                                                $pos_unit_price = !empty($sell_line->unit_price_before_discount) ? $sell_line->unit_price_before_discount : $sell_line->default_sell_price;
+                                                $pos_unit_price = !empty($transaction->total) ? $transaction->total : $transaction->total;
 
                                                 if(!empty($so_line)) {
-                                                    $pos_unit_price = $so_line->unit_price_before_discount;
+                                                    $pos_unit_price = $transaction->total;
                                                 }
                                             @endphp
                                             @if( session()->get('business.enable_lot_number') == 1 || session()->get('business.enable_product_expiry') == 1)

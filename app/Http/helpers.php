@@ -152,7 +152,8 @@ function variationTypes()
 {
     $data = [
         '1' => 'Select',
-        '2' => 'Radio Button'
+        '2' => 'Radio Button',
+        '3' => 'input'
     ];
     return $data;
 }

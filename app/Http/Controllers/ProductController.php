@@ -12,6 +12,7 @@ use App\Models\PurchaseLine;
 use App\Models\SellingPriceGroup;
 use App\Models\TaxRate;
 use App\Models\Unit;
+use App\Utils\AppConstant;
 use App\Utils\ModuleUtil;
 use App\Utils\ProductUtil;
 use App\Models\Variation;
@@ -916,10 +917,12 @@ class ProductController extends Controller
                         ->with(['profit_percent' => $profit_percent])*/;
             } elseif ($request->input('type') == 'variable') {
                 $variation_templates = VariationTemplate::where('business_id', $business_id)->pluck('name', 'id')->toArray();
-                $variation_templates = [ "" => __('messages.please_select')] + $variation_templates;
+                /*$variation_templates = [ "" => __('messages.please_select')] + $variation_templates;*/
+                $variation_templates_selected = VariationTemplate::where(['business_id'=>$business_id,'name'=>AppConstant::MAIN_PRICE])
+                    ->pluck('id')->toArray();
 
                 return view('product.partials.variable_product_form_part')
-                        ->with(compact('variation_templates', /*'profit_percent',*/ 'action'));
+                        ->with(compact('variation_templates_selected','variation_templates', /*'profit_percent',*/ 'action'));
             } elseif ($request->input('type') == 'combo') {
                 return view('product.partials.combo_product_form_part')
                 ->with(compact(/*'profit_percent',*/ 'action'));
@@ -989,13 +992,14 @@ class ProductController extends Controller
 
         $variation_templates = VariationTemplate::where('business_id', $business_id)
                                                 ->pluck('name', 'id')->toArray();
-        $variation_templates = [ "" => __('messages.please_select')] + $variation_templates;
-
+        /*$variation_templates = [ "" => __('messages.please_select')] + $variation_templates;*/
+        $variation_templates_selected = VariationTemplate::where(['business_id'=>$business_id,'name'=>AppConstant::MAIN_PRICE])
+            ->pluck('id')->toArray();
         $row_index = $request->input('row_index', 0);
         $action = $request->input('action');
 
         return view('product.partials.product_variation_row')
-                    ->with(compact('variation_templates', 'row_index', 'action', /*'profit_percent'*/));
+                    ->with(compact('variation_templates_selected','variation_templates', 'row_index', 'action', /*'profit_percent'*/));
     }
 
     /**

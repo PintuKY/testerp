@@ -82,7 +82,6 @@ class Util
                 $formatted = $symbol . ' ' . $formatted;
             }
         }
-
         return $formatted;
     }
 

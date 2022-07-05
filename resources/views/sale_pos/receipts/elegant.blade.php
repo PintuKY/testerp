@@ -359,7 +359,6 @@
 					$subtotal = 0;
 				@endphp
 				@foreach($receipt_details->lines as $line)
-<?php //dd($line);?>
                     @if($line['product_id'] == $productId)
 					<tr>
 						<td class="text-center">
@@ -471,7 +470,6 @@
 		</table>
 		<b class="pull-left">{{__('lang_v1.authorized_signatory')}}</b>
 	</div>
-
 	<div class="col-md-6 invoice-col width-50">
 		<table class="table-no-side-cell-border table-no-top-cell-border width-100 table-slim">
 			<tbody>
@@ -485,19 +483,17 @@
 						</td>
 					</tr>
 				@endif
-				<tr >
+				<tr>
 					<td style="width:50%">
 						{!! $receipt_details->subtotal_label !!}
 					</td>
 					<td class="text-right">
                         {{$receipt_details->total}}
 					</td>
-
 				</tr>
-
 				<!-- Shipping Charges -->
 				@if(!empty($receipt_details->shipping_charges))
-					<tr >
+					<tr>
 						<td style="width:50%">
 							{!! $receipt_details->shipping_charges_label !!}
 						</td>
@@ -508,7 +504,7 @@
 				@endif
 
 				@if(!empty($receipt_details->packing_charge))
-					<tr >
+					<tr>
 						<td style="width:50%">
 							{!! $receipt_details->packing_charge_label !!}
 						</td>
@@ -521,7 +517,7 @@
 				<!-- Tax -->
 				@if(!empty($receipt_details->taxes))
 					@foreach($receipt_details->taxes as $k => $v)
-						<tr >
+						<tr>
 							<td>{{$k}}</td>
 							<td class="text-right">(+) {{$v}}</td>
 						</tr>
@@ -620,7 +616,7 @@
 						{!! $receipt_details->total_label !!}
 					</th>
 					<td class="text-right font-23 padding-10" style="background-color: #357ca5 !important; color: white !important">
-						{{$receipt_details->total}}
+						{{$receipt_details->final_total}}
 					</td>
 				</tr>
 				@if(!empty($receipt_details->total_in_words))

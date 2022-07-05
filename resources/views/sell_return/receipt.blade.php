@@ -36,7 +36,7 @@
 <div class="row invoice-info">
 
 	<div class="col-md-6 invoice-col width-50 color-555">
-		
+
 		<!-- Logo -->
 		@if(!empty($receipt_details->logo))
 			<img src="{{$receipt_details->logo}}" class="img">
@@ -135,7 +135,7 @@
 				{{$receipt_details->total_due}}
 			</p>
 		@endif
-		
+
 		<!-- Total Paid-->
 		@if(!empty($receipt_details->total_paid))
 			<p class="text-right font-23 color-555">
@@ -182,7 +182,7 @@
 		@endif
 	</div>
 
-	
+
 	<div class="col-md-6 invoice-col width-50 word-wrap">
 		<p>
 			@if(!empty($receipt_details->sub_heading_line1))
@@ -196,13 +196,13 @@
 			@endif
 			@if(!empty($receipt_details->sub_heading_line4))
 				<br>{{ $receipt_details->sub_heading_line4 }}
-			@endif		
+			@endif
 			@if(!empty($receipt_details->sub_heading_line5))
 				<br>{{ $receipt_details->sub_heading_line5 }}
 			@endif
 		</p>
 	</div>
-	
+
 </div>
 
 <div class="row color-555">
@@ -212,7 +212,7 @@
 			<thead>
 				<tr style="background-color: #357ca5 !important; color: white !important; font-size: 20px !important" class="table-no-side-cell-border table-no-top-cell-border text-center">
 					<td style="background-color: #357ca5 !important; color: white !important; width: 5% !important">No</td>
-					
+
 					@php
 						$p_width = 35;
 					@endphp
@@ -228,7 +228,7 @@
 					@if($receipt_details->show_cat_code == 1)
 						<td style="background-color: #357ca5 !important; color: white !important; width: 10% !important">{{$receipt_details->cat_code_label}}</td>
 					@endif
-					
+
 					<td style="background-color: #357ca5 !important; color: white !important"; width: 15% !important>
 						{{$receipt_details->table_qty_label}}
 					</td>
@@ -247,9 +247,9 @@
 							{{$loop->iteration}}
 						</td>
 						<td>
-                            {{$line['name']}} {{$line['variation']}} 
+                            {{$line['name']}} {{$line['variation']}}
                             @if(!empty($line['sub_sku'])), {{$line['sub_sku']}} @endif @if(!empty($line['brand'])), {{$line['brand']}} @endif
-                            @if(!empty($line['sell_line_note']))({{$line['sell_line_note']}}) @endif 
+                            @if(!empty($line['sell_line_note']))({{$line['sell_line_note']}}) @endif
                         </td>
 
 						@if($receipt_details->show_cat_code == 1)
@@ -355,7 +355,7 @@
 						</tr>
 					@endif
 				@endif
-				
+
 				<!-- Total -->
 				<tr>
 					<th style="background-color: #357ca5 !important; color: white !important" class="font-23 padding-10">

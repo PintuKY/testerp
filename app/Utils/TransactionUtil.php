@@ -56,6 +56,7 @@ class TransactionUtil extends Util
         $final_total = $uf_data ? $this->num_uf($input['final_total']) : $input['final_total'];
 
         $shipping_address = $contact->shipping_address_1 . ',' . ($contact->shipping_address_2) ? $contact->shipping_address_2 . ',' : '' . $contact->shipping_city . ',' . $contact->shipping_state . ',' . $contact->shipping_country . ',' . $contact->shipping_zipcode;
+
         $transaction = Transaction::create([
             'business_id' => $business_id,
             'location_id' => $input['location_id'],
@@ -74,6 +75,7 @@ class TransactionUtil extends Util
             'discount_amount' => $uf_data ? $this->num_uf($input['discount_amount']) : $input['discount_amount'],
             'tax_amount' => $invoice_total['tax'],
             'final_total' => $final_total,
+            'total' => $input['total'],
             'additional_notes' => !empty($input['sale_note']) ? $input['sale_note'] : null,
             'staff_note' => !empty($input['staff_note']) ? $input['staff_note'] : null,
             'created_by' => $user_id,
@@ -1639,6 +1641,7 @@ class TransactionUtil extends Util
             $output['subtotal_exc_tax'] = $this->num_f($subtotal_exc_tax, true, $business_details, true);
 
             $output['total_line_discount'] = !empty($total_line_discount) ? $this->num_f($total_line_discount, true, $business_details) : 0;
+
         } elseif ($transaction_type == 'sell_return') {
             $parent_sell = Transaction::find($transaction->return_parent_id);
             $lines = $parent_sell->sell_lines;
@@ -1738,6 +1741,7 @@ class TransactionUtil extends Util
 
         //Shipping charges
         $output['shipping_charges'] = ($transaction->shipping_charges != 0) ? $this->num_f($transaction->shipping_charges, $show_currency, $business_details) : 0;
+
         $output['shipping_charges_label'] = trans("sale.shipping_charges");
         //Shipping details
         $output['shipping_details'] = $transaction->shipping_details;
@@ -1749,11 +1753,14 @@ class TransactionUtil extends Util
         //Total
         if ($transaction_type == 'sell_return') {
             $output['total_label'] = $invoice_layout->cn_amount_label . ':';
-            $output['total'] = $this->num_f($transaction->final_total, $show_currency, $business_details);
+            $output['total'] = $this->num_f($transaction->total, $show_currency, $business_details);
+            $output['final_total'] = $this->num_f($transaction->final_total, $show_currency, $business_details);
         } else {
             $output['total_label'] = $invoice_layout->total_label . ':';
-            $output['total'] = $this->num_f($transaction->final_total, $show_currency, $business_details);
+            $output['total'] = $this->num_f($transaction->total, $show_currency, $business_details);
+            $output['final_total'] = $this->num_f($transaction->final_total, $show_currency, $business_details);
         }
+
         if (!empty($il->common_settings['show_total_in_words'])) {
             $word_format = isset($il->common_settings['num_to_word_format']) ? $il->common_settings['num_to_word_format'] : 'international';
             $output['total_in_words'] = $this->numToWord($transaction->final_total, null, $word_format);
@@ -2274,7 +2281,7 @@ class TransactionUtil extends Util
                 'quantity' => $this->num_f($line->quantity, false, $business_details, true),
                 'quantity_uf' => $line->quantity,
                 //'units' => $unit_name,
-                'units' => $line->transactionSellLinesVariants[0]->name,
+                'units' => ($line->transactionSellLinesVariants->isNotEmpty()) ? $line->transactionSellLinesVariants[0]->name : 'Dummy',
 
                 'unit_price' => $this->num_f($line->unit_price, false, $business_details),
                 'unit_price_uf' => $line->unit_price,
@@ -2283,7 +2290,7 @@ class TransactionUtil extends Util
                 'tax_unformatted' => $line->item_tax,
                 'tax_name' => !empty($tax_details) ? $tax_details->name : null,
                 'tax_percent' => !empty($tax_details) ? $tax_details->amount : null,
-                'tran_sell_var_value' => $line->transactionSellLinesVariants[0]->value,
+                'tran_sell_var_value' => ($line->transactionSellLinesVariants->isNotEmpty()) ? $line->transactionSellLinesVariants[0]->value : '0',
                 //Field for 3rd column
                 'unit_price_inc_tax' => $this->num_f($line->unit_price_inc_tax, false, $business_details),
                 'unit_price_inc_tax_uf' => $line->unit_price_inc_tax,
@@ -4466,7 +4473,6 @@ class TransactionUtil extends Util
 
             $sell_line->unit_details = $unit_details;
         }
-
         return $sell_line;
     }
 
@@ -5277,7 +5283,7 @@ class TransactionUtil extends Util
                 'type' => $transaction_types[$transaction->type],
                 'location' => $transaction->location->name,
                 'payment_status' => __('lang_v1.' . $transaction->payment_status),
-                'total' => '',
+                'total' => in_array($transaction->type, ['sell', 'purchase_return']) ? $transaction->total : '',
                 'payment_method' => '',
                 'debit' => in_array($transaction->type, ['sell', 'purchase_return']) ? $transaction->final_total : '',
                 'credit' => in_array($transaction->type, ['purchase', 'sell_return']) ? $transaction->final_total : '',

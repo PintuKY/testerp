@@ -2396,12 +2396,18 @@ $(document).on('click', '.input-number .product-quantity-up, .input-number .prod
         quantity = val - step;
     }
     //let posQuantity = $(this).closest('.input-number').find('.pos_quantity').val(quantity);
+
+    productVariationsPriceCalculation($(this),quantity);
     let posQuantity = $('.pos_quantity').val(quantity);
-    productVariationsPriceCalculation($(this));
-    //productVariationsPriceCalculationedit($(this));
+    let total = $('#total').val();
+    let total_value = total * quantity;
+    console.log(quantity);
+    console.log(total);
+    console.log(total_value);
+    $('.price_total').html('$' + total_value);
 });
 
-function productVariationsPriceCalculation($this) {
+function productVariationsPriceCalculation($this,quantity) {
     let unitPrice = parseFloat($this.parents('.product_row').find('.product_pos_unit_price').val());
     let posQuantity = $this.parents('.product_row').find('.pos_quantity').val();
     let subTotal = posQuantity * unitPrice;
@@ -2450,8 +2456,14 @@ function productVariationsPriceCalculation($this) {
         totalQuantity = totalQuantity + __read_number($(this).find('input.pos_quantity'));
     });
 
-    console.log('var===='+priceTotal);
     $('.price_cal .price_total').html('$' + priceTotal);
+    /*if(quantity != 'undefined' || quantity != undefined || quantity != ''){
+        var total_value = quantity * priceTotal;
+        $('.price_cal .price_total').html('$' + total_value);
+    }else{
+        var total_value = quantity * priceTotal;
+        $('.price_cal .price_total').html('$' + total_value);
+    }*/
     $('#total').val(priceTotal);
 
     $('.price_totals').html('$' + subTotal_edit);
@@ -2465,81 +2477,26 @@ function productVariationsPriceCalculation($this) {
     $('#payment_rows_div').find('.sell-product-payment-amount').val(priceTotal);
 }
 
-function productVariationsPriceCalculationedit($this) {
-    let unitPrice = parseFloat($this.parents('.product_row').find('.product_pos_unit_price').val());
-    let posQuantity = $this.parents('.product_row').find('.pos_quantity').val();
-    let subTotal = posQuantity * unitPrice;
 
-    let priceTotal = 0;
-    let totalQuantity = 0;
-    let rowDiscountType = $this.parents('.product_row').find('select.product_row_discount_type').find('option:selected').val();
-    let rowDiscountAmount = parseFloat($this.parents('.product_row').find('input.discount_amount').val());
-    let discountAmount = posQuantity * rowDiscountAmount;
-
-    var variationValue = 0;
-    if (rowDiscountAmount > 0) {
-        if (rowDiscountType == 'fixed') {
-            subTotal = subTotal - discountAmount;
-        } else {
-            subTotal = (subTotal * rowDiscountAmount) / 100;
-        }
-    }
-
-    if ($this.parents('.product_row').find('.select_variation_value').length && $this.parents('.product_row').find('.select_variation_value').find('option:selected').data('price') !== 'NaN' && $this.parents('.product_row').find('.select_variation_value').find('option:selected').data('price') !== '' && typeof $this.parents('.product_row').find('.select_variation_value').find('option:selected').data('price') !== "undefined") {
-        variationValue = parseFloat($this.parents('.product_row').find('.select_variation_value').find('option:selected').data('price'));
-        $this.parents('.product_row').find('.product_selectd_variation_value').val(variationValue);
-        $this.parents('.product_row').find('.product_selectd_variation_value').html(variationValue);
-    }
-    if ($this.parents('.product_row').find('.radio_variation_value:checked').data('price') !== 'NaN' && $this.parents('.product_row').find('.radio_variation_value:checked').data('price') !== '' && typeof $this.parents('.product_row').find('.radio_variation_value:checked').data('price') !== "undefined") {
-        variationValue = parseFloat($this.parents('.product_row').find('.radio_variation_value:checked').data('price'));
-        $this.parents('.product_row').find('.product_radio_variation_value').val(variationValue);
-        $this.parents('.product_row').find('.product_radio_variation_value').html(variationValue);
-    }
-    finalAmount = variationValue + subTotal;
-    $this.parents('.product_row').find('.pos_line_total_text').html('$' + finalAmount);
-    $this.find('.pos_line_total_text').html('$' + finalAmount_edit);
-    $this.parents('.product_row').find('input.pos_line_total').val(finalAmount);
-    $this.find('input.pos_line_total').val(finalAmount_edit);
-    $('table#pos_table tbody tr').each(function () {
-        priceTotal = priceTotal + __read_number($(this).find('input.pos_line_total'));
-    });
-    $('table#pos_table tbody tr').each(function () {
-        totalQuantity = totalQuantity + __read_number($(this).find('input.pos_quantity'));
-    });
-
-    console.log('var===='+priceTotal);
-    $('.price_cal .price_total').html('$' + priceTotal);
-    $('#total').val(priceTotal);
-
-    $('.price_totals').html('$' + subTotal);
-
-    //$('.price_cal .total_quantity').html(totalQuantity);
-    $('.price_cal .total_quantity').html($('.product_table').length);
-    $('#final_total_input').val(priceTotal);
-    $('#total_payable').html(priceTotal);
-    $('#total_payable').val(priceTotal);
-    $('#payment_rows_div').find('.sell-product-payment-amount').html(priceTotal);
-    $('#payment_rows_div').find('.sell-product-payment-amount').val(priceTotal);
-}
 
 $(document).on('change', '.product_row .pos_quantity', function (e) {
-    productVariationsPriceCalculation($(this));
+    productVariationsPriceCalculation($(this),'');
 });
 
 $(document).on('change', '.product_row .select_variation_value', function (e) {
-    productVariationsPriceCalculation($(this));
+    productVariationsPriceCalculation($(this),'');
 });
 
 $(document).on('change', '.product_row .radio_variation_value', function (e) {
-    productVariationsPriceCalculation($(this));
+    productVariationsPriceCalculation($(this),'');
 });
 
 $(document).on('change', '.product_row .discount_amount', function (e) {
-    productVariationsPriceCalculation($(this));
+    productVariationsPriceCalculation($(this),'');
 });
 
 $(document).on('change', '.product_row .product_pos_unit_price', function (e) {
-    productVariationsPriceCalculation($(this));
+    productVariationsPriceCalculation($(this),'');
 });
 
 

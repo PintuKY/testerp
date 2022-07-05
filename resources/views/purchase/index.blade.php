@@ -19,8 +19,8 @@
     @component('components.filters', ['title' => __('report.filters')])
         <div class="col-md-3">
             <div class="form-group">
-                {!! Form::label('purchase_list_filter_location_id',  __('purchase.business_location') . ':') !!}
-                {!! Form::select('purchase_list_filter_location_id', $business_locations, null, ['class' => 'form-control select2', 'style' => 'width:100%', 'placeholder' => __('lang_v1.all')]); !!}
+                {!! Form::label('purchase_list_filter_location_id',  __('kitchen.kitchen_locations') . ':') !!}
+                {!! Form::select('purchase_list_filter_location_id', $kitchen_locations, null, ['class' => 'form-control select2', 'style' => 'width:100%', 'placeholder' => __('lang_v1.all')]); !!}
             </div>
         </div>
         <div class="col-md-3">

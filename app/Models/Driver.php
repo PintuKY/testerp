@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
+use App\Models\KitchenLocation;
 
 class Driver extends Model
 {
@@ -25,5 +26,9 @@ class Driver extends Model
     public function scopeActive($query)
     {
         return $query->where('status', AppConstant::STATUS_ACTIVE);
+    }
+    public function kitchenLocation()
+    {
+        return $this->belongsTo(KitchenLocation::class,'kitchen_location_id');
     }
 }

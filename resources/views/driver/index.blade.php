@@ -67,6 +67,7 @@
                             <th>@lang( 'driver.phone' )</th>
                             <th>@lang( 'driver.address_line_1' )</th>
                             <th>@lang( 'driver.address_line_2' )</th>
+                            <th>@lang( 'kitchen.kitchen_locations' )</th>
                             <th>@lang( 'driver.city' )</th>
                             <th>@lang( 'driver.state' )</th>
                             <th>@lang( 'driver.country' )</th>

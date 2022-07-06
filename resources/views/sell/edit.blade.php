@@ -325,7 +325,7 @@ $multiplier = 1;
                             }
                         @endphp
 
-<?php //dd($product_ids);?>
+                        <?php //dd($product_ids);?>
                         <div class="table-responsive">
                             @foreach($product_ids as $key=>$productId)
                                 <table
@@ -370,11 +370,12 @@ $multiplier = 1;
                                                 }
                                             @endphp
                                             @php
-                                                $pos_unit_price = !empty($transaction->total) ? $transaction->total : $transaction->total;
+                                                $pos_unit_price = !empty($sell_line->unit_price_before_discount) ? $sell_line->unit_price_before_discount : $sell_line->default_sell_price;
 
-                                                if(!empty($so_line)) {
-                                                    $pos_unit_price = $transaction->total;
-                                                }
+                                            if(!empty($so_line)) {
+                                                $pos_unit_price = $so_line->unit_price_before_discount;
+                                            }
+
                                             @endphp
                                             @if( session()->get('business.enable_lot_number') == 1 || session()->get('business.enable_product_expiry') == 1)
                                                 @php
@@ -419,52 +420,37 @@ $multiplier = 1;
                                             @include('sell.product_row_edit', ['product' => $sell_line, 'row_count' => $loop->index, 'tax_dropdown' => $taxes, 'sub_units' => !empty($sell_line->unit_details) ? $sell_line->unit_details : [], 'action' => 'edit', 'is_direct_sell' => true, 'so_line' => $sell_line->so_line, 'is_sales_order' => $transaction->type == 'sales_order','pid'=>$productId])
                                         @endif
 
-                                        <input type="hidden" class="total_item_price" id="total_{{$productId}}" name="product[{{$productId}}][total]" value="">
 
                                     @endforeach
                                     </tbody>
                                 </table>
+                                <input type="hidden" class="total_item_price" id="total_{{$productId}}"
+                                       name="product[{{$productId}}][total]" value="">
 
-                                <div class="table-responsive">
-                                    <table class="table table-condensed table-bordered table-striped pos_table_{{$productId}}">
-                                        <tr>
-                                            <td class="price_cal">
-                                                <div class="pull-right">
-                                                    <b>@lang('sale.item'):</b>
-                                                    <span class="total_quantity">{{$product_count}}</span>
-                                                    &nbsp;&nbsp;&nbsp;&nbsp;
-                                                    <b>@lang('sale.total'): </b>
-                                                    <span class="price_totals_{{$productId}} total_prices price_totals">$0</span>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </table>
-
-                                </div>
                                 <div class="row pos_table_{{$productId}}">
                                     <div class="col-md-12 col-sm-12">
                                         <div class="box box-solid">
                                             <div class="box-body">
                                                 @if(array_key_exists($productId,$transaction_sell_lines_id))
-                                                <div
-                                                    class="col-md-4 deliverydays_{{$productId}} @if($edit_product[$productId]['unit'] != 'tingkat') hide @endif">
-                                                    <div class="form-group">
-                                                        <label for="delivery_days">Delivery Days:*</label>
-                                                        <br/>
-                                                        @foreach(deliveryDays() as $key => $deliveryDays)
-                                                            <div class="icheckbox_square-blue"
-                                                                 style="position: relative;">
-                                                                <input class="input-icheck" id="has_purchase_due"
-                                                                       name="product[{{$productId}}][has_purchase_due][]"
-                                                                       type="checkbox" value="{{$key}}"
-                                                                       style="position: absolute; opacity: 0;" {{ in_array($key,$transaction_sell_lines_id[$productId]) ?
-     "checked" : '' }}>
-                                                            </div>
-                                                            <strong>{{ $deliveryDays }}</strong>
+                                                    <div
+                                                        class="col-md-4 deliverydays_{{$productId}} @if($edit_product[$productId]['unit'] != 'tingkat') hide @endif">
+                                                        <div class="form-group">
+                                                            <label for="delivery_days">Delivery Days:*</label>
                                                             <br/>
-                                                        @endforeach
+                                                            @foreach(deliveryDays() as $key => $deliveryDays)
+                                                                <div class="icheckbox_square-blue"
+                                                                     style="position: relative;">
+                                                                    <input class="input-icheck" id="has_purchase_due"
+                                                                           name="product[{{$productId}}][has_purchase_due][]"
+                                                                           type="checkbox" value="{{$key}}"
+                                                                           style="position: absolute; opacity: 0;" {{ in_array($key,$transaction_sell_lines_id[$productId]) ?
+     "checked" : '' }}>
+                                                                </div>
+                                                                <strong>{{ $deliveryDays }}</strong>
+                                                                <br/>
+                                                            @endforeach
+                                                        </div>
                                                     </div>
-                                                </div>
                                                 @endif
                                                 <div
                                                     class="@if(!empty($commission_agent)) col-sm-4 @else col-sm-4 @endif start_dates_{{$productId}} @if($edit_product[$productId]['unit'] != 'tingkat') hide @endif">
@@ -542,7 +528,7 @@ $multiplier = 1;
                                                       data-productId="{{$productId}}"><i
                             class="fa fa-minus text-danger"></i></button></span>
                                                             <input id="quantity" type="text" data-min="1"
-                                                                   class="form-control pos_quantity input_number mousetrap input_quantity"
+                                                                   class="form-control pos_quantity pos_quantity_{{$productId}} input_number mousetrap input_quantity"
                                                                    data-productId="{{$productId}}"
                                                                    value="{{@format_quantity($edit_product[$productId]['quantity'])}}"
                                                                    name="product[{{$productId}}][quantity]"
@@ -559,7 +545,8 @@ $multiplier = 1;
 
                                                             >
                                                             <span class="input-group-btn"><button type="button"
-                                                                                                  data-productId="{{$productId}}" class="btn btn-default btn-flat product-quantity-up"><i
+                                                                                                  data-productId="{{$productId}}"
+                                                                                                  class="btn btn-default btn-flat product-quantity-up"><i
                                                                         class="fa fa-plus text-success"></i></button></span>
                                                         </div>
 
@@ -587,10 +574,10 @@ $multiplier = 1;
                                                         <div class="form-group">
                                                             <input type="text"
                                                                    name="product[{{$productId}}][unit_price]"
-                                                                   class="form-control product_pos_unit_price input_number mousetrap"
-                                                                   value="{{@num_format($pos_unit_price)}}"
-                                                                   @if(!empty($pos_settings['enable_msp'])) data-rule-min-value="{{$pos_unit_price}}"
-                                                                   data-msg-min-value="{{__('lang_v1.minimum_selling_price_error_msg', ['price' => @num_format($pos_unit_price)])}}" @endif>
+                                                                   class="form-control product_pos_unit_price  product_pos_unit_prices_{{$productId}} input_number mousetrap"
+                                                                   value="{{@num_format($edit_product[$productId]['total_item_value'])}}"
+                                                                   @if(!empty($pos_settings['enable_msp'])) data-rule-min-value="{{@num_format($edit_product[$productId]['total_item_value'])}}"
+                                                                   data-msg-min-value="{{__('lang_v1.minimum_selling_price_error_msg', ['price' => @num_format($edit_product[$productId]['total_item_value'])])}}" @endif>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -600,6 +587,30 @@ $multiplier = 1;
                                             <!-- /.box-body -->
                                         </div>
                                     </div>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table
+                                        class="table table-condensed table-bordered table-striped pos_table_{{$productId}}">
+                                        <tr>
+                                            <td class="price_cal">
+                                                <div class="pull-right">
+                                                    <b>@lang('sale.item'):</b>
+                                                    <span
+                                                        class="total_quantity_{{$productId}} total_quantity">{{  @num_format($edit_product[$productId]['quantity']) }}</span>
+                                                    &nbsp;&nbsp;&nbsp;&nbsp;
+                                                    <b>@lang('sale.total'): </b>
+                                                    @php
+                                                        $total_item_value = $edit_product[$productId]['total_item_value'];
+                                                        $total_quantity = $edit_product[$productId]['quantity']
+                                                    @endphp
+                                                    <span
+                                                        class="price_totals_{{$productId}} total_prices">${{round($total_item_value * $total_quantity,2)}}</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </table>
+
                                 </div>
                             @endforeach
                         </div>
@@ -1004,18 +1015,18 @@ $multiplier = 1;
                 @endslot
                 <div class="row col-sm-12 pos_product_div" style="min-height: 0">
                     <div class="table-responsive">
-                    <table class="table table-bordered table-striped ajax_view"
-                           id="transaction_activity">
-                        <thead>
-                        <tr>
-                            <th>@lang('lang_v1.date')</th>
-                            <th>@lang('lang_v1.comment')</th>
-                            <th>@lang('lang_v1.user_comment')</th>
-                            <th>@lang('messages.action')</th>
-                        </tr>
-                        </thead>
-                    </table>
-                </div>
+                        <table class="table table-bordered table-striped ajax_view"
+                               id="transaction_activity">
+                            <thead>
+                            <tr>
+                                <th>@lang('lang_v1.date')</th>
+                                <th>@lang('lang_v1.comment')</th>
+                                <th>@lang('lang_v1.user_comment')</th>
+                                <th>@lang('messages.action')</th>
+                            </tr>
+                            </thead>
+                        </table>
+                    </div>
                 </div>
             @endcomponent
         @endif
@@ -1026,14 +1037,15 @@ $multiplier = 1;
                     <div class="box-tools">
                         <button type="button" class="btn btn-block btn-primary btn-modal"
                                 data-href="{{action('MasterController@create')}}"
-                                data-container=".master_list_compensate_add_modals" @if($total_compensate == 0) disabled @endif>
+                                data-container=".master_list_compensate_add_modals"
+                                @if($total_compensate == 0) disabled @endif>
                             <i class="fa fa-plus"></i> @lang( 'master.add_compensate' )</button>
                     </div>
                 @endslot
                 <div class="row col-sm-12 pos_product_div" style="min-height: 0">
                     <div class="table-responsive">
-                            <input type="hidden" id="transaction_id" name="transaction_id" value="{{$transaction->id}}">
-                            @include('master.partials.master_list')
+                        <input type="hidden" id="transaction_id" name="transaction_id" value="{{$transaction->id}}">
+                        @include('master.partials.master_list')
                     </div>
                 </div>
             @endcomponent
@@ -1086,10 +1098,10 @@ $multiplier = 1;
         <script src="{{ asset('js/restaurant.js?v=' . $asset_v) }}"></script>
     @endif
     <script>
-        $('.transaction_activity_add_modals').on('shown.bs.modal', function() {
+        $('.transaction_activity_add_modals').on('shown.bs.modal', function () {
             $('.transaction_activity_add_modals').find('#transaction_ids').val('{{$transaction->id}}');
         });
-        $('.master_list_compensate_add_modals').on('shown.bs.modal', function() {
+        $('.master_list_compensate_add_modals').on('shown.bs.modal', function () {
             $('.master_list_compensate_add_modals').find('#transaction_ids').val('{{$transaction->id}}');
         });
         var transaction_id = $('#transaction_id').val();
@@ -1102,19 +1114,19 @@ $multiplier = 1;
                 [0, 'desc']
             ],
             "ajax": {
-                "url": "/master_list/"+transaction_id,
-                "data": function ( d ) {
-                    if($('#master_list_filter_date_range').val()) {
+                "url": "/master_list/" + transaction_id,
+                "data": function (d) {
+                    if ($('#master_list_filter_date_range').val()) {
                         var start = $('#master_list_filter_date_range').data('daterangepicker').startDate.format('YYYY-MM-DD');
                         var end = $('#master_list_filter_date_range').data('daterangepicker').endDate.format('YYYY-MM-DD');
                         d.start_date = start;
                         d.end_date = end;
                     }
-                    if($('#master_list_type').val()) {
+                    if ($('#master_list_type').val()) {
                         var type = $('#master_list_type').val();
                         d.type = type;
                     }
-                    if($('#master_list_filter_location_id').val()) {
+                    if ($('#master_list_filter_location_id').val()) {
                         var location = $('#master_list_filter_location_id').val();
                         d.location = location;
                     }
@@ -1129,7 +1141,7 @@ $multiplier = 1;
             $('.delivery_dates').datetimepicker({
                 format: moment_date_format + ' ' + moment_time_format,
                 minDate: dtes,
-                widgetPositioning:{
+                widgetPositioning: {
                     horizontal: 'auto',
                     vertical: 'bottom'
                 }

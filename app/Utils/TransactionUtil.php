@@ -151,7 +151,6 @@ class TransactionUtil extends Util
             'additional_expense_key_2' => !empty($input['additional_expense_key_2']) ? $input['additional_expense_key_2'] : null,
             'additional_expense_key_3' => !empty($input['additional_expense_key_3']) ? $input['additional_expense_key_3'] : null,
             'additional_expense_key_4' => !empty($input['additional_expense_key_4']) ? $input['additional_expense_key_4'] : null,
-
         ]);
 
         return $transaction;
@@ -185,6 +184,7 @@ class TransactionUtil extends Util
             $invoice_no = $this->getInvoiceNumber($business_id, $input['status'], $transaction->location_id, $invoice_scheme_id);
         }
         $final_total = $uf_data ? $this->num_uf($input['final_total']) : $input['final_total'];
+        $total = $uf_data ? $this->num_uf($input['total']) : $input['total'];
         $update_date = [
             'status' => $input['status'],
             'invoice_no' => !empty($input['invoice_no']) ? $input['invoice_no'] : $invoice_no,
@@ -196,6 +196,7 @@ class TransactionUtil extends Util
             'discount_amount' => $uf_data ? $this->num_uf($input['discount_amount']) : $input['discount_amount'],
             'tax_amount' => $invoice_total['tax'],
             'final_total' => $final_total,
+            'total' => $total,
             'document' => isset($input['document']) ? $input['document'] : $transaction->document,
             'source' => isset($input['source']) ? $input['source'] : $transaction->source,
             'additional_notes' => !empty($input['sale_note']) ? $input['sale_note'] : null,
@@ -305,15 +306,16 @@ class TransactionUtil extends Util
         foreach ($products as $variationId => $product) {
             //$transaction_sell_lines_id[] = $product['transaction_sell_lines_id'];
             $product_delivery_date = $input['product'][$product['product_id']];
-            foreach ($tra_sell_days as $key => $tra_data) {
-                if ($product['transaction_sell_lines_id'] == $tra_data->id) {
-                    $tra_sell_line_data_new[$tra_data->id] =
-                        [
-                            'delivery_days' => $product_delivery_date['has_purchase_due']
-                        ];
+            if (array_key_exists('has_purchase_due', $product_delivery_date)) {
+                foreach ($tra_sell_days as $key => $tra_data) {
+                    if ($product['transaction_sell_lines_id'] == $tra_data->id) {
+                        $tra_sell_line_data_new[$tra_data->id] =
+                            [
+                                'delivery_days' => $product_delivery_date['has_purchase_due']
+                            ];
+                    }
                 }
             }
-
 
             if (array_key_exists('variation_value_id', $product)) {
                 $variation_value_id[] = $product['variation_value_id'];
@@ -386,6 +388,7 @@ class TransactionUtil extends Util
                 $uf_item_tax = $uf_data ? $this->num_uf($product_delivery_date['item_tax']) : $product_delivery_date['item_tax'];
                 $uf_unit_price_inc_tax = $uf_data ? $this->num_uf($product_delivery_date['unit_price_inc_tax']) : $product_delivery_date['unit_price_inc_tax'];
                 $line_discount_amount = 0;
+                $total_item_value = $product_delivery_date['total'];
                 if (!empty($product_delivery_date['line_discount_amount'])) {
                     $line_discount_amount = $uf_data ? $this->num_uf($product_delivery_date['line_discount_amount']) : $product_delivery_date['line_discount_amount'];
 
@@ -417,7 +420,7 @@ class TransactionUtil extends Util
                     'item_tax' => $uf_item_tax / $multiplier,
                     'tax_id' => $product_delivery_date['tax_id'],
                     //'unit_price_inc_tax' => $uf_unit_price_inc_tax / $multiplier,
-                    'total_item_value' => $input['product'][$product['product_id']]['total'] * $input['product'][$product['product_id']]['quantity'],
+                    'total_item_value' => $total_item_value,
                     'unit_price_inc_tax' => $unit_price,
                     'sell_line_note' => !empty($product['sell_line_note']) ? $product['sell_line_note'] : '',
                     'sub_unit_id' => !empty($product_delivery_date['sub_unit_id']) ? $product_delivery_date['sub_unit_id'] : null,
@@ -489,23 +492,24 @@ class TransactionUtil extends Util
             foreach ($tra_sell_line_day_datas as $day) {
                 $tra_day[] = $day->day;
             }
+            if(array_key_exists($sell_days->id,$tra_sell_line_data_new)){
+                $new_days = $tra_sell_line_data_new[$sell_days->id]['delivery_days'];
+                $old_days = $tra_day;
+                sort($new_days);
+                sort($old_days);
+                $old_value = implode(',', $old_days);
+                $new_value = implode(',', $new_days);
+                // Check for equality
+                if ($new_days != $old_days) {
+                    $master_list = MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_days->id])->first();
 
-            $new_days = $tra_sell_line_data_new[$sell_days->id]['delivery_days'];
-            $old_days = $tra_day;
-            sort($new_days);
-            sort($old_days);
-            $old_value = implode(',', $old_days);
-            $new_value = implode(',', $new_days);
-            // Check for equality
-            if ($new_days != $old_days) {
-                $master_list = MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_days->id])->first();
+                    $date_now = date("Y-m-d");
 
-                $date_now = date("Y-m-d");
-
-                if ($date_now > $master_list->delivery_date) {
-                    $this->transactionDayUpdate($sell_days, $transaction, $new_days, $master_list_less, $master_list_less_id, $input['product'], $old_value, $new_value);
-                } else {
-                    $this->transactionDayUpdate($sell_days, $transaction, $new_days, $master_list_less = 0, $master_list_less_id, $input['product'], $old_value, $new_value);
+                    if ($date_now > $master_list->delivery_date) {
+                        $this->transactionDayUpdate($sell_days, $transaction, $new_days, $master_list_less, $master_list_less_id, $input['product'], $old_value, $new_value);
+                    } else {
+                        $this->transactionDayUpdate($sell_days, $transaction, $new_days, $master_list_less = 0, $master_list_less_id, $input['product'], $old_value, $new_value);
+                    }
                 }
             }
         }
@@ -1761,13 +1765,14 @@ class TransactionUtil extends Util
         if ($transaction_type == 'sell_return') {
             $output['total_label'] = $invoice_layout->cn_amount_label . ':';
             /*$output['total'] = $this->num_f($transaction->final_total, $show_currency, $business_details);*/
-            $output['total'] =  $this->num_f($transaction->total + $transaction->shipping_charges - $discount, $show_currency, $business_details);
+            $output['total'] =  $this->num_f($transaction->total + $transaction->shipping_charges + $transaction->tax_amount - $discount, $show_currency, $business_details);
             $output['final_total'] = $this->num_f($transaction->total, $show_currency, $business_details);
         } else {
             $output['total_label'] = $invoice_layout->total_label . ':';
-            $output['total'] =  $this->num_f($transaction->total + $transaction->shipping_charges - $discount, $show_currency, $business_details);
+            $output['total'] =  $this->num_f($transaction->total + $transaction->shipping_charges + $transaction->tax_amount - $discount, $show_currency, $business_details);
             $output['final_total'] = $this->num_f($transaction->total, $show_currency, $business_details);
         }
+
 
         if (!empty($il->common_settings['show_total_in_words'])) {
             $word_format = isset($il->common_settings['num_to_word_format']) ? $il->common_settings['num_to_word_format'] : 'international';
@@ -2310,7 +2315,9 @@ class TransactionUtil extends Util
                 'line_total' => $this->num_f($line->unit_price_inc_tax * $line->quantity, false, $business_details),
                 'line_total_uf' => $line->unit_price_inc_tax * $line->quantity,
                 'line_total_exc_tax' => $this->num_f($line->unit_price * $line->quantity, false, $business_details),
-                'line_total_exc_tax_uf' => $line->unit_price * $line->quantity
+                'line_total_exc_tax_uf' => $line->unit_price * $line->quantity,
+                'total_item_value' => $this->num_f($line->total_item_value, false, $business_details),
+                'total_item_value_uf' => $line->total_item_value,
             ];
 
             $temp = [];

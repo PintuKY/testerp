@@ -104,8 +104,9 @@
                        class="product_type"
                        name="products[{{$productData->id}}][product_type]"
                        value="{{$productData->product->type}}">
-                @php
 
+
+                @php
                     $hide_tax = 'hide';
                     if(session()->get('business.enable_inline_tax') == 1){
                         $hide_tax = '';
@@ -516,8 +517,6 @@
 
     </tbody>
 </table>
-
-
 <input type="hidden" class="total_item_price" id="total_{{$product_id}}" name="product[{{$product_id}}][total]" value="">
 
 @if(!empty($productData->transaction_sell_lines_id))
@@ -717,7 +716,7 @@
         <td class="price_cal">
             <div class="pull-right">
                 <b>@lang('sale.item'):</b>
-                <span class="total_quantity">0</span>
+                <span class="total_quantity_{{$product_id}} total_quantity">0</span>
                 &nbsp;&nbsp;&nbsp;&nbsp;
                 <b>@lang('sale.total'): </b>
                 <span class="price_total_{{$product_id}} total_prices">$0</span>

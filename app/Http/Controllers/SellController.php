@@ -1335,9 +1335,24 @@ class SellController extends Controller
         $line_taxes = [];
         $product_id = [];
         $product_name = [];
+        $edit_product = [];
         foreach ($sell->sell_lines as $key => $value) {
             $product_id[] = $value->product_id;
             $product_name[] = $value->product->name;
+            $edit_product[$value->product_id] = [
+                'start_date' => $value->start_date,
+                'time_slot' => $value->time_slot,
+                'delivery_date' => $value->delivery_date,
+                'delivery_time' => $value->delivery_time,
+                'unit_value' => $value->unit_value,
+                'quantity' => $value->quantity_ordered,
+                'total_item_value' => $value->total_item_value,
+                'unit' => $value->unit,
+                'unit_id' => $value->unit_id,
+                'default_sell_price' => $value->default_sell_price,
+                'unit_price_before_discount' => $value->unit_price_before_discount,
+            ];
+
             if (!empty($value->sub_unit_id)) {
                 $formated_sell_line = $this->transactionUtil->recalculateSellLineTotals($business_id, $value);
                 $sell->sell_lines[$key] = $formated_sell_line;
@@ -1382,6 +1397,7 @@ class SellController extends Controller
 
         return view('sale_pos.show')
             ->with(compact(
+                'edit_product',
                 'taxes',
                 'sell',
                 'payment_types',
@@ -1554,6 +1570,7 @@ class SellController extends Controller
                 'transaction_sell_lines.id as transaction_sell_lines_id',
                 'transaction_sell_lines.id',
                 'transaction_sell_lines.quantity as quantity_ordered',
+                'transaction_sell_lines.total_item_value as total_item_value',
                 'transaction_sell_lines.sell_line_note as sell_line_note',
                 'transaction_sell_lines.parent_sell_line_id',
                 'transaction_sell_lines.lot_no_line_id',
@@ -1579,7 +1596,6 @@ class SellController extends Controller
         $product_id = [];
         $product_name = [];
         $edit_product = [];
-        //dd($sell_details);
         if (!empty($sell_details)) {
             foreach ($sell_details as $key => $value) {
                 $product_id[] = $value->product_id;
@@ -1590,9 +1606,11 @@ class SellController extends Controller
                     'delivery_time' => $value->delivery_time,
                     'unit_value' => $value->unit_value,
                     'quantity' => $value->quantity_ordered,
+                    'total_item_value' => $value->total_item_value,
                     'unit' => $value->unit,
                     'unit_id' => $value->unit_id,
                     'default_sell_price' => $value->default_sell_price,
+                    'unit_price_before_discount' => $value->unit_price_before_discount,
                 ];
                 $product_name[] = $value->product_actual_name;
                 //If modifier or combo sell line then unset

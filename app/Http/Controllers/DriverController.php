@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Yajra\DataTables\Facades\DataTables;
+use App\Models\KitchenLocation;
 
 class DriverController extends Controller
 {
@@ -53,7 +54,7 @@ class DriverController extends Controller
         Session::put('filter_start_date',$start_date);
         Session::put('filter_end_date',$end_date);
         if (request()->ajax()) {
-            $driver = Driver::with('driverAttendance');
+            $driver = Driver::with('driverAttendance','kitchenLocation');
             if (!empty(request()->driver_name)) {
                 $driver->where('id', request()->driver_name);
             }
@@ -79,6 +80,8 @@ class DriverController extends Controller
                 )->editColumn('driver_type',function ($row){
                     $type = getDriverType($row->driver_type);
                     return $type;
+                })->editColumn('kitchen_location_id',function ($row){
+                    return $row->kitchenLocation->name ?? null;
                 })
                 // ->filterColumn('name', function ($query, $keyword) {
                 //     $query->where('name',, $keyword]);
@@ -100,7 +103,8 @@ class DriverController extends Controller
         if (!auth()->user()->can('driver.create')) {
             abort(403, 'Unauthorized action.');
         }
-        return view('driver.create');
+        $kitchens = KitchenLocation::pluck('name', 'id');
+        return view('driver.create',compact('kitchens'));
     }
 
     /**
@@ -124,10 +128,11 @@ class DriverController extends Controller
             'state' => 'required',
             'country' => 'required',
             'driver_type' => 'required',
+            'kitchen_location_id' => 'required'
         ]);
 
         try {
-            $driver_details = $request->only(['name', 'email','phone','address_line_1','address_line_2','city','state','country','is_active','driver_type']);
+            $driver_details = $request->only(['name', 'email','phone','address_line_1','address_line_2','city','state','country','is_active','driver_type','kitchen_location_id']);
             $driver_details['status'] = !empty($request->input('is_active')) ? $request->input('is_active') : AppConstant::STATUS_INACTIVE;
             $driver = Driver::create($driver_details);
 
@@ -159,6 +164,7 @@ class DriverController extends Controller
         }
 
         $driver = Driver::findOrFail($id);
+        $kitchens = KitchenLocation::pluck('name', 'id');
 
         if ($driver->status == AppConstant::STATUS_ACTIVE) {
             $is_checked_checkbox = true;
@@ -167,7 +173,7 @@ class DriverController extends Controller
         }
 
         return view('driver.edit')
-                ->with(compact('driver', 'is_checked_checkbox'));
+                ->with(compact('driver', 'is_checked_checkbox','kitchens'));
     }
 
     /**
@@ -241,10 +247,11 @@ class DriverController extends Controller
             'state' => 'required',
             'country' => 'required',
             'driver_type' => 'required',
+            'kitchen_location_id' => 'required'
         ]);
 
         try {
-            $driver_details = $request->only(['name', 'email','phone','address_line_1','address_line_2','city','state','country','is_active','driver_type']);
+            $driver_details = $request->only(['name', 'email','phone','address_line_1','address_line_2','city','state','country','is_active','driver_type','kitchen_location_id']);
             $driver_details['status'] = !empty($request->input('is_active')) ? $request->input('is_active') : AppConstant::STATUS_INACTIVE;
             $driver = driver::findOrFail($id);
             $driver->update($driver_details);

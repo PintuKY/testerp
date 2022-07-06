@@ -5086,11 +5086,11 @@ class TransactionUtil extends Util
     public function getListPurchases($business_id)
     {
         $purchases = Transaction::leftJoin('contacts', 'transactions.contact_id', '=', 'contacts.id')
-            ->join(
-                'business_locations AS BS',
+            ->leftJoin(
+                'kitchens_locations',
                 'transactions.location_id',
                 '=',
-                'BS.id'
+                'kitchens_locations.id'
             )
             ->leftJoin(
                 'transaction_payments AS TP',
@@ -5117,7 +5117,7 @@ class TransactionUtil extends Util
                 'transactions.status',
                 'transactions.payment_status',
                 'transactions.final_total',
-                'BS.name as location_name',
+                'kitchens_locations.name as location_name',
                 /*'transactions.pay_term_number',
                 'transactions.pay_term_type',*/
                 'PR.id as return_transaction_id',

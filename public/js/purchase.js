@@ -553,7 +553,7 @@ $(document).ready(function() {
             { data: 'action', name: 'action', orderable: false, searchable: false },
             { data: 'transaction_date', name: 'transaction_date' },
             { data: 'ref_no', name: 'ref_no' },
-            { data: 'location_name', name: 'BS.name' },
+            { data: 'location_name', name: 'location_name' },
             { data: 'name', name: 'contacts.name' },
             { data: 'status', name: 'status' },
             { data: 'payment_status', name: 'payment_status' },

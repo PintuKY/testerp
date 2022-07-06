@@ -49,6 +49,8 @@ class TransactionUtil extends Util
      */
     public function createSellTransaction($contact, $business_id, $input, $invoice_total, $user_id, $uf_data = true)
     {
+
+
         $sale_type = !empty($input['type']) ? $input['type'] : 'sell';
         $invoice_scheme_id = !empty($input['invoice_scheme_id']) ? $input['invoice_scheme_id'] : null;
         $invoice_no = !empty($input['invoice_no']) ? $input['invoice_no'] : $this->getInvoiceNumber($business_id, $input['status'], $input['location_id'], $invoice_scheme_id, $sale_type);
@@ -413,7 +415,8 @@ class TransactionUtil extends Util
                     'line_discount_amount' => $line_discount_amount,
                     'item_tax' => $uf_item_tax / $multiplier,
                     'tax_id' => $product_delivery_date['tax_id'],
-                    'unit_price_inc_tax' => $uf_unit_price_inc_tax / $multiplier,
+                    //'unit_price_inc_tax' => $uf_unit_price_inc_tax / $multiplier,
+                    'unit_price_inc_tax' => $unit_price,
                     'sell_line_note' => !empty($product['sell_line_note']) ? $product['sell_line_note'] : '',
                     'sub_unit_id' => !empty($product_delivery_date['sub_unit_id']) ? $product_delivery_date['sub_unit_id'] : null,
                     'discount_id' => !empty($product['discount_id']) ? $product['discount_id'] : null,
@@ -1265,6 +1268,7 @@ class TransactionUtil extends Util
      */
     public function getReceiptDetails($transaction_id, $location_id, $invoice_layout, $business_details, $location_details, $receipt_printer_type)
     {
+
         $il = $invoice_layout;
 
         $transaction = Transaction::find($transaction_id);

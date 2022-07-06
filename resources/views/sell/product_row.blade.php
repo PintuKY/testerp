@@ -16,6 +16,7 @@
         $hide_tax = 'hide';
     }
 @endphp
+
 <table class="table table-condensed table-bordered table-striped table-responsive product_table pos_table_{{$product_id}}"
        id="pos_table">
     <thead>
@@ -72,8 +73,10 @@
             }
 
         @endphp
-        <tr class="product_row" data-row_index="{{$row_count}}"
+
+        <tr class="product_row product_row_{{$product_id}}" data-productId="{{$product_id}}" data-row_index="{{$row_count}}"
             @if(!empty($so_line)) data-so_id="{{($so_line != '')?$so_line->transaction_id:''}}" @endif>
+
             <td>
                 @if(!empty($so_line))
                     <input type="hidden"
@@ -295,11 +298,11 @@
                 @endforeach
                 <div class="input-group input-number">
                 <span class="input-group-btn"><button type="button"
-                                                      class="btn btn-default btn-flat product-quantity-down"><i
+                                                      class="btn btn-default btn-flat product-quantity-down" data-productId="{{$product_id}}"><i
                             class="fa fa-minus text-danger"></i></button></span>
                     <input type="text" data-min="1"
-                           class="form-control pos_quantity input_number mousetrap input_quantity"
-                           value="{{@format_quantity($productData->quantity_ordered)}}"
+                           class="form-control pos_quantity pos_quantity_{{$product_id}} input_number mousetrap input_quantity"
+                           value="{{@format_quantity($productData->quantity_ordered)}}" data-productId="{{$product_id}}"
                            name="products[{{$productData->id}}][quantity]"
                            data-allow-overselling="@if(empty($pos_settings['allow_overselling'])){{'false'}}@else{{'true'}}@endif"
                            @if($allow_decimal)
@@ -314,7 +317,7 @@
 
                     >
                     <span class="input-group-btn"><button type="button"
-                                                          class="btn btn-default btn-flat product-quantity-up"><i
+                                                          class="btn btn-default btn-flat product-quantity-up" data-productId="{{$product_id}}"><i
                                 class="fa fa-plus text-success"></i></button></span>
                 </div>
 
@@ -362,14 +365,18 @@
                     }
                 @endphp
                 <td class="hide @if(!auth()->user()->can('edit_product_price_from_sale_screen')) hide @endif">
+
+                    <input type="hidden" name="product[{{$product_id}}][unit_prices]" class="form-control product_pos_unit_price" id="product_pos_unit_prices" value="{{@num_format($pos_unit_price)}}">
                     <input type="text" name="products[{{$productData->id}}][unit_price]"
-                           class="form-control product_pos_unit_price input_number mousetrap"
+                           class="form-control product_pos_unit_prices product_pos_unit_prices_{{$product_id}} input_number mousetrap"
                            value="{{@num_format($pos_unit_price)}}"
                            @if(!empty($pos_settings['enable_msp'])) data-rule-min-value="{{$pos_unit_price}}"
                            data-msg-min-value="{{__('lang_v1.minimum_selling_price_error_msg', ['price' => @num_format($pos_unit_price)])}}" @endif>
+
                 </td>
                 <td class="hide" @if(!$edit_discount) class="hide" @endif>
-                    {!! Form::text("products[$productData->id][line_discount_amount]", @num_format($discount_amount), ['class' => 'form-control input_number discount_amount']); !!}
+
+                    <input type="text" name="products[{{$productData->id}}][line_discount_amount]" value="@num_format($discount_amount)" class="form-control input_number discount_amount" data-productId="{{$product_id}}">
                     <br>
                     {!! Form::select("products[$productData->id][line_discount_type]", ['fixed' => __('lang_v1.fixed'), 'percentage' => __('lang_v1.percentage')], $discount_type , ['class' => 'form-control product_row_discount_type']); !!}
                     @if(!empty($discount))
@@ -447,7 +454,7 @@
                     <td class="text-center v-center">
                         <h5>{{$productData->product_variation->variation_template->name}}</h5>
                         <select class="form-control select_variation_value select2" required
-                                name="products[{{$productData->id}}][variation_value_id]">
+                                name="products[{{$productData->id}}][variation_value_id]" data-productId="{{$product_id}}">
                             <option value="">Please Select</option>
                             @foreach ($selected_variation as $key => $product_variation_name_data)
                                 <option value="{{$product_variation_name_data->id}}"
@@ -476,7 +483,7 @@
                         <label class="radio-inline">
                             <input type="radio" class="radio_variation_value"
                                    data-products-variation-id="{{$productData->id}}"
-                                   data-price="{{number_format($product_variation_name_data->default_sell_price,2,'.')}}"
+                                   data-price="{{number_format($product_variation_name_data->default_sell_price,2,'.')}}" data-productId="{{$product_id}}"
                                    name="products[{{$productData->id}}][variation_value_id]"
                                    value="{{$product_variation_name_data->id}}">{{$product_variation_name_data->name}}
                             - ${{number_format($product_variation_name_data->default_sell_price,2,'.')}}
@@ -493,10 +500,10 @@
                     $subtotal_type = !empty($pos_settings['is_pos_subtotal_editable']) ? 'text' : 'hidden';
                 @endphp
                 <input type="{{$subtotal_type}}"
-                       class="form-control pos_line_total @if(!empty($pos_settings['is_pos_subtotal_editable'])) input_number @endif"
+                       class="form-control pos_line_total pos_line_total_{{$product_id}} @if(!empty($pos_settings['is_pos_subtotal_editable'])) input_number @endif"
                        value="{{@num_format($productData->quantity_ordered*$unit_price_inc_tax )}}">
                 <span
-                    class="display_currency pos_line_total_text @if(!empty($pos_settings['is_pos_subtotal_editable'])) hide @endif"
+                    class="display_currency pos_line_total_text pos_line_total_text_{{$product_id}} @if(!empty($pos_settings['is_pos_subtotal_editable'])) hide @endif"
                     data-currency_symbol="true">${{$productData->quantity_ordered*$unit_price_inc_tax}}</span>
             </td>
             <td class="text-center v-center">
@@ -510,6 +517,9 @@
 
     </tbody>
 </table>
+
+
+<input type="hidden" class="total_item_price" id="total_{{$product_id}}" name="product[{{$product_id}}][total]" value="">
 
 @if(!empty($productData->transaction_sell_lines_id))
     <input type="hidden" name="products[{{$productData->id}}][transaction_sell_lines_id]"
@@ -628,10 +638,10 @@
                         <label for="quantity">Quantity:*</label>
                         <div class="input-group input-number">
                 <span class="input-group-btn"><button type="button"
-                                                      class="btn btn-default btn-flat product-quantity-down"><i
+                                                      class="btn btn-default btn-flat product-quantity-down" data-productId="{{$product_id}}"><i
                             class="fa fa-minus text-danger"></i></button></span>
                             <input id="quantity" type="text" data-min="1"
-                                   class="form-control pos_quantity input_number mousetrap input_quantity"
+                                   class="form-control pos_quantity pos_quantity_{{$product_id}} input_number mousetrap input_quantity" data-productId="{{$product_id}}"
                                    value="{{@format_quantity($productData->quantity_ordered)}}"
                                    name="product[{{$product_id}}][quantity]"
                                    data-allow-overselling="@if(empty($pos_settings['allow_overselling'])){{'false'}}@else{{'true'}}@endif"
@@ -647,7 +657,7 @@
 
                             >
                             <span class="input-group-btn"><button type="button"
-                                                                  class="btn btn-default btn-flat product-quantity-up"><i
+                                                                  class="btn btn-default btn-flat product-quantity-up" data-productId="{{$product_id}}"><i
                                         class="fa fa-plus text-success"></i></button></span>
                         </div>
 
@@ -683,11 +693,14 @@
                     <div class="form-group">
                         <label for="unit_price">Unit Price:*</label>
                         <div class="form-group">
-                            <input type="text" name="product[{{$product_id}}][unit_price]"
-                                   class="form-control product_pos_unit_price input_number mousetrap"
+
+                            <input type="hidden" name="product[{{$product_id}}][unit_price]" class="product_pos_unit_price" id="product_pos_unit_prices" value="{{@num_format($pos_unit_price)}}">
+                            <input type="text" name="products[{{$productData->id}}][unit_prices]"
+                                   class="form-control product_pos_unit_prices product_pos_unit_prices_{{$product_id}} input_number mousetrap"
                                    value="{{@num_format($pos_unit_price)}}"
                                    @if(!empty($pos_settings['enable_msp'])) data-rule-min-value="{{$pos_unit_price}}"
                                    data-msg-min-value="{{__('lang_v1.minimum_selling_price_error_msg', ['price' => @num_format($pos_unit_price)])}}" @endif>
+
                         </div>
                     </div>
                 </div>
@@ -700,4 +713,16 @@
 </div>
 
 
-
+<table class="table table-condensed table-bordered table-striped pos_table_{{$product_id}}">
+    <tr>
+        <td class="price_cal">
+            <div class="pull-right">
+                <b>@lang('sale.item'):</b>
+                <span class="total_quantity">0</span>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <b>@lang('sale.total'): </b>
+                <span class="price_total_{{$product_id}} total_prices">$0</span>
+            </div>
+        </td>
+    </tr>
+</table>

@@ -641,7 +641,6 @@ $(document).ready(function () {
         pos_total_row();
     });
     $('table#ingredient_table tbody').on('click', 'i.ing_remove_row', function () {
-        console.log($(this));
         $(this)
             .parents('tr')
             .remove();
@@ -1524,7 +1523,6 @@ $(document).ready(function () {
             suffixKeyCodes: [13], // enter-key expected at the end of a scan
             reactToPaste: true, // Compatibility to built-in scanners in paste-mode (as opposed to keyboard-mode)
             onScan: function (sCode, iQty) {
-                console.log('Scanned: ' + iQty + 'x ' + sCode);
                 $('input#weighing_scale_barcode').val(sCode);
                 $('button#weighing_scale_submit').trigger('click');
             },
@@ -2374,8 +2372,10 @@ function pos_print(receipt) {
 }
 
 $(document).on('click', '.input-number .product-quantity-up, .input-number .product-quantity-down', function () {
+    var product_id = $(this).attr('data-productId');
     let input = $(this).closest('.input-number').find('.pos_quantity');
     let val = parseFloat($(this).closest('.input-number').find('.pos_quantity').val());
+
     let max = parseFloat(input.attr('data-max'));
     let min = parseFloat(input.attr('data-min'));
     let step = 1;
@@ -2395,21 +2395,39 @@ $(document).on('click', '.input-number .product-quantity-up, .input-number .prod
         }
         quantity = val - step;
     }
-    //let posQuantity = $(this).closest('.input-number').find('.pos_quantity').val(quantity);
-    let posQuantity = $('.pos_quantity').val(quantity);
-    productVariationsPriceCalculation($(this));
-    //productVariationsPriceCalculationedit($(this));
+
+
+    let posQuantity = $(this).closest('.input-number').find('.pos_quantity').val(quantity);
+    let posQuantitys = $('.pos_quantity').val(quantity);
+
+    productVariationsPriceCalculation($(this),quantity,product_id);
+
+    let total = $('#total_'+product_id).val();
+    let total_value = total * quantity;
+    $('.price_total_'+product_id).html('$' + total_value);
+    let itemPriceTotal = 0;
+    $('.total_prices').each(function () {
+        var value = $(this).html();
+        value = value.replace("$","");
+        itemPriceTotal += parseFloat(value);
+    });
+    $('#total_item_value').val(itemPriceTotal);
+    $('#final_total_input').val(itemPriceTotal);
 });
 
-function productVariationsPriceCalculation($this) {
-    let unitPrice = parseFloat($this.parents('.product_row').find('.product_pos_unit_price').val());
-    let posQuantity = $this.parents('.product_row').find('.pos_quantity').val();
+function productVariationsPriceCalculation($this,quantity,product_id) {
+    let unitPrice = parseFloat($this.parents('.product_row_'+product_id).find('.product_pos_unit_price').val());
+    let posQuantity = $this.parents('.product_row_'+product_id).find('.pos_quantity').val();
     let subTotal = posQuantity * unitPrice;
+
+  /*  console.log($this.parents('.product_row_'+product_id).find('.pos_quantity'));
+    console.log(posQuantity);
+    console.log(subTotal);*/
 
     let priceTotal = 0;
     let totalQuantity = 0;
-    let rowDiscountType = $this.parents('.product_row').find('select.product_row_discount_type').find('option:selected').val();
-    let rowDiscountAmount = parseFloat($this.parents('.product_row').find('input.discount_amount').val());
+    let rowDiscountType = $this.parents('.product_row_'+product_id).find('select.product_row_discount_type').find('option:selected').val();
+    let rowDiscountAmount = parseFloat($this.parents('.product_row_'+product_id).find('input.discount_amount').val());
     let discountAmount = posQuantity * rowDiscountAmount;
 
     //edit
@@ -2427,119 +2445,85 @@ function productVariationsPriceCalculation($this) {
         }
     }
 
-    if ($this.parents('.product_row').find('.select_variation_value').length && $this.parents('.product_row').find('.select_variation_value').find('option:selected').data('price') !== 'NaN' && $this.parents('.product_row').find('.select_variation_value').find('option:selected').data('price') !== '' && typeof $this.parents('.product_row').find('.select_variation_value').find('option:selected').data('price') !== "undefined") {
-        variationValue = parseFloat($this.parents('.product_row').find('.select_variation_value').find('option:selected').data('price'));
-        $this.parents('.product_row').find('.product_selectd_variation_value').val(variationValue);
-        $this.parents('.product_row').find('.product_selectd_variation_value').html(variationValue);
+    if ($this.parents('.product_row_'+product_id).find('.select_variation_value').length && $this.parents('.product_row_'+product_id).find('.select_variation_value').find('option:selected').data('price') !== 'NaN' && $this.parents('.product_row_'+product_id).find('.select_variation_value').find('option:selected').data('price') !== '' && typeof $this.parents('.product_row_'+product_id).find('.select_variation_value').find('option:selected').data('price') !== "undefined") {
+        variationValue = parseFloat($this.parents('.product_row_'+product_id).find('.select_variation_value').find('option:selected').data('price'));
+        $this.parents('.product_row_'+product_id).find('.product_selectd_variation_value').val(variationValue);
+        $this.parents('.product_row_'+product_id).find('.product_selectd_variation_value').html(variationValue);
     }
-    if ($this.parents('.product_row').find('.radio_variation_value:checked').data('price') !== 'NaN' && $this.parents('.product_row').find('.radio_variation_value:checked').data('price') !== '' && typeof $this.parents('.product_row').find('.radio_variation_value:checked').data('price') !== "undefined") {
-        variationValue = parseFloat($this.parents('.product_row').find('.radio_variation_value:checked').data('price'));
-        $this.parents('.product_row').find('.product_radio_variation_value').val(variationValue);
-        $this.parents('.product_row').find('.product_radio_variation_value').html(variationValue);
+    if ($this.parents('.product_row_'+product_id).find('.radio_variation_value:checked').data('price') !== 'NaN' && $this.parents('.product_row_'+product_id).find('.radio_variation_value:checked').data('price') !== '' && typeof $this.parents('.product_row_'+product_id).find('.radio_variation_value:checked').data('price') !== "undefined") {
+        variationValue = parseFloat($this.parents('.product_row_'+product_id).find('.radio_variation_value:checked').data('price'));
+        $this.parents('.product_row_'+product_id).find('.product_radio_variation_value').val(variationValue);
+        $this.parents('.product_row_'+product_id).find('.product_radio_variation_value').html(variationValue);
     }
     finalAmount = variationValue + subTotal;
     finalAmount_edit = variationValue + subTotal_edit;
-    $this.parents('.product_row').find('.pos_line_total_text').html('$' + finalAmount);
-    $this.find('.pos_line_total_text').html('$' + finalAmount_edit);
-    $this.parents('.product_row').find('input.pos_line_total').val(finalAmount);
-    $this.find('input.pos_line_total').val(finalAmount_edit);
+    $this.parents('.product_row_'+product_id).find('.pos_line_total_text_'+product_id).html('$' + finalAmount);
+    $this.find('.pos_line_total_text_'+product_id).html('$' + finalAmount_edit);
+    $this.parents('.product_row_'+product_id).find('input.pos_line_total_'+product_id).val(finalAmount);
+    $this.find('input.pos_line_total_'+product_id).val(finalAmount_edit);
+
     $('table#pos_table tbody tr').each(function () {
-        priceTotal = priceTotal + __read_number($(this).find('input.pos_line_total'));
+        priceTotal = priceTotal + __read_number($(this).find('input.pos_line_total_'+product_id));
+
     });
     $('table#pos_table tbody tr').each(function () {
-        totalQuantity = totalQuantity + __read_number($(this).find('input.pos_quantity'));
+        totalQuantity = totalQuantity + __read_number($(this).find('input.pos_quantity_'+product_id));
     });
 
-    console.log('var===='+priceTotal);
-    $('.price_cal .price_total').html('$' + priceTotal);
-    $('#total').val(priceTotal);
+
+    $('.price_cal .price_total_'+product_id).html('$' + priceTotal);
+
+    $('#total_'+product_id).val(priceTotal);
+    $('.product_pos_unit_prices').val(priceTotal);
+    let itemPriceTotal = 0;
+    $('.total_prices').each(function () {
+        var value = $(this).html();
+        value = value.replace("$","");
+        itemPriceTotal += parseFloat(value);
+    });
+    $('#total_item_value').val(itemPriceTotal);
+    /*$('.product_pos_unit_price').val(priceTotal);
+    if(quantity){
+        $('#totals').val(priceTotal * quantity);
+    }else{
+        $('#totals').val(priceTotal * 1);
+    }*/
 
     $('.price_totals').html('$' + subTotal_edit);
-
-    //$('.price_cal .total_quantity').html(totalQuantity);
     $('.price_cal .total_quantity').html($('.product_table').length);
-    $('#final_total_input').val(priceTotal);
+    $('#final_total_input').val(itemPriceTotal);
     $('#total_payable').html(priceTotal);
     $('#total_payable').val(priceTotal);
     $('#payment_rows_div').find('.sell-product-payment-amount').html(priceTotal);
     $('#payment_rows_div').find('.sell-product-payment-amount').val(priceTotal);
 }
 
-function productVariationsPriceCalculationedit($this) {
-    let unitPrice = parseFloat($this.parents('.product_row').find('.product_pos_unit_price').val());
-    let posQuantity = $this.parents('.product_row').find('.pos_quantity').val();
-    let subTotal = posQuantity * unitPrice;
 
-    let priceTotal = 0;
-    let totalQuantity = 0;
-    let rowDiscountType = $this.parents('.product_row').find('select.product_row_discount_type').find('option:selected').val();
-    let rowDiscountAmount = parseFloat($this.parents('.product_row').find('input.discount_amount').val());
-    let discountAmount = posQuantity * rowDiscountAmount;
-
-    var variationValue = 0;
-    if (rowDiscountAmount > 0) {
-        if (rowDiscountType == 'fixed') {
-            subTotal = subTotal - discountAmount;
-        } else {
-            subTotal = (subTotal * rowDiscountAmount) / 100;
-        }
-    }
-
-    if ($this.parents('.product_row').find('.select_variation_value').length && $this.parents('.product_row').find('.select_variation_value').find('option:selected').data('price') !== 'NaN' && $this.parents('.product_row').find('.select_variation_value').find('option:selected').data('price') !== '' && typeof $this.parents('.product_row').find('.select_variation_value').find('option:selected').data('price') !== "undefined") {
-        variationValue = parseFloat($this.parents('.product_row').find('.select_variation_value').find('option:selected').data('price'));
-        $this.parents('.product_row').find('.product_selectd_variation_value').val(variationValue);
-        $this.parents('.product_row').find('.product_selectd_variation_value').html(variationValue);
-    }
-    if ($this.parents('.product_row').find('.radio_variation_value:checked').data('price') !== 'NaN' && $this.parents('.product_row').find('.radio_variation_value:checked').data('price') !== '' && typeof $this.parents('.product_row').find('.radio_variation_value:checked').data('price') !== "undefined") {
-        variationValue = parseFloat($this.parents('.product_row').find('.radio_variation_value:checked').data('price'));
-        $this.parents('.product_row').find('.product_radio_variation_value').val(variationValue);
-        $this.parents('.product_row').find('.product_radio_variation_value').html(variationValue);
-    }
-    finalAmount = variationValue + subTotal;
-    $this.parents('.product_row').find('.pos_line_total_text').html('$' + finalAmount);
-    $this.find('.pos_line_total_text').html('$' + finalAmount_edit);
-    $this.parents('.product_row').find('input.pos_line_total').val(finalAmount);
-    $this.find('input.pos_line_total').val(finalAmount_edit);
-    $('table#pos_table tbody tr').each(function () {
-        priceTotal = priceTotal + __read_number($(this).find('input.pos_line_total'));
-    });
-    $('table#pos_table tbody tr').each(function () {
-        totalQuantity = totalQuantity + __read_number($(this).find('input.pos_quantity'));
-    });
-
-    console.log('var===='+priceTotal);
-    $('.price_cal .price_total').html('$' + priceTotal);
-    $('#total').val(priceTotal);
-
-    $('.price_totals').html('$' + subTotal);
-
-    //$('.price_cal .total_quantity').html(totalQuantity);
-    $('.price_cal .total_quantity').html($('.product_table').length);
-    $('#final_total_input').val(priceTotal);
-    $('#total_payable').html(priceTotal);
-    $('#total_payable').val(priceTotal);
-    $('#payment_rows_div').find('.sell-product-payment-amount').html(priceTotal);
-    $('#payment_rows_div').find('.sell-product-payment-amount').val(priceTotal);
-}
 
 $(document).on('change', '.product_row .pos_quantity', function (e) {
-    productVariationsPriceCalculation($(this));
+    var product_id = $(this).attr('data-productId');
+    productVariationsPriceCalculation($(this),'',product_id);
 });
 
 $(document).on('change', '.product_row .select_variation_value', function (e) {
-    productVariationsPriceCalculation($(this));
+    var product_id = $(this).attr('data-productId');
+    productVariationsPriceCalculation($(this),'',product_id);
 });
 
 $(document).on('change', '.product_row .radio_variation_value', function (e) {
-    productVariationsPriceCalculation($(this));
+    var product_id = $(this).attr('data-productId');
+    productVariationsPriceCalculation($(this),'',product_id);
 });
 
 $(document).on('change', '.product_row .discount_amount', function (e) {
-    productVariationsPriceCalculation($(this));
+    var product_id = $(this).attr('data-productId');
+    productVariationsPriceCalculation($(this),'',product_id);
 });
 
 $(document).on('change', '.product_row .product_pos_unit_price', function (e) {
-    productVariationsPriceCalculation($(this));
+    alert('unit');
+    var product_id = $(this).attr('data-productId');
+    productVariationsPriceCalculation($(this),'',product_id);
 });
 
 
@@ -2547,22 +2531,21 @@ $(window).on("load", function () {
     let priceTotal = 0;
     let priceTotals = 0;
     $('.product_row').each(function () {
-        let posLineTotal = parseFloat($(this).find('.pos_line_total').val());
-        let posLineTotals = parseFloat($(this).find('.pos_line_totals').val().replace('$', ''));
-
+        var product_id = $(this).attr('data-productId');
+        alert(product_id);
+        let posLineTotal = parseFloat($(this).find('.pos_line_total_'+product_id).val());
+        let posLineTotals = parseFloat($(this).find('.pos_line_totals_'+product_id).val().replace('$', ''));
         let productVariationValue = parseFloat($(this).find('.product_variation_value').val());
         let sum = posLineTotal + productVariationValue;
         let sums = posLineTotals;
-        $(this).find('.pos_line_total').val(sum);
-        $(this).find('.pos_line_total_text').html(sum);
+        $(this).find('.pos_line_total_'+product_id).val(sum);
+        $(this).find('.pos_line_total_text_'+product_id).html(sum);
 
         priceTotal += sum
         priceTotals += sums
     });
-    console.log('var1====='+priceTotals);
     $('.price_total').html('$' + priceTotal);
     $('#total').val(priceTotal);
-    $('#total').val(priceTotals);
     var quantity = $('.pos_quantity').val();
     var total_value = (priceTotals * parseInt(quantity));
     $('.price_totals').html('$' + total_value);
@@ -3309,7 +3292,6 @@ function get_contact_due(id) {
 
 function submitQuickContactForm(form) {
     var data = $(form).serialize();
-    console.log(data);
     $.ajax({
         method: 'POST',
         url: $(form).attr('action'),

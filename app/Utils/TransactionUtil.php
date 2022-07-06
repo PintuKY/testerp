@@ -51,6 +51,7 @@ class TransactionUtil extends Util
     {
 
 
+
         $sale_type = !empty($input['type']) ? $input['type'] : 'sell';
         $invoice_scheme_id = !empty($input['invoice_scheme_id']) ? $input['invoice_scheme_id'] : null;
         $invoice_no = !empty($input['invoice_no']) ? $input['invoice_no'] : $this->getInvoiceNumber($business_id, $input['status'], $input['location_id'], $invoice_scheme_id, $sale_type);
@@ -76,6 +77,7 @@ class TransactionUtil extends Util
             'discount_type' => !empty($input['discount_type']) ? $input['discount_type'] : null,
             'discount_amount' => $uf_data ? $this->num_uf($input['discount_amount']) : $input['discount_amount'],
             'tax_amount' => $invoice_total['tax'],
+            //'final_total' => $final_total,
             'final_total' => $final_total,
             'total' => $input['total'],
             'additional_notes' => !empty($input['sale_note']) ? $input['sale_note'] : null,
@@ -402,7 +404,6 @@ class TransactionUtil extends Util
                     $start_date = Carbon::parse($product_delivery_date['start_date'])->format('Y-m-d H:i');
                     $time_slot = $product_delivery_date['time_slot'];
                 }
-
                 $line = [
                     'product_name' => $product_data->name,
                     'product_id' => $product['product_id'],
@@ -416,6 +417,7 @@ class TransactionUtil extends Util
                     'item_tax' => $uf_item_tax / $multiplier,
                     'tax_id' => $product_delivery_date['tax_id'],
                     //'unit_price_inc_tax' => $uf_unit_price_inc_tax / $multiplier,
+                    'total_item_value' => $input['product'][$product['product_id']]['total'] * $input['product'][$product['product_id']]['quantity'],
                     'unit_price_inc_tax' => $unit_price,
                     'sell_line_note' => !empty($product['sell_line_note']) ? $product['sell_line_note'] : '',
                     'sub_unit_id' => !empty($product_delivery_date['sub_unit_id']) ? $product_delivery_date['sub_unit_id'] : null,
@@ -1679,7 +1681,8 @@ class TransactionUtil extends Util
 
         //Subtotal
         $output['subtotal_label'] = $il->sub_total_label . ':';
-        $output['subtotal'] = ($transaction->total_before_tax != 0) ? $this->num_f($transaction->total_before_tax, $show_currency, $business_details) : 0;
+        $output['subtotal'] = ($transaction->total != 0) ? $this->num_f($transaction->total, $show_currency, $business_details) : 0;
+
         $output['subtotal_unformatted'] = ($transaction->total_before_tax != 0) ? $transaction->total_before_tax : 0;
 
         //round off
@@ -1754,14 +1757,16 @@ class TransactionUtil extends Util
         $output['packing_charge'] = ($transaction->packing_charge != 0) ? $this->num_f($transaction->packing_charge, $show_currency, $business_details) : 0;
 
         //Total
+
         if ($transaction_type == 'sell_return') {
             $output['total_label'] = $invoice_layout->cn_amount_label . ':';
-            $output['total'] = $this->num_f($transaction->total, $show_currency, $business_details);
-            $output['final_total'] = $this->num_f($transaction->final_total, $show_currency, $business_details);
+            /*$output['total'] = $this->num_f($transaction->final_total, $show_currency, $business_details);*/
+            $output['total'] =  $this->num_f($transaction->total + $transaction->shipping_charges - $discount, $show_currency, $business_details);
+            $output['final_total'] = $this->num_f($transaction->total, $show_currency, $business_details);
         } else {
             $output['total_label'] = $invoice_layout->total_label . ':';
-            $output['total'] = $this->num_f($transaction->total, $show_currency, $business_details);
-            $output['final_total'] = $this->num_f($transaction->final_total, $show_currency, $business_details);
+            $output['total'] =  $this->num_f($transaction->total + $transaction->shipping_charges - $discount, $show_currency, $business_details);
+            $output['final_total'] = $this->num_f($transaction->total, $show_currency, $business_details);
         }
 
         if (!empty($il->common_settings['show_total_in_words'])) {
@@ -4166,7 +4171,8 @@ class TransactionUtil extends Util
             'discount_type' => $input['discount_type'],
             'discount_amount' => $this->num_uf($input['discount_amount']),
             'tax_amount' => $invoice_total['tax'],
-            'final_total' => $this->num_uf($input['final_total']),
+            //'final_total' => $this->num_uf($input['final_total']),
+            'final_total' => $this->num_uf($input['total']),
             'additional_notes' => !empty($input['additional_notes']) ? $input['additional_notes'] : null,
             'created_by' => $user_id,
             'is_quotation' => isset($input['is_quotation']) ? $input['is_quotation'] : 0

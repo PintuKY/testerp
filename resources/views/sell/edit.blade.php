@@ -33,7 +33,7 @@ $multiplier = 1;
         {!! Form::open(['url' => action('SellPosController@update',  $transaction->id ), 'method' => 'put', 'id' => 'edit_sell_form', 'files' => true ]) !!}
 
         {!! Form::hidden('location_id', $transaction->location_id, ['id' => 'location_id', 'data-receipt_printer_type' => !empty($location_printer_type) ? $location_printer_type : 'browser', 'data-default_payment_accounts' => $transaction->location->default_payment_accounts]); !!}
-
+        <input type="hidden" name="total" value="{{$transaction->total}}" id="total_item_value">
         @if($transaction->type == 'sales_order')
             <input type="hidden" id="sale_type" value="{{$transaction->type}}">
         @endif
@@ -361,7 +361,6 @@ $multiplier = 1;
                                     </thead>
                                     <tbody>
                                     @foreach($sell_details as $sell_line)
-
                                         @if($sell_line->product_id == $productId)
                                             @php
 
@@ -417,11 +416,31 @@ $multiplier = 1;
                                                 @endif
                                             @endif
 
-                                            @include('sell.product_row_edit', ['product' => $sell_line, 'row_count' => $loop->index, 'tax_dropdown' => $taxes, 'sub_units' => !empty($sell_line->unit_details) ? $sell_line->unit_details : [], 'action' => 'edit', 'is_direct_sell' => true, 'so_line' => $sell_line->so_line, 'is_sales_order' => $transaction->type == 'sales_order'])
+                                            @include('sell.product_row_edit', ['product' => $sell_line, 'row_count' => $loop->index, 'tax_dropdown' => $taxes, 'sub_units' => !empty($sell_line->unit_details) ? $sell_line->unit_details : [], 'action' => 'edit', 'is_direct_sell' => true, 'so_line' => $sell_line->so_line, 'is_sales_order' => $transaction->type == 'sales_order','pid'=>$productId])
                                         @endif
+
+                                        <input type="hidden" class="total_item_price" id="total_{{$productId}}" name="product[{{$productId}}][total]" value="">
+
                                     @endforeach
                                     </tbody>
                                 </table>
+
+                                <div class="table-responsive">
+                                    <table class="table table-condensed table-bordered table-striped pos_table_{{$productId}}">
+                                        <tr>
+                                            <td class="price_cal">
+                                                <div class="pull-right">
+                                                    <b>@lang('sale.item'):</b>
+                                                    <span class="total_quantity">{{$product_count}}</span>
+                                                    &nbsp;&nbsp;&nbsp;&nbsp;
+                                                    <b>@lang('sale.total'): </b>
+                                                    <span class="price_totals_{{$productId}} total_prices price_totals">$0</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </table>
+
+                                </div>
                                 <div class="row pos_table_{{$productId}}">
                                     <div class="col-md-12 col-sm-12">
                                         <div class="box box-solid">
@@ -519,10 +538,12 @@ $multiplier = 1;
                                                         <label for="quantity">Quantity:*</label>
                                                         <div class="input-group input-number">
                 <span class="input-group-btn"><button type="button"
-                                                      class="btn btn-default btn-flat product-quantity-down"><i
+                                                      class="btn btn-default btn-flat product-quantity-down"
+                                                      data-productId="{{$productId}}"><i
                             class="fa fa-minus text-danger"></i></button></span>
                                                             <input id="quantity" type="text" data-min="1"
                                                                    class="form-control pos_quantity input_number mousetrap input_quantity"
+                                                                   data-productId="{{$productId}}"
                                                                    value="{{@format_quantity($edit_product[$productId]['quantity'])}}"
                                                                    name="product[{{$productId}}][quantity]"
                                                                    data-allow-overselling="@if(empty($pos_settings['allow_overselling'])){{'false'}}@else{{'true'}}@endif"
@@ -538,7 +559,7 @@ $multiplier = 1;
 
                                                             >
                                                             <span class="input-group-btn"><button type="button"
-                                                                                                  class="btn btn-default btn-flat product-quantity-up"><i
+                                                                                                  data-productId="{{$productId}}" class="btn btn-default btn-flat product-quantity-up"><i
                                                                         class="fa fa-plus text-success"></i></button></span>
                                                         </div>
 
@@ -583,21 +604,7 @@ $multiplier = 1;
                             @endforeach
                         </div>
 
-                        <div class="table-responsive">
-                            <table class="table table-condensed table-bordered table-striped table-responsive">
-                                <tr>
-                                    <td>
-                                        <div class="pull-right">
-                                            <b>@lang('sale.item'):</b>
-                                            <span class="total_quantitys">{{$product_count}}</span>
-                                            &nbsp;&nbsp;&nbsp;&nbsp;
-                                            <b>@lang('sale.total'): </b>
-                                            <span class="price_totals">$0</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
+
                     </div>
                 @endcomponent
                 @component('components.widget', ['class' => 'box-solid'])
@@ -622,6 +629,7 @@ $multiplier = 1;
 			                <span class="input-group-addon">
 			                    <i class="fa fa-info"></i>
 			                </span>
+
                                 {!! Form::text('discount_amount', @num_format($transaction->discount_amount), ['class' => 'form-control input_number', 'data-default' => $business_details->default_sales_discount, 'data-max-discount' => $max_discount, 'data-max-discount-error_msg' => __('lang_v1.max_discount_error_msg', ['discount' => $max_discount != '' ? @num_format($max_discount) : '']) ]); !!}
                             </div>
                         </div>

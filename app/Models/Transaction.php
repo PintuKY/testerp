@@ -62,7 +62,7 @@ class Transaction extends Model
 
     public function location()
     {
-        return $this->belongsTo(\App\Models\BusinessLocation::class, 'location_id');
+        return $this->belongsTo(\App\Models\KitchenLocation::class, 'location_id');
     }
 
     public function business()

@@ -2373,9 +2373,9 @@ function pos_print(receipt) {
 
 $(document).on('click', '.input-number .product-quantity-up, .input-number .product-quantity-down', function () {
     var product_id = $(this).attr('data-productId');
+
     let input = $(this).closest('.input-number').find('.pos_quantity');
     let val = parseFloat($(this).closest('.input-number').find('.pos_quantity').val());
-
     let max = parseFloat(input.attr('data-max'));
     let min = parseFloat(input.attr('data-min'));
     let step = 1;
@@ -2396,15 +2396,16 @@ $(document).on('click', '.input-number .product-quantity-up, .input-number .prod
         quantity = val - step;
     }
 
-
     let posQuantity = $(this).closest('.input-number').find('.pos_quantity').val(quantity);
     let posQuantitys = $('.pos_quantity').val(quantity);
-
+alert(quantity);
+alert($('#total_'+product_id).val());
     productVariationsPriceCalculation($(this),quantity,product_id);
 
     let total = $('#total_'+product_id).val();
     let total_value = total * quantity;
     $('.price_total_'+product_id).html('$' + total_value);
+    $('.price_totals_'+product_id).html('$' + total_value);
     let itemPriceTotal = 0;
     $('.total_prices').each(function () {
         var value = $(this).html();
@@ -2482,13 +2483,6 @@ function productVariationsPriceCalculation($this,quantity,product_id) {
         itemPriceTotal += parseFloat(value);
     });
     $('#total_item_value').val(itemPriceTotal);
-    /*$('.product_pos_unit_price').val(priceTotal);
-    if(quantity){
-        $('#totals').val(priceTotal * quantity);
-    }else{
-        $('#totals').val(priceTotal * 1);
-    }*/
-
     $('.price_totals').html('$' + subTotal_edit);
     $('.price_cal .total_quantity').html($('.product_table').length);
     $('#final_total_input').val(itemPriceTotal);
@@ -2521,7 +2515,6 @@ $(document).on('change', '.product_row .discount_amount', function (e) {
 });
 
 $(document).on('change', '.product_row .product_pos_unit_price', function (e) {
-    alert('unit');
     var product_id = $(this).attr('data-productId');
     productVariationsPriceCalculation($(this),'',product_id);
 });
@@ -2532,19 +2525,22 @@ $(window).on("load", function () {
     let priceTotals = 0;
     $('.product_row').each(function () {
         var product_id = $(this).attr('data-productId');
-        alert(product_id);
         let posLineTotal = parseFloat($(this).find('.pos_line_total_'+product_id).val());
-        let posLineTotals = parseFloat($(this).find('.pos_line_totals_'+product_id).val().replace('$', ''));
+        let posLineTotals = parseFloat($(this).find('.pos_line_totals').val().replace('$', ''));
         let productVariationValue = parseFloat($(this).find('.product_variation_value').val());
         let sum = posLineTotal + productVariationValue;
         let sums = posLineTotals;
         $(this).find('.pos_line_total_'+product_id).val(sum);
         $(this).find('.pos_line_total_text_'+product_id).html(sum);
 
+        $(this).find('.pos_line_totals_'+product_id).val(sums);
+        $(this).find('.pos_line_total_texts_'+product_id).html(sums);
+
         priceTotal += sum
         priceTotals += sums
     });
     $('.price_total').html('$' + priceTotal);
+    $('.price_totals').html('$' + priceTotals);
     $('#total').val(priceTotal);
     var quantity = $('.pos_quantity').val();
     var total_value = (priceTotals * parseInt(quantity));

@@ -47,9 +47,9 @@
                 </td>
             @endif
 
-            <td>
+           <td>
                 <span class="display_currency"
-                      data-currency_symbol="true">{{ $sell_line->transactionSellLinesVariants[0]->value }}</span>
+                      data-currency_symbol="true">{{  ($sell_line->transactionSellLinesVariants->isNotEmpty()) ? $sell_line->transactionSellLinesVariants[0]->value : '0'}}</span>
             </td>
         </tr>
             @endif
@@ -87,7 +87,7 @@
                     </td>
                     <td>
                         <span class="display_currency"
-                              data-currency_symbol="true">{{ $sell_line->transactionSellLineVarisants[0]->value }}</span>
+                              data-currency_symbol="true">{{  ($sell_line->transactionSellLinesVariants->isNotEmpty()) ? $sell_line->transactionSellLinesVariants[0]->value : '0' }}</span>
                     </td>
                 </tr>
             @endforeach

@@ -56,11 +56,10 @@
         @endphp
         <input type="hidden" id="item_addition_method" value="{{$business_details->item_addition_method}}">
         {!! Form::open(['url' => action('SellPosController@store'), 'method' => 'post', 'id' => 'add_sell_form', 'files' => true ]) !!}
+        <input type="hidden" name="total" value="" id="total_item_value">
         @if(!empty($sale_type))
             <input type="hidden" id="sale_type" name="type" value="{{$sale_type}}">
         @endif
-
-        <input type="hidden" class="total" id="total" name="total" value="">
         <div class="row">
             <div class="col-md-12 col-sm-12">
                 @component('components.widget', ['class' => 'box-solid'])
@@ -343,6 +342,7 @@
 
                         <!-- Keeps count of product rows -->
                         <input type="hidden" id="product_row_count" value="0">
+                        <input type="hidden" class="totals" id="totals" name="totals" value="">
                         @php
                             $hide_tax = '';
                             if( session()->get('business.enable_inline_tax') == 0){
@@ -351,21 +351,7 @@
                         @endphp
                         <div class="table-responsive pos">
                             </div>
-                        <div class="table-responsive">
-                            <table class="table table-condensed table-bordered table-striped">
-                                <tr>
-                                    <td class="price_cal">
-                                        <div class="pull-right">
-                                            <b>@lang('sale.item'):</b>
-                                            <span class="total_quantity">0</span>
-                                            &nbsp;&nbsp;&nbsp;&nbsp;
-                                            <b>@lang('sale.total'): </b>
-                                            <span class="price_total">$0</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
+
                     </div>
                 @endcomponent
                 @component('components.widget', ['class' => 'box-solid'])

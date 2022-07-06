@@ -361,7 +361,7 @@
                 @php
                   $total_paid = (string) $total_paid;
                 @endphp
-                <span class="display_currency pull-right" data-currency_symbol="true" >{{ $sell->final_total - $total_paid }}</span></td>
+                <span class="display_currency pull-right" data-currency_symbol="true" >{{ $sell->total - $total_paid }}</span></td>
             </tr>
             @endif
           </table>

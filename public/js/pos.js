@@ -1214,14 +1214,14 @@ $(document).ready(function () {
             vertical: 'bottom'
         }
     });
-    $('.start_date').datetimepicker({
+    /*$('.start_date').datetimepicker({
         format: moment_date_format + ' ' + moment_time_format,
         minDate:$('.startDate').val(),
         widgetPositioning:{
             horizontal: 'auto',
             vertical: 'bottom'
         }
-    });
+    });*/
 
 
     menu_form = $('form#add_menu_form');
@@ -1940,9 +1940,10 @@ function pos_total_row() {
     $('span#shipping_charges_amount').text(
         __currency_trans_from_en(__read_number($('input#shipping_charges_modal')), false)
     );
-    $('span.total_quantity').each(function () {
+
+    /*$('span.total_quantity').each(function () {
         $(this).html(__number_f($('.product_table').length));
-    });
+    });*/
 
     //$('span.unit_price_total').html(unit_price_total);
     $('span.price_total').html('$' + __currency_trans_from_en(price_total, false));
@@ -2202,6 +2203,9 @@ function reset_pos_form() {
     if ($('.delivery_date').length > 0) {
         $('.delivery_date').data("DateTimePicker").date(moment());
     }
+    if ($('.startDate').length > 0) {
+        $('.startDate').data("DateTimePicker").date(moment());
+    }
     if ($('.start_date').length > 0) {
         $('.start_date').data("DateTimePicker").date(moment());
     }
@@ -2374,8 +2378,8 @@ function pos_print(receipt) {
 $(document).on('click', '.input-number .product-quantity-up, .input-number .product-quantity-down', function () {
     var product_id = $(this).attr('data-productId');
 
-    let input = $(this).closest('.input-number').find('.pos_quantity');
-    let val = parseFloat($(this).closest('.input-number').find('.pos_quantity').val());
+    let input = $(this).closest('.input-number').find('.pos_quantity_'+product_id);
+    let val = parseFloat($(this).closest('.input-number').find('.pos_quantity_'+product_id).val());
     let max = parseFloat(input.attr('data-max'));
     let min = parseFloat(input.attr('data-min'));
     let step = 1;
@@ -2396,10 +2400,8 @@ $(document).on('click', '.input-number .product-quantity-up, .input-number .prod
         quantity = val - step;
     }
 
-    let posQuantity = $(this).closest('.input-number').find('.pos_quantity').val(quantity);
-    let posQuantitys = $('.pos_quantity').val(quantity);
-alert(quantity);
-alert($('#total_'+product_id).val());
+    let posQuantity = $(this).closest('.input-number').find('.pos_quantity_'+product_id).val(quantity);
+    let posQuantitys = $('.pos_quantity_'+product_id).val(quantity);
     productVariationsPriceCalculation($(this),quantity,product_id);
 
     let total = $('#total_'+product_id).val();
@@ -2414,11 +2416,12 @@ alert($('#total_'+product_id).val());
     });
     $('#total_item_value').val(itemPriceTotal);
     $('#final_total_input').val(itemPriceTotal);
+    $('.price_cal .total_quantity_'+product_id).html($('.pos_quantity_'+product_id).val());
 });
 
 function productVariationsPriceCalculation($this,quantity,product_id) {
     let unitPrice = parseFloat($this.parents('.product_row_'+product_id).find('.product_pos_unit_price').val());
-    let posQuantity = $this.parents('.product_row_'+product_id).find('.pos_quantity').val();
+    let posQuantity = $this.parents('.product_row_'+product_id).find('.pos_quantity_'+product_id).val();
     let subTotal = posQuantity * unitPrice;
 
   /*  console.log($this.parents('.product_row_'+product_id).find('.pos_quantity'));
@@ -2474,8 +2477,10 @@ function productVariationsPriceCalculation($this,quantity,product_id) {
 
     $('.price_cal .price_total_'+product_id).html('$' + priceTotal);
 
-    $('#total_'+product_id).val(priceTotal);
     $('.product_pos_unit_prices').val(priceTotal);
+
+
+    $('#total_'+product_id).val($('.product_pos_unit_prices_'+product_id).val());
     let itemPriceTotal = 0;
     $('.total_prices').each(function () {
         var value = $(this).html();
@@ -2484,7 +2489,9 @@ function productVariationsPriceCalculation($this,quantity,product_id) {
     });
     $('#total_item_value').val(itemPriceTotal);
     $('.price_totals').html('$' + subTotal_edit);
-    $('.price_cal .total_quantity').html($('.product_table').length);
+    //$('.price_cal .total_quantity').html($('.product_table').length);
+    $('.price_cal .total_quantity_'+product_id).html($('.pos_quantity_'+product_id).val());
+
     $('#final_total_input').val(itemPriceTotal);
     $('#total_payable').html(priceTotal);
     $('#total_payable').val(priceTotal);
@@ -2539,12 +2546,12 @@ $(window).on("load", function () {
         priceTotal += sum
         priceTotals += sums
     });
-    $('.price_total').html('$' + priceTotal);
-    $('.price_totals').html('$' + priceTotals);
+    $('.price_total').html('$' + priceTotal);/*
+    $('.price_totals').html('$' + priceTotals);*/
     $('#total').val(priceTotal);
     var quantity = $('.pos_quantity').val();
     var total_value = (priceTotals * parseInt(quantity));
-    $('.price_totals').html('$' + total_value);
+    /*$('.price_totals').html('$' + total_value);*/
 
 
 });

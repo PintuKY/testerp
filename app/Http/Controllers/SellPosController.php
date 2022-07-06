@@ -298,6 +298,7 @@ class SellPosController extends Controller
      */
     public function store(Request $request)
     {
+
         if (!auth()->user()->can('sell.create') && !auth()->user()->can('direct_sell.access') && !auth()->user()->can('so.create') ) {
             abort(403, 'Unauthorized action.');
         }
@@ -683,6 +684,18 @@ class SellPosController extends Controller
 
         $receipt_details = $this->transactionUtil->getReceiptDetails($transaction_id, $location_id, $invoice_layout, $business_details, $location_details, $receipt_printer_type);
 
+
+        $unique_array = [];
+        $edit_product = [];
+        foreach($receipt_details->lines as $element) {
+            $hash = $element['product_id'];
+            $unique_array[$hash] = $element;
+            $edit_product[$element['product_id']] = [
+                'quantity' => $element['quantity_uf'],
+                'total_item_value' =>  $element['total_item_value'],
+            ];
+        }
+        $total_sell = array_values($unique_array);
         $currency_details = [
             'symbol' => $business_details->currency_symbol,
             'thousand_separator' => $business_details->thousand_separator,
@@ -698,7 +711,7 @@ class SellPosController extends Controller
         } else {
             $layout = !empty($receipt_details->design) ? 'sale_pos.receipts.' . $receipt_details->design : 'sale_pos.receipts.classic';
 
-            $output['html_content'] = view($layout, compact('receipt_details'))->render();
+            $output['html_content'] = view($layout, compact('edit_product','receipt_details','total_sell'))->render();
         }
 
         return $output;
@@ -1070,7 +1083,7 @@ class SellPosController extends Controller
                                 'discount_amount' => $input['discount_amount']
                             ];
                 $invoice_total = $this->productUtil->calculateInvoiceTotal($discount,$input['products'], $input['product'],$input['tax_rate_id'],$input['total']);
-                dd('aaa');
+
                 if (!empty($request->input('transaction_date'))) {
                     $input['transaction_date'] = $this->productUtil->uf_date($request->input('transaction_date'), true);
                 }

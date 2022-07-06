@@ -488,7 +488,7 @@
 						{!! $receipt_details->subtotal_label !!}
 					</td>
 					<td class="text-right">
-                        {{$receipt_details->total}}
+                        {{$receipt_details->final_total}}
 					</td>
 				</tr>
 				<!-- Shipping Charges -->
@@ -616,7 +616,7 @@
 						{!! $receipt_details->total_label !!}
 					</th>
 					<td class="text-right font-23 padding-10" style="background-color: #357ca5 !important; color: white !important">
-						{{$receipt_details->final_total}}
+						{{$receipt_details->total}}
 					</td>
 				</tr>
 				@if(!empty($receipt_details->total_in_words))

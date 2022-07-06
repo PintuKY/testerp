@@ -556,8 +556,9 @@ class ProductUtil extends Util
      *
      * @return Mixed (false, array)
      */
-    public function calculateInvoiceTotal($discount,$products,$products_line, $tax_id,$uf_number = true)
+    public function calculateInvoiceTotal($discount,$products,$products_line, $tax_id,$total,$uf_number = true)
     {
+
 
         if (empty($products)) {
             return false;
@@ -569,10 +570,12 @@ class ProductUtil extends Util
 
             $product_line = $products_line[$product['product_id']];
 
-            $unit_price_inc_tax = $uf_number ? $this->num_uf($product_line['unit_price_inc_tax']) : $product_line['unit_price_inc_tax'];
+            /*$unit_price_inc_tax = $uf_number ? $this->num_uf($product_line['unit_price_inc_tax']) : $product_line['unit_price_inc_tax'];*/
+            $unit_price_inc_tax = $uf_number ? $this->num_uf($product_line['total']) : $product_line['total'];
             $quantity = $uf_number ? $this->num_uf($product_line['quantity']) : $product_line['quantity'];
 
-            $output['total_before_tax'] += $quantity * $unit_price_inc_tax;
+            //$output['total_before_tax'] += $quantity * $unit_price_inc_tax;
+            $output['total_before_tax'] = $unit_price_inc_tax;
 
 
             //Add modifier price to total if exists

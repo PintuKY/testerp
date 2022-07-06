@@ -298,11 +298,9 @@ class SellPosController extends Controller
      */
     public function store(Request $request)
     {
-        //dd($request->all());
         if (!auth()->user()->can('sell.create') && !auth()->user()->can('direct_sell.access') && !auth()->user()->can('so.create') ) {
             abort(403, 'Unauthorized action.');
         }
-
         $is_direct_sale = false;
         if (!empty($request->input('is_direct_sale'))) {
             $is_direct_sale = true;
@@ -357,8 +355,7 @@ class SellPosController extends Controller
                 $discount = ['discount_type' => $input['discount_type'],
                                 'discount_amount' => $input['discount_amount']
                             ];
-
-                $invoice_total = $this->productUtil->calculateInvoiceTotal($discount,$input['products'], $input['product'], $input['tax_rate_id']);
+                $invoice_total = $this->productUtil->calculateInvoiceTotal($discount,$input['products'], $input['product'], $input['tax_rate_id'],$input['total']);
 
                 DB::beginTransaction();
 
@@ -1072,8 +1069,8 @@ class SellPosController extends Controller
                 $discount = ['discount_type' => $input['discount_type'],
                                 'discount_amount' => $input['discount_amount']
                             ];
-                $invoice_total = $this->productUtil->calculateInvoiceTotal($discount,$input['products'], $input['product'],$input['tax_rate_id']);
-
+                $invoice_total = $this->productUtil->calculateInvoiceTotal($discount,$input['products'], $input['product'],$input['tax_rate_id'],$input['total']);
+                dd('aaa');
                 if (!empty($request->input('transaction_date'))) {
                     $input['transaction_date'] = $this->productUtil->uf_date($request->input('transaction_date'), true);
                 }
@@ -1288,6 +1285,7 @@ class SellPosController extends Controller
                         ];
             }
         } catch (\Exception $e) {
+            dd($e->getMessage());
             DB::rollBack();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
             $output = ['success' => 0,
@@ -1315,7 +1313,8 @@ class SellPosController extends Controller
                         ->with('status', $output);
                 }
 
-                if ($transaction->type == 'sales_order') {
+
+                if (!empty($transaction->type) && $transaction->type == 'sales_order') {
                     return redirect()
                     ->action('SalesOrderController@index')
                     ->with('status', $output);

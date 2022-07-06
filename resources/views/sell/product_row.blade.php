@@ -61,7 +61,6 @@
     </tr>
     </thead>
     <tbody>
-
     @foreach($productDatas as $key=>$productData)
         @php
             $selected_variation = \App\Models\Variation::with('product_variation', 'product_variation')->where('product_variation_id', $productData->product_variation->id)
@@ -376,7 +375,7 @@
                 </td>
                 <td class="hide" @if(!$edit_discount) class="hide" @endif>
 
-                    <input type="text" name="products[{{$productData->id}}][line_discount_amount]" value="@num_format($discount_amount)" class="form-control input_number discount_amount" data-productId="{{$product_id}}">
+                    <input type="text" name="products[{{$productData->id}}][line_discount_amount]" value="{{@num_format($discount_amount)}}" class="form-control input_number discount_amount" data-productId="{{$product_id}}">
                     <br>
                     {!! Form::select("products[$productData->id][line_discount_type]", ['fixed' => __('lang_v1.fixed'), 'percentage' => __('lang_v1.percentage')], $discount_type , ['class' => 'form-control product_row_discount_type']); !!}
                     @if(!empty($discount))

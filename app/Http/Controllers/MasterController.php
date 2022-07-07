@@ -7,6 +7,7 @@ use App\Models\Business;
 use App\Models\BusinessLocation;
 use App\Models\MasterList;
 use App\Models\TransactionActivity;
+use App\Models\TransactionSellLine;
 use App\Utils\AppConstant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
@@ -155,12 +156,13 @@ class MasterController extends Controller
 
     }
 
-    public function getMasterList($id)
+    public function getMasterList($id,$sell_id)
     {
         $role = 'user';
         $masterListCols = config('masterlist.' . $role . '_columns');
+
         if (request()->ajax()) {
-            $sells = MasterList::where('transaction_id',$id)->with(['transaction_sell_lines' => function ($query) {
+            $sells = MasterList::where(['transaction_id'=>$id,'transaction_sell_lines_id'=>$sell_id])->with(['transaction_sell_lines' => function ($query) {
                 $query->with('transactionSellLinesVariants');
             }, 'transasction']);
 
@@ -255,6 +257,7 @@ class MasterController extends Controller
         }
         $business_locations = Business::forDropdown();
         $type = config('masterlist.product_type');
+
 
     }
 

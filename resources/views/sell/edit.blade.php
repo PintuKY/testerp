@@ -1044,8 +1044,12 @@ $multiplier = 1;
                 @endslot
                 <div class="row col-sm-12 pos_product_div" style="min-height: 0">
                     <div class="table-responsive">
-                        <input type="hidden" id="transaction_id" name="transaction_id" value="{{$transaction->id}}">
-                        @include('master.partials.master_list')
+                        @foreach($tra_sell_lines as $data)
+                            <h3> {{ $data->product_name }}</h3>
+                            <input type="hidden" id="transaction_id" name="transaction_id" value="{{  $data->transaction_id }}">
+                            <input type="hidden" id="transaction_sell_lines_id" name="transaction_sell_lines_id" value="{{  $data->id }}">
+                            @include('master.partials.master_list_sell')
+                        @endforeach
                     </div>
                 </div>
             @endcomponent
@@ -1072,7 +1076,6 @@ $multiplier = 1;
     <div class="modal fade master_list_compensate_add_modals" tabindex="-1" role="dialog"
          aria-labelledby="gridSystemModalLabel">
     </div>
-
     <div class="modal fade contact_modal" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel">
         @include('contact.create', ['quick_add' => true])
     </div>
@@ -1104,36 +1107,42 @@ $multiplier = 1;
         $('.master_list_compensate_add_modals').on('shown.bs.modal', function () {
             $('.master_list_compensate_add_modals').find('#transaction_ids').val('{{$transaction->id}}');
         });
+var master = '{{$sell_ids}}';
+        var sell_id = master.split(',');
         var transaction_id = $('#transaction_id').val();
-        var columns = @json($masterListCols);
-        var masterListCols = columns;
-        master_table = $('#master_table').DataTable({
-            processing: true,
-            serverSide: true,
-            aaSorting: [
-                [0, 'desc']
-            ],
-            "ajax": {
-                "url": "/master_list/" + transaction_id,
-                "data": function (d) {
-                    if ($('#master_list_filter_date_range').val()) {
-                        var start = $('#master_list_filter_date_range').data('daterangepicker').startDate.format('YYYY-MM-DD');
-                        var end = $('#master_list_filter_date_range').data('daterangepicker').endDate.format('YYYY-MM-DD');
-                        d.start_date = start;
-                        d.end_date = end;
+        $.each(sell_id, function( index, value ) {
+            var columns = @json($masterListCols);
+            var masterListCols = columns;
+            master_table = $('#master_table_'+value).DataTable({
+                processing: true,
+                serverSide: true,
+                aaSorting: [
+                    [0, 'desc']
+                ],
+                "ajax": {
+                    "url": "/master_list/" + transaction_id +'/'+ value,
+                    "data": function (d) {
+                        if ($('#master_list_filter_date_range').val()) {
+                            var start = $('#master_list_filter_date_range').data('daterangepicker').startDate.format('YYYY-MM-DD');
+                            var end = $('#master_list_filter_date_range').data('daterangepicker').endDate.format('YYYY-MM-DD');
+                            d.start_date = start;
+                            d.end_date = end;
+                        }
+                        if ($('#master_list_type').val()) {
+                            var type = $('#master_list_type').val();
+                            d.type = type;
+                        }
+                        if ($('#master_list_filter_location_id').val()) {
+                            var location = $('#master_list_filter_location_id').val();
+                            d.location = location;
+                        }
                     }
-                    if ($('#master_list_type').val()) {
-                        var type = $('#master_list_type').val();
-                        d.type = type;
-                    }
-                    if ($('#master_list_filter_location_id').val()) {
-                        var location = $('#master_list_filter_location_id').val();
-                        d.location = location;
-                    }
-                }
-            },
-            columns: masterListCols,
+                },
+                columns: masterListCols,
+            });
         });
+
+
 
         $('.master_list_compensate_add_modals').on('shown.bs.modal', function (e) {
             var dtes = new Date();

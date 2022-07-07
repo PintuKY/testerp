@@ -562,12 +562,14 @@ class TransactionUtil extends Util
 
             foreach ($variation_value_data_id as $key => $data) {
                 $variation_value_datas = VariationValueTemplate::with('variationTemplate')->where('id', $data)->first();
+                $variation_value_key =  $this->num_uf($variation_value[$key]);
+
                 TransactionSellLinesVariants::insert(
                     ['transaction_sell_lines_id' => $sell_line_data_ids[$sell_line_ids],
                         'variation_templates_id' => $variation_value_datas->variation_template_id,
                         'variation_value_templates_id' => $variation_value_datas->id,
                         'pax' => $variation_value_datas->variationTemplate->name,
-                        'addon' => $variation_value_datas->name . '(+ $' . $variation_value[$key] . ')',
+                        'addon' => $variation_value_datas->name . '(+ $' . $variation_value_key . ')',
                         'name' => $variation_value_datas->name,
                         //'value' => $variation_value_datas->value,
                         'value' => $variation_value[$key],

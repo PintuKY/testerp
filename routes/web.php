@@ -464,7 +464,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone'])
     Route::get('/purchases/{id}', 'PurchaseController@show');
     Route::get('/download-purchase-order/{id}/pdf', 'PurchaseOrderController@downloadPdf')->name('purchaseOrder.downloadPdf');
     Route::get('/sells/{id}', 'SellController@show');
-    Route::get('/master_list/{id}', 'MasterController@getMasterList');
+    Route::get('/master_list/{id}/{sell_id}', 'MasterController@getMasterList');
     Route::get('/sells/{transaction_id}/print', 'SellPosController@printInvoice')->name('sell.printInvoice');
     Route::get('/download-sells/{transaction_id}/pdf', 'SellPosController@downloadPdf')->name('sell.downloadPdf');
     Route::get('/download-quotation/{id}/pdf', 'SellPosController@downloadQuotationPdf')

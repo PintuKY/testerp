@@ -68,7 +68,6 @@ $(document).ready(function() {
         $('#supplier_id').select2('close');
         var name = $(this).data('name');
         $('.supplier_modal').find('input#name').val(name);
-        // $('.supplier_modal').find('select#contact_type').val('supplier').closest('div.contact_type_div').addClass('hide');
         $('.supplier_modal').modal('show');
     });
 

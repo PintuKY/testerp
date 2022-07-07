@@ -586,6 +586,7 @@
 @section('javascript')
 	<script src="{{ asset('js/supplier_purchase.js?v=' . $asset_v) }}"></script>
 	<script src="{{ asset('js/product.js?v=' . $asset_v) }}"></script>
+	<script src="{{ asset('js/supplier.js?v=' . $asset_v) }}"></script>
 	<script type="text/javascript">
 		$(document).ready( function(){
       		__page_leave_confirmation('#add_purchase_form');

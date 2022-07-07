@@ -3,6 +3,7 @@
 return [
     'admin_columns' => [
         ['data'=>'id' , 'name' => 'Id'],
+        ['data'=>'date' , 'name' => 'Date'],
         ['data'=>'contacts_name' , 'name' => 'Name'],
         ['data'=>'address' , 'name' => 'Address'],
         ['data'=>'postal' , 'name' => 'Postal Code'],
@@ -15,12 +16,15 @@ return [
     ],
     'saif_columns' => [
         ['data'=>'id' , 'name' => 'Id'],
+        ['data'=>'date' , 'name' => 'Date'],
         ['data'=>'contacts_name' , 'name' => 'Name'],
         ['data'=>'pax' , 'name' => 'Pax'],
         ['data'=>'addon' , 'name' => 'Addon'],
     ],
     'user_columns' => [
         ['data'=>'id' , 'name' => 'Id'],
+        ['data'=>'date' , 'name' => 'Date'],
+        ['data'=>'type' , 'name' => 'Unit Name'],
         ['data'=>'contacts_name' , 'name' => 'Name'],
         ['data'=>'pax' , 'name' => 'Pax'],
         ['data'=>'addon' , 'name' => 'Addon'],
@@ -32,6 +36,7 @@ return [
     ],
     'sell_columns' => [
         ['data'=>'id' , 'name' => 'Id'],
+        ['data'=>'date' , 'name' => 'Date'],
         ['data'=>'contacts_name' , 'name' => 'Name'],
         ['data'=>'pax' , 'name' => 'Pax'],
         ['data'=>'addon' , 'name' => 'Addon'],

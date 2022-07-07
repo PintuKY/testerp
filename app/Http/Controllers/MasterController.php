@@ -42,10 +42,10 @@ class MasterController extends Controller
         $masterListCols = config('masterlist.' . $role . '_columns');
         $business_id = request()->session()->get('user.business_id');
 
+
         if (request()->ajax()) {
-            $sells = MasterList::with(['transaction_sell_lines' => function ($query) {
-                $query->with('transactionSellLinesVariants');
-            }, 'transasction']);
+            $sells = MasterList::with(['transasction','transaction_sell_lines','transaction_sell_lines.transactionSellLinesVariants']
+            );
 
             if (!empty(request()->start_date) && !empty(request()->end_date)) {
                 $start = request()->start_date;
@@ -78,10 +78,18 @@ class MasterController extends Controller
                     <li><a target="_blank" href="' . action('MasterController@edit', [$row->id]) . '"><i class="fas fa-edit"></i> ' . __("messages.edit") . '</a></li>
                     </ul></div>';
                     return $html;
-                }
-                )
+                })
                 ->addColumn('cancel_reason', function ($row) {
                     return getReasonName($row->cancel_reason);
+                })
+                ->addColumn('type', function ($row) {
+                    if($row->transaction_sell_lines){
+                        if($row->transaction_sell_lines_id == $row->transaction_sell_lines->id){
+                            $type = $row->transaction_sell_lines->unit_name;
+                        }
+
+                    }
+                    return $type;
                 })
                 ->addColumn('compensate', function ($row) {
                     if ($row->is_compensate == AppConstant::COMPENSATE_NO) {
@@ -92,30 +100,38 @@ class MasterController extends Controller
                     return $data;
                 })
                 ->addColumn('pax', function ($row) {
+                    //dd($row->transaction_sell_lines->transactionSellLinesVariants[0]->pax);
                     $pax = [];
                     if (isset($row->transaction_sell_lines->transactionSellLinesVariants)) {
                         foreach ($row->transaction_sell_lines->transactionSellLinesVariants as $value) {
-                            if (str_contains($value->name, 'Serving Pax')) {
-                                $pax[] = $value->value;
+                            if (str_contains($value->pax, 'Serving Pax')) {
+                                $pax[] = $value->pax;
                             }
                         }
                     }
-                    return implode(',', $pax);
+                    return implode(',',$pax);
                 })
                 ->addColumn('addon', function ($row) {
                     $addon = [];
                     if (isset($row->transaction_sell_lines->transactionSellLinesVariants)) {
                         foreach ($row->transaction_sell_lines->transactionSellLinesVariants as $value) {
-                            if (str_contains($value->name, 'Add on')) {
+                            if (str_contains($value->pax, 'Add on')) {
                                 $addon_pax = ($value->value != 'None') ? '+' . $value->value : '';
-                                $addon[] = str_replace("Add on:", "", $value->name) . '' . $addon_pax;
+                                $addon[] = str_replace("Add on:", "", $value->pax) . '' . $addon_pax;
                             }
                         }
 
                     }
-                    return implode(',', $addon);
+                    return $row->transaction_sell_lines->transactionSellLinesVariants[0]->addon;
                 })
-
+                ->addColumn('date', function ($row) {
+                    if($row->time_slot == AppConstant::STATUS_INACTIVE){
+                        $date = $row->start_date;
+                    }else{
+                        $date = $row->delivery_date. ' ' . $row->delivery_time;
+                    }
+                    return $date;
+                })
                 ->addColumn('address', function ($row) {
                     return $row->shipping_address_line_1;
                 })

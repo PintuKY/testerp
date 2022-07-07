@@ -1345,7 +1345,7 @@ class SellController extends Controller
                 'delivery_date' => $value->delivery_date,
                 'delivery_time' => $value->delivery_time,
                 'unit_value' => $value->unit_value,
-                'quantity' => $value->quantity_ordered,
+                'quantity' => $value->quantity,
                 'total_item_value' => $value->total_item_value,
                 'unit' => $value->unit,
                 'unit_id' => $value->unit_id,

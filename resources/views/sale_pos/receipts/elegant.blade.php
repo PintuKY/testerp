@@ -644,7 +644,8 @@
                             </th>
                             <td class="text-right font-23 padding-10"
                                 style="background-color: #357ca5 !important; color: white !important">
-                                {{$receipt_details->total}}
+
+                                {{$receipt_details->final_totals}}
                             </td>
                         </tr>
                         @if(!empty($receipt_details->total_in_words))

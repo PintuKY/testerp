@@ -1774,10 +1774,12 @@ class TransactionUtil extends Util
             /*$output['total'] = $this->num_f($transaction->final_total, $show_currency, $business_details);*/
             $output['total'] = $this->num_f($transaction->total + $transaction->shipping_charges + $transaction->tax_amount - $discount, $show_currency, $business_details);
             $output['final_total'] = $this->num_f($transaction->total, $show_currency, $business_details);
+            $output['final_totals'] = $this->num_f($transaction->final_total, $show_currency, $business_details);
         } else {
             $output['total_label'] = $invoice_layout->total_label . ':';
             $output['total'] = $this->num_f($transaction->total + $transaction->shipping_charges + $transaction->tax_amount - $discount, $show_currency, $business_details);
             $output['final_total'] = $this->num_f($transaction->total, $show_currency, $business_details);
+            $output['final_totals'] = $this->num_f($transaction->final_total, $show_currency, $business_details);
         }
 
 

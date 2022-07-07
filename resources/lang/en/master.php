@@ -34,4 +34,5 @@ return [
     'master_list_compensate_add_success' => 'Compensate added successfully',
     'master_list_compensate_not_add' => 'You reached your compensate limit.',
     'action'=>'Action',
+    'date' => 'Date'
 ];

@@ -358,7 +358,7 @@ class SellPosController extends Controller
                             ];
                 $invoice_total = $this->productUtil->calculateInvoiceTotal($discount,$input['products'], $input['product'], $input['tax_rate_id'],$input['total']);
 
-                DB::beginTransaction();
+                /*DB::beginTransaction();*/
 
                 if (empty($request->input('transaction_date'))) {
                     $input['transaction_date'] =  Carbon::now();
@@ -543,7 +543,7 @@ class SellPosController extends Controller
 
 
 
-                DB::commit();
+              /*  DB::commit();*/
 
                 if ($request->input('is_save_and_print') == 1) {
                     $url = $this->transactionUtil->getInvoiceUrl($transaction->id, $business_id);

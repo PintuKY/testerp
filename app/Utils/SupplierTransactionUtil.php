@@ -431,10 +431,10 @@ class SupplierTransactionUtil extends Util
     {
         $supplierPurchases = SupplierTransaction::leftJoin('supplier', 'supplier_transactions.supplier_id', '=', 'supplier.id')
                     ->join(
-                        'business_locations AS BS',
+                        'kitchens_locations',
                         'supplier_transactions.location_id',
                         '=',
-                        'BS.id'
+                        'kitchens_locations.id'
                     )
                     ->leftJoin(
                         'supplier_transaction_payments AS TP',
@@ -461,7 +461,7 @@ class SupplierTransactionUtil extends Util
                         'supplier_transactions.status',
                         'supplier_transactions.payment_status',
                         'supplier_transactions.final_total',
-                        'BS.name as location_name',
+                        'kitchens_locations.name as location_name',
                         'supplier_transactions.pay_term_number',
                         'supplier_transactions.pay_term_type',
                         'PR.id as return_supplier_transaction_id',

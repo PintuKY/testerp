@@ -256,7 +256,7 @@ $(document).on('click', '.delete_supplier_button', function(e) {
                 success: function(result) {
                     if (result.success == true) {
                         toastr.success(result.msg);
-                        contact_table.ajax.reload();
+                        supplier_table.ajax.reload();
                     } else {
                         toastr.error(result.msg);
                     }
@@ -264,4 +264,33 @@ $(document).on('click', '.delete_supplier_button', function(e) {
             });
         }
     });
+});
+
+function submitSupplierForm(form) {
+    var data = $(form).serialize();
+    $.ajax({
+        method: 'POST',
+        url: $(form).attr('action'),
+        dataType: 'json',
+        data: data,
+        success: function (result) {
+            if (result.success == true) {
+                $('div.supplier_modal').modal('hide');
+                console.log(supplier_table);
+                supplier_table.ajax.reload();
+                toastr.success(result.msg);
+            } else {
+                toastr.error(result.msg);
+            }
+        },
+    });
+}
+
+$(document).on('ifChanged', '#has_sell_due, #has_sell_return, \
+#has_purchase_due, #has_purchase_return, #has_advance_balance, #has_opening_balance', function () {
+    supplier_table.ajax.reload();
+});
+
+$(document).on('change', '#has_no_sell_from, #cg_filter, #status_filter', function () {
+    supplier_table.ajax.reload();
 });

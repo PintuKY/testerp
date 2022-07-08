@@ -204,8 +204,8 @@ function mealTypes()
 {
     $data = [
         '4' => 'None',
-        '1' => 'Lunch',
-        '2' => 'Dinner',
+        '1' => 'Lunch (9.30am – 1.30pm)',
+        '2' => 'Dinner (3.30pm – 7.30pm)',
         '3' => 'Both'
     ];
     return $data;
@@ -225,8 +225,8 @@ function compensateTypes()
 function compensateMealTypes()
 {
     $data = [
-        '1' => 'Lunch',
-        '2' => 'Dinner',
+        '1' => 'Lunch (9.30am – 1.30pm)',
+        '2' => 'Dinner (3.30pm – 7.30pm)',
     ];
     return $data;
 }

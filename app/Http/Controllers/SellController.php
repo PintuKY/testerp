@@ -1345,7 +1345,7 @@ class SellController extends Controller
                 'delivery_date' => $value->delivery_date,
                 'delivery_time' => $value->delivery_time,
                 'unit_value' => $value->unit_value,
-                'quantity' => $value->quantity_ordered,
+                'quantity' => $value->quantity,
                 'total_item_value' => $value->total_item_value,
                 'unit' => $value->unit,
                 'unit_id' => $value->unit_id,
@@ -1806,8 +1806,12 @@ class SellController extends Controller
         $default_date = $this->businessUtil->format_dates(Carbon::parse(now())->format('Y-m-d'));
         $role = 'sell';
         $masterListCols = config('masterlist.'.$role.'_columns');
+        $tra_sell_lines = TransactionSellLine::with('product')->where(['transaction_id' => $id])->groupBy('product_id')->get();
+        $tra_sell_lines_array = TransactionSellLine::with('product')->where(['transaction_id' => $id])->groupBy('product_id')->pluck('id')->toArray();
+        $sell_ids = implode(',',$tra_sell_lines_array);
+
         return view('sell.edit')
-            ->with(compact('masterListCols','master_list', 'edit_product', 'business_details', 'default_datetime', 'default_time','default_date',/*'number_of_days','transaction_sell_lines_id',*/ 'time_slot', 'taxes', 'sell_details', 'transaction', 'commission_agent', 'types', 'customer_groups', 'pos_settings', 'waiters', 'invoice_schemes', 'default_invoice_schemes', 'redeem_details', 'edit_discount', 'edit_price', 'shipping_statuses', 'statuses', 'sales_orders', 'payment_types', 'accounts', 'payment_lines', 'change_return', 'is_order_request_enabled', 'customer_due', 'transaction_sell_lines_days', 'transaction_sell_lines_id', 'product_ids', 'product_names', 'product_count', 'total_compensate'));
+            ->with(compact('tra_sell_lines','sell_ids','masterListCols','master_list', 'edit_product', 'business_details', 'default_datetime', 'default_time','default_date',/*'number_of_days','transaction_sell_lines_id',*/ 'time_slot', 'taxes', 'sell_details', 'transaction', 'commission_agent', 'types', 'customer_groups', 'pos_settings', 'waiters', 'invoice_schemes', 'default_invoice_schemes', 'redeem_details', 'edit_discount', 'edit_price', 'shipping_statuses', 'statuses', 'sales_orders', 'payment_types', 'accounts', 'payment_lines', 'change_return', 'is_order_request_enabled', 'customer_due', 'transaction_sell_lines_days', 'transaction_sell_lines_id', 'product_ids', 'product_names', 'product_count', 'total_compensate'));
     }
 
 

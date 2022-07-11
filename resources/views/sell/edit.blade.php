@@ -425,7 +425,7 @@ $multiplier = 1;
                                     </tbody>
                                 </table>
                                 <input type="hidden" class="total_item_price" id="total_{{$productId}}"
-                                       name="product[{{$productId}}][total]" value="">
+                                       name="product[{{$productId}}][total]" value="{{@num_format($edit_product[$productId]['total_item_value'])}}">
 
                                 <div class="row pos_table_{{$productId}}">
                                     <div class="col-md-12 col-sm-12">
@@ -897,7 +897,8 @@ $multiplier = 1;
                                    id="round_off_amount" value=0>
                         @endif
                         <div><b>@lang('sale.total_payable'): </b>
-                            <input type="hidden" name="final_total" id="final_total_input">
+                            <input type="hidden" value="{{$transaction->final_total}}" name="final_total" id="final_total_input">
+                            <input type="hidden" value="{{$transaction->final_total}}" name="final_totals" id="final_total_inputs">
                             <span id="total_payable">0</span>
                         </div>
                     </div>

@@ -336,6 +336,12 @@
         <input type="{{$subtotal_type}}"
                class="form-control pos_line_totals pos_line_total_{{$pid}} @if(!empty($pos_settings['is_pos_subtotal_editable'])) input_number @endif"
                value="{{'$'.@num_format($product->value)}}">
+        <input type="{{$subtotal_type}}"
+               class="form-control pos_line_total pos_line_total_{{$pid}} @if(!empty($pos_settings['is_pos_subtotal_editable'])) input_number @endif"
+               value="{{'$'.@num_format($product->value)}}">
+        <span
+            class="hide display_currency pos_line_total_text  pos_line_total_text_{{$pid}} @if(!empty($pos_settings['is_pos_subtotal_editable'])) hide @endif"
+            data-currency_symbol="true">{{'$'.@num_format($product->value)}}</span>
         <span
             class="display_currency pos_line_total_texts  pos_line_total_text_{{$pid}} @if(!empty($pos_settings['is_pos_subtotal_editable'])) hide @endif"
             data-currency_symbol="true">{{'$'.@num_format($product->value)}}</span>

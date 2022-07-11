@@ -559,7 +559,6 @@ class ProductUtil extends Util
     public function calculateInvoiceTotal($discount,$products,$products_line, $tax_id,$total,$uf_number = true)
     {
 
-
         if (empty($products)) {
             return false;
         }
@@ -572,6 +571,8 @@ class ProductUtil extends Util
 
             /*$unit_price_inc_tax = $uf_number ? $this->num_uf($product_line['unit_price_inc_tax']) : $product_line['unit_price_inc_tax'];*/
             $unit_price_inc_tax = $uf_number ? $this->num_uf($product_line['total']) : $product_line['total'];
+
+
             $quantity = $uf_number ? $this->num_uf($product_line['quantity']) : $product_line['quantity'];
 
             //$output['total_before_tax'] += $quantity * $unit_price_inc_tax;
@@ -612,7 +613,6 @@ class ProductUtil extends Util
         }
         //Calculate total
         $output['final_total'] = $output['total_before_tax'] + $output['tax'] - $output['discount'];
-
         return $output;
     }
 

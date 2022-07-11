@@ -90,7 +90,7 @@
                             {{ Form::select('kitchen_location_id', $kitchens, null, ['placeholder' => 'Select Please', 'class' => 'form-control select2', 'required','style' => 'width:100%']); }}
                         </div>
                     </div>
-                    
+
                     <div class="col-md-6">
                         <div class="form-group">
                             {!! Form::label('driver_type',__('driver.driver_type') . ':') !!}

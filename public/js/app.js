@@ -1747,6 +1747,7 @@ $(document).ready(function () {
             {data: 'action', name: 'action'},
         ],
     });
+
     $('.location_add_modal, .location_edit_modal').on('shown.bs.modal', function (e) {
         $('form#business_location_add_form')
             .submit(function (e) {
@@ -1780,27 +1781,66 @@ $(document).ready(function () {
                 },
                 submitHandler: function (form) {
                     e.preventDefault();
-                    var data = $(form).serialize();
+                    var files = $('#business_logo')[0].files;
+                    if(files.length > 0){
+                        var fd = new FormData($('#business_location_add_form').get(0));
+                        // Append data
+                        fd.append('file',files[0]);
+                        // Hide alert
+                        $('#responseMsg').hide();
+                        // AJAX request
+                        $.ajax({
+                            url: $(form).attr('action'),
+                            method: 'post',
+                            data: fd,
+                            contentType: false,
+                            processData: false,
+                            dataType: 'json',
+                            beforeSend: function (xhr) {
+                                __disable_submit_button($(form).find('button[type="submit"]'));
+                            },
+                            success: function(result){
 
-                    $.ajax({
-                        method: 'POST',
-                        url: $(form).attr('action'),
-                        dataType: 'json',
-                        data: data,
-                        beforeSend: function (xhr) {
-                            __disable_submit_button($(form).find('button[type="submit"]'));
-                        },
-                        success: function (result) {
-                            if (result.success == true) {
-                                $('div.location_add_modal').modal('hide');
-                                $('div.location_edit_modal').modal('hide');
-                                toastr.success(result.msg);
-                                business_locations.ajax.reload();
-                            } else {
-                                toastr.error(result.msg);
+                                if (result.success == true) {
+                                    $('div.location_add_modal').modal('hide');
+                                    $('div.location_edit_modal').modal('hide');
+                                    toastr.success(result.msg);
+                                    business_locations.ajax.reload();
+                                } else {
+                                    toastr.error(result.msg);
+                                }
+                            },
+                            error: function(response){
+                                console.log("error : " + JSON.stringify(response) );
                             }
-                        },
-                    });
+                        });
+                    }else{
+                        var data = $(form).serialize();
+
+                        $.ajax({
+                            method: 'POST',
+                            url: $(form).attr('action'),
+                            dataType: 'json',
+                            data: data,
+                            beforeSend: function (xhr) {
+                                __disable_submit_button($(form).find('button[type="submit"]'));
+                            },
+                            success: function (result) {
+                                if (result.success == true) {
+                                    $('div.location_add_modal').modal('hide');
+                                    $('div.location_edit_modal').modal('hide');
+                                    toastr.success(result.msg);
+                                    business_locations.ajax.reload();
+                                } else {
+                                    toastr.error(result.msg);
+                                }
+                            },
+                        });
+
+                    }
+
+
+
                 },
             });
 

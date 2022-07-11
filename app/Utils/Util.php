@@ -905,7 +905,7 @@ dd($response);
             //Replace business_logo
             if (strpos($value, '{business_logo}') !== false) {
                 $logo_name = $business_location->logo;
-                $business_logo = !empty($logo_name) ? '<img src="' . asset('storage/business_location_logos/' . $logo_name) . '" alt="Business Logo" >' : '';
+                $business_logo = !empty($logo_name) ? '<img width="300px" src="' . asset('storage/business_location_logos/' . $logo_name) . '" alt="Business Logo" >' : '';
                 $data[$key] = str_replace('{business_logo}', $business_logo, $data[$key]);
             }
 

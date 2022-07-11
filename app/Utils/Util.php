@@ -742,6 +742,39 @@ dd($response);
 
         return $uploaded_file_name;
     }
+    public function uploadFiles($request, $file_name, $dir_name, $file_type = 'document')
+    {
+        //If app environment is demo return null
+        if (config('app.env') == 'demo') {
+            return null;
+        }
+
+        $uploaded_file_name = null;
+        if ($request->hasFile($file_name) && $request->file($file_name)->isValid()) {
+
+            //Check if mime type is image
+            if ($file_type == 'image') {
+                if (strpos($request->$file_name->getClientMimeType(), 'image/') === false) {
+                    throw new \Exception("Invalid image file");
+                }
+            }
+
+            if ($file_type == 'document') {
+                if (!in_array($request->$file_name->getClientMimeType(), array_keys(config('constants.document_upload_mimes_types')))) {
+                    throw new \Exception("Invalid document file");
+                }
+            }
+
+            if ($request->$file_name->getSize() <= config('constants.document_size_limit')) {
+                $new_file_name = time() . '_' . $request->$file_name->getClientOriginalName();
+                if ($request->$file_name->storeAs('public/'.$dir_name, $new_file_name)) {
+                    $uploaded_file_name = $new_file_name;
+                }
+            }
+        }
+
+        return $uploaded_file_name;
+    }
 
     public function serviceStaffDropdown($business_id, $location_id = null)
     {
@@ -787,11 +820,13 @@ dd($response);
      */
     public function replaceTags($business_id, $data, $transaction, $contact = null)
     {
+
         if (!empty($transaction) && !is_object($transaction)) {
             $transaction = Transaction::where('business_id', $business_id)
                             ->with(['contact', 'payment_lines'])
                             ->findOrFail($transaction);
         }
+        $business_location = BusinessLocation::where('id',$transaction->location_id)->first();
 
         $business = !is_object($business_id) ? Business::with(['currency'])->findOrFail($business_id) : $business_id;
 
@@ -863,15 +898,14 @@ dd($response);
 
             //Replace business_name
             if (strpos($value, '{business_name}') !== false) {
-                $business_name = $business->name;
+                $business_name = $business_location->name;
                 $data[$key] = str_replace('{business_name}', $business_name, $data[$key]);
             }
 
             //Replace business_logo
             if (strpos($value, '{business_logo}') !== false) {
-                $logo_name = $business->logo;
-                $business_logo = !empty($logo_name) ? '<img src="' . url('uploads/business_logos/' . $logo_name) . '" alt="Business Logo" >' : '';
-
+                $logo_name = $business_location->logo;
+                $business_logo = !empty($logo_name) ? '<img src="' . asset('storage/business_location_logos/' . $logo_name) . '" alt="Business Logo" >' : '';
                 $data[$key] = str_replace('{business_logo}', $business_logo, $data[$key]);
             }
 

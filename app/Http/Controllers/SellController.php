@@ -1794,6 +1794,7 @@ class SellController extends Controller
         $payment_types = $this->transactionUtil->payment_types($transaction->location_id, false, $business_id);
 
         $payment_lines = $this->transactionUtil->getPaymentDetails($id);
+
         //If no payment lines found then add dummy payment line.
         if (empty($payment_lines)) {
             $payment_lines[] = $this->dummyPaymentLine;

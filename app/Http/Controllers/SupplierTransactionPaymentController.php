@@ -90,11 +90,11 @@ class SupplierTransactionPaymentController extends Controller
 
                 if ($inputs['method'] == 'custom_pay_1') {
                     $inputs['transaction_no'] = $request->input('transaction_no_1');
-                } elseif ($inputs['method'] == 'custom_pay_2') {
+                } /*elseif ($inputs['method'] == 'custom_pay_2') {
                     $inputs['transaction_no'] = $request->input('transaction_no_2');
                 } elseif ($inputs['method'] == 'custom_pay_3') {
                     $inputs['transaction_no'] = $request->input('transaction_no_3');
-                }
+                }*/
 
                 if (!empty($request->input('account_id')) && $inputs['method'] != 'advance') {
                     $inputs['account_id'] = $request->input('account_id');
@@ -246,11 +246,11 @@ class SupplierTransactionPaymentController extends Controller
 
             if ($inputs['method'] == 'custom_pay_1') {
                 $inputs['transaction_no'] = $request->input('transaction_no_1');
-            } elseif ($inputs['method'] == 'custom_pay_2') {
+            } /*elseif ($inputs['method'] == 'custom_pay_2') {
                 $inputs['transaction_no'] = $request->input('transaction_no_2');
             } elseif ($inputs['method'] == 'custom_pay_3') {
                 $inputs['transaction_no'] = $request->input('transaction_no_3');
-            }
+            }*/
 
             if (!empty($request->input('account_id'))) {
                 $inputs['account_id'] = $request->input('account_id');

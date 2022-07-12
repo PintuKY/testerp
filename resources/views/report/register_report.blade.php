@@ -89,7 +89,7 @@
     </div>
 </section>
 <!-- /.content -->
-<div class="modal fade view_register" tabindex="-1" role="dialog" 
+<div class="modal fade view_register" tabindex="-1" role="dialog"
     aria-labelledby="gridSystemModalLabel">
 </div>
 

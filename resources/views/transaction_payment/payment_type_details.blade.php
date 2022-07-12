@@ -27,7 +27,7 @@
 	<div class="col-md-3">
 		<div class="form-group">
 			{!! Form::label("card_month", __('lang_v1.month')) !!}
-			{!! Form::text("card_month", $payment_line->card_month, ['class' => 'form-control', 
+			{!! Form::text("card_month", $payment_line->card_month, ['class' => 'form-control',
 			'placeholder' => __('lang_v1.month') ]); !!}
 		</div>
 	</div>
@@ -69,6 +69,7 @@
 		</div>
 	</div>
 </div>
+{{--
 <div class="payment_details_div @if( $payment_line->method !== 'custom_pay_2' ) {{ 'hide' }} @endif" data-type="custom_pay_2" >
 	<div class="col-md-12">
 		<div class="form-group">
@@ -84,4 +85,4 @@
 			{!! Form::text("transaction_no_3", $payment_line->transaction_no, ['class' => 'form-control', 'placeholder' => __('lang_v1.transaction_no')]); !!}
 		</div>
 	</div>
-</div>
+</div>--}}

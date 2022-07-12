@@ -49,7 +49,7 @@
                     <br>{{implode(',', array_filter([$transaction->location->city, $transaction->location->state, $transaction->location->country]))}}
                   @endif
                 @endif
-                
+
                 @if(!empty($transaction->business->tax_number_1))
                   <br>{{$transaction->business->tax_label_1}}: {{$transaction->business->tax_number_1}}
                 @endif
@@ -74,7 +74,7 @@
               @lang('contact.customer'):
               <address>
                 <strong>{{ $transaction->contact->name ?? '' }}</strong>
-               
+
                 {!! $transaction->contact->contact_address !!}
                 @if(!empty($transaction->contact->tax_number))
                   <br>@lang('contact.tax_no'): {{$transaction->contact->tax_number}}
@@ -117,7 +117,7 @@
                   <br>{{implode(',', array_filter([$transaction->location->city, $transaction->location->state, $transaction->location->country]))}}
                 @endif
               @endif
-              
+
               @if(!empty($transaction->business->tax_number_1))
                 <br>{{$transaction->business->tax_label_1}}: {{$transaction->business->tax_number_1}}
               @endif
@@ -153,7 +153,7 @@
               {{ $single_payment_line->card_number }} <br>
               <strong>@lang('lang_v1.card_transaction_number') :</strong>
               {{ $single_payment_line->card_transaction_number }}
-              
+
             @elseif($single_payment_line->method == "cheque")
               <strong>@lang('lang_v1.cheque_number') :</strong>
               {{ $single_payment_line->cheque_number }}
@@ -163,20 +163,20 @@
 
               <strong>@lang('lang_v1.transaction_number') :</strong>
               {{ $single_payment_line->transaction_no }}
-            @elseif($single_payment_line->method == "custom_pay_2")
+            {{--@elseif($single_payment_line->method == "custom_pay_2")
 
               <strong>@lang('lang_v1.transaction_number') :</strong>
               {{ $single_payment_line->transaction_no }}
             @elseif($single_payment_line->method == "custom_pay_3")
 
               <strong> @lang('lang_v1.transaction_number'):</strong>
-              {{ $single_payment_line->transaction_no }}
+              {{ $single_payment_line->transaction_no }}--}}
             @endif
             <strong>@lang('purchase.payment_note') :</strong>
               {{ $single_payment_line->note }}
           </div>
           <div class="col-xs-6">
-            <b>@lang('purchase.ref_no'):</b> 
+            <b>@lang('purchase.ref_no'):</b>
               @if(!empty($single_payment_line->payment_ref_no))
                 {{ $single_payment_line->payment_ref_no }}
               @else
@@ -192,8 +192,8 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn btn-primary no-print" 
-        aria-label="Print" 
+      <button type="button" class="btn btn-primary no-print"
+        aria-label="Print"
           onclick="$(this).closest('div.modal').printThis();">
         <i class="fa fa-print"></i> @lang( 'messages.print' )
       </button>

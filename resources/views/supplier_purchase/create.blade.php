@@ -67,9 +67,9 @@
 					{!! Form::select('status', $orderStatuses, $default_purchase_status, ['class' => 'form-control select2', 'placeholder' => __('messages.please_select'), 'required']); !!}
 				</div>
 			</div>			
-			@if(count($business_locations) == 1)
+			@if(count($kitchen_locations) == 1)
 				@php 
-					$default_location = current(array_keys($business_locations->toArray()));
+					$default_location = current(array_keys($kitchen_locations));
 					$search_disable = false; 
 				@endphp
 			@else
@@ -79,9 +79,9 @@
 			@endif
 			<div class="col-sm-3">
 				<div class="form-group">
-					{!! Form::label('location_id', __('purchase.business_location').':*') !!}
+					{!! Form::label('location_id', __('kitchen.kitchen_locations').':*') !!}
 					@show_tooltip(__('tooltip.purchase_location'))
-					{!! Form::select('location_id', $business_locations, $default_location, ['class' => 'form-control select2', 'placeholder' => __('messages.please_select'), 'required'], $bl_attributes); !!}
+					{!! Form::select('location_id', $kitchen_locations, $default_location, ['class' => 'form-control select2', 'placeholder' => __('messages.please_select'), 'required'], $bl_attributes); !!}
 				</div>
 			</div>
 
@@ -586,6 +586,7 @@
 @section('javascript')
 	<script src="{{ asset('js/supplier_purchase.js?v=' . $asset_v) }}"></script>
 	<script src="{{ asset('js/product.js?v=' . $asset_v) }}"></script>
+	<script src="{{ asset('js/supplier.js?v=' . $asset_v) }}"></script>
 	<script type="text/javascript">
 		$(document).ready( function(){
       		__page_leave_confirmation('#add_purchase_form');

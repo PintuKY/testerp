@@ -127,7 +127,7 @@ class NotificationController extends Controller
             ];
 
             if ($request->input('template_for') == 'new_booking') {
-                $tag_replaced_data = $this->notificationUtil->replaceBookingTags($business_id, $orig_data, $transaction_id);
+                $tag_replaced_data = $this->notificationUtil->replaceBookingTags($business_id, $orig_data, $transaction_id, $transaction->location_id);
 
                 $data['email_body'] = $tag_replaced_data['email_body'];
                 $data['sms_body'] = $tag_replaced_data['sms_body'];

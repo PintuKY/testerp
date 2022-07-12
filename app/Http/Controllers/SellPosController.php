@@ -481,8 +481,10 @@ class SellPosController extends Controller
                 $is_credit_sale = isset($input['is_credit_sale']) && $input['is_credit_sale'] == 1 ? true : false;
 
                 if (!$transaction->is_suspend && !empty($input['payment']) && !$is_credit_sale) {
+
                     $this->transactionUtil->createOrUpdatePaymentLines($transaction, $input['payment']);
                 }
+
 
                 //Check for final and do some processing.
                 if ($input['status'] == 'final') {
@@ -1082,7 +1084,8 @@ class SellPosController extends Controller
                 $discount = ['discount_type' => $input['discount_type'],
                                 'discount_amount' => $input['discount_amount']
                             ];
-                $invoice_total = $this->productUtil->calculateInvoiceTotal($discount,$input['products'], $input['product'],$input['tax_rate_id'],$input['total']);
+
+                $invoice_total = $this->productUtil->calculateInvoiceTotal($discount,$input['products'], $input['product'],$input['tax_rate_id'],$transaction_before->total);
 
                 if (!empty($request->input('transaction_date'))) {
                     $input['transaction_date'] = $this->productUtil->uf_date($request->input('transaction_date'), true);

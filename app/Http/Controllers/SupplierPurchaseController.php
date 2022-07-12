@@ -28,6 +28,7 @@ use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
 use Spatie\Activitylog\Models\Activity;
 use Excel;
+use App\Models\KitchenLocation;
 
 class SupplierPurchaseController extends Controller
 {
@@ -216,11 +217,13 @@ class SupplierPurchaseController extends Controller
 
         $business_locations = BusinessLocation::forDropdown($business_id);
         $suppliers = Supplier::suppliersDropdown($business_id, false);
+        $kitchen_locations  = KitchenLocation::pluck('name','id'); 
+
 
         $orderStatuses = $this->productUtil->orderStatuses();
 
         return view('supplier_purchase.index')
-            ->with(compact('business_locations', 'suppliers', 'orderStatuses'));
+            ->with(compact('business_locations', 'suppliers', 'kitchen_locations','orderStatuses'));
     }
 
     /**
@@ -248,6 +251,8 @@ class SupplierPurchaseController extends Controller
         $business_locations = BusinessLocation::forDropdown($business_id, false, true);
         $bl_attributes = $business_locations['attributes'];
         $business_locations = $business_locations['locations'];
+        $kitchen_locations  = KitchenLocation::pluck('name','id'); 
+
 
         $currency_details = $this->supplierTransactionUtil->purchaseCurrencyDetails($business_id);
 
@@ -275,7 +280,7 @@ class SupplierPurchaseController extends Controller
         $common_settings = !empty(session('business.common_settings')) ? session('business.common_settings') : [];
 
         return view('supplier_purchase.create')
-            ->with(compact('taxes', 'orderStatuses', 'business_locations', 'currency_details', 'default_purchase_status', 'types', 'shortcuts', 'payment_line', 'payment_types', 'accounts', 'bl_attributes', 'common_settings'));
+            ->with(compact('taxes','kitchen_locations', 'orderStatuses', 'business_locations', 'currency_details', 'default_purchase_status', 'types', 'shortcuts', 'payment_line', 'payment_types', 'accounts', 'bl_attributes', 'common_settings'));
     }
 
     /**

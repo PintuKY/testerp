@@ -1,7 +1,7 @@
 <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
 
-      {!! Form::open(['url' => action('BusinessLocationController@update', [$location->id]), 'method' => 'PUT', 'id' => 'business_location_add_form' ]) !!}
+      {!! Form::open(['url' => action('BusinessLocationController@update', [$location->id]), 'method' => 'PUT', 'id' => 'business_location_add_form' ,'files'=>true]) !!}
 
       {!! Form::hidden('hidden_id', $location->id, ['id' => 'hidden_id']); !!}
       <div class="modal-header">
@@ -11,6 +11,15 @@
 
       <div class="modal-body">
         <div class="row">
+            <div class="col-sm-12">
+                <div class="form-group">
+                    <img height="100px" width="100px" src="{{asset('storage/business_location_logos/'.$location->logo)}}">
+                    <div class="clearfix"></div>
+                    {!! Form::label('business_logo', __('business.upload_logo') . ':') !!}
+                    {!! Form::file('business_logo', ['id' => 'business_logo','class'=>'form-control','accept' => 'image/*']); !!}
+                    <p class="help-block"><i> @lang('business.logo_help')</i></p>
+                </div>
+            </div>
           <div class="col-sm-6">
             <div class="form-group">
               {!! Form::label('name', __( 'invoice.name' ) . ':*') !!}

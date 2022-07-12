@@ -2,6 +2,7 @@
 
 namespace App\Utils;
 
+use App\Models\BusinessLocation;
 use \Notification;
 use App\Models\Business;
 use App\Notifications\CustomerNotification;
@@ -113,12 +114,17 @@ class NotificationUtil extends Util
      *
      * @return array
      */
-    public function replaceBookingTags($business_id, $data, $booking_id)
+    public function replaceBookingTags($business_id, $data, $booking_id, $location_id)
     {
+
         $business = Business::findOrFail($business_id);
         $booking = Booking::where('business_id', $business_id)
                     ->with(['customer', 'table', 'correspondent', 'waiter', 'location', 'business'])
                     ->findOrFail($booking_id);
+
+        $business_location = BusinessLocation::where('id',$location_id)->first();
+
+
         foreach ($data as $key => $value) {
             //Replace contact name
             if (strpos($value, '{contact_name}') !== false) {
@@ -271,7 +277,7 @@ class NotificationUtil extends Util
 
             //Replace business_logo
             if (strpos($value, '{business_logo}') !== false) {
-                $logo_name = $business->logo;
+                $logo_name = $business_location->logo;
                 $business_logo = !empty($logo_name) ? '<img src="' . url('storage/business_logos/' . $logo_name) . '" alt="Business Logo" >' : '';
 
                 $data[$key] = str_replace('{business_logo}', $business_logo, $data[$key]);

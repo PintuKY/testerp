@@ -375,6 +375,7 @@ return [
    'credit_limit_help' => 'Keep blank for no limit',
    'cutomer_credit_limit_exeeded' => 'Customer Credit Limit Exceeded <br>:credit_limit',
    'custom_payment_1' => 'Custom Payment 1',
+   'paynow' => 'Paynow',
    'custom_payment_2' => 'Custom Payment 2',
    'custom_payment_3' => 'Custom Payment 3',
    'transaction_no' => 'Transaction No.',

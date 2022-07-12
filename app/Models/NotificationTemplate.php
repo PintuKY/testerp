@@ -170,6 +170,7 @@ class NotificationTemplate extends Model
                 'email_body' => '<p>Dear {contact_name},</p>
 
                     <p>Your invoice number is {invoice_number}<br />
+                    <p>Invoice Url <a href="{invoice_url}">{invoice_url}</a>
                     Total amount: {total_amount}<br />
                     Paid amount: {received_amount}</p>
 

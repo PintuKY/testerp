@@ -481,8 +481,10 @@ class SellPosController extends Controller
                 $is_credit_sale = isset($input['is_credit_sale']) && $input['is_credit_sale'] == 1 ? true : false;
 
                 if (!$transaction->is_suspend && !empty($input['payment']) && !$is_credit_sale) {
+
                     $this->transactionUtil->createOrUpdatePaymentLines($transaction, $input['payment']);
                 }
+
 
                 //Check for final and do some processing.
                 if ($input['status'] == 'final') {

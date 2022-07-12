@@ -21,8 +21,8 @@ $(document).ready(function () {
     }
 
     $('select#select_location_id').change(function () {
+        $('.pos').empty();
         reset_pos_form();
-
         var default_price_group = $(this).find(':selected').data('default_price_group')
         if (default_price_group) {
             if ($("#price_group option[value='" + default_price_group + "']").length > 0) {

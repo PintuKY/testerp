@@ -95,13 +95,13 @@ class CashRegisterUtil extends Util
                                 DB::raw("SUM(IF(pay_method='bank_transfer', IF(type='credit', amount, -1 * amount), 0)) as total_bank_transfer"),
                                 DB::raw("SUM(IF(pay_method='other', IF(type='credit', amount, -1 * amount), 0)) as total_other"),
                                 DB::raw("SUM(IF(pay_method='custom_pay_1', IF(type='credit', amount, -1 * amount), 0)) as total_custom_pay_1"),
-                                DB::raw("SUM(IF(pay_method='custom_pay_2', IF(type='credit', amount, -1 * amount), 0)) as total_custom_pay_2"),
+                                /*DB::raw("SUM(IF(pay_method='custom_pay_2', IF(type='credit', amount, -1 * amount), 0)) as total_custom_pay_2"),
                                 DB::raw("SUM(IF(pay_method='custom_pay_3', IF(type='credit', amount, -1 * amount), 0)) as total_custom_pay_3"),
                                 DB::raw("SUM(IF(pay_method='custom_pay_4', IF(type='credit', amount, -1 * amount), 0)) as total_custom_pay_4"),
                                 DB::raw("SUM(IF(pay_method='custom_pay_5', IF(type='credit', amount, -1 * amount), 0)) as total_custom_pay_5"),
                                 DB::raw("SUM(IF(pay_method='custom_pay_6', IF(type='credit', amount, -1 * amount), 0)) as total_custom_pay_6"),
                                 DB::raw("SUM(IF(pay_method='custom_pay_7', IF(type='credit', amount, -1 * amount), 0)) as total_custom_pay_7"),
-                                DB::raw("SUM(IF(pay_method='advance', IF(type='credit', amount, -1 * amount), 0)) as total_advance")
+                               */ DB::raw("SUM(IF(pay_method='advance', IF(type='credit', amount, -1 * amount), 0)) as total_advance")
                             )->first();
             if (!empty($prev_payments)) {
                 $payment_diffs = [
@@ -111,12 +111,12 @@ class CashRegisterUtil extends Util
                     'bank_transfer' => $prev_payments->total_bank_transfer,
                     'other' => $prev_payments->total_other,
                     'custom_pay_1' => $prev_payments->total_custom_pay_1,
-                    'custom_pay_2' => $prev_payments->total_custom_pay_2,
+                    /*'custom_pay_2' => $prev_payments->total_custom_pay_2,
                     'custom_pay_3' => $prev_payments->total_custom_pay_3,
                     'custom_pay_4' => $prev_payments->total_custom_pay_4,
                     'custom_pay_5' => $prev_payments->total_custom_pay_5,
                     'custom_pay_6' => $prev_payments->total_custom_pay_6,
-                    'custom_pay_7' => $prev_payments->total_custom_pay_7,
+                    'custom_pay_7' => $prev_payments->total_custom_pay_7,*/
                     'advance' => $prev_payments->total_advance
                 ];
 
@@ -178,13 +178,13 @@ class CashRegisterUtil extends Util
                                 DB::raw("SUM(IF(pay_method='bank_transfer', IF(type='credit', amount, -1 * amount), 0)) as total_bank_transfer"),
                                 DB::raw("SUM(IF(pay_method='other', IF(type='credit', amount, -1 * amount), 0)) as total_other"),
                                 DB::raw("SUM(IF(pay_method='custom_pay_1', IF(type='credit', amount, -1 * amount), 0)) as total_custom_pay_1"),
-                                DB::raw("SUM(IF(pay_method='custom_pay_2', IF(type='credit', amount, -1 * amount), 0)) as total_custom_pay_2"),
+                                /*DB::raw("SUM(IF(pay_method='custom_pay_2', IF(type='credit', amount, -1 * amount), 0)) as total_custom_pay_2"),
                                 DB::raw("SUM(IF(pay_method='custom_pay_3', IF(type='credit', amount, -1 * amount), 0)) as total_custom_pay_3"),
                                 DB::raw("SUM(IF(pay_method='custom_pay_4', IF(type='credit', amount, -1 * amount), 0)) as total_custom_pay_4"),
                                 DB::raw("SUM(IF(pay_method='custom_pay_5', IF(type='credit', amount, -1 * amount), 0)) as total_custom_pay_5"),
                                 DB::raw("SUM(IF(pay_method='custom_pay_6', IF(type='credit', amount, -1 * amount), 0)) as total_custom_pay_6"),
                                 DB::raw("SUM(IF(pay_method='custom_pay_7', IF(type='credit', amount, -1 * amount), 0)) as total_custom_pay_7")
-                            )->first();
+                          */  )->first();
         $refunds = [
                     'cash' => $total_payment->total_cash,
                     'card' => $total_payment->total_card,
@@ -192,12 +192,12 @@ class CashRegisterUtil extends Util
                     'bank_transfer' => $total_payment->total_bank_transfer,
                     'other' => $total_payment->total_other,
                     'custom_pay_1' => $total_payment->total_custom_pay_1,
-                    'custom_pay_2' => $total_payment->total_custom_pay_2,
+                    /*'custom_pay_2' => $total_payment->total_custom_pay_2,
                     'custom_pay_3' => $total_payment->total_custom_pay_3,
                     'custom_pay_4' => $total_payment->total_custom_pay_4,
                     'custom_pay_5' => $total_payment->total_custom_pay_5,
                     'custom_pay_6' => $total_payment->total_custom_pay_6,
-                    'custom_pay_7' => $total_payment->total_custom_pay_7
+                    'custom_pay_7' => $total_payment->total_custom_pay_7*/
                 ];
         $refund_formatted = [];
         foreach ($refunds as $key => $val) {
@@ -276,13 +276,13 @@ class CashRegisterUtil extends Util
             DB::raw("SUM(IF(pay_method='advance', IF(transaction_type='sell', amount, 0), 0)) as total_advance"),
             DB::raw("SUM(IF(pay_method='advance', IF(transaction_type='expense', amount, 0), 0)) as total_advance_expense"),
             DB::raw("SUM(IF(pay_method='custom_pay_1', IF(transaction_type='sell', amount, 0), 0)) as total_custom_pay_1"),
-            DB::raw("SUM(IF(pay_method='custom_pay_2', IF(transaction_type='sell', amount, 0), 0)) as total_custom_pay_2"),
+           /* DB::raw("SUM(IF(pay_method='custom_pay_2', IF(transaction_type='sell', amount, 0), 0)) as total_custom_pay_2"),
             DB::raw("SUM(IF(pay_method='custom_pay_3', IF(transaction_type='sell', amount, 0), 0)) as total_custom_pay_3"),
             DB::raw("SUM(IF(pay_method='custom_pay_4', IF(transaction_type='sell', amount, 0), 0)) as total_custom_pay_4"),
             DB::raw("SUM(IF(pay_method='custom_pay_5', IF(transaction_type='sell', amount, 0), 0)) as total_custom_pay_5"),
             DB::raw("SUM(IF(pay_method='custom_pay_6', IF(transaction_type='sell', amount, 0), 0)) as total_custom_pay_6"),
             DB::raw("SUM(IF(pay_method='custom_pay_7', IF(transaction_type='sell', amount, 0), 0)) as total_custom_pay_7"),
-            DB::raw("SUM(IF(pay_method='custom_pay_1', IF(transaction_type='expense', amount, 0), 0)) as total_custom_pay_1_expense"),
+            */DB::raw("SUM(IF(pay_method='custom_pay_1', IF(transaction_type='expense', amount, 0), 0)) as total_custom_pay_1_expense"),
             DB::raw("SUM(IF(pay_method='custom_pay_2', IF(transaction_type='expense', amount, 0), 0)) as total_custom_pay_2_expense"),
             DB::raw("SUM(IF(pay_method='custom_pay_3', IF(transaction_type='expense', amount, 0), 0)) as total_custom_pay_3_expense"),
             DB::raw("SUM(IF(pay_method='custom_pay_4', IF(transaction_type='expense', amount, 0), 0)) as total_custom_pay_4_expense"),

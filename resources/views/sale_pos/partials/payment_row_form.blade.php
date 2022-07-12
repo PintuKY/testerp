@@ -64,6 +64,13 @@
 	@endif
 	<div class="clearfix"></div>
 		@include('sale_pos.partials.payment_type_details')
+
+    <div class="col-md-12">
+        <div class="form-group">
+            {!! Form::label("transaction_no_{$row_index}", __('lang_v1.transaction_no')) !!}
+            {!! Form::text("payment[$row_index][transaction_no]", $payment_line['transaction_no'], ['class' => 'form-control', 'placeholder' => __('lang_v1.transaction_no'), 'id' => "transaction_no_{$row_index}"]); !!}
+        </div>
+    </div>
 	<div class="col-md-12">
 		<div class="form-group">
 			{!! Form::label("note_$row_index", __('sale.payment_note') . ':') !!}

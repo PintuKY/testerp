@@ -98,32 +98,30 @@
                 <div class="clearfix"></div>
                 <div class="col-sm-6">
                     <div class="form-group">
-                        {!! Form::label('invoice_scheme_id', __('invoice.invoice_scheme') . ':*') !!} @show
-                        _tooltip(__('tooltip.invoice_scheme'))
+                        {!! Form::label('invoice_scheme_id', __('invoice.invoice_scheme') . ':*') !!} @show_tooltip(__('tooltip.invoice_scheme'))
                         {!! Form::select('invoice_scheme_id', $invoice_schemes, null, ['class' => 'form-control', 'required',
                         'placeholder' => __('messages.please_select')]); !!}
                     </div>
                 </div>
+
+
                 <div class="col-sm-6">
                     <div class="form-group">
-                        {!! Form::label('invoice_layout_id', __('lang_v1.invoice_layout_for_pos') . ':*') !!} @show
-                        _tooltip(__('tooltip.invoice_layout'))
+                        {!! Form::label('invoice_layout_id', __('lang_v1.invoice_layout_for_pos') . ':*') !!} @show_tooltip(__('tooltip.invoice_layout'))
                         {!! Form::select('invoice_layout_id', $invoice_layouts, null, ['class' => 'form-control', 'required',
                         'placeholder' => __('messages.please_select')]); !!}
                     </div>
                 </div>
                 <div class="col-sm-6">
                     <div class="form-group">
-                        {!! Form::label('sale_invoice_layout_id', __('lang_v1.invoice_layout_for_sale') . ':*') !!} @show
-                        _tooltip(__('lang_v1.invoice_layout_for_sale_tooltip'))
+                        {!! Form::label('sale_invoice_layout_id', __('lang_v1.invoice_layout_for_sale') . ':*') !!} @show_tooltip(__('lang_v1.invoice_layout_for_sale_tooltip'))
                         {!! Form::select('sale_invoice_layout_id', $invoice_layouts, null, ['class' => 'form-control', 'required',
                         'placeholder' => __('messages.please_select')]); !!}
                     </div>
                 </div>
                 <div class="col-sm-6">
                     <div class="form-group">
-                        {!! Form::label('selling_price_group_id', __('lang_v1.default_selling_price_group') . ':') !!} @show
-                        _tooltip(__('lang_v1.location_price_group_help'))
+                        {!! Form::label('selling_price_group_id', __('lang_v1.default_selling_price_group') . ':') !!} @show_tooltip(__('lang_v1.location_price_group_help'))
                         {!! Form::select('selling_price_group_id', $price_groups, null, ['class' => 'form-control',
                         'placeholder' => __('messages.please_select')]); !!}
                     </div>
@@ -168,8 +166,7 @@
                 <hr>
                 <div class="col-sm-12">
                     <div class="form-group">
-                        {!! Form::label('featured_products', __('lang_v1.pos_screen_featured_products') . ':') !!} @show
-                        _tooltip(__('lang_v1.featured_products_help'))
+                        {!! Form::label('featured_products', __('lang_v1.pos_screen_featured_products') . ':') !!} @show_tooltip(__('lang_v1.featured_products_help'))
                         {!! Form::select('featured_products[]', [], null, ['class' => 'form-control',
                         'id' => 'featured_products', 'multiple']); !!}
                     </div>

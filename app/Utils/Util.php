@@ -160,13 +160,13 @@ class Util
 
         $payment_types = ['cash' => __('lang_v1.cash'), 'card' => __('lang_v1.card'), 'cheque' => __('lang_v1.cheque'), 'bank_transfer' => __('lang_v1.bank_transfer'), 'other' => __('lang_v1.other')];
 
-        $payment_types['custom_pay_1'] = !empty($custom_labels['payments']['custom_pay_1']) ? $custom_labels['payments']['custom_pay_1'] : __('lang_v1.custom_payment', ['number' => 1]);
-        $payment_types['custom_pay_2'] = !empty($custom_labels['payments']['custom_pay_2']) ? $custom_labels['payments']['custom_pay_2'] : __('lang_v1.custom_payment', ['number' => 2]);
+        $payment_types['custom_pay_1'] = !empty($custom_labels['payments']['custom_pay_1']) ? $custom_labels['payments']['custom_pay_1'] : __('lang_v1.paynow', ['number' => 1]);
+        /*$payment_types['custom_pay_2'] = !empty($custom_labels['payments']['custom_pay_2']) ? $custom_labels['payments']['custom_pay_2'] : __('lang_v1.custom_payment', ['number' => 2]);
         $payment_types['custom_pay_3'] = !empty($custom_labels['payments']['custom_pay_3']) ? $custom_labels['payments']['custom_pay_3'] : __('lang_v1.custom_payment', ['number' => 3]);
         $payment_types['custom_pay_4'] = !empty($custom_labels['payments']['custom_pay_4']) ? $custom_labels['payments']['custom_pay_4'] : __('lang_v1.custom_payment', ['number' => 4]);
         $payment_types['custom_pay_5'] = !empty($custom_labels['payments']['custom_pay_5']) ? $custom_labels['payments']['custom_pay_5'] : __('lang_v1.custom_payment', ['number' => 5]);
         $payment_types['custom_pay_6'] = !empty($custom_labels['payments']['custom_pay_6']) ? $custom_labels['payments']['custom_pay_6'] : __('lang_v1.custom_payment', ['number' => 6]);
-        $payment_types['custom_pay_7'] = !empty($custom_labels['payments']['custom_pay_7']) ? $custom_labels['payments']['custom_pay_7'] : __('lang_v1.custom_payment', ['number' => 7]);
+        $payment_types['custom_pay_7'] = !empty($custom_labels['payments']['custom_pay_7']) ? $custom_labels['payments']['custom_pay_7'] : __('lang_v1.custom_payment', ['number' => 7]);*/
 
         //Unset payment types if not enabled in business location
         if (!empty($location)) {
@@ -742,6 +742,39 @@ dd($response);
 
         return $uploaded_file_name;
     }
+    public function uploadFiles($request, $file_name, $dir_name, $file_type = 'document')
+    {
+        //If app environment is demo return null
+        if (config('app.env') == 'demo') {
+            return null;
+        }
+
+        $uploaded_file_name = null;
+        if ($request->hasFile($file_name) && $request->file($file_name)->isValid()) {
+
+            //Check if mime type is image
+            if ($file_type == 'image') {
+                if (strpos($request->$file_name->getClientMimeType(), 'image/') === false) {
+                    throw new \Exception("Invalid image file");
+                }
+            }
+
+            if ($file_type == 'document') {
+                if (!in_array($request->$file_name->getClientMimeType(), array_keys(config('constants.document_upload_mimes_types')))) {
+                    throw new \Exception("Invalid document file");
+                }
+            }
+
+            if ($request->$file_name->getSize() <= config('constants.document_size_limit')) {
+                $new_file_name = time() . '_' . $request->$file_name->getClientOriginalName();
+                if ($request->$file_name->storeAs('public/'.$dir_name, $new_file_name)) {
+                    $uploaded_file_name = $new_file_name;
+                }
+            }
+        }
+
+        return $uploaded_file_name;
+    }
 
     public function serviceStaffDropdown($business_id, $location_id = null)
     {
@@ -787,11 +820,13 @@ dd($response);
      */
     public function replaceTags($business_id, $data, $transaction, $contact = null)
     {
+
         if (!empty($transaction) && !is_object($transaction)) {
             $transaction = Transaction::where('business_id', $business_id)
                             ->with(['contact', 'payment_lines'])
                             ->findOrFail($transaction);
         }
+        $business_location = BusinessLocation::where('id',$transaction->location_id)->first();
 
         $business = !is_object($business_id) ? Business::with(['currency'])->findOrFail($business_id) : $business_id;
 
@@ -863,15 +898,14 @@ dd($response);
 
             //Replace business_name
             if (strpos($value, '{business_name}') !== false) {
-                $business_name = $business->name;
+                $business_name = $business_location->name;
                 $data[$key] = str_replace('{business_name}', $business_name, $data[$key]);
             }
 
             //Replace business_logo
             if (strpos($value, '{business_logo}') !== false) {
-                $logo_name = $business->logo;
-                $business_logo = !empty($logo_name) ? '<img src="' . url('uploads/business_logos/' . $logo_name) . '" alt="Business Logo" >' : '';
-
+                $logo_name = $business_location->logo;
+                $business_logo = !empty($logo_name) ? '<img width="200px" src="' . asset('storage/business_location_logos/' . $logo_name) . '" alt="Business Logo" >' : '';
                 $data[$key] = str_replace('{business_logo}', $business_logo, $data[$key]);
             }
 

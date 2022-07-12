@@ -795,13 +795,13 @@ class ReportController extends Controller
                     DB::raw("SUM(IF(pay_method='other', IF(transaction_type='sell', amount, 0), 0)) as total_other_payment"),
                     DB::raw("SUM(IF(pay_method='advance', IF(transaction_type='sell', amount, 0), 0)) as total_advance_payment"),
                     DB::raw("SUM(IF(pay_method='custom_pay_1', IF(transaction_type='sell', amount, 0), 0)) as total_custom_pay_1"),
-                    DB::raw("SUM(IF(pay_method='custom_pay_2', IF(transaction_type='sell', amount, 0), 0)) as total_custom_pay_2"),
+                    /*DB::raw("SUM(IF(pay_method='custom_pay_2', IF(transaction_type='sell', amount, 0), 0)) as total_custom_pay_2"),
                     DB::raw("SUM(IF(pay_method='custom_pay_3', IF(transaction_type='sell', amount, 0), 0)) as total_custom_pay_3"),
                     DB::raw("SUM(IF(pay_method='custom_pay_4', IF(transaction_type='sell', amount, 0), 0)) as total_custom_pay_4"),
                     DB::raw("SUM(IF(pay_method='custom_pay_5', IF(transaction_type='sell', amount, 0), 0)) as total_custom_pay_5"),
                     DB::raw("SUM(IF(pay_method='custom_pay_6', IF(transaction_type='sell', amount, 0), 0)) as total_custom_pay_6"),
                     DB::raw("SUM(IF(pay_method='custom_pay_7', IF(transaction_type='sell', amount, 0), 0)) as total_custom_pay_7")
-                )->groupBy('cash_registers.id');
+               */ )->groupBy('cash_registers.id');
 
             $permitted_locations = auth()->user()->permitted_locations();
             if ($permitted_locations != 'all') {
@@ -2044,11 +2044,11 @@ class ReportController extends Controller
                         $method .= '<br>(' . __('lang_v1.bank_account_no') . ': ' . $row->bank_account_number . ')';
                     } elseif ($row->method == 'custom_pay_1') {
                         $method .= '<br>(' . __('lang_v1.transaction_no') . ': ' . $row->transaction_no . ')';
-                    } elseif ($row->method == 'custom_pay_2') {
+                    } /*elseif ($row->method == 'custom_pay_2') {
                         $method .= '<br>(' . __('lang_v1.transaction_no') . ': ' . $row->transaction_no . ')';
                     } elseif ($row->method == 'custom_pay_3') {
                         $method .= '<br>(' . __('lang_v1.transaction_no') . ': ' . $row->transaction_no . ')';
-                    }
+                    }*/
                     return $method;
                 })
                 ->editColumn('amount', function ($row) {
@@ -2177,11 +2177,11 @@ class ReportController extends Controller
                         $method .= '<br>(' . __('lang_v1.bank_account_no') . ': ' . $row->bank_account_number . ')';
                     } elseif ($row->method == 'custom_pay_1') {
                         $method .= '<br>(' . __('lang_v1.transaction_no') . ': ' . $row->transaction_no . ')';
-                    } elseif ($row->method == 'custom_pay_2') {
+                    } /*elseif ($row->method == 'custom_pay_2') {
                         $method .= '<br>(' . __('lang_v1.transaction_no') . ': ' . $row->transaction_no . ')';
                     } elseif ($row->method == 'custom_pay_3') {
                         $method .= '<br>(' . __('lang_v1.transaction_no') . ': ' . $row->transaction_no . ')';
-                    }
+                    }*/
                     if ($row->is_return == 1) {
                         $method .= '<br><small>(' . __('lang_v1.change_return') . ')</small>';
                     }

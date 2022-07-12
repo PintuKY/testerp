@@ -24,11 +24,11 @@
                 $method .= '<br>(' . __('lang_v1.bank_account_no') . ': ' . $payment->bank_account_number . ')';
             } elseif ($payment->method == 'custom_pay_1') {
                 $method .= '<br>(' . __('lang_v1.transaction_no') . ': ' . $payment->transaction_no . ')';
-            } elseif ($payment->method == 'custom_pay_2') {
+            } /*elseif ($payment->method == 'custom_pay_2') {
                 $method .= '<br>(' . __('lang_v1.transaction_no') . ': ' . $payment->transaction_no . ')';
             } elseif ($payment->method == 'custom_pay_3') {
                 $method .= '<br>(' . __('lang_v1.transaction_no') . ': ' . $payment->transaction_no . ')';
-            }
+            }*/
             if ($payment->is_return == 1) {
                 $method .= '<br><small>(' . __('lang_v1.change_return') . ')</small>';
             }
@@ -52,7 +52,7 @@
             <a data-href="{{action('PurchaseReturnController@show', [$return_parent_id])}}" href="#" data-container=".view_modal" class="btn-modal">{{$ref_no}}</a> <br> <small>({{__('lang_v1.purchase_return')}}) </small>
         @elseif ($transaction_type == 'purchase')
             <a data-href="{{action('PurchaseController@show', [$transaction_id])}}" href="#" data-container=".view_modal" class="btn-modal">{{$ref_no}}</a> <br> <small>({{__('lang_v1.purchase')}}) </small>
-        @else 
+        @else
             @if(!empty($transaction_id))
                 {{$ref_no}} <br> <small>({{__('lang_v1.' . $transaction_type)}}) </small>
             @endif
@@ -64,7 +64,7 @@
         @if(!empty($transaction_id))
              <button type="button" class="btn btn-info btn-xs btn-modal" data-href="{{action('TransactionPaymentController@edit', [$payment->id])}}" data-container=".view_modal"><i class="fas fa-edit"></i> {{__('messages.edit')}}</button>
         @endif
-        
+
         <button type="button" class="btn btn-danger btn-xs delete_payment" data-href="{{action('TransactionPaymentController@destroy', [$payment->id])}}" > <i class="fas fa-trash"></i>{{__('messages.delete')}}</button>
     </td>
 </tr>

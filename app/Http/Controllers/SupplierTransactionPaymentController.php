@@ -66,7 +66,7 @@ class SupplierTransactionPaymentController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
-    {   
+    {
         try {
             $business_id = $request->session()->get('user.business_id');
             $transaction_id = $request->input('transaction_id');
@@ -90,11 +90,11 @@ class SupplierTransactionPaymentController extends Controller
 
                 if ($inputs['method'] == 'custom_pay_1') {
                     $inputs['transaction_no'] = $request->input('transaction_no_1');
-                } elseif ($inputs['method'] == 'custom_pay_2') {
+                } /*elseif ($inputs['method'] == 'custom_pay_2') {
                     $inputs['transaction_no'] = $request->input('transaction_no_2');
                 } elseif ($inputs['method'] == 'custom_pay_3') {
                     $inputs['transaction_no'] = $request->input('transaction_no_3');
-                }
+                }*/
 
                 if (!empty($request->input('account_id')) && $inputs['method'] != 'advance') {
                     $inputs['account_id'] = $request->input('account_id');
@@ -166,7 +166,7 @@ class SupplierTransactionPaymentController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id)
-    {   
+    {
         if (!(auth()->user()->can('sell.payments') || auth()->user()->can('purchase.payments'))) {
             abort(403, 'Unauthorized action.');
         }
@@ -199,8 +199,8 @@ class SupplierTransactionPaymentController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function edit($id)
-    {   
-        
+    {
+
         if (!auth()->user()->can('edit_purchase_payment') && !auth()->user()->can('edit_sell_payment')) {
             abort(403, 'Unauthorized action.');
         }
@@ -232,7 +232,7 @@ class SupplierTransactionPaymentController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
-    {   
+    {
         if (!auth()->user()->can('edit_purchase_payment') && !auth()->user()->can('edit_sell_payment') && !auth()->user()->can('all_expense.access') && !auth()->user()->can('view_own_expense')) {
             abort(403, 'Unauthorized action.');
         }
@@ -246,11 +246,11 @@ class SupplierTransactionPaymentController extends Controller
 
             if ($inputs['method'] == 'custom_pay_1') {
                 $inputs['transaction_no'] = $request->input('transaction_no_1');
-            } elseif ($inputs['method'] == 'custom_pay_2') {
+            } /*elseif ($inputs['method'] == 'custom_pay_2') {
                 $inputs['transaction_no'] = $request->input('transaction_no_2');
             } elseif ($inputs['method'] == 'custom_pay_3') {
                 $inputs['transaction_no'] = $request->input('transaction_no_3');
-            }
+            }*/
 
             if (!empty($request->input('account_id'))) {
                 $inputs['account_id'] = $request->input('account_id');
@@ -315,7 +315,7 @@ class SupplierTransactionPaymentController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function destroy($id)
-    {   
+    {
         if (!auth()->user()->can('delete_purchase_payment') && !auth()->user()->can('delete_sell_payment') && !auth()->user()->can('all_expense.access') && !auth()->user()->can('view_own_expense')) {
             abort(403, 'Unauthorized action.');
         }
@@ -383,7 +383,7 @@ class SupplierTransactionPaymentController extends Controller
         if (!auth()->user()->can('purchase.payments') && !auth()->user()->can('sell.payments') && !auth()->user()->can('all_expense.access') && !auth()->user()->can('view_own_expense')) {
             abort(403, 'Unauthorized action.');
         }
-        
+
         if (request()->ajax()) {
             $business_id = request()->session()->get('user.business_id');
 
@@ -567,8 +567,8 @@ class SupplierTransactionPaymentController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function viewPayment($payment_id)
-    {   
-        
+    {
+
         if (!(auth()->user()->can('sell.payments') ||
                 auth()->user()->can('purchase.payments') ||
                 auth()->user()->can("edit_sell_payment") ||
@@ -692,12 +692,12 @@ class SupplierTransactionPaymentController extends Controller
                     } elseif ($row->method == 'bank_transfer') {
                         $method .= '<br>(' . __('lang_v1.bank_account_no') . ': ' . $row->bank_account_number . ')';
                     } elseif ($row->method == 'custom_pay_1') {
-                        $method = __('lang_v1.custom_payment_1') . '<br>(' . __('lang_v1.transaction_no') . ': ' . $row->transaction_no . ')';
-                    } elseif ($row->method == 'custom_pay_2') {
+                        $method = __('lang_v1.paynow') . '<br>(' . __('lang_v1.transaction_no') . ': ' . $row->transaction_no . ')';
+                    } /*elseif ($row->method == 'custom_pay_2') {
                         $method = __('lang_v1.custom_payment_2') . '<br>(' . __('lang_v1.transaction_no') . ': ' . $row->transaction_no . ')';
                     } elseif ($row->method == 'custom_pay_3') {
                         $method = __('lang_v1.custom_payment_3') . '<br>(' . __('lang_v1.transaction_no') . ': ' . $row->transaction_no . ')';
-                    }
+                    }*/
                     return $method;
                 })
                 ->editColumn('amount', function ($row) {

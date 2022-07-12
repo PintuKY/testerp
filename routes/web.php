@@ -410,6 +410,13 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/suppliers/ledger', 'SupplierController@getLedger');
     Route::get('/supplier/payments/{supplier_id}', 'SupplierController@getSupplierPayments')->name('supplier.payments');
 
+    // supplier product 
+    Route::resource('supplier-products', 'SupplierProductController');
+    Route::get('supplier-products/units/create', 'SupplierProductController@unitCreate')->name('supplierProductUnits.create');
+    Route::post('supplier-products/units/create', 'SupplierProductController@unitStore')->name('supplierProductUnits.store');
+    Route::get('supplier-products/categories/create', 'SupplierProductController@categoryCreate')->name('supplierProductCategories.create');
+    Route::post('supplier-products/categories/create', 'SupplierProductController@categoryStore')->name('supplierProductCategories.store');
+
     // supplier purchases modules
     Route::post('/supplier-purchases/update-status', 'SupplierPurchaseController@updateStatus');
     Route::get('/supplier-purchases/get_products', 'SupplierPurchaseController@getProducts');

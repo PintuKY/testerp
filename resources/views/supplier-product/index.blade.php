@@ -82,6 +82,7 @@ $(document).ready(function () {
                     // {data: 'mass_delete'},
                     {data: 'action', name: 'action'},
                     {data: 'name', name: 'name'},
+                    {data: 'sku', name: 'sku'},
                     {data: 'supplier', name: 'supplier.name'},
                     {data: 'category', name: 'supplier_product_categories.name'},
                     {data: 'unit', name: 'unit', searchable: false},

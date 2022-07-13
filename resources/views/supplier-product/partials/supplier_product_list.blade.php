@@ -4,6 +4,7 @@
         <tr>
             <th>@lang('messages.action')</th> 
             <th>Name</th>
+            <th>SKU</th>
             <th>Supplier</th>
             <th>Category</th>
             <th>Unit</th>

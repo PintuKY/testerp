@@ -15,10 +15,7 @@ class SupplierProduct extends Model {
     protected $guarded = [];
     protected $table   = 'supplier_products';
 
-    public function supplier()
-    {
-        return $this->belongsTo(Supplier::class);
-    }
+
     public function category()
     {
         return $this->belongsTo(SupplierProductCategory::class);
@@ -26,5 +23,9 @@ class SupplierProduct extends Model {
     public function unit()
     {
         return $this->belongsTo(SupplierProductUnit::class);
+    }
+    public function media()
+    {
+        return $this->morphMany(\App\Models\Media::class, 'model');
     }
 }

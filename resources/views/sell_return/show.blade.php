@@ -141,6 +141,8 @@
                                             @endphp
                                             <span
                                                 class="price_totals_{{$productId}} total_prices">${{round($total_item_value * $total_quantity,2)}}</span>
+                                            <b>@lang('lang_v1.return_total'): </b>
+                                            <span class="return_total">${{$edit_product[$productId]['return_amount']}}</span>
                                         </div>
                                     </td>
                                 </tr>

@@ -349,6 +349,8 @@
                                 @endphp
                                 <b>@lang('sale.total'): </b>
                                 <span class="price_totals total_prices price_totals">${{round($total_item_value * $total_quantity,2)}}</span>
+                                <b>@lang('lang_v1.return_total'): </b>
+                                <span class="return_total">${{$edit_product[$productId]['return_amount']}}</span>
                             </div>
                         </td>
                     </tr>
@@ -436,7 +438,7 @@
 						{!! $receipt_details->subtotal_label !!}
 					</td>
 					<td class="text-right">
-						{{$receipt_details->subtotal}}
+						{{$receipt_details->subtotal_return}}
 					</td>
 				</tr>
 
@@ -458,7 +460,7 @@
 						</td>
 
 						<td class="text-right">
-							(-) {{$receipt_details->total_return}}
+							(-) {{$receipt_details->total_return_amount}}
 						</td>
 					</tr>
 				@endif
@@ -493,7 +495,7 @@
                         @lang('lang_v1.return_total'):
                     </th>
 					<td class="text-right font-23 padding-10" style="background-color: #357ca5 !important; color: white !important">
-						{{$receipt_details->total_return_amount}}
+						{{$receipt_details->final_amounts}}
 					</td>
 				</tr>
 			</tbody>

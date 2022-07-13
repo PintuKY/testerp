@@ -57,7 +57,7 @@
 				</div>
 				<div class="col-sm-12">
                     @foreach($product_ids as $key=>$productId)
-                    <table class="table bg-gray" id="sell_return_table">
+                    <table class="table bg-gray" id="sell_return_table" data-id="{{$productId}}">
                         <tr class="bg-green">
                             <th>#</th>
                             <th>{{ __('sale.product') }}({{$product_names[$key]}})</th>
@@ -179,11 +179,21 @@
                         <div class="col-sm-4">
                             <div class="form-group">
                                 {!! Form::label('total_return', __( 'lang_v1.total_return' ) . ':') !!}
-                                {!! Form::text('total_return', @num_format($sell->total_return), ['class' => 'form-control input_number total_return total_return_'.$sell->id]); !!}
+                               {{-- {!! Form::text('total_return',($sell->return_parent) ? @num_format($sell->return_parent->total_return) : $sell->total_return , ['class' => 'form-control input_number total_return total_return_'.$sell->id]); !!}--}}
+
+                                <input type="text" name="products[{{$productId}}][total_return]" value="{{ @num_format($edit_product[$productId]['return_amount']) }}"
+                                       class="form-control input-sm input_number total_return total_return_{{$productId}} input_quantity"
+                                       data-rule-abs_digit="{{$check_decimal = true}}"
+                                       data-msg-abs_digit="@lang('lang_v1.decimal_value_not_allowed')"
+                                       data-rule-max-value="{{$sell->final_total}}"
+                                       data-msg-max-value="@lang('validation.custom-messages.return_amount_less_then_total_amount', ['total' => $sell->final_total ])"
+                                >
+
+                                <input type="hidden" name="total_return_value" id="total_return_value" value="">
                             </div>
                         </div>
-                        <input name="products[{{$loop->index}}][unit_price_inc_tax]" type="hidden" class="unit_price" value="{{@num_format($sell_line->unit_price_inc_tax)}}">
-                        <input name="products[{{$loop->index}}][sell_line_id]" type="hidden" value="{{$sell_line->id}}">
+                        <input name="products[{{$productId}}][unit_price_inc_tax]" type="hidden" class="unit_price" value="{{@num_format($sell_line->unit_price_inc_tax)}}">
+                        <input name="products[{{$productId}}][sell_line_id]" type="hidden" value="{{$sell_line->id}}">
                     @endforeach
 					{{--<table class="table bg-gray" ccc>
 			          	<thead>
@@ -287,7 +297,7 @@
 				</div>--}}
                 <div class="col-sm-12 text-right">
                     <strong>@lang('lang_v1.total'): </strong>&nbsp;
-                    <span id="">{{$sell->final_total}}</span>
+                    <span id="total">{{$sell->final_total}}</span>
                 </div>
                 <div class="col-sm-12 text-right">
                     <strong>@lang('lang_v1.total_return'): </strong>&nbsp;
@@ -328,26 +338,30 @@
 	});
 
 	function update_sell_return_total(){
-		var net_return = 0;
-		var total_return = 0;
+        var net_return = 0;
+        var total_return = 0;
+        var subtotal = 0;
+        var return_total = '';
+        var calculated_total_sum = 0;
 		$('table#sell_return_table').each( function(){
+            var product_id = $(this).attr('data-id');
 
-            var old_total = "{{ $sell->final_total }}";
-            var return_total = $('.total_return').val();
+            var get_textbox_value = $('.total_return_'+product_id).val();
+            if ($.isNumeric(get_textbox_value)) {
+                calculated_total_sum += parseFloat(get_textbox_value);
+            }
+
+             return_total += parseFloat($('.total_return_'+product_id).val());
             var subtotal = old_total - return_total;
-            total_return += return_total;
-            console.log('old_total'+old_total);
-            console.log('return_total'+return_total);
-            console.log('subtotal'+subtotal);
-            console.log('total_return'+total_return);
 			/*var quantity = __read_number($(this).find('input.return_qty'));
 			var unit_price = __read_number($(this).find('input.unit_price'));
 			var subtotal = quantity * unit_price;*/
-			$(this).find('.return_subtotal').text(__currency_trans_from_en(subtotal, true));
-			net_return += subtotal;
 		});
-        $('span#net_return').text(__currency_trans_from_en(net_return, true));
-        $('span#return_amount').text(__currency_trans_from_en(total_return, true));
+        var old_total = $('#total').text();
+        var subtotal = old_total - calculated_total_sum;
+        $('input#total_return_value').val(subtotal);
+        $('span#net_return').text(__currency_trans_from_en(subtotal, true));
+        $('span#return_amount').text(__currency_trans_from_en(calculated_total_sum, true));
 		/*var discount = 0;
 		if($('#discount_type').val() == 'fixed'){
 			discount = __read_number($("#discount_amount"));

@@ -1694,6 +1694,7 @@ class TransactionUtil extends Util
         $output['subtotal_label'] = $il->sub_total_label . ':';
         $output['subtotal'] = ($transaction->total != 0) ? $this->num_f($transaction->total, $show_currency, $business_details) : 0;
 
+
         $output['subtotal_unformatted'] = ($transaction->total_before_tax != 0) ? $transaction->total_before_tax : 0;
 
         //round off
@@ -1720,9 +1721,11 @@ class TransactionUtil extends Util
         $output['discount'] = ($discount != 0) ? $this->num_f($discount, $show_currency, $business_details) : 0;
 
         $output['total_return'] = $transaction->total_return;
-        $total_return_amount = ($transaction->final_total) - ($transaction->total_return);
 
-        $output['total_return_amount'] = ($transaction->final_total != 0) ? $this->num_f($transaction->final_total, $show_currency, $business_details) : 0;
+        $output['subtotal_return'] = ($parent_sell->final_total != 0) ? $this->num_f($parent_sell->final_total, $show_currency, $business_details) : 0;
+
+        $output['total_return_amount'] = ($transaction->total_return != 0) ? $this->num_f($transaction->total_return, $show_currency, $business_details) : 0;
+        $output['final_amounts'] = ($transaction->final_total != 0) ? $this->num_f($transaction->final_total, $show_currency, $business_details) : 0;
 
         //reward points
         if ($business_details->enable_rp == 1 && !empty($transaction->rp_redeemed)) {
@@ -2528,7 +2531,7 @@ class TransactionUtil extends Util
                 //Field for 3rd column
                 'unit_price_inc_tax' => $this->num_f($line->unit_price_inc_tax, false, $business_details),
                 'unit_price_exc_tax' => $this->num_f($line->unit_price, false, $business_details),
-
+                'return_amount'=> $line->return_amount,
                 //Fields for 4th column
                 'line_total' => $this->num_f($line->unit_price_inc_tax * $line->quantity_returned, false, $business_details),
             ];
@@ -6008,6 +6011,8 @@ class TransactionUtil extends Util
             ->with(['sell_lines', 'sell_lines.sub_unit'])
             ->findOrFail($input['transaction_id']);
 
+
+
         //Check if any sell return exists for the sale
         $sell_return = Transaction::where('business_id', $business_id)
             ->where('type', 'sell_return')
@@ -6021,9 +6026,9 @@ class TransactionUtil extends Util
             'tax_id' => $sell->tax_id,
             'tax_amount' => $sell->tax_amount,
             'total_before_tax' => $sell->total_before_tax,
-            'final_total' => $sell->final_total - $input['total_return'],
+            'final_total' => $input['total_return_value'],
             'total' => $sell->total,
-            'total_return' => $input['total_return'],
+            'total_return' => floatval($sell->final_total - $input['total_return_value']),
         ];
 
         if (!empty($input['transaction_date'])) {
@@ -6075,30 +6080,17 @@ class TransactionUtil extends Util
         //Update quantity returned in sell line
         $returns = [];
         $product_lines = $input['products'];
-        /*foreach ($product_lines as $product_line) {
-            $returns[$product_line['sell_line_id']] = $uf_number ? $this->num_uf($product_line['quantity']) : $product_line['quantity'];
-        }*/
-        /*foreach ($sell->sell_lines as $sell_line) {
-            if (array_key_exists($sell_line->id, $returns)) {
-                $multiplier = 1;
-                if (!empty($sell_line->sub_unit)) {
-                    $multiplier = $sell_line->sub_unit->base_unit_multiplier;
-                }
+        foreach ($product_lines as $key => $product_line) {
+            $returns[$key] = $uf_number ? $this->num_uf($product_line['total_return']) : $product_line['total_return'];
+        }
 
-                $quantity = $returns[$sell_line->id] * $multiplier;
+        foreach ($sell->sell_lines as $sell_line) {
 
-                $quantity_before = $sell_line->quantity_returned;
-
-                $sell_line->quantity_returned = $quantity;
+            if (array_key_exists($sell_line->product_id, $returns)) {
+                $sell_line->return_amount = $returns[$sell_line->product_id];
                 $sell_line->save();
-
-                //update quantity sold in corresponding purchase lines
-                $this->updateQuantitySoldFromSellLine($sell_line, $quantity, $quantity_before, false);
-
-                // Update quantity in variation location details
-                //$productUtil->updateProductQuantity($sell_return->location_id, $sell_line->product_id, $sell_line->variation_id, $quantity, $quantity_before, null, false);
             }
-        }*/
+        }
 
         return $sell_return;
     }

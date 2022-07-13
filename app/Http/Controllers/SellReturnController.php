@@ -308,6 +308,7 @@ class SellReturnController extends Controller
                 'transaction_sell_lines.id',
                 'transaction_sell_lines.quantity as quantity_ordered',
                 'transaction_sell_lines.total_item_value as total_item_value',
+                'transaction_sell_lines.return_amount as return_amount',
                 'transaction_sell_lines.sell_line_note as sell_line_note',
                 'transaction_sell_lines.parent_sell_line_id',
                 'transaction_sell_lines.lot_no_line_id',
@@ -348,6 +349,7 @@ class SellReturnController extends Controller
                     'unit_id' => $value->unit_id,
                     'default_sell_price' => $value->default_sell_price,
                     'unit_price_before_discount' => $value->unit_price_before_discount,
+                    'return_amount' => $value->return_amount,
                 ];
                 $product_name[] = $value->product_actual_name;
             }
@@ -401,7 +403,7 @@ class SellReturnController extends Controller
                         ];
             }
         } catch (\Exception $e) {
-            dd($e->getMessage());
+            dd('ccc'.$e->getMessage());
             DB::rollBack();
 
             if (get_class($e) == \App\Exceptions\PurchaseSellMismatch::class) {
@@ -545,6 +547,7 @@ class SellReturnController extends Controller
                 'transaction_sell_lines.id as transaction_sell_lines_id',
                 'transaction_sell_lines.id',
                 'transaction_sell_lines.quantity as quantity_ordered',
+                'transaction_sell_lines.return_amount as return_amount',
                 'transaction_sell_lines.total_item_value as total_item_value',
                 'transaction_sell_lines.sell_line_note as sell_line_note',
                 'transaction_sell_lines.parent_sell_line_id',
@@ -582,6 +585,7 @@ class SellReturnController extends Controller
                     'unit_id' => $value->unit_id,
                     'default_sell_price' => $value->default_sell_price,
                     'unit_price_before_discount' => $value->unit_price_before_discount,
+                    'return_amount' => $value->return_amount,
                 ];
                 $product_name[] = $value->product_actual_name;
             }
@@ -655,7 +659,7 @@ class SellReturnController extends Controller
                             'msg' => __('lang_v1.success'),
                         ];
             } catch (\Exception $e) {
-                dd($e->getMessage());
+                dd('bbb'.$e->getMessage());
                 DB::rollBack();
 
                 if (get_class($e) == \App\Exceptions\PurchaseSellMismatch::class) {
@@ -719,6 +723,7 @@ class SellReturnController extends Controller
                 $edit_product[$element['product_id']] = [
                     'quantity' => $element['quantity_uf'],
                     'total_item_value' =>  $element['total_item_value'],
+                    'return_amount' => $element['return_amount'],
                 ];
             }
             $total_sell = array_values($unique_array);
@@ -767,7 +772,7 @@ class SellReturnController extends Controller
                     $output = ['success' => 1, 'receipt' => $receipt];
                 }
             } catch (\Exception $e) {
-                dd($e->getMessage());
+                dd('aaa'.$e->getMessage());
                 $output = ['success' => 0,
                         'msg' => trans("messages.something_went_wrong")
                         ];

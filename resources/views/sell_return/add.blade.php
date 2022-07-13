@@ -56,7 +56,136 @@
 					</div>
 				</div>
 				<div class="col-sm-12">
-					<table class="table bg-gray" id="sell_return_table">
+                    @foreach($product_ids as $key=>$productId)
+                    <table class="table bg-gray" id="sell_return_table">
+                        <tr class="bg-green">
+                            <th>#</th>
+                            <th>{{ __('sale.product') }}({{$product_names[$key]}})</th>
+                            @if( session()->get('business.enable_lot_number') == 1)
+                                <th>{{ __('lang_v1.lot_n_expiry') }}</th>
+                            @endif
+                            @if($sell->type == 'sales_order')
+                                <th>@lang('lang_v1.quantity_remaining')</th>
+                            @endif
+
+                            @if(!empty($pos_settings['inline_service_staff']))
+                                <th>
+                                    @lang('restaurant.service_staff')
+                                </th>
+                            @endif
+
+                            <th>{{ __('sale.subtotal') }}</th>
+                        </tr>
+                        @foreach($sell->sell_lines as $sell_line)
+                            @if($sell_line->product->id == $productId)
+                                <tr>
+                                    <td>{{ $loop->iteration }}</td>
+                                    <td>
+                                        @if( $sell_line->product->type == 'variable')
+                                            {{ $sell_line->variations->product_variation->name ?? ''}}
+                                            - {{ $sell_line->variations->name ?? ''}}
+                                        @endif
+
+
+                                        @if(!empty($sell_line->sell_line_note))
+                                            <br> {{$sell_line->sell_line_note}}
+                                        @endif
+
+
+                                        @if(in_array('kitchen', $enabled_modules))
+                                            <br><span
+                                                class="label @if($sell_line->res_line_order_status == 'cooked' ) bg-red @elseif($sell_line->res_line_order_status == 'served') bg-green @else bg-light-blue @endif">@lang('restaurant.order_statuses.' . $sell_line->res_line_order_status) </span>
+                                        @endif
+                                    </td>
+                                    @if( session()->get('business.enable_lot_number') == 1)
+                                        <td>{{ $sell_line->lot_details->lot_number ?? '--' }}
+                                            @if( session()->get('business.enable_product_expiry') == 1 && !empty($sell_line->lot_details->exp_date))
+                                                ({{@format_date($sell_line->lot_details->exp_date)}})
+                                            @endif
+                                        </td>
+                                    @endif
+
+                                    <td>
+                <span class="display_currency"
+                      data-currency_symbol="true">{{  ($sell_line->transactionSellLinesVariants->isNotEmpty()) ? $sell_line->transactionSellLinesVariants[0]->value : '0'}}</span>
+                                    </td>
+                                </tr>
+                            @endif
+                            @if(!empty($sell_line->modifiers))
+                                @foreach($sell_line->modifiers as $modifier)
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                        <td>
+                                            {{ $modifier->product->name }} - {{ $modifier->variations->name ?? ''}}
+                                        </td>
+                                        @if( session()->get('business.enable_lot_number') == 1)
+                                            <td>&nbsp;</td>
+                                        @endif
+                                        <td>{{ $modifier->quantity }}</td>
+                                        @if(!empty($pos_settings['inline_service_staff']))
+                                            <td>
+                                                &nbsp;
+                                            </td>
+                                        @endif
+                                        <td>
+                            <span class="display_currency"
+                                  data-currency_symbol="true">{{ $modifier->unit_price }}</span>
+                                        </td>
+                                        <td>
+                                            &nbsp;
+                                        </td>
+                                        <td>
+                                            <span class="display_currency" data-currency_symbol="true">{{ $modifier->item_tax }}</span>
+                                            @if(!empty($taxes[$modifier->tax_id]))
+                                                ( {{ $taxes[$modifier->tax_id]}} )
+                                            @endif
+                                        </td>
+                                        <td>
+                        <span class="display_currency"
+                              data-currency_symbol="true">{{ $modifier->unit_price_inc_tax }}</span>
+                                        </td>
+                                        <td>
+                        <span class="display_currency"
+                              data-currency_symbol="true">{{  ($sell_line->transactionSellLinesVariants->isNotEmpty()) ? $sell_line->transactionSellLinesVariants[0]->value : '0' }}</span>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            @endif
+                        @endforeach
+                    </table>
+                        <div class="table-responsive">
+                            <table
+                                class="table table-condensed table-bordered table-striped pos_table_{{$productId}}">
+                                <tr>
+                                    <td class="price_cal">
+                                        <div class="pull-right">
+                                            <b>@lang('sale.item'):</b>
+                                            <span
+                                                class="total_quantity_{{$productId}} total_quantity">{{  @num_format($edit_product[$productId]['quantity']) }}</span>
+                                            &nbsp;&nbsp;&nbsp;&nbsp;
+                                            <b>@lang('sale.total'): </b>
+                                            @php
+                                                $total_item_value = $edit_product[$productId]['total_item_value'];
+                                                $total_quantity = $edit_product[$productId]['quantity']
+                                            @endphp
+                                            <span
+                                                class="price_totals_{{$productId}} total_prices">${{round($total_item_value * $total_quantity,2)}}</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                {!! Form::label('total_return', __( 'lang_v1.total_return' ) . ':') !!}
+                                {!! Form::text('total_return', @num_format($sell->total_return), ['class' => 'form-control input_number total_return total_return_'.$sell->id]); !!}
+                            </div>
+                        </div>
+                        <input name="products[{{$loop->index}}][unit_price_inc_tax]" type="hidden" class="unit_price" value="{{@num_format($sell_line->unit_price_inc_tax)}}">
+                        <input name="products[{{$loop->index}}][sell_line_id]" type="hidden" value="{{$sell_line->id}}">
+                    @endforeach
+					{{--<table class="table bg-gray" ccc>
 			          	<thead>
 				            <tr class="bg-green">
 				              	<th>#</th>
@@ -99,14 +228,14 @@
 				              	</td>
 				              	<td><span class="display_currency" data-currency_symbol="true">{{ $sell_line->unit_price_inc_tax }}</span></td>
 				              	<td>{{ $sell_line->formatted_qty }} {{$unit_name}}</td>
-				              	
+
 				              	<td>
 						            <input type="text" name="products[{{$loop->index}}][quantity]" value="{{@format_quantity($sell_line->quantity_returned)}}"
 						            class="form-control input-sm input_number return_qty input_quantity"
-						            data-rule-abs_digit="{{$check_decimal}}" 
+						            data-rule-abs_digit="{{$check_decimal}}"
 						            data-msg-abs_digit="@lang('lang_v1.decimal_value_not_allowed')"
 			              			data-rule-max-value="{{$sell_line->quantity}}"
-			              			data-msg-max-value="@lang('validation.custom-messages.quantity_not_available', ['qty' => $sell_line->formatted_qty, 'unit' => $unit_name ])" 
+			              			data-msg-max-value="@lang('validation.custom-messages.quantity_not_available', ['qty' => $sell_line->formatted_qty, 'unit' => $unit_name ])"
 						            >
 						            <input name="products[{{$loop->index}}][unit_price_inc_tax]" type="hidden" class="unit_price" value="{{@num_format($sell_line->unit_price_inc_tax)}}">
 						            <input name="products[{{$loop->index}}][sell_line_id]" type="hidden" value="{{$sell_line->id}}">
@@ -117,7 +246,7 @@
 				            </tr>
 				          	@endforeach
 			          	</tbody>
-			        </table>
+			        </table>--}}
 				</div>
 			</div>
 			<div class="row">
@@ -128,13 +257,13 @@
 				<div class="col-sm-4">
 					<div class="form-group">
 						{!! Form::label('discount_type', __( 'purchase.discount_type' ) . ':') !!}
-						{!! Form::select('discount_type', [ '' => __('lang_v1.none'), 'fixed' => __( 'lang_v1.fixed' ), 'percentage' => __( 'lang_v1.percentage' )], $discount_type, ['class' => 'form-control']); !!}
+						{!! Form::select('discount_type', [ '' => __('lang_v1.none'), 'fixed' => __( 'lang_v1.fixed' ), 'percentage' => __( 'lang_v1.percentage' )], $sell->discount_type, ['class' => 'form-control','disabled']); !!}
 					</div>
 				</div>
 				<div class="col-sm-4">
 					<div class="form-group">
 						{!! Form::label('discount_amount', __( 'purchase.discount_amount' ) . ':') !!}
-						{!! Form::text('discount_amount', @num_format($discount_amount), ['class' => 'form-control input_number']); !!}
+						{!! Form::text('discount_amount', @num_format($sell->discount_amount), ['class' => 'form-control input_number','readonly']); !!}
 					</div>
 				</div>
 			</div>
@@ -148,17 +277,25 @@
 			{!! Form::hidden('tax_amount', 0, ['id' => 'tax_amount']); !!}
 			{!! Form::hidden('tax_percent', $tax_percent, ['id' => 'tax_percent']); !!}
 			<div class="row">
+                {{--<div class="col-sm-12 text-right">
+                    <strong>@lang('lang_v1.total_return_discount'):</strong>
+                    &nbsp;(-) <span id="total_return_discount"></span>
+                </div>
 				<div class="col-sm-12 text-right">
-					<strong>@lang('lang_v1.total_return_discount'):</strong> 
-					&nbsp;(-) <span id="total_return_discount"></span>
-				</div>
-				<div class="col-sm-12 text-right">
-					<strong>@lang('lang_v1.total_return_tax') - @if(!empty($sell->tax))({{$sell->tax->name}} - {{$sell->tax->amount}}%)@endif : </strong> 
+					<strong>@lang('lang_v1.total_return_tax') - @if(!empty($sell->tax))({{$sell->tax->name}} - {{$sell->tax->amount}}%)@endif : </strong>
 					&nbsp;(+) <span id="total_return_tax"></span>
-				</div>
+				</div>--}}
+                <div class="col-sm-12 text-right">
+                    <strong>@lang('lang_v1.total'): </strong>&nbsp;
+                    <span id="">{{$sell->final_total}}</span>
+                </div>
+                <div class="col-sm-12 text-right">
+                    <strong>@lang('lang_v1.total_return'): </strong>&nbsp;
+                    <span id="return_amount">0</span>
+                </div>
 				<div class="col-sm-12 text-right">
 					<strong>@lang('lang_v1.return_total'): </strong>&nbsp;
-					<span id="net_return">0</span> 
+					<span id="net_return">0</span>
 				</div>
 			</div>
 			<br>
@@ -186,20 +323,32 @@
 	    //     format: datepicker_date_format
 	    // });
 	});
-	$(document).on('change', 'input.return_qty, #discount_amount, #discount_type', function(){
+	$(document).on('change', 'input.return_qty,input.total_return, #discount_amount, #discount_type', function(){
 		update_sell_return_total()
 	});
 
 	function update_sell_return_total(){
 		var net_return = 0;
-		$('table#sell_return_table tbody tr').each( function(){
-			var quantity = __read_number($(this).find('input.return_qty'));
+		var total_return = 0;
+		$('table#sell_return_table').each( function(){
+
+            var old_total = "{{ $sell->final_total }}";
+            var return_total = $('.total_return').val();
+            var subtotal = old_total - return_total;
+            total_return += return_total;
+            console.log('old_total'+old_total);
+            console.log('return_total'+return_total);
+            console.log('subtotal'+subtotal);
+            console.log('total_return'+total_return);
+			/*var quantity = __read_number($(this).find('input.return_qty'));
 			var unit_price = __read_number($(this).find('input.unit_price'));
-			var subtotal = quantity * unit_price;
+			var subtotal = quantity * unit_price;*/
 			$(this).find('.return_subtotal').text(__currency_trans_from_en(subtotal, true));
 			net_return += subtotal;
 		});
-		var discount = 0;
+        $('span#net_return').text(__currency_trans_from_en(net_return, true));
+        $('span#return_amount').text(__currency_trans_from_en(total_return, true));
+		/*var discount = 0;
 		if($('#discount_type').val() == 'fixed'){
 			discount = __read_number($("#discount_amount"));
 		} else if($('#discount_type').val() == 'percentage'){
@@ -215,7 +364,7 @@
 		$('input#tax_amount').val(total_tax);
 		$('span#total_return_discount').text(__currency_trans_from_en(discount, true));
 		$('span#total_return_tax').text(__currency_trans_from_en(total_tax, true));
-		$('span#net_return').text(__currency_trans_from_en(net_return_inc_tax, true));
+		$('span#net_return').text(__currency_trans_from_en(net_return_inc_tax, true));*/
 	}
 </script>
 @endsection

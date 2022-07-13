@@ -107,10 +107,13 @@ class MasterController extends Controller
                         foreach ($row->transaction_sell_lines->transactionSellLinesVariants as $value) {
                             if (str_contains($value->pax, 'Serving Pax')) {
                                 $pax[] = $value->pax;
+                                $value = implode(',',$pax);
+                            }else{
+                                $value ='NA';
                             }
                         }
                     }
-                    return implode(',',$pax);
+                    return $value;
                 })
                 ->addColumn('addon', function ($row) {
                     $addon = [];

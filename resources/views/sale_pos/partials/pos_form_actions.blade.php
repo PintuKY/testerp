@@ -7,8 +7,10 @@
 			@if($is_mobile)
 				<div class="col-md-12 text-right">
 					<b>@lang('sale.total_payable'):</b>
-					<input type="hidden" name="final_total" 
+					<input type="hidden" name="final_total"
 												id="final_total_input" value=0>
+                    <input type="hidden" name="final_total_new"
+												id="final_total_input_new" value=0>
 					<span id="total_payable" class="text-success lead text-bold text-right">0</span>
 				</div>
 			@endif
@@ -16,8 +18,8 @@
 			<button type="button" class="btn btn-default bg-yellow btn-flat @if($is_mobile) col-xs-6 @endif" id="pos-quotation"><i class="fas fa-edit"></i> @lang('lang_v1.quotation')</button>
 
 			@if(empty($pos_settings['disable_suspend']))
-				<button type="button" 
-				class="@if($is_mobile) col-xs-6 @endif btn bg-red btn-default btn-flat no-print pos-express-finalize" 
+				<button type="button"
+				class="@if($is_mobile) col-xs-6 @endif btn bg-red btn-default btn-flat no-print pos-express-finalize"
 				data-pay_method="suspend"
 				title="@lang('lang_v1.tooltip_suspend')" >
 				<i class="fas fa-pause" aria-hidden="true"></i>
@@ -27,15 +29,15 @@
 
 			@if(empty($pos_settings['disable_credit_sale_button']))
 				<input type="hidden" name="is_credit_sale" value="0" id="is_credit_sale">
-				<button type="button" 
-				class="btn bg-purple btn-default btn-flat no-print pos-express-finalize @if($is_mobile) col-xs-6 @endif" 
+				<button type="button"
+				class="btn bg-purple btn-default btn-flat no-print pos-express-finalize @if($is_mobile) col-xs-6 @endif"
 				data-pay_method="credit_sale"
 				title="@lang('lang_v1.tooltip_credit_sale')" >
 					<i class="fas fa-check" aria-hidden="true"></i> @lang('lang_v1.credit_sale')
 				</button>
 			@endif
-			<button type="button" 
-				class="btn bg-maroon btn-default btn-flat no-print @if(!empty($pos_settings['disable_suspend'])) @endif pos-express-finalize @if(!array_key_exists('card', $payment_types)) hide @endif @if($is_mobile) col-xs-6 @endif" 
+			<button type="button"
+				class="btn bg-maroon btn-default btn-flat no-print @if(!empty($pos_settings['disable_suspend'])) @endif pos-express-finalize @if(!array_key_exists('card', $payment_types)) hide @endif @if($is_mobile) col-xs-6 @endif"
 				data-pay_method="card"
 				title="@lang('lang_v1.tooltip_express_checkout_card')" >
 				<i class="fas fa-credit-card" aria-hidden="true"></i> @lang('lang_v1.express_checkout_card')
@@ -54,8 +56,10 @@
 			@if(!$is_mobile)
 			<div class="bg-navy pos-total text-white">
 			<span class="text">@lang('sale.total_payable')</span>
-			<input type="hidden" name="final_total" 
+			<input type="hidden" name="final_total"
 										id="final_total_input" value=0>
+                <input type="hidden" name="final_total_new"
+										id="final_total_input_new" value=0>
 			<span id="total_payable" class="number">0</span>
 			</div>
 			@endif
@@ -64,8 +68,8 @@
 			<button type="button" class="pull-right btn btn-primary btn-flat @if($is_mobile) col-xs-6 @endif" data-toggle="modal" data-target="#recent_transactions_modal" id="recent-transactions"> <i class="fas fa-clock"></i> @lang('lang_v1.recent_transactions')</button>
 			@endif
 
-			
-			
+
+
 		</div>
 	</div>
 </div>

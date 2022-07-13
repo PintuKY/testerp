@@ -897,6 +897,7 @@ $multiplier = 1;
                                    id="round_off_amount" value=0>
                         @endif
                         <div><b>@lang('sale.total_payable'): </b>
+                            <input type="hidden" value="{{$transaction->final_total}}" name="final_total_new" id="final_total_input_new">
                             <input type="hidden" value="{{$transaction->final_total}}" name="final_total" id="final_total_input">
                             <input type="hidden" value="{{$transaction->final_total}}" name="final_totals" id="final_total_inputs">
                             <span id="total_payable">0</span>

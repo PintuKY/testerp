@@ -11,26 +11,33 @@
 					<table class="table table-condensed bg-gray">
 					  <tr>
 						<th>Name</th>
-						<th>Supplier</th>
 						<th>Category</th>
+						<th>Weight</th>
 						<th>Unit</th>
-						<th>Price</th>
+						<th>Default Purchase Price</th>
+						<th>Tax</th>
+						<th>Purchase Price Inc Tax</th>
 						<th>Description</th>
 					  </tr>
-					 
 						  <tr>
 							<td>{{$supplier_product->name}}</td>
 							<td>
-							  {{$supplier_product->supplier->name ?? $supplier_product->supplier->supplier_business_name }}
+								{{$supplier_product->category->name}}
 							</td>
 							<td>
-								{{$supplier_product->category->name}}
+								{{$supplier_product->weight}}
 							</td>
 							<td>
 								{{$supplier_product->unit->name}}
 							</td>
 							<td>
 								{{$supplier_product->purchase_price}}
+							</td>
+							<td>
+								{{$supplier_product->product_tax->name ?? null}}
+							</td>
+							<td>
+								{{$supplier_product->purchase_price_inc_tax}}
 							</td>
 							<td>
 								{{$supplier_product->description}}

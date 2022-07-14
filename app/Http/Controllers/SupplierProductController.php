@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\SupplierProductUnit;
 use Illuminate\Support\Facades\Log;
 use App\Models\SupplierProductCategory;
+use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Facades\DataTables;
 
 
@@ -34,10 +35,10 @@ class SupplierProductController extends Controller
         if (request()->ajax()) {
             $supplier_products = DB::table('supplier_products')
             ->leftjoin(
-                'supplier',
-                'supplier.id',
+                'tax_rates',
+                'tax_rates.id',
                 '=',
-                'supplier_products.supplier_id'
+                'supplier_products.tax'
             )
             ->leftjoin(
                 'supplier_product_categories',
@@ -55,20 +56,27 @@ class SupplierProductController extends Controller
                 'supplier_products.id as id',
                 'supplier_products.name as name',
                 'supplier_products.sku as sku',
+                'supplier_products.weight as weight',
                 'supplier_products.purchase_price as price',
+                'supplier_products.purchase_price_inc_tax as purchase_price_inc_tax',
                 'supplier_product_categories.name as category',
                 'supplier_product_units.name as unit',
-                'supplier.name as supplier',
+                'supplier_products.alert_quantity as alert_quantity',
+                'tax_rates.name as tax',
             )->where('supplier_products.deleted_at','=',null);
 
             $category_id = request()->get('category_id', null);
             if (!empty($category_id)) {
                 $supplier_products->where('supplier_products.category_id', $category_id);
             }
-
-            $supplier_id = request()->get('supplier_id', null);
-            if (!empty($supplier_id)) {
-                $supplier_products->where('supplier_products.supplier_id', $supplier_id);
+            $unit_id = request()->get('unit_id', null);
+            if (!empty($unit_id)) {
+                $supplier_products->where('supplier_products.unit_id', $unit_id);
+            }
+            $tax = request()->get('tax', null);
+            Log::info($tax);
+            if (!empty($tax)) {
+                $supplier_products->where('supplier_products.tax', $tax);
             }
             
             return Datatables::of($supplier_products)
@@ -96,9 +104,12 @@ class SupplierProductController extends Controller
             )->make(true);
         }
         $categories  = DB::table('supplier_product_categories')->where('business_id',$business_id)->pluck('name','id');
-        $suppliers   = DB::table('supplier')->where('business_id',$business_id)->pluck('name','id');
+        $units       = DB::table('supplier_product_units')->where('business_id',$business_id)->pluck('name','id');
+        $tax_dropdown = TaxRate::forBusinessDropdown($business_id, true, true);
+        $taxes          = $tax_dropdown['tax_rates'];
+        $tax_attributes = $tax_dropdown['attributes'];
 
-     return view('supplier-product.index',compact('categories','suppliers'));
+     return view('supplier-product.index',compact('categories','taxes','units'));
     }
 
     public function show($supplier_product_id)
@@ -106,7 +117,7 @@ class SupplierProductController extends Controller
         if (!auth()->user()->can('product.view')) {
             abort(403, 'Unauthorized action.');
         }
-        $supplier_product = SupplierProduct::with('supplier','unit','category')
+        $supplier_product = SupplierProduct::with('product_tax','unit','category')
         ->where('id',$supplier_product_id)->first();
         return view('supplier-product.show',compact('supplier_product'));
     }
@@ -124,29 +135,30 @@ class SupplierProductController extends Controller
     }
     public function edit($supplier_product_id)
     {
-        $suppliers   = Supplier::where('business_id',request()->session()->get('user.business_id'))->pluck('name','id');
         $business_id =  request()->session()->get('user.business_id');
         $units       = DB::table('supplier_product_units')->where('business_id',$business_id)->pluck('name','id');
         $categories  = DB::table('supplier_product_categories')->where('business_id',$business_id)->pluck('name','id');
         $supplier_product = SupplierProduct::find($supplier_product_id);
-      return view('supplier-product.edit',compact('supplier_product','units','categories','suppliers'));
+        $tax_dropdown = TaxRate::forBusinessDropdown($business_id, true, true);
+        $taxes          = $tax_dropdown['tax_rates'];
+        $tax_attributes = $tax_dropdown['attributes'];
+      return view('supplier-product.edit',compact('supplier_product','units','categories','taxes','tax_attributes'));
 
     }
     public function store(Request $request) {
-        try {
         $data = $request->validate([
             'name'                   => 'required',
-            'purchase_price'         => 'required|numeric',
+            'purchase_price'         => 'required',
             'category_id'            => 'required',
             'unit_id'                => 'required',
-            'description'            => 'required',
+            'description'            => 'sometimes',
             'weight'                 => 'sometimes',
-            'purchase_price_inc_tax' => 'required|numeric',
+            'purchase_price_inc_tax' => 'required',
             'tax'                    => 'sometimes',
             'weight'                 => 'sometimes',
             'alert_quantity'         => 'sometimes',
         ]);
-        
+        try {
         $data['business_id'] =  $request->session()->get('user.business_id');
         DB::beginTransaction();
         $data['image']       = $this->productUtil->uploadFile($request, 'supplier_product_image', config('constants.product_img_path'), 'image');
@@ -173,20 +185,39 @@ class SupplierProductController extends Controller
 
     public function update(Request $request,$supplier_product_id)
     {
-     try {
-      $data = $request->validate([
-        'name'          =>'required',
-        'supplier_id'   =>'required',
-        'purchase_price'=>'required|numeric',
-        'category_id'   =>'required',
-        'unit_id'       =>'required',
-        'description'   =>'required'
-      ]);
-       $supplier_product = SupplierProduct::find($supplier_product_id);
-       $supplier_product->update($data);
+        $data = $request->validate([
+            'name'                   => 'required',
+            'purchase_price'         => 'required',
+            'category_id'            => 'required',
+            'unit_id'                => 'required',
+            'description'            => 'sometimes',
+            'weight'                 => 'sometimes',
+            'purchase_price_inc_tax' => 'required',
+            'tax'                    => 'sometimes',
+            'weight'                 => 'sometimes',
+            'alert_quantity'         => 'sometimes',
+        ]);
+        try {
+            DB::beginTransaction();
+            $supplier_product = SupplierProduct::find($supplier_product_id);
+            $supplier_product->update($data);
+            $file_name = $this->productUtil->uploadFile($request, 'supplier_product_image', config('constants.product_img_path'), 'image');
+        if (!empty($file_name)) {
+            //If previous image found then remove
+            if (!empty($supplier_product->image_path) && file_exists($supplier_product->image_path)) {
+                unlink($supplier_product->image_path);
+            }
+        }
+        $supplier_product->image = $file_name;
+
+        $supplier_product->save();
+        $supplier_product->touch();
+        Media::uploadMedia($supplier_product->business_id, $supplier_product, $request, 'product_brochure', true);
+        DB::commit();
        $output = ['success' => true,
        'msg' => 'Product Updated Successfully'];
         }catch (\Exception $e) {
+            DB::rollback();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
             $output = ['success' => false,
                         'msg' => __("messages.something_went_wrong")];

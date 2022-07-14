@@ -37,17 +37,6 @@
             </div>
           </div>
           <div class="row">
-            {{-- <div class="col-12 col-md-6">
-                <div class="form-group">
-                  {{ Form::label('supplier_id', __('purchase.supplier') . ':*') }}
-                  <div class="input-group">
-                      {{ Form::select('supplier_id', [], null, ['class' => 'form-control','style' => 'width:100%', 'placeholder' => __('messages.please_select'), 'required', 'id' => 'supplier_id']); }}
-                      <span class="input-group-btn">
-                        <button type="button" class="btn btn-default bg-white btn-flat add_new_supplier" data-name=""><i class="fa fa-plus-circle text-primary fa-lg"></i></button>
-                      </span>
-                  </div>
-              </div>    
-            </div> --}}
             <div class="col-12 col-md-6 ">
               <div class="form-group d-block">
                  {{ Form::label('unit', __('product.unit') . ':') }} 

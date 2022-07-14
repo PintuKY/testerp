@@ -1,6 +1,6 @@
 @php
     $variation_name = !empty($variation_name) ? $variation_name : null;
-    $variation_price = !empty($variation_price) ? $variation_price : null;
+    $variation_price = !empty($variation_price) ? $variation_price : '0';
     $variation_value_id = !empty($variation_value_id) ? $variation_value_id : null;
 
     $name = (empty($row_type) || $row_type == 'add') ? 'product_variation' : 'product_variation_edit';

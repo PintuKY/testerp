@@ -1815,6 +1815,7 @@ function pos_product_row(product_id = null, purchase_line_id = null, weighing_sc
                         this_row.find('select.sub_unit').trigger('change');
                     }
 
+
                     if (result.enable_sr_no == '1') {
                         var new_row = $('table#pos_table tbody')
                             .find('tr')

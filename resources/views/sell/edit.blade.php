@@ -425,7 +425,7 @@ $multiplier = 1;
                                     </tbody>
                                 </table>
                                 <input type="hidden" class="total_item_price" id="total_{{$productId}}"
-                                       name="product[{{$productId}}][total]" value="{{@num_format($edit_product[$productId]['total_item_value'])}}">
+                                       name="product[{{$productId}}][total]" value="{{@num_format($edit_product[$productId]['total_item_value'] * $edit_product[$productId]['quantity'])}}">
 
                                 <div class="row pos_table_{{$productId}}">
                                     <div class="col-md-12 col-sm-12">

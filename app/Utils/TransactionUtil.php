@@ -5230,6 +5230,8 @@ class TransactionUtil extends Util
                 'transactions.shipping_custom_field_3',
                 'transactions.shipping_custom_field_4',
                 'transactions.shipping_custom_field_5',
+                'transactions.shipping_address_line_1',
+                'transactions.shipping_address_line_2',
                 'transactions.custom_field_1',
                 'transactions.custom_field_2',
                 'transactions.custom_field_3',

@@ -22,7 +22,6 @@ return [
     'payment_added_success' => 'Payment added successfully',
     'payment_updated_success' => 'Payment updated successfully',
     'payment_deleted_success' => 'Payment deleted successfully',
-    'view_payments' => 'View Payments',
     'amount' => 'Amount',
     'payment_method' => 'Payment Method',
     'no_records_found' => 'No records found',
@@ -52,7 +51,6 @@ return [
     'purchase_tax' => 'Purchase Tax',
     'shipping_details' => 'Shipping Details',
     'additional_shipping_charges' => 'Additional Shipping charges',
-    'purchase_total' => 'Purchase Total',
     'additional_notes' => 'Additional Notes',
     'purchase_add_success' => 'Purchase added successfully',
     'purchase_update_success' => 'Purchase updated successfully',
@@ -68,4 +66,5 @@ return [
     'attach_document' => 'Attach Document',
     'download_document' => 'Download Document',
     'max_file_size' => 'Max File size: :sizeMB',
+    ''
 ];

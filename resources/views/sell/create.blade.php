@@ -640,6 +640,7 @@
                         @endif
                         <div><b>@lang('sale.total_payable'): </b>
                             <input type="hidden" name="final_total" id="final_total_input">
+                            <input type="hidden" name="final_total_new" id="final_total_input_new">
                             <span id="total_payable">0</span>
                         </div>
                     </div>

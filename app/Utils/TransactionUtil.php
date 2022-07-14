@@ -553,12 +553,6 @@ class TransactionUtil extends Util
                 $variation_value_data_id[] = $variation_value_data->variation_value_id;
                 $variation_value[] = $variation_value_data->default_sell_price;
             }
-            /* echo "<pre>";print_r($variation_value_data_id);
-             dd($variation_value);*/
-            /*$variation_value_data = Variation::whereIn('id', $variation_value_id)->get();
-            foreach ($variation_value_data as $vdata) {
-                $variation_value_data_id[] = $vdata->variation_value_id;
-            }*/
 
             foreach ($variation_value_data_id as $key => $data) {
                 $variation_value_datas = VariationValueTemplate::with('variationTemplate')->where('id', $data)->first();
@@ -1660,17 +1654,22 @@ class TransactionUtil extends Util
             $output['total_line_discount'] = !empty($total_line_discount) ? $this->num_f($total_line_discount, true, $business_details) : 0;
 
         } elseif ($transaction_type == 'sell_return') {
+
             $parent_sell = Transaction::find($transaction->return_parent_id);
             $lines = $parent_sell->sell_lines;
-
+            $product_id = [];
+            $product_name = [];
             foreach ($lines as $key => $value) {
+                $product_id[] = $value->product_id;
+                $product_name[] = $value->product_name;
                 if (!empty($value->sub_unit_id)) {
                     $formated_sell_line = $this->recalculateSellLineTotals($business_details->id, $value);
 
                     $lines[$key] = $formated_sell_line;
                 }
             }
-
+            $output['product_id'] = array_unique($product_id);
+            $output['product_name'] = array_unique($product_name);
             $details = $this->_receiptDetailsSellReturnLines($lines, $il, $business_details);
             $output['lines'] = $details['lines'];
 
@@ -1694,6 +1693,7 @@ class TransactionUtil extends Util
         //Subtotal
         $output['subtotal_label'] = $il->sub_total_label . ':';
         $output['subtotal'] = ($transaction->total != 0) ? $this->num_f($transaction->total, $show_currency, $business_details) : 0;
+
 
         $output['subtotal_unformatted'] = ($transaction->total_before_tax != 0) ? $transaction->total_before_tax : 0;
 
@@ -1719,6 +1719,13 @@ class TransactionUtil extends Util
             $discount = $transaction->discount_amount;
         }
         $output['discount'] = ($discount != 0) ? $this->num_f($discount, $show_currency, $business_details) : 0;
+
+        $output['total_return'] = $transaction->total_return;
+
+        $output['subtotal_return'] = ($parent_sell->final_total != 0) ? $this->num_f($parent_sell->final_total, $show_currency, $business_details) : 0;
+
+        $output['total_return_amount'] = ($transaction->total_return != 0) ? $this->num_f($transaction->total_return, $show_currency, $business_details) : 0;
+        $output['final_amounts'] = ($transaction->final_total != 0) ? $this->num_f($transaction->final_total, $show_currency, $business_details) : 0;
 
         //reward points
         if ($business_details->enable_rp == 1 && !empty($transaction->rp_redeemed)) {
@@ -2422,9 +2429,15 @@ class TransactionUtil extends Util
                     $modifier_line_array = [
                         //Field for 1st column
                         'name' => $product->name,
+
+                        'product_id' => $product->id,
                         'variation' => (empty($variation->name) || $variation->name == 'DUMMY') ? '' : $variation->name,
+                        'product_variation' => (empty($product_variation->name) || $product_variation->name == 'DUMMY') ? '' : $product_variation->name,
+                        'total_item_value' => $modifier_line->total_item_value,
+                        'tran_sell_var_value' => ($modifier_line->transactionSellLinesVariants->isNotEmpty()) ? $modifier_line->transactionSellLinesVariants[0]->value : '0',
                         //Field for 2nd column
                         'quantity' => $this->num_f($modifier_line->quantity, false, $business_details),
+                        'quantity_uf' => $modifier_line->quantity,
                         'units' => !empty($unit->short_name) ? $unit->short_name : '',
 
                         //Field for 3rd column
@@ -2452,7 +2465,6 @@ class TransactionUtil extends Util
 
             $output_lines[] = $line_array;
         }
-
         return ['lines' => $output_lines];
     }
 
@@ -2503,11 +2515,15 @@ class TransactionUtil extends Util
             $line_array = [
                 //Field for 1st column
                 'name' => $product->name,
+                'product_id' => $product->id,
                 'variation' => (empty($variation->name) || $variation->name == 'DUMMY') ? '' : $variation->name,
+                'product_variation' => (empty($product_variation->name) || $product_variation->name == 'DUMMY') ? '' : $product_variation->name,
                 //Field for 2nd column
                 'quantity' => $this->num_f($line->quantity_returned, false, $business_details, true),
+                'quantity_uf' => $line->quantity,
+                'total_item_value' => $line->total_item_value,
                 'units' => $unit_name,
-
+                'tran_sell_var_value' => ($line->transactionSellLinesVariants->isNotEmpty()) ? $line->transactionSellLinesVariants[0]->value : '0',
                 'unit_price' => $this->num_f($line->unit_price, false, $business_details),
                 'tax' => $this->num_f($line->item_tax, false, $business_details),
                 'tax_name' => !empty($tax_details) ? $tax_details->name : null,
@@ -2515,7 +2531,7 @@ class TransactionUtil extends Util
                 //Field for 3rd column
                 'unit_price_inc_tax' => $this->num_f($line->unit_price_inc_tax, false, $business_details),
                 'unit_price_exc_tax' => $this->num_f($line->unit_price, false, $business_details),
-
+                'return_amount'=> $line->return_amount,
                 //Fields for 4th column
                 'line_total' => $this->num_f($line->unit_price_inc_tax * $line->quantity_returned, false, $business_details),
             ];
@@ -2568,7 +2584,6 @@ class TransactionUtil extends Util
 
             $output_lines[] = $line_array;
         }
-
         return ['lines' => $output_lines, 'taxes' => $output_taxes];
     }
 
@@ -5977,23 +5992,26 @@ class TransactionUtil extends Util
 
     public function addSellReturn($input, $business_id, $user_id, $uf_number = true)
     {
-        $discount = [
+
+       /* $discount = [
             'discount_type' => $input['discount_type'] ?? 'fixed',
             'discount_amount' => $input['discount_amount'] ?? 0
-        ];
+        ];*/
 
         $business = Business::with(['currency'])->findOrFail($business_id);
 
         $productUtil = new \App\Utils\ProductUtil();
 
-        $input['tax_id'] = $input['tax_id'] ?? null;
+        /*$input['tax_id'] = $input['tax_id'] ?? null;*/
 
-        $invoice_total = $productUtil->calculateInvoiceTotal($input['products'], $input['tax_id'], $discount, $uf_number);
+        /*$invoice_total = $productUtil->calculateInvoiceTotal($input['products'], $input['tax_id'], $discount, $uf_number);*/
 
         //Get parent sale
         $sell = Transaction::where('business_id', $business_id)
             ->with(['sell_lines', 'sell_lines.sub_unit'])
             ->findOrFail($input['transaction_id']);
+
+
 
         //Check if any sell return exists for the sale
         $sell_return = Transaction::where('business_id', $business_id)
@@ -6003,18 +6021,19 @@ class TransactionUtil extends Util
 
         $sell_return_data = [
             'invoice_no' => $input['invoice_no'] ?? null,
-            'discount_type' => $discount['discount_type'],
-            'discount_amount' => $uf_number ? $this->num_uf($discount['discount_amount']) : $discount['discount_amount'],
-            'tax_id' => $input['tax_id'],
-            'tax_amount' => $invoice_total['tax'],
-            'total_before_tax' => $invoice_total['total_before_tax'],
-            'final_total' => $invoice_total['final_total']
+            'discount_type' => $sell->discount_type,
+            'discount_amount' => $uf_number ? $this->num_uf($sell->discount_amount) : $sell->discount_amount,
+            'tax_id' => $sell->tax_id,
+            'tax_amount' => $sell->tax_amount,
+            'total_before_tax' => $sell->total_before_tax,
+            'final_total' => $input['total_return_value'],
+            'total' => $sell->total,
+            'total_return' => floatval($sell->final_total - $input['total_return_value']),
         ];
 
         if (!empty($input['transaction_date'])) {
             $sell_return_data['transaction_date'] = $uf_number ? $this->uf_date($input['transaction_date'], true) : $input['transaction_date'];
         }
-
         //Generate reference number
         if (empty($sell_return_data['invoice_no']) && empty($sell_return)) {
             //Update reference count
@@ -6050,7 +6069,6 @@ class TransactionUtil extends Util
                 $diff = $sell->final_total - $sell_return->final_total;
                 $new_reward_point = $this->calculateRewardPoints($business_id, $diff);
                 $this->updateCustomerRewardPoints($sell->contact_id, $new_reward_point, $sell->rp_earned);
-
                 $sell->rp_earned = $new_reward_point;
                 $sell->save();
             }
@@ -6062,28 +6080,15 @@ class TransactionUtil extends Util
         //Update quantity returned in sell line
         $returns = [];
         $product_lines = $input['products'];
-        foreach ($product_lines as $product_line) {
-            $returns[$product_line['sell_line_id']] = $uf_number ? $this->num_uf($product_line['quantity']) : $product_line['quantity'];
+        foreach ($product_lines as $key => $product_line) {
+            $returns[$key] = $uf_number ? $this->num_uf($product_line['total_return']) : $product_line['total_return'];
         }
+
         foreach ($sell->sell_lines as $sell_line) {
-            if (array_key_exists($sell_line->id, $returns)) {
-                $multiplier = 1;
-                if (!empty($sell_line->sub_unit)) {
-                    $multiplier = $sell_line->sub_unit->base_unit_multiplier;
-                }
 
-                $quantity = $returns[$sell_line->id] * $multiplier;
-
-                $quantity_before = $sell_line->quantity_returned;
-
-                $sell_line->quantity_returned = $quantity;
+            if (array_key_exists($sell_line->product_id, $returns)) {
+                $sell_line->return_amount = $returns[$sell_line->product_id];
                 $sell_line->save();
-
-                //update quantity sold in corresponding purchase lines
-                $this->updateQuantitySoldFromSellLine($sell_line, $quantity, $quantity_before, false);
-
-                // Update quantity in variation location details
-                //$productUtil->updateProductQuantity($sell_return->location_id, $sell_line->product_id, $sell_line->variation_id, $quantity, $quantity_before, null, false);
             }
         }
 

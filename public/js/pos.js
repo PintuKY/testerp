@@ -796,6 +796,7 @@ $(document).ready(function () {
         }
         //Check for remaining balance & add it in 1st payment row
         var total_payable = __read_number($('input#final_total_input'));
+        var total_payable = __read_number($('input#final_total_input_new'));
         var total_paying = __read_number($('input#total_paying_input'));
         if (total_payable > total_paying) {
             var bal_due = total_payable - total_paying;
@@ -877,6 +878,7 @@ $(document).ready(function () {
                 if (result) {
                     var appended = $('#payment_rows_div').append(result);
                     var total_payable = __read_number($('input#final_total_input'));
+                    var total_payable = __read_number($('input#final_total_input_new'));
                     var total_paying = __read_number($('input#total_paying_input'));
                     var b_due = total_payable - total_paying;
                     $(appended)
@@ -1385,6 +1387,7 @@ $(document).ready(function () {
             curr_exchange_rate = __read_number($(this));
         }
         var total_payable = __read_number($('input#final_total_input'));
+        var total_payable = __read_number($('input#final_total_input_new'));
         var shown_total = total_payable * curr_exchange_rate;
         $('span#total_payable').text(__currency_trans_from_en(shown_total, false));
     });
@@ -2022,6 +2025,7 @@ function calculate_billing_details(price_total) {
 
 
     __write_number($('input#final_total_input'), total_payable_rounded);
+    __write_number($('input#final_total_input_new'), total_payable_rounded);
     var curr_exchange_rate = 1;
     if ($('#exchange_rate').length > 0 && $('#exchange_rate').val()) {
         curr_exchange_rate = __read_number($('#exchange_rate'));
@@ -2071,6 +2075,7 @@ function pos_order_tax(price_total, discount) {
 
 function calculate_balance_due() {
     var total_payable = __read_number($('#final_total_input'));
+    var total_payable = __read_number($('#final_total_input_new'));
     var total_paying = 0;
     $('#payment_rows_div')
         .find('.payment-amount')
@@ -2415,6 +2420,7 @@ $(document).on('click', '.input-number .product-quantity-up, .input-number .prod
     });
     $('#total_item_value').val(itemPriceTotal);
     $('#final_total_input').val(itemPriceTotal);
+   // $('#final_total_input_new').val(itemPriceTotal);
     $('#final_total_inputs').val(itemPriceTotal);
     $('.price_cal .total_quantity_'+product_id).html($('.pos_quantity_'+product_id).val());
 });
@@ -2492,7 +2498,8 @@ function productVariationsPriceCalculation($this,quantity,product_id) {
     //$('.price_cal .total_quantity').html($('.product_table').length);
     $('.price_cal .total_quantity_'+product_id).html($('.pos_quantity_'+product_id).val());
 
-    $('#final_total_input').val(itemPriceTotal);
+    $('#final_total_input').val(priceTotal);
+    $('#final_total_input_new').val(itemPriceTotal);
     $('#final_total_inputs').val(itemPriceTotal);
     $('#total_payable').html(priceTotal);
     $('#total_payable').val(priceTotal);
@@ -2786,6 +2793,7 @@ function isValidatRewardPoint() {
 
     var min_order_total_required = parseFloat(element.data('min_order_total'));
     var order_total = __read_number($('#final_total_input'));
+    var order_total = __read_number($('#final_total_input_new'));
 
     if (order_total < min_order_total_required) {
         is_valid = false;

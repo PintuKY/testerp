@@ -487,6 +487,8 @@ return [
     'parent_sale' => 'Parent Sale',
     'sell_quantity' => 'Sell Quantity',
     'total_return_discount' => 'Total Return Discount',
+    'total_return' => 'Return Amount',
+    'total' => 'Total',
     'sell_return_details' => 'Sell Return Details',
     'sell_details' => 'Sale Details',
     'return_discount' => 'Return Discount',

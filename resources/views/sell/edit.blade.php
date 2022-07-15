@@ -554,7 +554,7 @@ $multiplier = 1;
                                                                name="product[{{$productId}}][product_unit_id]"
                                                                value="{{$edit_product[$productId]['unit_id']}}">
 
-                                                        {{$edit_product[$productId]['unit']}}
+
 
 
                                                         <input type="hidden" class="base_unit_multiplier"

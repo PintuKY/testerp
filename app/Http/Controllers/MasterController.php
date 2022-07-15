@@ -122,11 +122,11 @@ class MasterController extends Controller
                     }
                     return implode(',', $addon);
                 })
-                ->addColumn('date', function ($row) {
+                ->editColumn('date', function ($row) {
                     if($row->time_slot == AppConstant::STATUS_INACTIVE){
                         $date = $row->start_date;
                     }else{
-                        $date = $row->delivery_date. ' ' . $row->delivery_time;
+                        $date = $row->delivery_date;
                     }
                     return $date;
                 })
@@ -144,6 +144,9 @@ class MasterController extends Controller
                 })
                 ->addColumn('driver_name', function ($row) {
                     return 'Amar';
+                })
+                ->filterColumn('date', function ($query, $keyword) {
+                    $query->whereRaw("DATE_FORMAT(delivery_date,'%Y-%m-%d') LIKE ?", ["%$keyword%"]);
                 })
                 ->make(true);
         }

@@ -572,8 +572,10 @@ class SellController extends Controller
                     'shipping_details',
                     function ($row) {
                         $value =  $row->shipping_address_line_1.', <br>'.
-                            $row->shipping_address_line_2 .', <br>'.
-                            $row->contact->shipping_city .', <br>';
+                            $row->shipping_address_line_2 .', <br>';
+                        if (!empty($row->contact->shipping_city)) {
+                            $value .= $row->contact->shipping_city.', <br>';
+                        }
                         if (!empty($row->contact->shipping_state)) {
                             $value .= $row->contact->shipping_state.', <br>';
                         }

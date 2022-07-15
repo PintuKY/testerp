@@ -37,7 +37,7 @@ return [
     'sell_columns' => [
         ['data'=>'id' , 'name' => 'Id'],
         ['data'=>'date' , 'name' => 'Date'],
-        ['data'=>'contacts_name' , 'name' => 'Name'],
+        ['data'=>'contacts_name' , 'name' => 'Name',],
         ['data'=>'pax' , 'name' => 'Pax'],
         ['data'=>'addon' , 'name' => 'Addon'],
         ['data'=>'address' , 'name' => 'Address'],

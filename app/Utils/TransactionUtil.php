@@ -1869,7 +1869,7 @@ class TransactionUtil extends Util
 
         $output['total_return'] = $transaction->total_return;
 
-        $output['subtotal_return'] = ($parent_sell->final_total != 0) ? $this->num_f($parent_sell->final_total, $show_currency, $business_details) : 0;
+        $output['subtotal_return'] = ($transaction->final_total != 0) ? $this->num_f($parent_sell->$transaction, $show_currency, $business_details) : 0;
 
         $output['total_return_amount'] = ($transaction->total_return != 0) ? $this->num_f($transaction->total_return, $show_currency, $business_details) : 0;
         $output['final_amounts'] = ($transaction->final_total != 0) ? $this->num_f($transaction->final_total, $show_currency, $business_details) : 0;

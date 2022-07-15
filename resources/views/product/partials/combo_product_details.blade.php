@@ -22,17 +22,17 @@
 			        <th class="text-center">
 						@lang('lang_v1.total_amount_exc_tax')
 					</th>
-			        <th>@lang('lang_v1.variation_images')</th>
+			        {{--<th>@lang('lang_v1.variation_images')</th>--}}
 				</tr>
 				@foreach($combo_variations as $variation)
 				<tr>
 					<td>
-						{{$variation['variation']['product']->name}} 
+						{{$variation['variation']['product']->name}}
 
 						@if($variation['variation']['product']->type == 'variable')
 							- {{$variation['variation']->name}}
 						@endif
-						
+
 						({{$variation['variation']->sub_sku}})
 					</td>
 					@can('view_purchase_price')
@@ -62,18 +62,18 @@
 					<td>
 						<span class="display_currency" data-currency_symbol="true">{{$variation['variation']->default_purchase_price * $variation['quantity'] * $variation['multiplier']}}</span>
 					</td>
-					<td>
+					{{--<td>
 			        	@foreach($variation['variation']->media as $media)
 			        		{!! $media->thumbnail([60, 60], 'img-thumbnail') !!}
 			        	@endforeach
-			        </td>
+			        </td>--}}
 				</tr>
 				@endforeach
 			</table>
 		</div>
 	</div>
 	<div class="col-md-12 text-right">
-		<strong>@lang('product.default_selling_price'): </strong> 
+		<strong>@lang('product.default_selling_price'): </strong>
 		<span class="display_currency" data-currency_symbol="true">{{$product->variations->first()->sell_price_inc_tax}}</span>
 	</div>
 </div>

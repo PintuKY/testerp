@@ -244,7 +244,7 @@ class ProductController extends Controller
                     return $product;
                 })
                 ->editColumn('image', function ($row) {
-                    return '<div style="display: flex;"><img src="' . $row->image_url . '" alt="Product image" class="product-thumbnail-small"></div>';
+                    return '<div style="display: flex;"><img src="' . asset('storage/img/'.$row->image) . '" alt="Product image" class="product-thumbnail-small"></div>';
                 })
                 ->editColumn('type', '@lang("lang_v1." . $type)')
                 ->addColumn('mass_delete', function ($row) {
@@ -381,7 +381,6 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-
         if (!auth()->user()->can('product.create')) {
             abort(403, 'Unauthorized action.');
         }
@@ -410,6 +409,11 @@ class ProductController extends Controller
 
             //upload document
             $product_details['image'] = $this->productUtil->uploadFile($request, 'image', config('constants.product_img_path'), 'image');
+
+
+
+
+
             $common_settings = session()->get('business.common_settings');
 
 
@@ -587,6 +591,7 @@ class ProductController extends Controller
      */
     public function update(Request $request, $id)
     {
+
         if (!auth()->user()->can('product.update')) {
             abort(403, 'Unauthorized action.');
         }

@@ -18,7 +18,7 @@
 				    @if(!empty($allowed_group_prices))
 			        	<th>@lang('lang_v1.group_prices')</th>
 			        @endif
-			        <th>@lang('lang_v1.variation_images')</th>
+			        {{--<th>@lang('lang_v1.variation_images')</th>--}}
 				</tr>
 				@foreach($product->variations as $variation)
 				<tr>
@@ -55,11 +55,11 @@
 			        		@endforeach
 			        	</td>
 			        @endif
-			        <td>
+			       {{-- <td>
 			        	@foreach($variation->media as $media)
 			        		{!! $media->thumbnail([60, 60], 'img-thumbnail') !!}
 			        	@endforeach
-			        </td>
+			        </td>--}}
 				</tr>
 				@endforeach
 			</table>

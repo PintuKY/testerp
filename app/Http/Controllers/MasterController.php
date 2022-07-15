@@ -88,7 +88,6 @@ class MasterController extends Controller
                         if($row->transaction_sell_lines_id == $row->transaction_sell_lines->id){
                             $type = $row->transaction_sell_lines->unit_name;
                         }
-
                     }
                     return $type;
                 })
@@ -101,38 +100,33 @@ class MasterController extends Controller
                     return $data;
                 })
                 ->addColumn('pax', function ($row) {
-                    //dd($row->transaction_sell_lines->transactionSellLinesVariants[0]->pax);
                     $pax = [];
                     if (isset($row->transaction_sell_lines->transactionSellLinesVariants)) {
                         foreach ($row->transaction_sell_lines->transactionSellLinesVariants as $value) {
                             if (str_contains($value->pax, 'Serving Pax')) {
-                                $pax[] = $value->pax;
-                                $value = implode(',',$pax);
-                            }else{
-                                $value ='NA';
+                                $pax[] = $value->addon;
                             }
                         }
                     }
-                    return $value;
+                    return implode(',', $pax);
                 })
                 ->addColumn('addon', function ($row) {
                     $addon = [];
                     if (isset($row->transaction_sell_lines->transactionSellLinesVariants)) {
                         foreach ($row->transaction_sell_lines->transactionSellLinesVariants as $value) {
                             if (str_contains($value->pax, 'Add on')) {
-                                $addon_pax = ($value->value != 'None') ? '+' . $value->value : '';
-                                $addon[] = str_replace("Add on:", "", $value->pax) . '' . $addon_pax;
+                                $addon_pax = ($value->addon  != 'None') ? '+'.$value->addon : '';
+                                $addon[] = str_replace("Add on:","",$value->pax).''.$addon_pax;
                             }
                         }
-
                     }
-                    return $row->transaction_sell_lines->transactionSellLinesVariants[0]->addon;
+                    return implode(',', $addon);
                 })
-                ->addColumn('date', function ($row) {
+                ->editColumn('date', function ($row) {
                     if($row->time_slot == AppConstant::STATUS_INACTIVE){
                         $date = $row->start_date;
                     }else{
-                        $date = $row->delivery_date. ' ' . $row->delivery_time;
+                        $date = $row->delivery_date;
                     }
                     return $date;
                 })
@@ -150,6 +144,9 @@ class MasterController extends Controller
                 })
                 ->addColumn('driver_name', function ($row) {
                     return 'Amar';
+                })
+                ->filterColumn('date', function ($query, $keyword) {
+                    $query->whereRaw("DATE_FORMAT(delivery_date,'%Y-%m-%d') LIKE ?", ["%$keyword%"]);
                 })
                 ->make(true);
         }

@@ -377,6 +377,7 @@ $(document).ready(function() {
                 dataType: 'html',
                 data: { template_id: template_id, row_index: row_index },
                 success: function(result) {
+                    console.log(result);
                     if (result) {
                         tr_obj
                             .find('table.variation_value_table')

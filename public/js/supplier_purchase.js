@@ -5,6 +5,25 @@ $(document).ready(function() {
         iraqi_selling_price_adjustment = false;
     }
 
+    if ($('textarea#description').length > 0) {
+        tinymce.init({
+            selector: 'textarea#description',
+            height:250
+        });
+    }
+
+    var img_fileinput_setting = {
+        showUpload: false,
+        showPreview: true,
+        browseLabel: LANG.file_browse_label,
+        removeLabel: LANG.remove,
+        previewSettings: {
+            image: { width: 'auto', height: 'auto', 'max-width': '100%', 'max-height': '100%' },
+        },
+    };
+    $('#upload_supplier_image').fileinput(img_fileinput_setting);
+    $('#product_brochure').fileinput(img_fileinput_setting);
+
     //Date picker
     $('#transaction_date').datetimepicker({
         format: moment_date_format + ' ' + moment_time_format,
@@ -709,6 +728,51 @@ $(document).ready(function() {
     });
     toggle_search();
 });
+
+//End for product type Variable
+$(document).on('change', '#tax_type', function(e) {
+    toggle_dsp_input();
+});
+toggle_dsp_input();
+function toggle_dsp_input() {
+    var tax_type = $('#tax_type').val();
+    if (tax_type == 'inclusive') {
+        $('.dsp_label').each(function() {
+            $(this).text(LANG.inc_tax);
+        });
+        $('#single_dsp').addClass('hide');
+        $('#single_dsp_inc_tax').removeClass('hide');
+
+        $('.add-product-price-table')
+            .find('.variable_dsp_inc_tax')
+            .each(function() {
+                $(this).removeClass('hide');
+            });
+        $('.add-product-price-table')
+            .find('.variable_dsp')
+            .each(function() {
+                $(this).addClass('hide');
+            });
+    } else if (tax_type == 'exclusive') {
+        $('.dsp_label').each(function() {
+            $(this).text(LANG.exc_tax);
+        });
+        $('#single_dsp').removeClass('hide');
+        $('#single_dsp_inc_tax').addClass('hide');
+
+        $('.add-product-price-table')
+            .find('.variable_dsp_inc_tax')
+            .each(function() {
+                $(this).addClass('hide');
+            });
+        $('.add-product-price-table')
+            .find('.variable_dsp')
+            .each(function() {
+                $(this).removeClass('hide');
+            });
+    }
+}
+
 
 function get_purchase_entry_row(product_id, variation_id) {
     if (product_id) {

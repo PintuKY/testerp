@@ -4,10 +4,14 @@
         <tr>
             <th>@lang('messages.action')</th> 
             <th>Name</th>
-            <th>Supplier</th>
+            <th>SKU</th>
+            <th>Default Purchase Price</th>
+            <th>Tax</th>
+            <th>Purchase Price inc tax</th>
             <th>Category</th>
             <th>Unit</th>
-            <th>Price</th>
+            <th>Weight</th>
+            <th>Alert Quantity</th>
         </tr>
     </thead>
     <tfoot>

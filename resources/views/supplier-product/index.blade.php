@@ -15,16 +15,22 @@
             @component('components.filters', ['title' => __('report.filters')])
             <div class="col-md-3">
                 <div class="form-group">
-                    {!! Form::label('supplier_id', __('supplier.suppliers') . ':') !!}
-                    {!! Form::select('supplier_id', $suppliers, null, ['class' => 'form-control select2', 'style' => 'width:100%', 'id' => 'supplier_product_list_filter_supplier_id', 'placeholder' => __('lang_v1.all')]); !!}
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="form-group">
                     {!! Form::label('category_id', __('product.category') . ':') !!}
                     {!! Form::select('category_id', $categories, null, ['class' => 'form-control select2', 'style' => 'width:100%', 'id' => 'supplier_product_list_filter_category_id', 'placeholder' => __('lang_v1.all')]); !!}
                 </div>
+            </div>  
+            <div class="col-md-3">
+                <div class="form-group">
+                    {!! Form::label('unit_id', __('product.unit') . ':') !!}
+                    {!! Form::select('unit_id', $units, null, ['class' => 'form-control select2', 'style' => 'width:100%', 'id' => 'supplier_product_list_filter_unit_id', 'placeholder' => __('lang_v1.all')]); !!}
+                </div>
             </div>            
+            <div class="col-md-3">
+                <div class="form-group">
+                    {!! Form::label('tax','Tax' . ':') !!}
+                    {!! Form::select('tax', $taxes, null, ['class' => 'form-control select2', 'style' => 'width:100%', 'id' => 'supplier_product_list_filter_tax', 'placeholder' => __('lang_v1.all')]); !!}
+                </div>
+            </div>
             @endcomponent
         </div>
     </div>
@@ -74,7 +80,8 @@ $(document).ready(function () {
            "url": "/supplier-products",
            "data": function (d) {
                d.category_id = $('#supplier_product_list_filter_category_id').val();
-               d.supplier_id = $('#supplier_product_list_filter_supplier_id').val();
+               d.tax = $('#supplier_product_list_filter_tax').val();
+               d.unit_id = $('#supplier_product_list_filter_unit_id').val();
                d = __datatable_ajax_callback(d);
            }
        },
@@ -82,14 +89,18 @@ $(document).ready(function () {
                     // {data: 'mass_delete'},
                     {data: 'action', name: 'action'},
                     {data: 'name', name: 'name'},
-                    {data: 'supplier', name: 'supplier.name'},
+                    {data: 'sku', name: 'sku'},
+                    {data: 'price', name: 'purchase_price'},
+                    {data: 'tax', name: 'tax_rates.name'},
+                    {data: 'purchase_price_inc_tax', name: 'purchase_price_inc_tax'},
                     {data: 'category', name: 'supplier_product_categories.name'},
                     {data: 'unit', name: 'unit', searchable: false},
-                    {data: 'price', name: 'purchase_price'},
+                    {data: 'weight', name: 'weight', searchable: false},
+                    {data: 'alert_quantity', name: 'alert_quantity', searchable: false},
                 ],
     });
 
-$(document).on('change', '#supplier_product_list_filter_category_id, #supplier_product_list_filter_supplier_id',
+$(document).on('change', '#supplier_product_list_filter_category_id, #supplier_product_list_filter_tax,#supplier_product_list_filter_unit_id',
 function () {
     supplier_product_table.ajax.reload();
 });

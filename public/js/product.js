@@ -490,7 +490,11 @@ $(document).ready(function() {
         });
     }
 });
-
+    //End for product type Variable
+    $(document).on('change', '#tax_type', function(e) {
+        toggle_dsp_input();
+    });
+    toggle_dsp_input();
 function toggle_dsp_input() {
     var tax_type = $('#tax_type').val();
     if (tax_type == 'inclusive') {

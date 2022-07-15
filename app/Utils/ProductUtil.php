@@ -177,16 +177,16 @@ class ProductUtil extends Util
                         'sell_price_inc_tax' => $this->num_uf($v['sell_price_inc_tax'])
                     ];
                     $c++;
-                    $images[] = 'variation_images_' . $key . '_' . $k;
+                    /*$images[] = 'variation_images_' . $key . '_' . $k;*/
                 }
 
                 $variations = $product_variation->variations()->createMany($variation_data);
 
-                $i = 0;
+                /*$i = 0;
                 foreach ($variations as $variation) {
                     Media::uploadMedia($product->business_id, $variation, request(), $images[$i]);
                     $i++;
-                }
+                }*/
             }
         }
     }
@@ -237,7 +237,7 @@ class ProductUtil extends Util
                     $variation_value_templates->value = $v['price'];
                     $variation_value_templates->save();
                     $variation->update($data);
-                    Media::uploadMedia($product->business_id, $variation, request(), 'edit_variation_images_' . $key . '_' . $k);
+                    /*Media::uploadMedia($product->business_id, $variation, request(), 'edit_variation_images_' . $key . '_' . $k);*/
 
                     $variations_ids[] = $k;
                 }
@@ -287,14 +287,14 @@ class ProductUtil extends Util
                         'sell_price_inc_tax' => $this->num_uf($v['sell_price_inc_tax'])
                     ];
                     $c++;
-                    $media[] = 'variation_images_' . $key . '_' . $k;
+                    //$media[] = 'variation_images_' . $key . '_' . $k;
                 }
                 $new_variations = $product_variation->variations()->createMany($variation_data);
 
                 $i = 0;
                 foreach ($new_variations as $new_variation) {
                     $variations_ids[] = $new_variation->id;
-                    Media::uploadMedia($product->business_id, $new_variation, request(), $media[$i]);
+                   // Media::uploadMedia($product->business_id, $new_variation, request(), $media[$i]);
                     $i++;
                 }
             }

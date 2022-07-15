@@ -46,7 +46,7 @@
                 <br/>
                 <small><i><span class="dsp_label"></span></i></small>
                 </th>
-                <th>@lang('lang_v1.variation_images')</th>
+                {{--<th>@lang('lang_v1.variation_images')</th>--}}
                 <th><button type="button" class="btn btn-success btn-xs add_variation_value_row">+</button></th>
             </tr>
             </thead>
@@ -101,7 +101,7 @@
 
                         {!! Form::text($array_name . '[' . $row_index .'][' . $variation_array_name . '][' . $variation_row_index . '][sell_price_inc_tax]', @num_format($variation->sell_price_inc_tax), ['class' => 'form-control input-sm variable_dsp_inc_tax input_number', 'placeholder' => __('product.inc_of_tax'), 'required']); !!}
                     </td>
-                    <td>
+                    {{--<td>
                         @php
                             $action = !empty($action) ? $action : '';
                         @endphp
@@ -116,7 +116,7 @@
                         @else
                             {!! Form::file('edit_variation_images_' . $row_index . '_' . $variation_row_index . '[]', ['class' => 'variation_images', 'accept' => 'image/*', 'multiple']); !!}
                         @endif
-                    </td>
+                    </td>--}}
                     <td>
                         <button type="button" class="btn btn-danger btn-xs remove_variation_value_row">-</button>
                         <input type="hidden" class="variation_row_index" value="@if($action == 'duplicate'){{$loop->index}}@else{{0}}@endif">

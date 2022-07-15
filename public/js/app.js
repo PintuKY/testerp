@@ -1443,6 +1443,7 @@ $(document).ready(function () {
     });
 
     //Business locations CRUD
+    //Business locations CRUD
     business_locations = $('#business_location_table').DataTable({
         processing: true,
         serverSide: true,
@@ -1457,6 +1458,7 @@ $(document).ready(function () {
             },
         ],
         columns: [
+            {data: 'action', name: 'action'},
             {data: 'name', name: 'name'},
             {data: 'location_id', name: 'location_id'},
             {data: 'landmark', name: 'landmark'},
@@ -1472,8 +1474,7 @@ $(document).ready(function () {
             {data: 'action', name: 'action'},
         ],
     });
-
-    $('.location_add_modal, .location_edit_modal').on('shown.bs.modal', function (e) {
+    $('.location_add_modal').on('shown.bs.modal', function (e) {
         $('form#business_location_add_form')
             .submit(function (e) {
                 e.preventDefault();
@@ -1506,54 +1507,26 @@ $(document).ready(function () {
                 },
                 submitHandler: function (form) {
                     e.preventDefault();
+
                     var files = $('#business_logo')[0].files;
-                    if(files.length > 0){
-                        var fd = new FormData($('#business_location_add_form').get(0));
-                        // Append data
-                        fd.append('file',files[0]);
-                        // Hide alert
-                        $('#responseMsg').hide();
-                        // AJAX request
+
+                    var data = '';
+                    if (files.length > 0) {
+                        data = new FormData($('#business_location_add_form').get(0));
+                        data.append('file', files[0]);
                         $.ajax({
                             url: $(form).attr('action'),
                             method: 'post',
-                            data: fd,
+                            data: data,
                             contentType: false,
                             processData: false,
                             dataType: 'json',
                             beforeSend: function (xhr) {
                                 __disable_submit_button($(form).find('button[type="submit"]'));
                             },
-                            success: function(result){
-
-                                if (result.success == true) {
-                                    $('div.location_add_modal').modal('hide');
-                                    $('div.location_edit_modal').modal('hide');
-                                    toastr.success(result.msg);
-                                    business_locations.ajax.reload();
-                                } else {
-                                    toastr.error(result.msg);
-                                }
-                            },
-                            error: function(response){
-                                console.log("error : " + JSON.stringify(response) );
-                            }
-                        });
-                    }else{
-                        var data = $(form).serialize();
-
-                        $.ajax({
-                            method: 'POST',
-                            url: $(form).attr('action'),
-                            dataType: 'json',
-                            data: data,
-                            beforeSend: function (xhr) {
-                                __disable_submit_button($(form).find('button[type="submit"]'));
-                            },
                             success: function (result) {
                                 if (result.success == true) {
                                     $('div.location_add_modal').modal('hide');
-                                    $('div.location_edit_modal').modal('hide');
                                     toastr.success(result.msg);
                                     business_locations.ajax.reload();
                                 } else {
@@ -1561,11 +1534,9 @@ $(document).ready(function () {
                                 }
                             },
                         });
-
+                        // Hide alert
+                        $('#responseMsg').hide();
                     }
-
-
-
                 },
             });
 
@@ -1599,9 +1570,153 @@ $(document).ready(function () {
             },
         })
     });
+    $('.location_edit_modal').on('shown.bs.modal', function (e) {
+        $('form#business_location_edit_form')
+            .submit(function (e) {
+                e.preventDefault();
+            })
+            .validate({
+                rules: {
+                    location_id: {
+                        remote: {
+                            url: '/business-location/check-location-id',
+                            type: 'post',
+                            data: {
+                                location_id: function () {
+                                    return $('#location_id').val();
+                                },
+                                hidden_id: function () {
+                                    if ($('#hidden_id').length) {
+                                        return $('#hidden_id').val();
+                                    } else {
+                                        return '';
+                                    }
+                                },
+                            },
+                        },
+                    },
+                },
+                messages: {
+                    location_id: {
+                        remote: LANG.location_id_already_exists,
+                    },
+                },
+                submitHandler: function (form) {
+                    e.preventDefault();
+                    var files = $('#business_logo')[0].files;
 
+                    var data = '';
+                    if (files.length > 0) {
+                        data = new FormData($('#business_location_edit_form').get(0));
+                        data.append('file', files[0]);
+                        $.ajax({
+                            url: $(form).attr('action'),
+                            method: 'post',
+                            data: data,
+                            contentType: false,
+                            processData: false,
+                            dataType: 'json',
+                            beforeSend: function (xhr) {
+                                __disable_submit_button($(form).find('button[type="submit"]'));
+                            },
 
+                            success: function (result) {
+                                if (result.success == true) {
+                                    $('div.location_edit_modal').modal('hide');
+                                    toastr.success(result.msg);
+                                    business_locations.ajax.reload();
+                                } else {
+                                    toastr.error(result.msg);
+                                }
+                            },
+                        });
+                    }else{
+                        data = $(form).serialize();
+                        $.ajax({
+                            url: $(form).attr('action'),
+                            method: 'put',
+                            data: data,
+                            dataType: 'json',
+                            beforeSend: function (xhr) {
+                                __disable_submit_button($(form).find('button[type="submit"]'));
+                            },
+                            success: function (result) {
+                                if (result.success == true) {
+                                    $('div.location_edit_modal').modal('hide');
+                                    toastr.success(result.msg);
+                                    business_locations.ajax.reload();
+                                } else {
+                                    toastr.error(result.msg);
+                                }
+                            },
+                        });
+                    }
 
+                    // Hide alert
+                    $('#responseMsg').hide();
+
+                },
+            });
+
+        $('form#business_location_add_form').find('#featured_products').select2({
+            minimumInputLength: 2,
+            allowClear: true,
+            placeholder: '',
+            ajax: {
+                url: '/products/list?not_for_selling=true',
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    return {
+                        term: params.term, // search term
+                        page: params.page,
+                    };
+                },
+                processResults: function (data) {
+                    return {
+                        results: $.map(data, function (obj) {
+                            var string = obj.name;
+                            if (obj.type == 'variable') {
+                                string += '-' + obj.variation;
+                            }
+
+                            string += ' (' + obj.sub_sku + ')';
+                            return {id: obj.variation_id, text: string};
+                        })
+                    };
+                },
+            },
+        })
+        $('form#business_location_edit_form').find('#featured_products').select2({
+            minimumInputLength: 2,
+            allowClear: true,
+            placeholder: '',
+            ajax: {
+                url: '/products/list?not_for_selling=true',
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    return {
+                        term: params.term, // search term
+                        page: params.page,
+                    };
+                },
+                processResults: function (data) {
+                    return {
+                        results: $.map(data, function (obj) {
+                            var string = obj.name;
+                            if (obj.type == 'variable') {
+                                string += '-' + obj.variation;
+                            }
+
+                            string += ' (' + obj.sub_sku + ')';
+                            return {id: obj.variation_id, text: string};
+                        })
+                    };
+                },
+            },
+        })
+    });
     $(document).on('click', 'button.delete_business_location_button', function () {
         swal({
             title: LANG.sure,
@@ -1622,7 +1737,7 @@ $(document).ready(function () {
                     success: function (result) {
                         if (result.success == true) {
                             toastr.success(result.msg);
-                            business_location_table.ajax.reload();
+                            business_locations.ajax.reload();
                         } else {
                             toastr.error(result.msg);
                         }
@@ -1633,6 +1748,196 @@ $(document).ready(function () {
     });
 
 
+    /*business_locations = $('#business_location_table').DataTable({
+        processing: true,
+        serverSide: true,
+        bPaginate: false,
+        buttons: [],
+        ajax: '/business-location',
+        columnDefs: [
+            {
+                targets: 11,
+                orderable: false,
+                searchable: false,
+            },
+        ],
+        columns: [
+            {data: 'name', name: 'name'},
+            {data: 'location_id', name: 'location_id'},
+            {data: 'landmark', name: 'landmark'},
+            {data: 'kitchen_location_name', name: 'kitchen_name'},
+            {data: 'country', name: 'country'},
+            {data: 'state', name: 'state'},
+            {data: 'city', name: 'city'},
+            {data: 'zip_code', name: 'zip_code'},
+            {data: 'selling_price_group_id', name: 'selling_price_group_id'},
+            {data: 'invoice_scheme_id', name: 'invoice_scheme_id'},
+            {data: 'invoice_layout_id', name: 'invoice_layout_id'},
+            {data: 'sale_invoice_layout_id', name: 'sale_invoice_layout_id'},
+            {data: 'action', name: 'action'},
+        ],
+    });*/
+
+    /* $('.location_add_modal, .location_edit_modal').on('shown.bs.modal', function (e) {
+         $('form#business_location_add_form')
+             .submit(function (e) {
+                 e.preventDefault();
+             })
+             .validate({
+                 rules: {
+                     location_id: {
+                         remote: {
+                             url: '/business-location/check-location-id',
+                             type: 'post',
+                             data: {
+                                 location_id: function () {
+                                     return $('#location_id').val();
+                                 },
+                                 hidden_id: function () {
+                                     if ($('#hidden_id').length) {
+                                         return $('#hidden_id').val();
+                                     } else {
+                                         return '';
+                                     }
+                                 },
+                             },
+                         },
+                     },
+                 },
+                 messages: {
+                     location_id: {
+                         remote: LANG.location_id_already_exists,
+                     },
+                 },
+                 submitHandler: function (form) {
+                     e.preventDefault();
+                     var files = $('#business_logo')[0].files;
+                     if(files.length > 0){
+                         var fd = new FormData($('#business_location_add_form').get(0));
+                         // Append data
+                         fd.append('file',files[0]);
+                         // Hide alert
+                         $('#responseMsg').hide();
+                         // AJAX request
+                         $.ajax({
+                             url: $(form).attr('action'),
+                             method: 'post',
+                             data: fd,
+                             contentType: false,
+                             processData: false,
+                             dataType: 'json',
+                             beforeSend: function (xhr) {
+                                 __disable_submit_button($(form).find('button[type="submit"]'));
+                             },
+                             success: function(result){
+
+                                 if (result.success == true) {
+                                     $('div.location_add_modal').modal('hide');
+                                     $('div.location_edit_modal').modal('hide');
+                                     toastr.success(result.msg);
+                                     business_locations.ajax.reload();
+                                 } else {
+                                     toastr.error(result.msg);
+                                 }
+                             },
+                             error: function(response){
+                                 console.log("error : " + JSON.stringify(response) );
+                             }
+                         });
+                     }else{
+                         var data = $(form).serialize();
+
+                         $.ajax({
+                             method: 'POST',
+                             url: $(form).attr('action'),
+                             dataType: 'json',
+                             data: data,
+                             beforeSend: function (xhr) {
+                                 __disable_submit_button($(form).find('button[type="submit"]'));
+                             },
+                             success: function (result) {
+                                 if (result.success == true) {
+                                     $('div.location_add_modal').modal('hide');
+                                     $('div.location_edit_modal').modal('hide');
+                                     toastr.success(result.msg);
+                                     business_locations.ajax.reload();
+                                 } else {
+                                     toastr.error(result.msg);
+                                 }
+                             },
+                         });
+
+                     }
+
+
+
+                 },
+             });
+
+         $('form#business_location_add_form').find('#featured_products').select2({
+             minimumInputLength: 2,
+             allowClear: true,
+             placeholder: '',
+             ajax: {
+                 url: '/products/list?not_for_selling=true',
+                 dataType: 'json',
+                 delay: 250,
+                 data: function (params) {
+                     return {
+                         term: params.term, // search term
+                         page: params.page,
+                     };
+                 },
+                 processResults: function (data) {
+                     return {
+                         results: $.map(data, function (obj) {
+                             var string = obj.name;
+                             if (obj.type == 'variable') {
+                                 string += '-' + obj.variation;
+                             }
+
+                             string += ' (' + obj.sub_sku + ')';
+                             return {id: obj.variation_id, text: string};
+                         })
+                     };
+                 },
+             },
+         })
+     });
+
+
+
+     $(document).on('click', 'button.delete_business_location_button', function () {
+         swal({
+             title: LANG.sure,
+             text: LANG.confirm_delete_business_location,
+             icon: 'warning',
+             buttons: true,
+             dangerMode: true,
+         }).then(willDelete => {
+             if (willDelete) {
+                 var href = $(this).data('href');
+                 var data = $(this).serialize();
+
+                 $.ajax({
+                     method: 'DELETE',
+                     url: href,
+                     dataType: 'json',
+                     data: data,
+                     success: function (result) {
+                         if (result.success == true) {
+                             toastr.success(result.msg);
+                             business_location_table.ajax.reload();
+                         } else {
+                             toastr.error(result.msg);
+                         }
+                     },
+                 });
+             }
+         });
+     });
+
+ */
     if ($('#header_text').length) {
         init_tinymce('header_text');
     }
@@ -2125,7 +2430,6 @@ $(document).ready(function () {
             }
         });
     });
-
 
 
     //Delete Sale

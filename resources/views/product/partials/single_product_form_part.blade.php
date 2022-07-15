@@ -15,10 +15,11 @@
         <tr>
           {{--<th>@lang('product.default_purchase_price')</th>
           <th>@lang('product.profit_percent') @show_tooltip(__('tooltip.profit_percent'))</th>--}}
+
           <th>@lang('product.default_selling_price')</th>
-          @if(empty($quick_add))
+          {{--@if(empty($quick_add))
             <th>@lang('lang_v1.product_image')</th>
-          @endif
+          @endif--}}
         </tr>
         <tr>
           {{--<td>
@@ -46,7 +47,7 @@
 
             {!! Form::text('single_dsp_inc_tax', $default, ['class' => 'form-control input-sm hide input_number', 'placeholder' => __('product.inc_of_tax'), 'id' => 'single_dsp_inc_tax', 'required']); !!}
           </td>
-          @if(empty($quick_add))
+          {{--@if(empty($quick_add))
           <td>
               <div class="form-group">
                 {!! Form::label('variation_images', __('lang_v1.product_image') . ':') !!}
@@ -54,7 +55,7 @@
                 <small><p class="help-block">@lang('purchase.max_file_size', ['size' => (config('constants.document_size_limit') / 1000000)]) <br> @lang('lang_v1.aspect_ratio_should_be_1_1')</p></small>
               </div>
           </td>
-          @endif
+          @endif--}}
         </tr>
     </table>
 </div>

@@ -240,15 +240,15 @@
 		<input type="hidden" name="products[{{$row_count}}][product_unit_id]" value="{{$product->unit_id}}">
 		@if(count($sub_units) > 0)
 			<br>
-			<select name="products[{{$row_count}}][sub_unit_id]" class="form-control input-sm sub_unit">
+			<select name="products[{{$row_count}}][sub_unit_id]" class="hide form-control input-sm sub_unit">
                 @foreach($sub_units as $key => $value)
                     <option value="{{$key}}" data-multiplier="{{$value['multiplier']}}" data-unit_name="{{$value['name']}}" data-allow_decimal="{{$value['allow_decimal']}}" @if(!empty($product->sub_unit_id) && $product->sub_unit_id == $key) selected @endif>
                         {{$value['name']}}
                     </option>
                 @endforeach
            </select>
-		@else
-			{{$product->unit}}
+		{{--@else
+			{{$product->unit}}--}}
 		@endif
 
 		<input type="hidden" class="base_unit_multiplier" name="products[{{$row_count}}][base_unit_multiplier]" value="{{$multiplier}}">

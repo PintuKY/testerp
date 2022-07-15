@@ -453,7 +453,7 @@
 				@endif
 
 				<!-- Discount -->
-				@if( !empty($receipt_details->discount) )
+
 					<tr class="color-555">
 						<td>
                             @lang('lang_v1.total_return')
@@ -463,7 +463,6 @@
 							(-) {{$receipt_details->total_return_amount}}
 						</td>
 					</tr>
-				@endif
 
 				{{--@if(!empty($receipt_details->group_tax_details))
 					@foreach($receipt_details->group_tax_details as $key => $value)

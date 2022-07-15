@@ -1794,6 +1794,9 @@ function pos_product_row(product_id = null, purchase_line_id = null, weighing_sc
                 if (result.success) {
                     $('.pos')
                         .append(result.html_content);
+
+
+
                     $('table#pos_table tbody')
                         .find('input.pos_quantity');
 
@@ -1802,6 +1805,7 @@ function pos_product_row(product_id = null, purchase_line_id = null, weighing_sc
                     var this_row = $('table#pos_table tbody')
                         .find('tr')
                         .last();
+
                     pos_each_row(this_row);
 
                     //For initial discount if present
@@ -1814,6 +1818,7 @@ function pos_product_row(product_id = null, purchase_line_id = null, weighing_sc
                     if (__getUnitMultiplier(this_row) > 1) {
                         this_row.find('select.sub_unit').trigger('change');
                     }
+
 
                     if (result.enable_sr_no == '1') {
                         var new_row = $('table#pos_table tbody')
@@ -1923,6 +1928,16 @@ function pos_each_row(row_obj) {
         var line_total = qty * unit_price_inc_tax;
         __write_number(row_obj.find('input.pos_line_total'), line_total);
     }
+    // always show first radio selected
+    $('.product_row td').each(function() {
+        console.log($(this));
+        $(this).find("input[type='radio']").first().prop('checked', true);
+    });
+    $('.product_row td').each(function() {
+        console.log($(this));
+        $(this).find("input[type='radio']").first().prop('checked', true);
+    });
+
 
     //var unit_price_inc_tax = __read_number(row_obj.find('input.pos_unit_price_inc_tax'));
 

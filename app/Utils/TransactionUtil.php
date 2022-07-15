@@ -779,7 +779,7 @@ class TransactionUtil extends Util
                         $sDate = Carbon::parse($getNextDate);
                         $x = 7;
                         if ($sell_day->time_slot == 3) {
-                            for ($j = 1; $j <= 2; $j++) {
+                            /*for ($j = 1; $j <= 2; $j++) {
                                 for ($i = 1; $i <= $loop; $i++) {
                                     $total_record = MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_day->id, 'time_slot' => $j])->count();
                                     if ($total_days > $total_record) {
@@ -813,8 +813,79 @@ class TransactionUtil extends Util
                                         }
                                     }
                                 }
+                            }*/
+                            $aaa = $total_days * 2;
+                            for ($i = 1; $i <= $loop; $i++) {
+                                $total_record = MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_day->id])->count();
+                                if ($aaa > $total_record) {
+                                    $mster = MasterList::insert(
+                                        [
+                                            'transaction_sell_lines_id' => $sell_day->id,
+                                            'transaction_id' => $transaction->id,
+                                            'contacts_id' => $transaction->contact_id,
+                                            'contacts_name' => $transaction->contact->name,
+                                            'shipping_address_line_1' => $transaction->contact->shipping_address_1,
+                                            'shipping_address_line_2' => $transaction->contact->shipping_address_2,
+                                            'shipping_city' => $transaction->contact->shipping_city,
+                                            'shipping_state' => $transaction->contact->shipping_state,
+                                            'shipping_country' => ($transaction->contact->shipping_country) ? $transaction->contact->shipping_country : null,
+                                            'shipping_zip_code' => $transaction->contact->shipping_zipcode,
+                                            'additional_notes' => !empty($transaction->additional_notes) ? $transaction->additional_notes : null,
+                                            'delivery_note' => $transaction->shipping_details,
+                                            'shipping_phone' => '',
+                                            'status' => AppConstant::STATUS_ACTIVE,
+                                            'staff_notes' => $transaction->staff_note,
+                                            'delivery_time' => $sell_day->delivery_time,
+                                            'delivery_date' => ($i == 1) ? $getNextDate : $sDate->addDays($x),
+                                            'start_date' => null,
+                                            'time_slot' => 1,
+                                            'created_by' => Carbon::now(),
+                                            'created_at' => Carbon::now(),
+                                        ]
+                                    );
+                                    DB::commit();
+                                    $new_record = MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_day->id,'time_slot'=>1])->orderBy('id', 'desc')->first();
+                                    $news = $new_record->replicate();
+                                    $news->time_slot = 2;
+                                    $news->save();
+                                    if ($i != 1) {
+                                        $x = $x++;
+                                    }
+                                }
                             }
-
+                            for ($j = 1; $j <= $loop; $j++) {
+                                $total_record = MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_day->id])->count();
+                                if ($total_days > $total_record) {
+                                    MasterList::insert(
+                                        [
+                                            'transaction_sell_lines_id' => $sell_day->id,
+                                            'transaction_id' => $transaction->id,
+                                            'contacts_id' => $transaction->contact_id,
+                                            'contacts_name' => $transaction->contact->name,
+                                            'shipping_address_line_1' => $transaction->contact->shipping_address_1,
+                                            'shipping_address_line_2' => $transaction->contact->shipping_address_2,
+                                            'shipping_city' => $transaction->contact->shipping_city,
+                                            'shipping_state' => $transaction->contact->shipping_state,
+                                            'shipping_country' => ($transaction->contact->shipping_country) ? $transaction->contact->shipping_country : null,
+                                            'shipping_zip_code' => $transaction->contact->shipping_zipcode,
+                                            'additional_notes' => !empty($transaction->additional_notes) ? $transaction->additional_notes : null,
+                                            'delivery_note' => $transaction->shipping_details,
+                                            'shipping_phone' => '',
+                                            'status' => AppConstant::STATUS_ACTIVE,
+                                            'staff_notes' => $transaction->staff_note,
+                                            'delivery_time' => $sell_day->delivery_time,
+                                            'delivery_date' => ($j == 1) ? $getNextDate : $sDate->addDays($x),
+                                            'start_date' => null,
+                                            'time_slot' => 2,
+                                            'created_by' => Carbon::now(),
+                                            'created_at' => Carbon::now(),
+                                        ]
+                                    );
+                                    if ($i != 1) {
+                                        $x = $x++;
+                                    }
+                                }
+                            }
                         } else {
 
                             for ($i = 1; $i <= $loop; $i++) {
@@ -1094,6 +1165,7 @@ class TransactionUtil extends Util
      */
     public function createOrUpdatePaymentLines($transaction, $payments, $business_id = null, $user_id = null, $uf_data = true)
     {
+
         $payments_formatted = [];
         $edit_ids = [0];
         $account_transactions = [];
@@ -1165,11 +1237,12 @@ class TransactionUtil extends Util
                         'account_id' => !empty($payment['account_id']) && $payment['method'] != 'advance' ? $payment['account_id'] : null
                     ];
 
-                    for ($i = 1; $i < 8; $i++) {
+
+                    /*for ($i = 1; $i < 8; $i++) {
                         if ($payment['method'] == 'custom_pay_' . $i) {
                             $payment_data['transaction_no'] = $payment["transaction_no_{$i}"];
                         }
-                    }
+                    }*/
 
                     $payments_formatted[] = new TransactionPayment($payment_data);
 
@@ -1221,13 +1294,13 @@ class TransactionUtil extends Util
         $payment_id = $payment['payment_id'];
         unset($payment['payment_id']);
 
-        for ($i = 1; $i < 8; $i++) {
+       /* for ($i = 1; $i < 8; $i++) {
             if ($payment['method'] == 'custom_pay_' . $i) {
-                $payment['transaction_no'] = $payment["transaction_no_{$i}"];
+                $payment['transaction_no'] = $payment["transaction_no"];
             }
-            unset($payment["transaction_no_{$i}"]);
-        }
-
+            unset($payment["transaction_no"]);
+        }*/
+        $payment['transaction_no'] = $payment["transaction_no"];
         if (!empty($payment['paid_on'])) {
             $payment['paid_on'] = $uf_data ? $this->uf_date($payment['paid_on'], true) : $payment['paid_on'];
         }
@@ -5230,6 +5303,8 @@ class TransactionUtil extends Util
                 'transactions.shipping_custom_field_3',
                 'transactions.shipping_custom_field_4',
                 'transactions.shipping_custom_field_5',
+                'transactions.shipping_address_line_1',
+                'transactions.shipping_address_line_2',
                 'transactions.custom_field_1',
                 'transactions.custom_field_2',
                 'transactions.custom_field_3',
@@ -5944,7 +6019,7 @@ class TransactionUtil extends Util
 
         for ($i = 1; $i < 8; $i++) {
             if ($inputs['method'] == 'custom_pay_' . $i) {
-                $inputs['transaction_no'] = $request->input("transaction_no_{$i}");
+                $inputs['transaction_no'] = $request->input("transaction_no");
             }
         }
 

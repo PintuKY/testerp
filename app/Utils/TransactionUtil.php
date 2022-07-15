@@ -34,6 +34,7 @@ use Illuminate\Support\Str;
 use App\Utils\ModuleUtil;
 use App\Utils\BusinessUtil;
 use Carbon\Carbon;
+use PhpOffice\PhpSpreadsheet\Calculation\DateTime;
 
 class TransactionUtil extends Util
 {
@@ -505,9 +506,9 @@ class TransactionUtil extends Util
                     $date_now = date("Y-m-d");
 
                     if ($date_now > $master_list->delivery_date) {
-                        $this->transactionDayUpdate($sell_days, $transaction, $new_days, $master_list_less, $master_list_less_id, $input['product'], $old_value, $new_value);
+                        $this->transactionDayUpdates($sell_days, $transaction, $new_days, $master_list_less, $master_list_less_id, $input['product'], $old_value, $new_value);
                     } else {
-                        $this->transactionDayUpdate($sell_days, $transaction, $new_days, $master_list_less = 0, $master_list_less_id, $input['product'], $old_value, $new_value);
+                        $this->transactionDayUpdates($sell_days, $transaction, $new_days, $master_list_less = 0, $master_list_less_id, $input['product'], $old_value, $new_value);
                     }
                 }
             }
@@ -556,7 +557,7 @@ class TransactionUtil extends Util
 
             foreach ($variation_value_data_id as $key => $data) {
                 $variation_value_datas = VariationValueTemplate::with('variationTemplate')->where('id', $data)->first();
-                $variation_value_key =  $this->num_uf($variation_value[$key]);
+                $variation_value_key = $this->num_uf($variation_value[$key]);
 
                 TransactionSellLinesVariants::insert(
                     ['transaction_sell_lines_id' => $sell_line_data_ids[$sell_line_ids],
@@ -578,8 +579,6 @@ class TransactionUtil extends Util
             foreach ($tra_sell_days as $sell_day) {
                 $this->transactionDayCreate($sell_day, $input['product'], $transaction);
             }
-
-
             //Add corresponding modifier sell lines if exists
             if ($this->isModuleEnabled('modifiers')) {
                 foreach ($lines_formatted as $key => $value) {
@@ -750,6 +749,144 @@ class TransactionUtil extends Util
         }
     }
 
+    public function transactionDayUpdates($sell_days, $transaction, $new_days, $master_list_less, $master_list_less_id, $product, $old_value, $new_value)
+    {
+        $old = explode(',', $old_value);
+        $old_values = [];
+        foreach ($old as $value) {
+            $old_values[] = getDayNameByDayNumber($value);
+        }
+        $olds = implode(',', $old_values);
+        $new = explode(',', $new_value);
+        $new_values = [];
+        foreach ($new as $value) {
+            $new_values[] = getDayNameByDayNumber($value);
+        }
+        $news = implode(',', $new_values);
+
+        TransactionActivity::insert([
+            'type' => TransactionActivityTypes()['DaysUpdate'],
+            'transaction_id' => $transaction->id,
+            'comment' => 'old_value is =>' . $olds . ' and new_value is =>' . $news,
+            'created_at' => Carbon::now()->toDateTimeString(),
+            'updated_at' => Carbon::now()->toDateTimeString()
+        ]);
+        if ($master_list_less_id) {
+            MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_days->id])->whereNotIn('id', $master_list_less_id)->delete();
+        } else {
+            MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_days->id])->delete();
+        }
+        TransactionSellLinesDay::where('transaction_sell_lines_id', $sell_days->id)->delete();
+        $date = [];
+        foreach ($new_days as $day) {
+            TransactionSellLinesDay::insert([
+                'transaction_sell_lines_id' => $sell_days->id,
+                'day' => $day,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]);
+            $total_days = $sell_days->number_of_days;
+            if ($master_list_less != 0) {
+                $day_passed = ($total_days - $master_list_less);
+                $totalPurchaseDays = count($new_days);
+                if ($total_days == 0 || $total_days == null) {
+                    $loop = 1;
+                } else {
+                    $loop = ceil($day_passed / $totalPurchaseDays);
+                }
+            } else {
+                $totalPurchaseDays = count($new_days);
+                if ($total_days == 0 || $total_days == null) {
+                    $loop = 1;
+                } else {
+                    $loop = ceil($total_days / $totalPurchaseDays);
+                }
+            }
+            $getDayName = getDayNameByDayNumber($day);
+            $getNextDate = Carbon::parse($sell_days->delivery_date)->next($getDayName)->format('Y-m-d');
+
+            $sDate = Carbon::parse($getNextDate);
+            $x = 7;
+
+            for ($i = 1; $i <= $loop; $i++) {
+                $total_record = MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_days->id])->count();
+                if ($total_days > $total_record) {
+                    $dval = ($i == 1) ? $getNextDate : $sDate->addDays($x);
+                    $date[] = Carbon::parse($dval)->format('Y-m-d');
+                    if ($i != 1) {
+                        $x = $x++;
+                    }
+                }
+            }
+        }
+        usort($date, function ($a, $b) {
+            return strtotime($a) - strtotime($b);
+        });
+        $date_array = array_slice($date, 0, 10);
+        if ($sell_days->time_slot == 3) {
+            $timeslot = [1,2];
+            foreach ($date_array as $date_val) {
+                foreach($timeslot as $val){
+                    MasterList::insert(
+                        [
+                            'transaction_sell_lines_id' => $sell_days->id,
+                            'transaction_id' => $transaction->id,
+                            'contacts_id' => $transaction->contact_id,
+                            'contacts_name' => $transaction->contact->name,
+                            'shipping_address_line_1' => $transaction->contact->shipping_address_1,
+                            'shipping_address_line_2' => $transaction->contact->shipping_address_2,
+                            'shipping_city' => $transaction->contact->shipping_city,
+                            'shipping_state' => $transaction->contact->shipping_state,
+                            'shipping_country' => ($transaction->contact->shipping_country) ? $transaction->contact->shipping_country : null,
+                            'shipping_zip_code' => $transaction->contact->shipping_zipcode,
+                            'additional_notes' => !empty($transaction->additional_notes) ? $transaction->additional_notes : null,
+                            'delivery_note' => $transaction->shipping_details,
+                            'shipping_phone' => '',
+                            'start_date' => null,
+                            'status' => AppConstant::STATUS_ACTIVE,
+                            'staff_notes' => $transaction->staff_note,
+                            'delivery_time' => $sell_days->delivery_time,
+                            'delivery_date' => $date_val,
+                            'time_slot' => $val,
+                            'created_by' => Carbon::now(),
+                            'created_at' => Carbon::now(),
+                        ]
+                    );
+                }
+
+            }
+
+        }else {
+            foreach ($date_array as $date_val) {
+                MasterList::insert(
+                    [
+                        'transaction_sell_lines_id' => $sell_days->id,
+                        'transaction_id' => $transaction->id,
+                        'contacts_id' => $transaction->contact_id,
+                        'contacts_name' => $transaction->contact->name,
+                        'shipping_address_line_1' => $transaction->contact->shipping_address_1,
+                        'shipping_address_line_2' => $transaction->contact->shipping_address_2,
+                        'shipping_city' => $transaction->contact->shipping_city,
+                        'shipping_state' => $transaction->contact->shipping_state,
+                        'shipping_country' => ($transaction->contact->shipping_country) ? $transaction->contact->shipping_country : null,
+                        'shipping_zip_code' => $transaction->contact->shipping_zipcode,
+                        'additional_notes' => !empty($transaction->additional_notes) ? $transaction->additional_notes : null,
+                        'delivery_note' => $transaction->shipping_details,
+                        'shipping_phone' => '',
+                        'status' => AppConstant::STATUS_ACTIVE,
+                        'staff_notes' => $transaction->staff_note,
+                        'delivery_time' => $sell_days->delivery_time,
+                        'delivery_date' => $date_val,
+                        'start_date' => null,
+                        'time_slot' => $sell_days->time_slot,
+                        'created_by' => Carbon::now(),
+                        'created_at' => Carbon::now(),
+                    ]
+                );
+            }
+        }
+    }
+
     public function transactionDayCreate($sell_day, $product, $transaction)
     {
         //master list add
@@ -759,8 +896,8 @@ class TransactionUtil extends Util
                 $product_delivery_dates = $product[$sell_day->product_id];
 
                 if (array_key_exists('has_purchase_due', $product_delivery_dates)) {
+                    $date = [];
                     foreach ($product_delivery_dates['has_purchase_due'] as $day) {
-
                         TransactionSellLinesDay::insert([
                             'transaction_sell_lines_id' => $sell_day->id,
                             'day' => $day,
@@ -774,156 +911,93 @@ class TransactionUtil extends Util
                         } else {
                             $loop = ceil($total_days / $totalPurchaseDays);
                         }
-                        $getDayName = getDayNameByDayNumber($day);
-                        $getNextDate = Carbon::parse($sell_day->delivery_date)->next($getDayName)->format('Y-m-d');
-                        $sDate = Carbon::parse($getNextDate);
-                        $x = 7;
-                        if ($sell_day->time_slot == 3) {
-                            /*for ($j = 1; $j <= 2; $j++) {
-                                for ($i = 1; $i <= $loop; $i++) {
-                                    $total_record = MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_day->id, 'time_slot' => $j])->count();
-                                    if ($total_days > $total_record) {
-                                        MasterList::insert(
-                                            [
-                                                'transaction_sell_lines_id' => $sell_day->id,
-                                                'transaction_id' => $transaction->id,
-                                                'contacts_id' => $transaction->contact_id,
-                                                'contacts_name' => $transaction->contact->name,
-                                                'shipping_address_line_1' => $transaction->contact->shipping_address_1,
-                                                'shipping_address_line_2' => $transaction->contact->shipping_address_2,
-                                                'shipping_city' => $transaction->contact->shipping_city,
-                                                'shipping_state' => $transaction->contact->shipping_state,
-                                                'shipping_country' => ($transaction->contact->shipping_country) ? $transaction->contact->shipping_country : null,
-                                                'shipping_zip_code' => $transaction->contact->shipping_zipcode,
-                                                'additional_notes' => !empty($transaction->additional_notes) ? $transaction->additional_notes : null,
-                                                'delivery_note' => $transaction->shipping_details,
-                                                'shipping_phone' => '',
-                                                'status' => AppConstant::STATUS_ACTIVE,
-                                                'staff_notes' => $transaction->staff_note,
-                                                'delivery_time' => $sell_day->delivery_time,
-                                                'delivery_date' => ($i == 1) ? $getNextDate : $sDate->addDays($x),
-                                                'time_slot' => ($j == 1) ? 1 : 2,
-                                                'start_date' => null,
-                                                'created_by' => Carbon::now(),
-                                                'created_at' => Carbon::now(),
-                                            ]
-                                        );
-                                        if ($i != 1) {
-                                            $x = $x++;
-                                        }
-                                    }
-                                }
-                            }*/
-                            $aaa = $total_days * 2;
-                            for ($i = 1; $i <= $loop; $i++) {
-                                $total_record = MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_day->id])->count();
-                                if ($aaa > $total_record) {
-                                    $mster = MasterList::insert(
-                                        [
-                                            'transaction_sell_lines_id' => $sell_day->id,
-                                            'transaction_id' => $transaction->id,
-                                            'contacts_id' => $transaction->contact_id,
-                                            'contacts_name' => $transaction->contact->name,
-                                            'shipping_address_line_1' => $transaction->contact->shipping_address_1,
-                                            'shipping_address_line_2' => $transaction->contact->shipping_address_2,
-                                            'shipping_city' => $transaction->contact->shipping_city,
-                                            'shipping_state' => $transaction->contact->shipping_state,
-                                            'shipping_country' => ($transaction->contact->shipping_country) ? $transaction->contact->shipping_country : null,
-                                            'shipping_zip_code' => $transaction->contact->shipping_zipcode,
-                                            'additional_notes' => !empty($transaction->additional_notes) ? $transaction->additional_notes : null,
-                                            'delivery_note' => $transaction->shipping_details,
-                                            'shipping_phone' => '',
-                                            'status' => AppConstant::STATUS_ACTIVE,
-                                            'staff_notes' => $transaction->staff_note,
-                                            'delivery_time' => $sell_day->delivery_time,
-                                            'delivery_date' => ($i == 1) ? $getNextDate : $sDate->addDays($x),
-                                            'start_date' => null,
-                                            'time_slot' => 1,
-                                            'created_by' => Carbon::now(),
-                                            'created_at' => Carbon::now(),
-                                        ]
-                                    );
-                                    DB::commit();
-                                    $new_record = MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_day->id,'time_slot'=>1])->orderBy('id', 'desc')->first();
-                                    $news = $new_record->replicate();
-                                    $news->time_slot = 2;
-                                    $news->save();
-                                    if ($i != 1) {
-                                        $x = $x++;
-                                    }
-                                }
-                            }
-                            for ($j = 1; $j <= $loop; $j++) {
-                                $total_record = MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_day->id])->count();
-                                if ($total_days > $total_record) {
-                                    MasterList::insert(
-                                        [
-                                            'transaction_sell_lines_id' => $sell_day->id,
-                                            'transaction_id' => $transaction->id,
-                                            'contacts_id' => $transaction->contact_id,
-                                            'contacts_name' => $transaction->contact->name,
-                                            'shipping_address_line_1' => $transaction->contact->shipping_address_1,
-                                            'shipping_address_line_2' => $transaction->contact->shipping_address_2,
-                                            'shipping_city' => $transaction->contact->shipping_city,
-                                            'shipping_state' => $transaction->contact->shipping_state,
-                                            'shipping_country' => ($transaction->contact->shipping_country) ? $transaction->contact->shipping_country : null,
-                                            'shipping_zip_code' => $transaction->contact->shipping_zipcode,
-                                            'additional_notes' => !empty($transaction->additional_notes) ? $transaction->additional_notes : null,
-                                            'delivery_note' => $transaction->shipping_details,
-                                            'shipping_phone' => '',
-                                            'status' => AppConstant::STATUS_ACTIVE,
-                                            'staff_notes' => $transaction->staff_note,
-                                            'delivery_time' => $sell_day->delivery_time,
-                                            'delivery_date' => ($j == 1) ? $getNextDate : $sDate->addDays($x),
-                                            'start_date' => null,
-                                            'time_slot' => 2,
-                                            'created_by' => Carbon::now(),
-                                            'created_at' => Carbon::now(),
-                                        ]
-                                    );
-                                    if ($i != 1) {
-                                        $x = $x++;
-                                    }
-                                }
-                            }
-                        } else {
 
-                            for ($i = 1; $i <= $loop; $i++) {
-                                $total_record = MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_day->id])->count();
-                                if ($total_days > $total_record) {
-                                    MasterList::insert(
-                                        [
-                                            'transaction_sell_lines_id' => $sell_day->id,
-                                            'transaction_id' => $transaction->id,
-                                            'contacts_id' => $transaction->contact_id,
-                                            'contacts_name' => $transaction->contact->name,
-                                            'shipping_address_line_1' => $transaction->contact->shipping_address_1,
-                                            'shipping_address_line_2' => $transaction->contact->shipping_address_2,
-                                            'shipping_city' => $transaction->contact->shipping_city,
-                                            'shipping_state' => $transaction->contact->shipping_state,
-                                            'shipping_country' => ($transaction->contact->shipping_country) ? $transaction->contact->shipping_country : null,
-                                            'shipping_zip_code' => $transaction->contact->shipping_zipcode,
-                                            'additional_notes' => !empty($transaction->additional_notes) ? $transaction->additional_notes : null,
-                                            'delivery_note' => $transaction->shipping_details,
-                                            'shipping_phone' => '',
-                                            'status' => AppConstant::STATUS_ACTIVE,
-                                            'staff_notes' => $transaction->staff_note,
-                                            'delivery_time' => $sell_day->delivery_time,
-                                            'delivery_date' => ($i == 1) ? $getNextDate : $sDate->addDays($x),
-                                            'start_date' => null,
-                                            'time_slot' => $sell_day->time_slot,
-                                            'created_by' => Carbon::now(),
-                                            'created_at' => Carbon::now(),
-                                        ]
-                                    );
-                                    if ($i != 1) {
-                                        $x = $x++;
-                                    }
+                        $getDayName = getDayNameByDayNumber($day);
+
+                        $getNextDate = Carbon::parse($sell_day->delivery_date)->next($getDayName)->format('Y-m-d');
+
+                        $sDate = Carbon::parse($getNextDate);
+
+                        $x = 7;
+
+                        for ($i = 1; $i <= $loop; $i++) {
+                            $total_record = MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_day->id])->count();
+                            if ($total_days > $total_record) {
+                                $dval = ($i == 1) ? $getNextDate : $sDate->addDays($x);
+                                $date[] = Carbon::parse($dval)->format('Y-m-d');
+                                if ($i != 1) {
+                                    $x = $x++;
                                 }
                             }
                         }
                     }
-                    //$transaction_sell_lines_days = TransactionSellLinesDay::insert($days);
+                    usort($date, function ($a, $b) {
+                        return strtotime($a) - strtotime($b);
+                    });
+                    $date_array = array_slice($date, 0, 10);
+
+                    $timeslot = [1,2];
+                    if ($sell_day->time_slot == 3) {
+                        foreach ($date_array as $date_val) {
+                            foreach($timeslot as $val) {
+                                MasterList::insert(
+                                    [
+                                        'transaction_sell_lines_id' => $sell_day->id,
+                                        'transaction_id' => $transaction->id,
+                                        'contacts_id' => $transaction->contact_id,
+                                        'contacts_name' => $transaction->contact->name,
+                                        'shipping_address_line_1' => $transaction->contact->shipping_address_1,
+                                        'shipping_address_line_2' => $transaction->contact->shipping_address_2,
+                                        'shipping_city' => $transaction->contact->shipping_city,
+                                        'shipping_state' => $transaction->contact->shipping_state,
+                                        'shipping_country' => ($transaction->contact->shipping_country) ? $transaction->contact->shipping_country : null,
+                                        'shipping_zip_code' => $transaction->contact->shipping_zipcode,
+                                        'additional_notes' => !empty($transaction->additional_notes) ? $transaction->additional_notes : null,
+                                        'delivery_note' => $transaction->shipping_details,
+                                        'shipping_phone' => '',
+                                        'status' => AppConstant::STATUS_ACTIVE,
+                                        'staff_notes' => $transaction->staff_note,
+                                        'delivery_time' => $sell_day->delivery_time,
+                                        'delivery_date' => $date_val,
+                                        'start_date' => null,
+                                        'time_slot' => $val,
+                                        'created_by' => Carbon::now(),
+                                        'created_at' => Carbon::now(),
+                                    ]
+                                );
+                            }
+                        }
+
+                    }else {
+                        foreach ($date_array as $date_val) {
+                            MasterList::insert(
+                                [
+                                    'transaction_sell_lines_id' => $sell_day->id,
+                                    'transaction_id' => $transaction->id,
+                                    'contacts_id' => $transaction->contact_id,
+                                    'contacts_name' => $transaction->contact->name,
+                                    'shipping_address_line_1' => $transaction->contact->shipping_address_1,
+                                    'shipping_address_line_2' => $transaction->contact->shipping_address_2,
+                                    'shipping_city' => $transaction->contact->shipping_city,
+                                    'shipping_state' => $transaction->contact->shipping_state,
+                                    'shipping_country' => ($transaction->contact->shipping_country) ? $transaction->contact->shipping_country : null,
+                                    'shipping_zip_code' => $transaction->contact->shipping_zipcode,
+                                    'additional_notes' => !empty($transaction->additional_notes) ? $transaction->additional_notes : null,
+                                    'delivery_note' => $transaction->shipping_details,
+                                    'shipping_phone' => '',
+                                    'status' => AppConstant::STATUS_ACTIVE,
+                                    'staff_notes' => $transaction->staff_note,
+                                    'delivery_time' => $sell_day->delivery_time,
+                                    'delivery_date' => $date_val,
+                                    'start_date' => null,
+                                    'time_slot' => $sell_day->time_slot,
+                                    'created_by' => Carbon::now(),
+                                    'created_at' => Carbon::now(),
+                                ]
+                            );
+                        }
+                    }
+
                 }
             }
         } else {
@@ -1294,12 +1368,12 @@ class TransactionUtil extends Util
         $payment_id = $payment['payment_id'];
         unset($payment['payment_id']);
 
-       /* for ($i = 1; $i < 8; $i++) {
-            if ($payment['method'] == 'custom_pay_' . $i) {
-                $payment['transaction_no'] = $payment["transaction_no"];
-            }
-            unset($payment["transaction_no"]);
-        }*/
+        /* for ($i = 1; $i < 8; $i++) {
+             if ($payment['method'] == 'custom_pay_' . $i) {
+                 $payment['transaction_no'] = $payment["transaction_no"];
+             }
+             unset($payment["transaction_no"]);
+         }*/
         $payment['transaction_no'] = $payment["transaction_no"];
         if (!empty($payment['paid_on'])) {
             $payment['paid_on'] = $uf_data ? $this->uf_date($payment['paid_on'], true) : $payment['paid_on'];
@@ -2604,7 +2678,7 @@ class TransactionUtil extends Util
                 //Field for 3rd column
                 'unit_price_inc_tax' => $this->num_f($line->unit_price_inc_tax, false, $business_details),
                 'unit_price_exc_tax' => $this->num_f($line->unit_price, false, $business_details),
-                'return_amount'=> $line->return_amount,
+                'return_amount' => $line->return_amount,
                 //Fields for 4th column
                 'line_total' => $this->num_f($line->unit_price_inc_tax * $line->quantity_returned, false, $business_details),
             ];
@@ -6068,10 +6142,10 @@ class TransactionUtil extends Util
     public function addSellReturn($input, $business_id, $user_id, $uf_number = true)
     {
 
-       /* $discount = [
-            'discount_type' => $input['discount_type'] ?? 'fixed',
-            'discount_amount' => $input['discount_amount'] ?? 0
-        ];*/
+        /* $discount = [
+             'discount_type' => $input['discount_type'] ?? 'fixed',
+             'discount_amount' => $input['discount_amount'] ?? 0
+         ];*/
 
         $business = Business::with(['currency'])->findOrFail($business_id);
 
@@ -6085,7 +6159,6 @@ class TransactionUtil extends Util
         $sell = Transaction::where('business_id', $business_id)
             ->with(['sell_lines', 'sell_lines.sub_unit'])
             ->findOrFail($input['transaction_id']);
-
 
 
         //Check if any sell return exists for the sale

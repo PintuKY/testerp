@@ -1,34 +1,36 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Models\AccountTransaction;
-use App\Models\Business;
-use App\Models\BusinessLocation;
-use App\Models\Contact;
-use App\Models\Currency;
-use App\Models\CustomerGroup;
-use App\Models\Product;
-use App\Models\PurchaseLine;
-use App\Models\Supplier;
-use App\Models\SupplierPurchaseLine;
-use App\Models\SupplierTransaction;
-use App\Models\TaxRate;
-use App\Models\Transaction;
+use Excel;
 use App\Models\User;
-use App\Utils\BusinessUtil;
-
+use App\Models\Contact;
+use App\Models\Product;
+use App\Models\TaxRate;
+use App\Models\Business;
+use App\Models\Currency;
+use App\Models\Supplier;
+use App\Models\Variation;
 use App\Utils\ModuleUtil;
 use App\Utils\ProductUtil;
-use App\Utils\TransactionUtil;
-
-use App\Models\Variation;
-use App\Utils\SupplierTransactionUtil;
+use App\Models\Transaction;
+use App\Utils\BusinessUtil;
+use App\Models\PurchaseLine;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Yajra\DataTables\Facades\DataTables;
-use Spatie\Activitylog\Models\Activity;
-use Excel;
+
+use App\Models\CustomerGroup;
+use App\Utils\TransactionUtil;
 use App\Models\KitchenLocation;
+
+use App\Models\SupplierProduct;
+use App\Models\BusinessLocation;
+use App\Models\AccountTransaction;
+use Illuminate\Support\Facades\DB;
+use App\Models\SupplierTransaction;
+use Illuminate\Support\Facades\Log;
+use App\Models\SupplierPurchaseLine;
+use App\Utils\SupplierTransactionUtil;
+use Spatie\Activitylog\Models\Activity;
+use Yajra\DataTables\Facades\DataTables;
 
 class SupplierPurchaseController extends Controller
 {
@@ -294,25 +296,24 @@ class SupplierPurchaseController extends Controller
         if (!auth()->user()->can('purchase.create')) {
             abort(403, 'Unauthorized action.');
         }
-
         try {
             $business_id = $request->session()->get('user.business_id');
-
+            
             //Check if subscribed or not
             if (!$this->moduleUtil->isSubscribed($business_id)) {
                 return $this->moduleUtil->expiredResponse(action('SupplierPurchaseController@index'));
             }
-
+            
             $transaction_data = $request->only([ 'ref_no', 'status', 'supplier_id', 'transaction_date', 'total_before_tax', 'location_id','discount_type', 'discount_amount','tax_id', 'tax_amount', 'shipping_details', 'shipping_charges', 'final_total', 'additional_notes', 'exchange_rate', 'pay_term_number', 'pay_term_type', 'purchase_order_ids']);
-
+            
             $exchange_rate = $transaction_data['exchange_rate'];
-
+            
             //Reverse exchange rate and save it.
             //$transaction_data['exchange_rate'] = $transaction_data['exchange_rate'];
-
+            
             //TODO: Check for "Undefined index: total_before_tax" issue
             //Adding temporary fix by validating
-
+            
             $request->validate([
                 'status' => 'required',
                 'supplier_id' => 'required',
@@ -322,13 +323,13 @@ class SupplierPurchaseController extends Controller
                 'final_total' => 'required',
                 'document' => 'file|max:'. (config('constants.document_size_limit') / 1000)
             ]);
-
+            
             $user_id = $request->session()->get('user.id');
             $enable_product_editing = $request->session()->get('business.enable_editing_product_from_purchase');
-
+            
             //Update business exchange rate.
             Business::update_business($business_id, ['p_exchange_rate' => ($transaction_data['exchange_rate'])]);
-
+            
             $currency_details = $this->supplierTransactionUtil->purchaseCurrencyDetails($business_id);
 
             //unformat input values
@@ -395,9 +396,8 @@ class SupplierPurchaseController extends Controller
             if (empty($transaction_data['ref_no'])) {
                 $transaction_data['ref_no'] = $this->productUtil->generateReferenceNumber($transaction_data['type'], $ref_count);
             }
-
             $supplier_transaction = SupplierTransaction::create($transaction_data);
-
+            
             $purchase_lines = [];
             $purchases = $request->input('purchases');
 
@@ -433,6 +433,108 @@ class SupplierPurchaseController extends Controller
         }
 
         return redirect('supplier-purchases')->with('status', $output);
+    }
+
+
+    public function importPurchaseProducts(Request $request)
+    {
+       try {
+            $file = $request->file('file');
+
+            $parsed_array = Excel::toArray([], $file);
+            //Remove header row
+            $imported_data = array_splice($parsed_array[0], 1);
+
+            $business_id = $request->session()->get('user.business_id');
+            $location_id = $request->input('location_id');
+            $row_count = $request->input('row_count');
+
+            $formatted_data = [];
+            $row_index = 0;
+            $error_msg = '';
+            foreach ($imported_data as $key => $value) {
+                $row_index = $key + 1;
+                $temp_array = [];
+
+                if (!empty($value[0])) {
+                    $supplier_product = SupplierProduct::where('sku', trim($value[0]))
+                    ->where('business_id', $business_id)
+                                    ->with(['unit','product_tax'])
+                                    ->first();
+
+                    $temp_array['supplier_product'] = $supplier_product;
+
+                    if (empty($supplier_product)) {
+                        $error_msg = __('lang_v1.product_not_found_exception', ['row' => $row_index, 'sku' => $value[0]]);
+                        break;
+                    }
+                } else {
+                    $error_msg = __('lang_v1.product_not_found_exception', ['row' => $row_index, 'sku' => $value[0]]);
+                    break;
+                }
+
+                if (!empty($value[0])) {
+                    $temp_array['quantity'] = $value[1];
+                } else {
+                    $error_msg = __('lang_v1.quantity_required', ['row' => $row_index]);
+                    break;
+                }
+
+                $temp_array['unit_cost_before_discount'] = !empty($value[2]) ? $value[2] : $supplier_product->purchase_price;
+                $temp_array['discount_percent'] = !empty($value[3]) ? $value[3] : 0;
+
+                $tax_id = null;
+
+                if (!empty($value[4])) {
+                    $tax_name = trim($value[4]);
+                    $tax = TaxRate::where('business_id', $business_id)
+                                ->where('name', 'like', "%{$tax_name}%" )
+                                ->first();
+
+                    $tax_id =  $tax->id ?? $tax_id;
+                }
+
+                $temp_array['tax_id'] = $tax_id;
+                $temp_array['lot_number'] = !empty($value[5]) ? $value[5] : null;
+                $temp_array['mfg_date'] = !empty($value[6]) ? $this->productUtil->format_date($value[6]) : null;
+                $temp_array['exp_date'] = !empty($value[7]) ? $this->productUtil->format_date($value[7]) : null;
+
+                $formatted_data[] = $temp_array;
+            }
+
+            if (!empty($error_msg)) {
+                return [
+                    'success' => false,
+                    'msg' => $error_msg
+                ];
+            }
+
+            $hide_tax = 'hide';
+            if ($request->session()->get('business.enable_inline_tax') == 1) {
+                $hide_tax = '';
+            }
+
+            $taxes = TaxRate::where('business_id', $business_id)
+                            ->ExcludeForTaxGroup()
+                            ->get();
+
+            $currency_details = $this->supplierTransactionUtil->purchaseCurrencyDetails($business_id);
+
+            $html = view('supplier_purchase.partials.imported_purchase_product_rows')
+                        ->with(compact('formatted_data', 'taxes', 'currency_details', 'hide_tax', 'row_count'))->render();
+
+            return [
+                    'success' => true,
+                    'msg' => __('lang_v.imported'),
+                    'html' => $html
+                ];
+       } catch (\Exception $e) {
+        Log::info($e);
+           return [
+                    'success' => false,
+                    'msg' => $e->getMessage()
+                ];
+       }
     }
 
     /**
@@ -902,100 +1004,171 @@ class SupplierPurchaseController extends Controller
             return json_encode($suppliers);
         }
     }
+    public function getPurchaseEntryRow(Request $request)
+    {
+        if (request()->ajax()) {
+            $product_id = $request->input('id');
+            $business_id = request()->session()->get('user.business_id');
+
+            $hide_tax = 'hide';
+            if ($request->session()->get('business.enable_inline_tax') == 1) {
+                $hide_tax = '';
+            }
+
+            if (!empty($product_id)) {
+                $row_count = $request->input('row_count');
+                $supplier_products = SupplierProduct::where('id', $product_id)
+                                    ->with(['unit','product_tax'])
+                                    ->get();
+                $currency_details = $this->supplierTransactionUtil->purchaseCurrencyDetails($business_id);
+
+                $taxes = TaxRate::where('business_id', $business_id)
+                            ->ExcludeForTaxGroup()
+                            ->get();
+                return view('supplier_purchase.partials.purchase_entry_row')
+                    ->with(compact(
+                        'supplier_products',
+                        'row_count',
+                        'taxes',
+                        'currency_details',
+                        'hide_tax'
+                    ));
+            }
+        }
+    }
 
     /**
      * Retrieves products list.
      *
      * @return \Illuminate\Http\Response
      */
+    // public function getProducts()
+    // {
+    //     if (request()->ajax()) {
+    //         $term = request()->term;
+
+    //         $only_variations = false;
+    //         if (isset(request()->only_variations)) {
+    //             $only_variations = filter_var(request()->only_variations, FILTER_VALIDATE_BOOLEAN);
+    //         }
+
+    //         if (empty($term)) {
+    //             return json_encode([]);
+    //         }
+
+    //         $business_id = request()->session()->get('user.business_id');
+    //         $q = Product::leftJoin(
+    //             'variations',
+    //             'products.id',
+    //             '=',
+    //             'variations.product_id'
+    //         )
+    //             ->where(function ($query) use ($term) {
+    //                 $query->where('products.name', 'like', '%' . $term .'%');
+    //                 $query->orWhere('sku', 'like', '%' . $term .'%');
+    //                 $query->orWhere('sub_sku', 'like', '%' . $term .'%');
+    //             })
+    //             ->active()
+    //             ->where('business_id', $business_id)
+    //             ->whereNull('variations.deleted_at')
+    //             ->select(
+    //                 'products.id as product_id',
+    //                 'products.name',
+    //                 'products.type',
+    //                 // 'products.sku as sku',
+    //                 'variations.id as variation_id',
+    //                 'variations.name as variation',
+    //                 'variations.sub_sku as sub_sku'
+    //             )
+    //             ->groupBy('variation_id');
+
+    //         if (!empty(request()->location_id)) {
+    //             $q->ForLocation(request()->location_id);
+    //         }
+    //         $products = $q->get();
+
+    //         $products_array = [];
+    //         foreach ($products as $product) {
+    //             $products_array[$product->product_id]['name'] = $product->name;
+    //             $products_array[$product->product_id]['sku'] = $product->sub_sku;
+    //             $products_array[$product->product_id]['type'] = $product->type;
+    //             $products_array[$product->product_id]['variations'][]
+    //             = [
+    //                     'variation_id' => $product->variation_id,
+    //                     'variation_name' => $product->variation,
+    //                     'sub_sku' => $product->sub_sku
+    //                     ];
+    //         }
+
+    //         $result = [];
+    //         $i = 1;
+    //         $no_of_records = $products->count();
+    //         if (!empty($products_array)) {
+    //             foreach ($products_array as $key => $value) {
+    //                 if ($no_of_records > 1 && $value['type'] != 'single' && !$only_variations) {
+    //                     $result[] = [ 'id' => $i,
+    //                                 'text' => $value['name'] . ' - ' . $value['sku'],
+    //                                 'variation_id' => 0,
+    //                                 'product_id' => $key
+    //                             ];
+    //                 }
+    //                 $name = $value['name'];
+    //                 foreach ($value['variations'] as $variation) {
+    //                     $text = $name;
+    //                     if ($value['type'] == 'variable') {
+    //                         $text = $text . ' (' . $variation['variation_name'] . ')';
+    //                     }
+    //                     $i++;
+    //                     $result[] = [ 'id' => $i,
+    //                                         'text' => $text . ' - ' . $variation['sub_sku'],
+    //                                         'product_id' => $key ,
+    //                                         'variation_id' => $variation['variation_id'],
+    //                                     ];
+    //                 }
+    //                 $i++;
+    //             }
+    //         }
+
+    //         return json_encode($result);
+    //     }
+    // }
     public function getProducts()
     {
         if (request()->ajax()) {
             $term = request()->term;
-
-            $only_variations = false;
-            if (isset(request()->only_variations)) {
-                $only_variations = filter_var(request()->only_variations, FILTER_VALIDATE_BOOLEAN);
-            }
-
+Log::info($term);
             if (empty($term)) {
                 return json_encode([]);
             }
 
             $business_id = request()->session()->get('user.business_id');
-            $q = Product::leftJoin(
-                'variations',
-                'products.id',
+            $q = SupplierProduct::leftJoin(
+                'tax_rates',
+                'supplier_products.tax',
                 '=',
-                'variations.product_id'
-            )
+                'tax_rates.id'
+            )->leftJoin(
+                'supplier_product_categories',
+                'supplier_products.category_id',
+                '=',
+                'supplier_product_categories.id')
                 ->where(function ($query) use ($term) {
-                    $query->where('products.name', 'like', '%' . $term .'%');
-                    $query->orWhere('sku', 'like', '%' . $term .'%');
-                    $query->orWhere('sub_sku', 'like', '%' . $term .'%');
+                    $query->where('supplier_products.name', 'like', '%' . $term .'%');
+                    $query->orWhere('supplier_products.sku', 'like', '%' . $term .'%');
+                    $query->orWhere('supplier_product_categories.name', 'like', '%' . $term .'%');
                 })
-                ->active()
-                ->where('business_id', $business_id)
-                ->whereNull('variations.deleted_at')
+                ->where('supplier_products.business_id', $business_id)
+                ->whereNull('supplier_products.deleted_at')
                 ->select(
-                    'products.id as product_id',
-                    'products.name',
-                    'products.type',
-                    // 'products.sku as sku',
-                    'variations.id as variation_id',
-                    'variations.name as variation',
-                    'variations.sub_sku as sub_sku'
-                )
-                ->groupBy('variation_id');
-
-            if (!empty(request()->location_id)) {
-                $q->ForLocation(request()->location_id);
-            }
-            $products = $q->get();
-
-            $products_array = [];
-            foreach ($products as $product) {
-                $products_array[$product->product_id]['name'] = $product->name;
-                $products_array[$product->product_id]['sku'] = $product->sub_sku;
-                $products_array[$product->product_id]['type'] = $product->type;
-                $products_array[$product->product_id]['variations'][]
-                = [
-                        'variation_id' => $product->variation_id,
-                        'variation_name' => $product->variation,
-                        'sub_sku' => $product->sub_sku
-                        ];
-            }
-
-            $result = [];
-            $i = 1;
-            $no_of_records = $products->count();
-            if (!empty($products_array)) {
-                foreach ($products_array as $key => $value) {
-                    if ($no_of_records > 1 && $value['type'] != 'single' && !$only_variations) {
-                        $result[] = [ 'id' => $i,
-                                    'text' => $value['name'] . ' - ' . $value['sku'],
-                                    'variation_id' => 0,
-                                    'product_id' => $key
-                                ];
-                    }
-                    $name = $value['name'];
-                    foreach ($value['variations'] as $variation) {
-                        $text = $name;
-                        if ($value['type'] == 'variable') {
-                            $text = $text . ' (' . $variation['variation_name'] . ')';
-                        }
-                        $i++;
-                        $result[] = [ 'id' => $i,
-                                            'text' => $text . ' - ' . $variation['sub_sku'],
-                                            'product_id' => $key ,
-                                            'variation_id' => $variation['variation_id'],
-                                        ];
-                    }
-                    $i++;
-                }
-            }
-
-            return json_encode($result);
+                    'supplier_products.id as id',
+                    'supplier_products.name as name',
+                    'supplier_products.sku as sku',
+                    'tax_rates.name as tax',
+                    'supplier_product_categories.name as category',
+                );
+            $supplier_products = $q->get();
+            $no_of_records = $supplier_products->count();
+            return json_encode($supplier_products);
         }
     }
 

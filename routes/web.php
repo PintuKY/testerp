@@ -421,9 +421,11 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::post('/supplier-purchases/update-status', 'SupplierPurchaseController@updateStatus');
     Route::get('/supplier-purchases/get_products', 'SupplierPurchaseController@getProducts');
     Route::get('/suppliers-purchases/get_suppliers', 'SupplierPurchaseController@getSuppliers');
-    // Route::post('/supplier-purchases/get_purchase_entry_row', 'SupplierPurchaseController@getPurchaseEntryRow');
+    Route::post('/supplier-purchases/get_purchase_entry_row', 'SupplierPurchaseController@getPurchaseEntryRow');
     // Route::post('/supplier-purchases/check_ref_number', 'SupplierPurchaseController@checkRefNumber');
     Route::resource('/supplier-purchases', 'SupplierPurchaseController');
+    Route::post('/import-supplier-purchase-products', 'SupplierPurchaseController@importPurchaseProducts');
+
 
 
     //Supplier Transaction payments...

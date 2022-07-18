@@ -67,21 +67,12 @@
 					{!! Form::select('status', $orderStatuses, $default_purchase_status, ['class' => 'form-control select2', 'placeholder' => __('messages.please_select'), 'required']); !!}
 				</div>
 			</div>			
-			@if(count($kitchen_locations) == 1)
-				@php 
-					$default_location = current(array_keys($kitchen_locations));
-					$search_disable = false; 
-				@endphp
-			@else
-				@php $default_location = null;
-				$search_disable = true;
-				@endphp
-			@endif
+
 			<div class="col-sm-3">
 				<div class="form-group">
 					{!! Form::label('location_id', __('kitchen.kitchen_locations').':*') !!}
 					@show_tooltip(__('tooltip.purchase_location'))
-					{!! Form::select('location_id', $kitchen_locations, $default_location, ['class' => 'form-control select2', 'placeholder' => __('messages.please_select'), 'required'], $bl_attributes); !!}
+					{!! Form::select('location_id', $kitchen_locations, null, ['class' => 'form-control select2', 'placeholder' => __('messages.please_select'), 'required']); !!}
 				</div>
 			</div>
 
@@ -231,7 +222,7 @@
 						<span class="input-group-addon">
 							<i class="fa fa-search"></i>
 						</span>
-						{!! Form::text('search_product', null, ['class' => 'form-control mousetrap', 'id' => 'search_product', 'placeholder' => __('lang_v1.search_product_placeholder'), 'disabled' => $search_disable]); !!}
+						{!! Form::text('search_product', null, ['class' => 'form-control mousetrap', 'id' => 'search_product', 'placeholder' => __('lang_v1.search_product_placeholder')]); !!}
 					</div>
 				</div>
 			</div>
@@ -264,23 +255,11 @@
 								<th class="{{$hide_tax}}">@lang( 'purchase.product_tax' )</th>
 								<th class="{{$hide_tax}}">@lang( 'purchase.net_cost' )</th>
 								<th>@lang( 'purchase.line_total' )</th>
-								<th class="@if(!session('business.enable_editing_product_from_purchase')) hide @endif">
-									@lang( 'lang_v1.profit_margin' )
-								</th>
 								<th>
-									@lang( 'purchase.unit_selling_price' )
+									Unit Purchase Price
 									<small>(@lang('product.inc_of_tax'))</small>
 								</th>
-								@if(session('business.enable_lot_number'))
-									<th>
-										@lang('lang_v1.lot_number')
-									</th>
-								@endif
-								@if(session('business.enable_product_expiry'))
-									<th>
-										@lang('product.mfg_date') / @lang('product.exp_date')
-									</th>
-								@endif
+								
 								<th><i class="fa fa-trash" aria-hidden="true"></i></th>
 							</tr>
 						</thead>

@@ -2,28 +2,29 @@
 
 namespace App\Utils;
 
-use App\Models\Business;
-use App\Models\BusinessLocation;
-use App\Models\Discount;
+use Carbon\Carbon;
+use App\Models\Unit;
 use App\Models\Media;
 use App\Models\Product;
-use App\Models\ProductRack;
-use App\Models\ProductVariation;
-use App\Models\PurchaseLine;
-use App\Models\SupplierPurchaseLine;
-use App\Models\SupplierTransactionSellLinesPurchaseLines;
 use App\Models\TaxRate;
-use App\Models\Transaction;
-use App\Models\TransactionSellLine;
-use App\Models\TransactionSellLinesPurchaseLines;
-use App\Models\Unit;
+use App\Models\Business;
+use App\Models\Discount;
 use App\Models\Variation;
-use App\Models\VariationGroupPrice;
-use App\Models\VariationLocationDetails;
+use App\Models\ProductRack;
+use App\Models\Transaction;
+use App\Models\PurchaseLine;
+use App\Models\SupplierProduct;
+use App\Models\BusinessLocation;
+use App\Models\ProductVariation;
 use App\Models\VariationTemplate;
-use App\Models\VariationValueTemplate;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
+use App\Models\TransactionSellLine;
+use App\Models\VariationGroupPrice;
+use App\Models\SupplierPurchaseLine;
+use App\Models\VariationValueTemplate;
+use App\Models\VariationLocationDetails;
+use App\Models\TransactionSellLinesPurchaseLines;
+use App\Models\SupplierTransactionSellLinesPurchaseLines;
 
 class ProductUtil extends Util
 {
@@ -830,6 +831,26 @@ class ProductUtil extends Util
         }
     }
 
+    public function updateSupplierProductFromPurchase($product_data)
+    {
+        $supplier_product = SupplierProduct::where('id', $product_data['product_id'])
+            ->with(['product_tax'])
+            ->first();
+        $tax_rate = 0;
+        if (!empty($supplier_product->product_tax->amount)) {
+            $tax_rate = $supplier_product->product_tax->amount;
+        }
+
+        if (($supplier_product->purchase_price != $product_data['pp_without_discount'])) {
+            //Set default purchase price exc. tax
+            $supplier_product->purchase_price = $product_data['pp_without_discount'];
+            //Set default purchase price inc. tax
+            $supplier_product->purchase_price_inc_tax = $this->calc_percentage($supplier_product->purchase_price, $tax_rate, $supplier_product->purchase_price);
+            $supplier_product->save();
+        }
+
+    }
+
     /**
      * Generated SKU based on the barcode type.
      *
@@ -1206,19 +1227,18 @@ class ProductUtil extends Util
         $updated_purchase_lines = [];
         $updated_purchase_line_ids = [0];
         $exchange_rate = !empty($supplier_transaction->exchange_rate) ? $supplier_transaction->exchange_rate : 1;
-
         foreach ($input_data as $data) {
             $multiplier = 1;
             if (isset($data['sub_unit_id']) && $data['sub_unit_id'] == $data['product_unit_id']) {
                 unset($data['sub_unit_id']);
             }
-
+            
             if (!empty($data['sub_unit_id'])) {
                 $unit = Unit::find($data['sub_unit_id']);
                 $multiplier = !empty($unit->base_unit_multiplier) ? $unit->base_unit_multiplier : 1;
             }
             $new_quantity = $this->num_uf($data['quantity']) * $multiplier;
-
+            
             $new_quantity_f = $this->num_f($new_quantity);
             $old_qty = 0;
             //update existing supplier purchase line
@@ -1226,21 +1246,20 @@ class ProductUtil extends Util
                 $supplier_purchase_line = SupplierPurchaseLine::findOrFail($data['purchase_line_id']);
                 $updated_purchase_line_ids[] = $supplier_purchase_line->id;
                 $old_qty = $supplier_purchase_line->quantity;
-
+                
                 $this->updateProductStock($before_status, $supplier_transaction, $data['product_id'], $data['variation_id'], $new_quantity, $supplier_purchase_line->quantity, $currency_details);
             } else {
                 //create newly added supplier purchase lines
                 $supplier_purchase_line = new SupplierPurchaseLine();
-
+                
                 $supplier_purchase_line->product_id = $data['product_id'];
-                $supplier_purchase_line->variation_id = $data['variation_id'];
-
+                
                 //Increase quantity only if status is received
                 if ($supplier_transaction->status == 'received') {
                     //$this->updateProductQuantity($supplier_transaction->location_id, $data['product_id'], $data['variation_id'], $new_quantity_f, 0, $currency_details);
                 }
             }
-
+            
             $supplier_purchase_line->quantity = $new_quantity;
             $supplier_purchase_line->pp_without_discount = ($this->num_uf($data['pp_without_discount'], $currency_details) * $exchange_rate) / $multiplier;
             $supplier_purchase_line->discount_percent = $this->num_uf($data['discount_percent'], $currency_details);
@@ -1253,21 +1272,20 @@ class ProductUtil extends Util
             $supplier_purchase_line->exp_date = !empty($data['exp_date']) ? $this->uf_date($data['exp_date']) : null;
             $supplier_purchase_line->sub_unit_id = !empty($data['sub_unit_id']) ? $data['sub_unit_id'] : null;
             $supplier_purchase_line->purchase_order_line_id = !empty($data['purchase_order_line_id']) ? $data['purchase_order_line_id'] : null;
-
+            
             $updated_purchase_lines[] = $supplier_purchase_line;
-
+            
             //Edit product price
             if ($enable_product_editing == 1) {
                 if (isset($data['default_sell_price'])) {
-                    $variation_data['sell_price_inc_tax'] = ($this->num_uf($data['default_sell_price'], $currency_details)) / $multiplier;
+                    $product_data['sell_price_inc_tax'] = ($this->num_uf($data['default_sell_price'], $currency_details)) / $multiplier;
                 }
-                $variation_data['pp_without_discount'] = ($this->num_uf($data['pp_without_discount'], $currency_details) * $exchange_rate) / $multiplier;
-                $variation_data['variation_id'] = $supplier_purchase_line->variation_id;
-                $variation_data['purchase_price'] = $supplier_purchase_line->purchase_price;
-
-                $this->updateProductFromPurchase($variation_data);
+                $product_data['product_id'] = $supplier_purchase_line->product_id;
+                $product_data['purchase_price'] = $supplier_purchase_line->purchase_price;
+                $product_data['pp_without_discount'] = $supplier_purchase_line->pp_without_discount;
+                
+                $this->updateSupplierProductFromPurchase($product_data);
             }
-
             //Update purchase order line quantity received
             $this->updateSupplierPurchaseOrderLine($supplier_purchase_line->purchase_order_line_id, $supplier_purchase_line->quantity, $old_qty);
         }

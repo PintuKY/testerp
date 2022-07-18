@@ -5,7 +5,7 @@ namespace App\Events;
 use App\Models\SupplierTransactionPayments;
 use Illuminate\Queue\SerializesModels;
 
-class TransactionPaymentAdded
+class SupplierTransactionPaymentAdded
 {
     use SerializesModels;
 

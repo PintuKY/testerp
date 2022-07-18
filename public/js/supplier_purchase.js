@@ -173,7 +173,7 @@ $(document).ready(function() {
                 source: function(request, response) {
                     $.getJSON(
                         '/supplier-purchases/get_products',
-                        { location_id: $('#location_id').val(), term: request.term },
+                        {term: request.term },
                         response
                     );
                 },
@@ -209,12 +209,12 @@ $(document).ready(function() {
                 },
                 select: function(event, ui) {
                     $(this).val(null);
-                    get_purchase_entry_row(ui.item.product_id, ui.item.variation_id);
+                    get_purchase_entry_row(ui.item.id);
                 },
             })
             .autocomplete('instance')._renderItem = function(ul, item) {
             return $('<li>')
-                .append('<div>' + item.text + '</div>')
+                .append('<div>' + item.name + '</div>')
                 .appendTo(ul);
         };
     }
@@ -726,7 +726,7 @@ $(document).ready(function() {
         __write_number(cp_element, unit_cost);
         cp_element.change();
     });
-    toggle_search();
+    // toggle_search();
 });
 
 //End for product type Variable
@@ -774,23 +774,20 @@ function toggle_dsp_input() {
 }
 
 
-function get_purchase_entry_row(product_id, variation_id) {
-    if (product_id) {
+function get_purchase_entry_row(id) {
+    if (id) {
         var row_count = $('#row_count').val();
-        var location_id = $('#location_id').val();
         var data = { 
-            product_id: product_id, 
+            id: id, 
             row_count: row_count, 
-            variation_id: variation_id,
-            location_id: location_id
         };
 
-        if ($('#is_purchase_order').length) {
-            data.is_purchase_order = true;
-        }
+        // if ($('#is_purchase_order').length) {
+        //     data.is_purchase_order = true;
+        // }
         $.ajax({
             method: 'POST',
-            url: '/purchases/get_purchase_entry_row',
+            url: '/supplier-purchases/get_purchase_entry_row',
             dataType: 'html',
             data: data,
             success: function(result) {
@@ -802,9 +799,9 @@ function get_purchase_entry_row(product_id, variation_id) {
 
 function append_purchase_lines(data, row_count, trigger_change = false) {
     $(data)
-        .find('.purchase_quantity')
-        .each(function() {
-            row = $(this).closest('tr');
+    .find('.purchase_quantity')
+    .each(function() {
+        row = $(this).closest('tr');
 
             $('#purchase_entry_table tbody').append(
                 update_purchase_entry_row_values(row)
@@ -817,7 +814,7 @@ function append_purchase_lines(data, row_count, trigger_change = false) {
             update_grand_total();
             update_table_sr_number();
 
-            //Check if multipler is present then multiply it when a new row is added.
+            // Check if multipler is present then multiply it when a new row is added.
             if(__getUnitMultiplier(row) > 1){
                 row.find('select.sub_unit').trigger('change');
             }
@@ -1111,17 +1108,17 @@ $(document).on('click', 'button#submit_purchase_form', function(e) {
     }
 });
 
-function toggle_search() {
-    if ($('#location_id').val()) {
-        $('#search_product').removeAttr('disabled');
-        $('#search_product').focus();
-    } else {
-        $('#search_product').attr('disabled', true);
-    }
-}
+// function toggle_search() {
+//     if ($('#location_id').val()) {
+//         $('#search_product').removeAttr('disabled');
+//         $('#search_product').focus();
+//     } else {
+//         $('#search_product').attr('disabled', true);
+//     }
+// }
 
 $(document).on('change', '#location_id', function() {
-    toggle_search();
+    // toggle_search();
     $('#purchase_entry_table tbody').html('');
     update_table_total();
     update_grand_total();
@@ -1245,19 +1242,19 @@ function set_po_values(po) {
 
 if ($("div#import_product_dz").length) {
     $("div#import_product_dz").dropzone({
-        url: '/import-purchase-products',
+        url: '/import-supplier-purchase-products',
         paramName: 'file',
         autoProcessQueue: false,
         addRemoveLinks: true,
         uploadMultiple: false,
         maxFiles:1,
         init: function() {
-            this.on("addedfile", function(file) {
-                if ($('#location_id').val() == '') {
-                    this.removeFile(file);
-                    toastr.error('select location first');
-                }
-            });
+            // this.on("addedfile", function(file) {
+            //     if ($('#location_id').val() == '') {
+            //         this.removeFile(file);
+            //         toastr.error('select location first');
+            //     }
+            // });
             this.on("maxfilesexceeded", function(file) {
                 this.removeAllFiles();
                 this.addFile(file);

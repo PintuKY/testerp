@@ -74,7 +74,6 @@ class SupplierProductController extends Controller
                 $supplier_products->where('supplier_products.unit_id', $unit_id);
             }
             $tax = request()->get('tax', null);
-            Log::info($tax);
             if (!empty($tax)) {
                 $supplier_products->where('supplier_products.tax', $tax);
             }
@@ -224,72 +223,7 @@ class SupplierProductController extends Controller
         }
        return redirect('/supplier-products')->with('status',$output);
     }
-    public function unitCreate()
-    {
-        if (!auth()->user()->can('unit.create')) {
-            abort(403, 'Unauthorized action.');
-        }
-        $units = DB::table('supplier_product_units')->pluck('name','id');
-        return view('supplier-product.unit_create')
-                ->with(compact('units'));
-    }
-    public function unitStore(Request $request)
-    {
-        if (!auth()->user()->can('unit.create')) {
-            abort(403, 'Unauthorized action.');
-        }
-        try {
-            $input = $request->only(['name', 'short_name']);
-            if ($request->has('define_base_unit')) {
-                if (!empty($request->input('base_unit_id')) && !empty($request->input('base_unit_multiplier'))) {
-                    if ($request->input('base_unit_multiplier') != 0) {
-                        $input['base_unit_id']         = $request->input('base_unit_id');
-                        $input['base_unit_multiplier'] = $request->input('base_unit_multiplier');
-                    }
-                }
-            }
-            $input['business_id'] =  $request->session()->get('user.business_id');
-            $unit = SupplierProductUnit::create($input);
-            $output = ['success' => true,
-                    'data' => $unit,
-                    'msg' => __("unit.added_success")
-                ];
-        }catch (\Exception $e) {
-          \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
 
-          $output = ['success' => false,
-                      'msg' => __("messages.something_went_wrong")
-                  ];
-      }
-      return $output;
-    }
-    public function categoryCreate(Type $var = null)
-    {
-       $categories = DB::table('supplier_product_categories')->pluck('name','id');
-       return view('supplier-product.category_create',compact('categories'));
-    }
-    public function categoryStore(Request $request)
-    {
-        if (!auth()->user()->can('category.create')) {
-            abort(403, 'Unauthorized action.');
-        }
-        try {
-            $input    = $request->only(['name', 'description']);
-            $input['business_id'] =  $request->session()->get('user.business_id');
-            $category = SupplierProductCategory::create($input);
-            $output = ['success' => true,
-            'data' => $category,
-            'msg' => __("category.added_success")
-            ];
-        } catch (Exception $e) {
-            \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-  
-            $output = ['success' => false,
-                        'msg' => __("messages.something_went_wrong")
-                      ];
-        }
-        return $output;
-    }
     public function destroy($supplier_product_id) {
         if(request()->ajax()) {
             try {

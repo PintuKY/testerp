@@ -71,6 +71,10 @@
             </li>
             <li><a href="{{route('supplier-products.create')}}"><i class="fa fas fa-list"></i> <span>Add Supplier Products</span></a>
             </li>
+            <li><a href="{{route('supplier-product-units.index')}}"><i class="fa fas fa-list"></i> <span>Supplier Product Units</span></a>
+            </li>
+            <li><a href="{{route('supplier-product-categories.index')}}"><i class="fa fas fa-list"></i> <span>Supplier Product Category</span></a>
+            </li>
         </ul>
     </li>
     <li class="treeview" id="tour_step6">

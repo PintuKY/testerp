@@ -43,7 +43,7 @@
                  <div class="input-group">
                   {{ Form::select('unit_id', $units, null, ['placeholder' => __('messages.please_select'), 'class' => 'form-control select2', 'style' => 'width:100%','id'=>'unit_id']); }}
                   <span class="input-group-btn">                   
-                    <button type="button" @if(!auth()->user()->can('unit.create')) disabled @endif class="btn btn-default bg-white btn-flat btn-modal" data-href="{{route('supplierProductUnits.create')}}" title="@lang('unit.add_unit')" data-container=".add_unit_modal"><i class="fa fa-plus-circle text-primary fa-lg"></i></button>
+                    <button type="button" @if(!auth()->user()->can('unit.create')) disabled @endif class="btn btn-default bg-white btn-flat btn-modal" data-href="{{route('supplier-product-units.create',['quick_add' => true])}}" title="@lang('unit.add_unit')" data-container=".add_unit_modal"><i class="fa fa-plus-circle text-primary fa-lg"></i></button>
                   </span>
               </div>
               </div>
@@ -54,7 +54,7 @@
                   <div class="input-group">
                     {{ Form::select('category_id', $categories, null, ['placeholder' => __('messages.please_select'), 'class' => 'form-control select2', 'style' => 'width:100%','id'=>'category_id']); }}
                     <span class="input-group-btn">                   
-                      <button type="button" @if(!auth()->user()->can('unit.create')) disabled @endif class="btn btn-default bg-white btn-flat btn-modal" data-href="{{route('supplierProductCategories.create')}}" title="@lang('category.add_category')" data-container=".add_category_modal"><i class="fa fa-plus-circle text-primary fa-lg"></i></button>
+                      <button type="button" @if(!auth()->user()->can('unit.create')) disabled @endif class="btn btn-default bg-white btn-flat btn-modal" data-href="{{route('supplier-product-categories.create',['quick_add' => true])}}" title="@lang('category.add_category')" data-container=".add_category_modal"><i class="fa fa-plus-circle text-primary fa-lg"></i></button>
                     </span>
                   </div>
                 </div>
@@ -127,7 +127,6 @@
 @section('javascript')
 <script src="{{ asset('js/supplier_purchase.js?v=' . $asset_v) }}"></script>
 <script src="{{ asset('js/supplier.js?v=' . $asset_v) }}"></script>
-
 <script>
 $(document).ready(function() {
    //Start For product type single

@@ -210,7 +210,27 @@ function mealTypes()
     ];
     return $data;
 }
-
+function getMealTypes($type)
+{
+    $meal_type = 0;
+    switch ($type) {
+        case ('1'):
+            $meal_type = 'Lunch (9.30am – 1.30pm)';
+            break;
+        case ('2'):
+            $meal_type = 'Dinner (3.30pm – 7.30pm)';
+            break;
+        case ('3'):
+            $meal_type = 'Both';
+            break;
+        case ('4'):
+            $meal_type = 'None';
+            break;
+        default:
+            $meal_type = '';
+    }
+    return $meal_type;
+}
 // compensate types lists
 function compensateTypes()
 {

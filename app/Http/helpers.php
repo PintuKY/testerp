@@ -79,7 +79,6 @@ if (!function_exists('isFileImage')) {
         $ext = pathinfo($filename, PATHINFO_EXTENSION);
         $array = ['png', 'PNG', 'jpg', 'JPG', 'jpeg', 'JPEG', 'gif', 'GIF'];
         $output = in_array($ext, $array) ? true : false;
-
         return $output;
     }
 }

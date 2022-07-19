@@ -22,12 +22,6 @@
               {!! Form::select('variation_ids[]', [], null, ['id' => "variation_ids", 'class' => 'form-control', 'multiple']); !!}
           </div>
         </div>
-        <div class="col-md-6" id="brand_input">
-          <div class="form-group">
-            {!! Form::label('brand_id', __('product.brand') . ':') !!}
-              {!! Form::select('brand_id', $brands, null, ['placeholder' => __('messages.please_select'), 'class' => 'form-control select2']); !!}
-          </div>
-        </div>
         <div class="col-sm-6" id="category_input">
           <div class="form-group">
             {!! Form::label('category_id', __('product.category') . ':') !!}

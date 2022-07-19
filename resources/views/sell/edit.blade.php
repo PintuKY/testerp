@@ -283,12 +283,14 @@ $multiplier = 1;
                         </div>
                     @endif
                     <div class="col-sm-3">
+
                         <div class="form-group">
                             {!! Form::label('upload_document', __('purchase.attach_document') . ':') !!}
                             {!! Form::file('sell_document', ['id' => 'upload_document', 'accept' => implode(',', array_keys(config('constants.document_upload_mimes_types')))]); !!}
                             <p class="help-block">@lang('purchase.max_file_size', ['size' => (config('constants.document_size_limit') / 1000000)])
                                 @includeIf('components.document_help_text')</p>
                         </div>
+                        @include('sell.partials.document_table', ['medias' => $transaction->document])
                     </div>
                     <div class="clearfix"></div>
                     @if((!empty($pos_settings['enable_sales_order']) && $transaction->type != 'sales_order') || $is_order_request_enabled)

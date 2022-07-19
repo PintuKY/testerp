@@ -637,9 +637,9 @@ class TransactionUtil extends Util
             'updated_at' => Carbon::now()->toDateTimeString()
         ]);
         if ($master_list_less_id) {
-            MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_days->id])->whereNotIn('id', $master_list_less_id)->delete();
+            MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_days->id])->whereNotIn('id', $master_list_less_id)->forceDelete();
         } else {
-            MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_days->id])->delete();
+            MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_days->id])->forceDelete();
         }
         TransactionSellLinesDay::where('transaction_sell_lines_id', $sell_days->id)->delete();
         foreach ($new_days as $day) {
@@ -772,9 +772,9 @@ class TransactionUtil extends Util
             'updated_at' => Carbon::now()->toDateTimeString()
         ]);
         if ($master_list_less_id) {
-            MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_days->id])->whereNotIn('id', $master_list_less_id)->delete();
+            MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_days->id])->whereNotIn('id', $master_list_less_id)->forceDelete();
         } else {
-            MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_days->id])->delete();
+            MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_days->id])->forceDelete();
         }
         TransactionSellLinesDay::where('transaction_sell_lines_id', $sell_days->id)->delete();
         $date = [];
@@ -786,9 +786,12 @@ class TransactionUtil extends Util
                 'updated_at' => Carbon::now(),
             ]);
             $total_days = $sell_days->number_of_days;
+
+
             if ($master_list_less != 0) {
                 $day_passed = ($total_days - $master_list_less);
                 $totalPurchaseDays = count($new_days);
+                $total_days_remaining = $day_passed;
                 if ($total_days == 0 || $total_days == null) {
                     $loop = 1;
                 } else {
@@ -801,24 +804,36 @@ class TransactionUtil extends Util
                 } else {
                     $loop = ceil($total_days / $totalPurchaseDays);
                 }
+                $total_days_remaining = $sell_days->number_of_days;
             }
+            Log::info('total_days_remaining====='.$total_days_remaining);
             $getDayName = getDayNameByDayNumber($day);
-            $getNextDate = Carbon::parse($sell_days->delivery_date)->next($getDayName)->format('Y-m-d');
+            $getNextDate = Carbon::parse($sell_days->start_date)->next($getDayName)->format('Y-m-d');
 
             $sDate = Carbon::parse($getNextDate);
             $x = 7;
 
             for ($i = 1; $i <= $loop; $i++) {
                 $total_record = MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_days->id])->count();
-                if ($total_days > $total_record) {
+                $getDate = MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_days->id])->pluck('delivery_date')->toArray();
+                if ($total_days_remaining > $total_record) {
                     $dval = ($i == 1) ? $getNextDate : $sDate->addDays($x);
-                    $date[] = Carbon::parse($dval)->format('Y-m-d');
+                    $newdate = Carbon::parse($dval)->format('Y-m-d');
+                    if (in_array($newdate, $getDate))
+                    {
+
+                    }
+                    else
+                    {
+                        $date[] = Carbon::parse($dval)->format('Y-m-d');
+                    }
                     if ($i != 1) {
                         $x = $x++;
                     }
                 }
             }
         }
+
         usort($date, function ($a, $b) {
             return strtotime($a) - strtotime($b);
         });
@@ -914,7 +929,7 @@ class TransactionUtil extends Util
 
                         $getDayName = getDayNameByDayNumber($day);
 
-                        $getNextDate = Carbon::parse($sell_day->delivery_date)->next($getDayName)->format('Y-m-d');
+                        $getNextDate = Carbon::parse($sell_day->start_date)->next($getDayName)->format('Y-m-d');
 
                         $sDate = Carbon::parse($getNextDate);
 

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Brands;
 use App\Models\BusinessLocation;
 use App\Models\Category;
 use App\Models\Discount;
@@ -46,11 +45,10 @@ class DiscountController extends Controller
             $business_id = request()->session()->get('user.business_id');
 
             $discounts = Discount::where('discounts.business_id', $business_id)
-                        ->leftjoin('brands as b', 'discounts.brand_id', '=', 'b.id')
                         ->leftjoin('categories as c', 'discounts.category_id', '=', 'c.id')
                         ->leftjoin('business_locations as l', 'discounts.location_id', '=', 'l.id')
                         ->select(['discounts.id', 'discounts.name', 'starts_at', 'ends_at',
-                            'priority', 'b.name as brand', 'c.name as category', 'l.name as location', 'discounts.is_active', 'discounts.discount_amount', 'discount_type'])
+                            'priority', 'c.name as category', 'l.name as location', 'discounts.is_active', 'discounts.discount_amount', 'discount_type'])
                         ->with(['variations', 'variations.product', 'variations.product_variation']);
 
             return Datatables::of($discounts)
@@ -111,17 +109,15 @@ class DiscountController extends Controller
         $business_id = request()->session()->get('user.business_id');
 
         $categories = Category::where('business_id', $business_id)
-                            ->where('parent_id', 0)
+                            //->where('parent_id', 0)
                             ->pluck('name', 'id');
-
-        $brands = Brands::forDropdown($business_id);
 
         $locations = BusinessLocation::forDropdown($business_id);
 
         $price_groups = SellingPriceGroup::forDropdown($business_id);
 
         return view('discount.create')
-                ->with(compact('categories', 'brands', 'locations', 'price_groups'));
+                ->with(compact('categories', 'locations', 'price_groups'));
     }
 
     /**
@@ -137,7 +133,7 @@ class DiscountController extends Controller
         }
 
         try {
-            $input = $request->only(['name', 'brand_id', 'category_id',
+            $input = $request->only(['name','category_id',
                 'location_id', 'priority', 'discount_type', 'discount_amount', 'spg']);
 
             $business_id = $request->session()->get('user.business_id');
@@ -146,7 +142,6 @@ class DiscountController extends Controller
             $variation_ids = $request->input('variation_ids');
 
             if (!empty($variation_ids)) {
-                unset($input['brand_id']);
                 unset($input['category_id']);
             }
 
@@ -201,10 +196,8 @@ class DiscountController extends Controller
             $ends_at = $this->commonUtil->format_date($discount->ends_at->toDateTimeString(), true);
 
             $categories = Category::where('business_id', $business_id)
-                            ->where('parent_id', 0)
+                            //->where('parent_id', 0)
                             ->pluck('name', 'id');
-
-            $brands = Brands::forDropdown($business_id);
 
             $locations = BusinessLocation::forDropdown($business_id);
 
@@ -217,7 +210,7 @@ class DiscountController extends Controller
             $price_groups = SellingPriceGroup::forDropdown($business_id);
 
             return view('discount.edit')
-                ->with(compact('discount', 'starts_at', 'ends_at', 'brands', 'categories', 'locations', 'variations', 'price_groups'));
+                ->with(compact('discount', 'starts_at', 'ends_at', 'categories', 'locations', 'variations', 'price_groups'));
         }
     }
 
@@ -236,7 +229,7 @@ class DiscountController extends Controller
 
         if (request()->ajax()) {
             try {
-                $input = $request->only(['name', 'brand_id', 'category_id',
+                $input = $request->only(['name', 'category_id',
                 'location_id', 'priority', 'discount_type', 'discount_amount', 'spg']);
 
                 $business_id = $request->session()->get('user.business_id');
@@ -252,7 +245,6 @@ class DiscountController extends Controller
                 $variation_ids = $request->input('variation_ids');
 
                 if (!empty($variation_ids)) {
-                    unset($input['brand_id']);
                     unset($input['category_id']);
                 }
 

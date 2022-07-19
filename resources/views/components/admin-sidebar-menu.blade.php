@@ -48,10 +48,6 @@
                     <span>Variations</span></a></li>
             <li><a href="{{route('selling-price-group.index')}}"><i class="fa fas fa-circle"></i> <span>Selling Price Group</span></a>
             </li>
-            <li><a href="{{route('ingredients.index')}}"><i class="fa fas fa-circle"></i> <span>Ingredient</span></a>
-            </li>
-            <li><a href="{{route('recipe.index')}}"><i class="fa fas fa-circle"></i> <span>Recipe</span></a>
-            </li>
             <li><a href="{{route('menu.index')}}"><i class="fa fas fa-circle"></i> <span>Menu</span></a>
             </li>
             <li><a href="{{route('units.index')}}"><i class="fa fas fa-balance-scale"></i> <span>Units</span></a></li>
@@ -121,6 +117,20 @@
             <li><a href="{{route('discount.index')}}"><i class="fa fas fa-percent"></i> <span>Discounts</span></a></li>
             <li><a href="{{route('sales.import')}}"><i class="fa fas fa-file-import"></i> <span>Import Sales</span></a>
             <li><a href="{{route('master.index')}}"><i class="fa fas fa-file-import"></i> <span>Master List</span></a>
+            </li>
+        </ul>
+    </li>
+    <li class="treeview">
+        <a href="#">
+            <i class="fa fas fa-truck"></i> <span>Kitchen</span>
+            <span class="pull-right-container">
+                              <i class="fa fa-angle-left pull-right"></i>
+                            </span>
+        </a>
+        <ul class="treeview-menu">
+            <li><a href="{{route('ingredients.index')}}"><i class="fa fas fa-circle"></i> <span>Ingredient</span></a>
+            </li>
+            <li><a href="{{route('recipe.index')}}"><i class="fa fas fa-circle"></i> <span>Recipe</span></a>
             </li>
         </ul>
     </li>

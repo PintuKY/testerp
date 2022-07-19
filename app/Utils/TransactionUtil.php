@@ -5250,63 +5250,6 @@ class TransactionUtil extends Util
 
     /**
      * common function to get
-     * list purchase
-     * @param int $business_id
-     *
-     * @return object
-     */
-    public function getListPurchases($business_id)
-    {
-        $purchases = Transaction::leftJoin('contacts', 'transactions.contact_id', '=', 'contacts.id')
-            ->leftJoin(
-                'kitchens_locations',
-                'transactions.location_id',
-                '=',
-                'kitchens_locations.id'
-            )
-            ->leftJoin(
-                'transaction_payments AS TP',
-                'transactions.id',
-                '=',
-                'TP.transaction_id'
-            )
-            ->leftJoin(
-                'transactions AS PR',
-                'transactions.id',
-                '=',
-                'PR.return_parent_id'
-            )
-            ->leftJoin('users as u', 'transactions.created_by', '=', 'u.id')
-            ->where('transactions.business_id', $business_id)
-            ->where('transactions.type', 'purchase')
-            ->select(
-                'transactions.id',
-                'transactions.document',
-                'transactions.transaction_date',
-                'transactions.ref_no',
-                'contacts.name',
-                'contacts.supplier_business_name',
-                'transactions.status',
-                'transactions.payment_status',
-                'transactions.final_total',
-                'kitchens_locations.name as location_name',
-                /*'transactions.pay_term_number',
-                'transactions.pay_term_type',*/
-                'PR.id as return_transaction_id',
-                DB::raw('SUM(TP.amount) as amount_paid'),
-                DB::raw('(SELECT SUM(TP2.amount) FROM transaction_payments AS TP2 WHERE
-                        TP2.transaction_id=PR.id ) as return_paid'),
-                DB::raw('COUNT(PR.id) as return_exists'),
-                DB::raw('COALESCE(PR.final_total, 0) as amount_return'),
-                DB::raw("CONCAT(COALESCE(u.surname, ''),' ',COALESCE(u.first_name, ''),' ',COALESCE(u.last_name,'')) as added_by")
-            )
-            ->groupBy('transactions.id');
-
-        return $purchases;
-    }
-
-    /**
-     * common function to get
      * list sell
      * @param int $business_id
      *

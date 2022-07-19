@@ -1,6 +1,6 @@
 @php
     $variation_name = !empty($variation_name) ? $variation_name : null;
-    $variation_price = !empty($variation_price) ? $variation_price : null;
+    $variation_price = !empty($variation_price) ? $variation_price : '0';
     $variation_value_id = !empty($variation_value_id) ? $variation_value_id : null;
 
     $name = (empty($row_type) || $row_type == 'add') ? 'product_variation' : 'product_variation_edit';
@@ -64,8 +64,8 @@
 
         {!! Form::text($name . '[' . $variation_index . '][variations][' . $value_index . '][sell_price_inc_tax]', $default, ['class' => 'form-control input-sm variable_dsp_inc_tax input_number', 'placeholder' => __('product.inc_of_tax'), 'required']); !!}
     </td>
-    <td>{!! Form::file('variation_images_' . $variation_index . '_' . $value_index . '[]', ['class' => 'variation_images', 'accept' => 'image/*', 'multiple']); !!}</td>
-    <td>
+    {{--<td>{!! Form::file('variation_images_' . $variation_index . '_' . $value_index . '[]', ['class' => 'variation_images', 'accept' => 'image/*', 'multiple']); !!}</td>
+    --}}<td>
         <button type="button" class="btn btn-danger btn-xs remove_variation_value_row">-</button>
         <input type="hidden" class="variation_row_index" value="{{$value_index}}">
     </td>

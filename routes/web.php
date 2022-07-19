@@ -412,18 +412,20 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
 
     // supplier product 
     Route::resource('supplier-products', 'SupplierProductController');
-    Route::get('supplier-products/units/create', 'SupplierProductController@unitCreate')->name('supplierProductUnits.create');
-    Route::post('supplier-products/units/create', 'SupplierProductController@unitStore')->name('supplierProductUnits.store');
-    Route::get('supplier-products/categories/create', 'SupplierProductController@categoryCreate')->name('supplierProductCategories.create');
-    Route::post('supplier-products/categories/create', 'SupplierProductController@categoryStore')->name('supplierProductCategories.store');
+    
+    // supplier product unit
+    Route::resource('supplier-product-units', 'SupplierProductUnitController');
+    Route::resource('supplier-product-categories', 'SupplierProductCategoryController');
 
     // supplier purchases modules
     Route::post('/supplier-purchases/update-status', 'SupplierPurchaseController@updateStatus');
     Route::get('/supplier-purchases/get_products', 'SupplierPurchaseController@getProducts');
     Route::get('/suppliers-purchases/get_suppliers', 'SupplierPurchaseController@getSuppliers');
-    // Route::post('/supplier-purchases/get_purchase_entry_row', 'SupplierPurchaseController@getPurchaseEntryRow');
+    Route::post('/supplier-purchases/get_purchase_entry_row', 'SupplierPurchaseController@getPurchaseEntryRow');
     // Route::post('/supplier-purchases/check_ref_number', 'SupplierPurchaseController@checkRefNumber');
     Route::resource('/supplier-purchases', 'SupplierPurchaseController');
+    Route::post('/import-supplier-purchase-products', 'SupplierPurchaseController@importPurchaseProducts');
+
 
 
     //Supplier Transaction payments...
@@ -451,7 +453,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
 Route::middleware(['EcomApi'])->prefix('api/ecom')->group(function () {
     Route::get('products/{id?}', 'ProductController@getProductsApi');
     //Route::get('categories', 'CategoryController@getCategoriesApi');
-    Route::get('brands', 'BrandController@getBrandsApi');
+    // Route::get('brands', 'BrandController@getBrandsApi');
     Route::post('customers', 'ContactController@postCustomersApi');
     Route::get('settings', 'BusinessController@getEcomSettings');
     Route::get('variations', 'ProductController@getVariationsApi');

@@ -1,9 +1,10 @@
 <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
 
-      {!! Form::open(['url' => action('BusinessLocationController@update', [$location->id]), 'method' => 'PUT', 'id' => 'business_location_add_form' ,'files'=>true]) !!}
+      {!! Form::open(['url' => action('BusinessLocationController@update', [$location->id]), 'method' => 'put',   'id' => 'business_location_edit_form' ,'files'=>true,'data-val'=>'edit']) !!}
 
-      {!! Form::hidden('hidden_id', $location->id, ['id' => 'hidden_id']); !!}
+
+        {!! Form::hidden('hidden_id', $location->id, ['id' => 'hidden_id']); !!}
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
         <h4 class="modal-title">@lang( 'business.edit_business_location' )</h4>

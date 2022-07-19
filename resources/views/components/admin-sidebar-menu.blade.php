@@ -59,6 +59,24 @@
             </li>
         </ul>
     </li>
+    <li class="treeview">
+        <a href="#">
+            <i class="fa fas fa-cubes"></i> <span>Supplier Products</span>
+            <span class="pull-right-container">
+                          <i class="fa fa-angle-left pull-right"></i>
+                        </span>
+        </a>
+        <ul class="treeview-menu">
+            <li><a href="{{route('supplier-products.index')}}"><i class="fa fas fa-list"></i> <span>Supplier Products List</span></a>
+            </li>
+            <li><a href="{{route('supplier-products.create')}}"><i class="fa fas fa-list"></i> <span>Add Supplier Products</span></a>
+            </li>
+            <li><a href="{{route('supplier-product-units.index')}}"><i class="fa fas fa-list"></i> <span>Supplier Product Units</span></a>
+            </li>
+            <li><a href="{{route('supplier-product-categories.index')}}"><i class="fa fas fa-list"></i> <span>Supplier Product Category</span></a>
+            </li>
+        </ul>
+    </li>
     <li class="treeview" id="tour_step6">
         <a href="#">
             <i class="fa fas fa-arrow-circle-down"></i> <span>Supplier Purchases</span>
@@ -68,10 +86,6 @@
         </a>
         <ul class="treeview-menu">
             <li><a href="{{route('supplier.index')}}"><i class="fa fas fa-star"></i> <span>Lists Suppliers</span></a>
-            </li>
-            <li><a href="{{route('supplier-products.index')}}"><i class="fa fas fa-list"></i> <span>Supplier Products List</span></a>
-            </li>
-            <li><a href="{{route('supplier-products.create')}}"><i class="fa fas fa-list"></i> <span>Add Supplier Products</span></a>
             </li>
             <li><a href="{{route('supplier-purchases.index')}}"><i class="fa fas fa-list"></i> <span>List Supplier Purchases</span></a>
             </li>

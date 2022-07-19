@@ -195,7 +195,7 @@ $(document).ready(function() {
                             if (value) {
                                 var container = $('.quick_add_product_modal');
                                 $.ajax({
-                                    url: '/products/quick_add?product_name=' + term,
+                                    url: '/supplier-products/quick_add?product_name=' + term,
                                     dataType: 'html',
                                     success: function(result) {
                                         $(container)

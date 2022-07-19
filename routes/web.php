@@ -411,6 +411,8 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/supplier/payments/{supplier_id}', 'SupplierController@getSupplierPayments')->name('supplier.payments');
 
     // supplier product 
+    Route::get('/supplier-products/quick_add', 'SupplierProductController@quickAdd');
+    Route::post('/supplier-products/save_quick_product', 'SupplierProductController@saveQuickProduct');
     Route::resource('supplier-products', 'SupplierProductController');
     
     // supplier product unit

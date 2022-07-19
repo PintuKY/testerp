@@ -1733,7 +1733,6 @@ $(document).ready(function () {
             },
         ],
         columns: [
-            {data: 'action', name: 'action'},
             {data: 'name', name: 'name'},
             {data: 'location_id', name: 'location_id'},
             {data: 'landmark', name: 'landmark'},

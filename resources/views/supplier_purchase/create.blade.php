@@ -251,9 +251,9 @@
 								<th>@lang( 'lang_v1.unit_cost_before_discount' )</th>
 								<th>@lang( 'lang_v1.discount_percent' )</th>
 								<th>@lang( 'purchase.unit_cost_before_tax' )</th>
-								<th class="{{$hide_tax}}">@lang( 'purchase.subtotal_before_tax' )</th>
-								<th class="{{$hide_tax}}">@lang( 'purchase.product_tax' )</th>
-								<th class="{{$hide_tax}}">@lang( 'purchase.net_cost' )</th>
+								<th>@lang( 'purchase.subtotal_before_tax' )</th>
+								<th>@lang( 'purchase.product_tax' )</th>
+								<th>@lang( 'purchase.net_cost' )</th>
 								<th>@lang( 'purchase.line_total' )</th>
 								<th>
 									Unit Purchase Price

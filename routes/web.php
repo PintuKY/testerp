@@ -111,13 +111,6 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
 
     Route::resource('products', 'ProductController');
 
-    Route::post('/import-purchase-products', 'PurchaseController@importPurchaseProducts');
-    Route::post('/purchases/update-status', 'PurchaseController@updateStatus');
-    Route::get('/purchases/get_products', 'PurchaseController@getProducts');
-    Route::get('/purchases/get_suppliers', 'PurchaseController@getSuppliers');
-    Route::post('/purchases/get_purchase_entry_row', 'PurchaseController@getPurchaseEntryRow');
-    Route::post('/purchases/check_ref_number', 'PurchaseController@checkRefNumber');
-    Route::resource('purchases', 'PurchaseController')->except(['show']);
 
     Route::get('/toggle-subscription/{id}', 'SellPosController@toggleRecurringInvoices');
     Route::post('/sells/pos/get-types-of-service-details', 'SellPosController@getTypesOfServiceDetails');
@@ -390,7 +383,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::resource('note-documents', 'DocumentAndNoteController');
     Route::resource('purchase-order', 'PurchaseOrderController');
     Route::get('get-purchase-orders/{contact_id}', 'PurchaseOrderController@getPurchaseOrders');
-    Route::get('get-purchase-order-lines/{purchase_order_id}', 'PurchaseController@getPurchaseOrderLines');
+    Route::get('get-purchase-order-lines/{purchase_order_id}', 'PurchaseOrderController@getPurchaseOrderLines');
     Route::get('edit-purchase-orders/{id}/status', 'PurchaseOrderController@getEditPurchaseOrderStatus');
     Route::put('update-purchase-orders/{id}/status', 'PurchaseOrderController@postEditPurchaseOrderStatus');
     Route::resource('sales-order', 'SalesOrderController')->only(['index']);
@@ -469,8 +462,6 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone'])->group(function () {
     Route::get('/load-more-notifications', 'HomeController@loadMoreNotifications');
     Route::get('/get-total-unread', 'HomeController@getTotalUnreadNotifications');
-    Route::get('/purchases/print/{id}', 'PurchaseController@printInvoice');
-    Route::get('/purchases/{id}', 'PurchaseController@show');
     Route::get('/download-purchase-order/{id}/pdf', 'PurchaseOrderController@downloadPdf')->name('purchaseOrder.downloadPdf');
     Route::get('/sells/{id}', 'SellController@show');
     Route::get('/master_list/{id}/{sell_id}', 'MasterController@getMasterList');

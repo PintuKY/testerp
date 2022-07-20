@@ -124,6 +124,9 @@
               </div>
             </div>
             <div class="col-sm-4">
+                @if($product->image)
+                    <img width="200px" src="{{  asset('storage/img/' . $product->image) }}" alt="Business Logo">
+                @endif
               <div class="form-group">
                 {!! Form::label('image', __('lang_v1.product_image') . ':') !!}
                 {!! Form::file('image', ['id' => 'upload_image', 'accept' => 'image/*']); !!}
@@ -132,6 +135,10 @@
             </div>
             </div>
             <div class="col-sm-4">
+                @if($media)
+                    <label for="product_brochure">Uploaded Brochure: </label>
+                    <a href="{{  url('storage/media/' . $media->file_name) }}" target="_blank" alt="Business Logo">{{$media->file_name}}</a>
+                @endif
               <div class="form-group">
                 {!! Form::label('product_brochure', __('lang_v1.product_brochure') . ':') !!}
                 {!! Form::file('product_brochure', ['id' => 'product_brochure', 'accept' => implode(',', array_keys(config('constants.document_upload_mimes_types')))]); !!}

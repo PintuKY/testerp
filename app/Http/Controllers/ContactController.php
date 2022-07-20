@@ -23,7 +23,8 @@ use Yajra\DataTables\Facades\DataTables;
 use App\Models\TransactionPayment;
 use Spatie\Activitylog\Models\Activity;
 use Carbon\Carbon;
-
+use Barryvdh\DomPDF\Facade\Pdf;
+use Barryvdh\DomPDF;
 class ContactController extends Controller
 {
     protected $commonUtil;
@@ -988,7 +989,6 @@ class ContactController extends Controller
         $end_date = request()->end_date;
 
         $contact = Contact::find($contact_id);
-
         if (!auth()->user()->can('supplier.view') && auth()->user()->can('supplier.view_own')) {
             if ($contact->created_by != auth()->user()->id) {
                 abort(403, 'Unauthorized action.');
@@ -1002,13 +1002,26 @@ class ContactController extends Controller
 
         $ledger_details = $this->transactionUtil->getLedgerDetails($contact_id, $start_date, $end_date);
 
+
         if (request()->input('action') == 'pdf') {
             $for_pdf = true;
             $html = view('contact.ledger')
                 ->with(compact('ledger_details', 'contact', 'for_pdf'))->render();
-            $mpdf = $this->getMpdf();
+
+
+            /*$pdf = \App::make('dompdf.wrapper');
+            $pdf->loadHTML($html);
+            return $pdf->stream();*/
+
+            /*$pdf = \PDF::loadView('contact.ledger', compact('ledger_details', 'contact', 'for_pdf'));
+            return $pdf->download('invoice.pdf');*/
+
+
+            return Pdf::loadHTML($html)->stream('download.pdf');
+
+            /*$mpdf = $this->getMpdf();
             $mpdf->WriteHTML($html);
-            $mpdf->Output();
+            $mpdf->Output();*/
         }
 
         return view('contact.ledger')

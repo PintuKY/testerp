@@ -1,6 +1,6 @@
 <!-- app css -->
 @if(!empty($for_pdf))
-	<link rel="stylesheet" href="{{ asset('css/app.css?v='.$asset_v) }}">
+	<link rel="stylesheet" href="{{ public_path('css/app.css?v='.$asset_v) }}">
 @endif
 <div class="col-md-12 col-sm-12 @if(!empty($for_pdf)) width-100 align-right @endif">
         <p class="text-right align-right"><strong>{{$contact->business->name}}</strong><br>{!! $contact->business->business_address !!}</p>

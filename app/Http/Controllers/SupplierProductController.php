@@ -241,4 +241,28 @@ class SupplierProductController extends Controller
             return $output;
         }
     }
+
+    public function getProducts()
+    {
+        Log::info(request()->all());
+        if (request()->ajax()) {
+            $search_term = request()->input('term', '');
+            $location_id = request()->input('location_id', null);
+            $check_qty = request()->input('check_qty', false);
+            // $price_group_id = request()->input('price_group', null);
+            $business_id = request()->session()->get('user.business_id');
+            //$not_for_selling = request()->get('not_for_selling', null);
+            // $price_group_id = request()->input('price_group', '');
+            // $product_types = request()->get('product_types', []);
+
+            $search_fields = request()->get('search_fields', ['name', 'sku']);
+            if (in_array('sku', $search_fields)) {
+                $search_fields[] = 'sub_sku';
+            }
+
+            $result = $this->productUtil->filterSupplierProduct($business_id, $search_term, $location_id, /*$not_for_selling,$price_group_id, $product_types,*/ $search_fields, $check_qty);
+
+            return json_encode($result);
+        }
+    }
 }

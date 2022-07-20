@@ -20,9 +20,11 @@ use App\Models\VariationTemplate;
 use Illuminate\Support\Facades\DB;
 use App\Models\TransactionSellLine;
 use App\Models\VariationGroupPrice;
+use Illuminate\Support\Facades\Log;
 use App\Models\SupplierPurchaseLine;
 use App\Models\VariationValueTemplate;
 use App\Models\VariationLocationDetails;
+use App\Models\SupplierProductLocationDetail;
 use App\Models\TransactionSellLinesPurchaseLines;
 use App\Models\SupplierTransactionSellLinesPurchaseLines;
 
@@ -396,7 +398,36 @@ class ProductUtil extends Util
 
         return true;
     }
+    public function updateSupplierProductQuantity($location_id, $product_id, $new_quantity, $old_quantity = 0, $number_format = null, $uf_data = true)
+    {
+        if ($uf_data) {
+            $qty_difference = $this->num_uf($new_quantity, $number_format) - $this->num_uf($old_quantity, $number_format);
+        } else {
+            $qty_difference = $new_quantity - $old_quantity;
+        }
+        
+        $product = SupplierProduct::find($product_id);
+        
+        //Check if stock is enabled or not.
+        if ($qty_difference != 0) {
+            //Add quantity in SupplierProductLocationDetails
+            $supplier_product_location_details = SupplierProductLocationDetail::where('product_id', $product->id)
+            ->where('product_id', $product_id)
+            ->where('location_id', $location_id)
+            ->first();
+            
+            if (empty($supplier_product_location_details)) {
+                $supplier_product_location_details = new SupplierProductLocationDetail();
+                $supplier_product_location_details->product_id = $product_id;
+                $supplier_product_location_details->location_id = $location_id;
+                $supplier_product_location_details->qty_available = 0;
+            }
+            $supplier_product_location_details->qty_available += $qty_difference;
+            $supplier_product_location_details->save();
+        }
 
+        return true;
+    }
     /**
      * Get all details for a product from its variation id
      *
@@ -476,7 +507,39 @@ class ProductUtil extends Util
         }
         return $product;
     }
-
+    public function getDetailsFromSupplierProduct($product_id, $business_id, $location_id = null, $check_qty = true)
+    {
+        $query = SupplierProduct::leftjoin('supplier_product_location_details', 'supplier_products.id', '=', 'supplier_product_location_details.product_id')
+        ->leftJoin('supplier_product_units','supplier_products.unit_id','=','supplier_product_units.id')
+            ->where('supplier_products.business_id', $business_id)
+            ->where('supplier_products.id', $product_id);
+            
+            //Add condition for check of quantity. (if stock is not enabled or qty_available > 0)
+            // if ($check_qty) {
+            //     $query->where(function ($query) use ($location_id) {
+            //         $query->Where('supplier_product_location_details.qty_available', '>', 0);
+            //     });
+            // }
+            
+            // if (!empty($location_id)) {
+            //     //Check for enable stock, if enabled check for location id.
+            //     $query->where(function ($query) use ($location_id) {
+            //         $query->where('supplier_product_location_details.location_id', $location_id);
+            //     });
+            // }
+        $product = $query->select(
+            'supplier_products.id as product_id',
+            'supplier_products.name as product_name',
+            'supplier_products.tax as tax_id',
+            'supplier_product_location_details.qty_available as qty_available',
+            'supplier_products.purchase_price',
+            'supplier_products.purchase_price_inc_tax',
+            'supplier_product_units.short_name as unit',
+            DB::raw("(SELECT purchase_price_inc_tax FROM supplier_purchase_lines WHERE
+            supplier_purchase_lines.product_id=supplier_products.id ORDER BY id DESC LIMIT 1) as last_purchased_price")
+        )->first();
+        return $product;
+    }
     /**
      * Calculates the quantity of combo products based on
      * the quantity of variation items used.
@@ -1256,7 +1319,7 @@ class ProductUtil extends Util
                 
                 //Increase quantity only if status is received
                 if ($supplier_transaction->status == 'received') {
-                    //$this->updateProductQuantity($supplier_transaction->location_id, $data['product_id'], $data['variation_id'], $new_quantity_f, 0, $currency_details);
+                $this->updateSupplierProductQuantity($supplier_transaction->location_id, $data['product_id'], $new_quantity_f, 0, $currency_details);
                 }
             }
             
@@ -1863,6 +1926,78 @@ class ProductUtil extends Util
         $query->groupBy('variations.id');
         return $query->orderBy('VLD.qty_available', 'desc')
             ->get();
+    }
+
+
+    public function filterSupplierProduct($business_id, $search_term, $location_id = null, $search_fields = [], $check_qty = false, $search_type = 'like')
+    {
+        $query = SupplierProduct::whereNull('deleted_at')
+        ->leftJoin('supplier_product_units','supplier_products.unit_id','=','supplier_product_units.id')
+        ->leftJoin('supplier_product_location_details',
+        function($join) use($location_id){
+            $join->on('supplier_products.id','=','supplier_product_location_details.product_id');
+             //Include Location
+             if (!empty($location_id)) {
+                $join->where(function ($query) use ($location_id) {
+                    $query->where('supplier_product_location_details.location_id', '=', $location_id);
+                    //Check null to show products even if no quantity is available in a location.
+                    //TODO: Maybe add a settings to show product not available at a location or not.
+                    $query->orWhereNull('supplier_product_location_details.location_id');
+                });;
+            }
+        });
+
+        // //Include search
+        if (!empty($search_term)) {
+
+            //Search with like condition
+            if ($search_type == 'like') {
+                $query->where(function ($query) use ($search_term, $search_fields) {
+
+                    if (in_array('name', $search_fields)) {
+                        $query->where('supplier_products.name', 'like', '%' . $search_term . '%');
+                    }
+
+                    if (in_array('sku', $search_fields)) {
+                        $query->orWhere('supplier_products.sku', 'like', '%' . $search_term . '%');
+                    }
+
+                });
+            }
+
+        //     //Search with exact condition
+            if ($search_type == 'exact') {
+                $query->where(function ($query) use ($search_term, $search_fields) {
+
+                    if (in_array('name', $search_fields)) {
+                        $query->where('products.name', $search_term);
+                    }
+
+                    if (in_array('sku', $search_fields)) {
+                        $query->orWhere('sku', $search_term);
+                    }
+                });
+            }
+        }
+        
+        
+        // //Include check for quantity
+        if ($check_qty) {
+                $query->where('VLD.qty_available', '>', 0);
+            }
+        $query->select(
+            'supplier_products.id as product_id',
+            'supplier_products.name',
+            'supplier_product_location_details.qty_available',
+            'supplier_products.purchase_price_inc_tax as selling_price',
+            'supplier_products.sku',
+            'supplier_product_units.short_name as unit',
+        );
+        $query->groupBy('supplier_products.id');
+        $supplier_products =  $query->orderBy('supplier_product_location_details.qty_available', 'desc')
+        ->get();
+        Log::info($supplier_products);
+        return $supplier_products;
     }
 
     /**

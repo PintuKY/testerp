@@ -93,13 +93,14 @@ class Controller extends BaseController
      *
      */
     public function getMpdf() {
-        return new \Mpdf\Mpdf(['tempDir' => public_path('uploads/temp'), 
-            'mode' => 'utf-8', 
+        return new \Mpdf\Mpdf(['tempDir' => public_path('uploads/temp'),
+            'mode' => 'utf-8',
             'autoScriptToLang' => true,
             'autoLangToFont' => true,
             'autoVietnamese' => true,
             'autoArabic' => true,
             'useSubstitutions' => true
         ]);
+
     }
 }

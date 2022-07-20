@@ -5487,7 +5487,7 @@ class TransactionUtil extends Util
                 'ref_no' => in_array($transaction->type, ['sell', 'sell_return']) ? $transaction->invoice_no : $transaction->ref_no,
                 'type' => $transaction_types[$transaction->type],
                 'location' => $transaction->location->name,
-                'payment_status' => __('lang_v1.' . $transaction->payment_status),
+                'payment_status' => ($transaction->payment_status) ? __('lang_v1.' . $transaction->payment_status) : '',
                 'total' => in_array($transaction->type, ['sell', 'purchase_return']) ? $transaction->total : '',
                 'payment_method' => '',
                 'debit' => in_array($transaction->type, ['sell', 'purchase_return']) ? $transaction->final_total : '',

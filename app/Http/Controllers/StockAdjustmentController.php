@@ -17,9 +17,11 @@ use Illuminate\Http\Request;
 use App\Utils\TransactionUtil;
 use App\Models\KitchenLocation;
 use App\Models\BusinessLocation;
-use App\Models\StockTransaction;
+use App\Models\SupplierTransaction;
 use Illuminate\Support\Facades\Log;
 use Spatie\Activitylog\Models\Activity;
+use App\Exceptions\PurchaseSellMismatch;
+use App\Models\SupplierProductLocationDetail;
 
 class StockAdjustmentController extends Controller
 {
@@ -58,17 +60,17 @@ class StockAdjustmentController extends Controller
         if (request()->ajax()) {
             $business_id = request()->session()->get('user.business_id');
 
-            $stock_adjustments = StockTransaction::join(
+            $stock_adjustments = SupplierTransaction::join(
                 'kitchens_locations AS KL',
-                'stock_transactions.location_id',
+                'supplier_transactions.location_id',
                 '=',
                 'KL.id'
             )
-                ->leftJoin('users as u', 'stock_transactions.created_by', '=', 'u.id')
-                    ->where('stock_transactions.business_id', $business_id)
-                    ->where('stock_transactions.type', 'stock_adjustment')
+                ->leftJoin('users as u', 'supplier_transactions.created_by', '=', 'u.id')
+                    ->where('supplier_transactions.business_id', $business_id)
+                    ->where('supplier_transactions.type', 'stock_adjustment')
                     ->select(
-                        'stock_transactions.id',
+                        'supplier_transactions.id',
                         'transaction_date',
                         'ref_no',
                         'KL.name as location_name',
@@ -76,13 +78,13 @@ class StockAdjustmentController extends Controller
                         'final_total',
                         'total_amount_recovered',
                         'additional_notes',
-                        'stock_transactions.id as DT_RowId',
+                        'supplier_transactions.id as DT_RowId',
                         DB::raw("CONCAT(COALESCE(u.surname, ''),' ',COALESCE(u.first_name, ''),' ',COALESCE(u.last_name,'')) as added_by")
                     );
 
             $permitted_locations = auth()->user()->permitted_locations();
             if ($permitted_locations != 'all') {
-                $stock_adjustments->whereIn('stock_transactions.location_id', $permitted_locations);
+                $stock_adjustments->whereIn('supplier_transactions.location_id', $permitted_locations);
             }
 
             $hide = '';
@@ -94,7 +96,7 @@ class StockAdjustmentController extends Controller
             }
             $location_id = request()->get('location_id');
             if (!empty($location_id)) {
-                $stock_adjustments->where('transactions.location_id', $location_id);
+                $stock_adjustments->where('supplier_transactions.location_id', $location_id);
             }
 
             return Datatables::of($stock_adjustments)
@@ -207,17 +209,36 @@ class StockAdjustmentController extends Controller
 
                 }
 
-                $stock_adjustment = StockTransaction::create($input_data);
-                $stock_adjustment->stock_adjustment_lines()->createMany($product_data);
+                $stock_adjustment = SupplierTransaction::create($input_data);
+                $stock_adjustment_lines = $stock_adjustment->stock_adjustment_lines()->createMany($product_data);
                 
                 //Map Stock adjustment & Purchase.
                 $business = ['id' => $business_id,
                 'accounting_method' => $request->session()->get('business.accounting_method'),
                 'location_id' => $input_data['location_id']
             ];
-                // $this->transactionUtil->mapPurchaseSell($business, $stock_adjustment->stock_adjustment_lines, 'stock_adjustment');
+            foreach ($stock_adjustment_lines as $line) {
+                $product_at_kitchen_location                = SupplierProductLocationDetail::with('product')
+                                                              ->where('product_id',$line->product_id)
+                                                              ->where('location_id',$input_data['location_id'])->first();
+                $product_at_kitchen_location->qty_available = $product_at_kitchen_location->qty_available - $line->quantity;
+                if($product_at_kitchen_location->qty_available >= 0) {
+                    $product_at_kitchen_location->save(); 
+                }else{
+                    $mismatch_error = trans(
+                        "lang_v1.quantity_mismatch_exception",
+                        ['product' => $product_at_kitchen_location->product->name]
+                    );
+                    throw new PurchaseSellMismatch($mismatch_error);
+    
+                    $output = ['success' => 0,
+                                    'msg' => $msg
+                                ];
 
-                // $this->transactionUtil->activityLog($stock_adjustment, 'added', null, [], false);
+                }
+            }
+                // $this->transactionUtil->mapPurchaseSell($business, $stock_adjustment->stock_adjustment_lines, 'stock_adjustment');
+                $this->transactionUtil->activityLog($stock_adjustment, 'added', null, [], false);
             }
 
             $output = ['success' => 1,
@@ -231,7 +252,7 @@ class StockAdjustmentController extends Controller
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
             $msg = trans("messages.something_went_wrong");
 
-            if (get_class($e) == \App\Exceptions\PurchaseSellMismatch::class) {
+            if (get_class($e) == PurchaseSellMismatch::class) {
                 $msg = $e->getMessage();
             }
 
@@ -255,9 +276,9 @@ class StockAdjustmentController extends Controller
             abort(403, 'Unauthorized action.');
         }
         $business_id = request()->session()->get('user.business_id');
-        $stock_adjustment = StockTransaction::where('stock_transactions.business_id', $business_id)
-                    ->where('stock_transactions.id', $id)
-                    ->where('stock_transactions.type', 'stock_adjustment')
+        $stock_adjustment = SupplierTransaction::where('supplier_transactions.business_id', $business_id)
+                    ->where('supplier_transactions.id', $id)
+                    ->where('supplier_transactions.type', 'stock_adjustment')
                     ->with(['stock_adjustment_lines', 'location', 'business'])
                     ->first();
 
@@ -313,7 +334,7 @@ class StockAdjustmentController extends Controller
             if (request()->ajax()) {
                 DB::beginTransaction();
 
-                $stock_adjustment = StockTransaction::where('id', $id)
+                $stock_adjustment = SupplierTransaction::where('id', $id)
                                     ->where('type', 'stock_adjustment')
                                     ->with(['stock_adjustment_lines'])
                                     ->first();
@@ -323,13 +344,12 @@ class StockAdjustmentController extends Controller
                 if (!empty($stock_adjustment_lines)) {
                     $line_ids = [];
                     foreach ($stock_adjustment_lines as $stock_adjustment_line) {
-                        /*$this->productUtil->updateProductQuantity(
+                        $this->productUtil->updateSupplierProductQuantity(
                             $stock_adjustment->location_id,
                             $stock_adjustment_line->product_id,
-                            $stock_adjustment_line->variation_id,
                             $this->productUtil->num_f($stock_adjustment_line->quantity)
-                        );*/
-                        $line_ids[] = $stock_adjustment_line->id;
+                        );
+                        $stock_adjustment_line->delete();
                     }
 
                     // $this->transactionUtil->mapPurchaseQuantityForDeleteStockAdjustment($line_ids);

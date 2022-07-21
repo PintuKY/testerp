@@ -512,7 +512,8 @@ class ProductUtil extends Util
         $query = SupplierProduct::leftjoin('supplier_product_location_details', 'supplier_products.id', '=', 'supplier_product_location_details.product_id')
         ->leftJoin('supplier_product_units','supplier_products.unit_id','=','supplier_product_units.id')
             ->where('supplier_products.business_id', $business_id)
-            ->where('supplier_products.id', $product_id);
+            ->where('supplier_products.id', $product_id)
+            ->where('supplier_product_location_details.location_id',$location_id);
             
             //Add condition for check of quantity. (if stock is not enabled or qty_available > 0)
             // if ($check_qty) {
@@ -1981,10 +1982,6 @@ class ProductUtil extends Util
         }
         
         
-        // //Include check for quantity
-        if ($check_qty) {
-                $query->where('VLD.qty_available', '>', 0);
-            }
         $query->select(
             'supplier_products.id as product_id',
             'supplier_products.name',

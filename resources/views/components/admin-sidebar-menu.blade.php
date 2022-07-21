@@ -169,7 +169,7 @@
                         </span>
         </a>
         <ul class="treeview-menu">
-            <li><a href="{{route('stock-transfers.index')}}"><i class="fa fas fa-list"></i>
+            <li><a href="{{route('stock-adjustments.index')}}"><i class="fa fas fa-list"></i>
                     <span>List Stock Adjustments</span></a></li>
             <li><a href="{{route('stock-adjustments.create')}}"><i class="fa fas fa-plus-circle"></i> <span>Add Stock Adjustment</span></a>
             </li>

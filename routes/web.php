@@ -247,6 +247,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
 
     Route::get('/stock-adjustments/remove-expired-stock/{purchase_line_id}', 'StockAdjustmentController@removeExpiredStock');
     Route::post('/stock-adjustments/get_product_row', 'StockAdjustmentController@getProductRow');
+    Route::post('/stock-adjustments/get_supplier_product_row', 'StockAdjustmentController@getSupplierProductRow');
     Route::resource('stock-adjustments', 'StockAdjustmentController');
 
     Route::get('/cash-register/register-details', 'CashRegisterController@getRegisterDetails');
@@ -404,8 +405,9 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/supplier/payments/{supplier_id}', 'SupplierController@getSupplierPayments')->name('supplier.payments');
 
     // supplier product 
+    Route::get('supplier-products/list', 'SupplierProductController@getProducts');
     Route::resource('supplier-products', 'SupplierProductController');
-    
+
     // supplier product unit
     Route::resource('supplier-product-units', 'SupplierProductUnitController');
     Route::resource('supplier-product-categories', 'SupplierProductCategoryController');

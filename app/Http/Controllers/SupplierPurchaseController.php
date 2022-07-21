@@ -658,8 +658,8 @@ class SupplierPurchaseController extends Controller
                         'supplierPurchaseLines.product',
                         'supplierPurchaseLines.product.unit',
                         //'purchase_lines.product.unit.sub_units',
-                        'supplierPurchaseLines.variations',
-                        'supplierPurchaseLines.variations.product_variation',
+                        // 'supplierPurchaseLines.variations',
+                        // 'supplierPurchaseLines.variations.product_variation',
                         'location',
                         'supplierPurchaseLines.subUnit',
                         'supplierPurchaseLines.purchaseOrderLine'

@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\SupplierProduct;
 use Illuminate\Database\Eloquent\Model;
 
 class StockAdjustmentLine extends Model
@@ -14,9 +13,9 @@ class StockAdjustmentLine extends Model
      */
     protected $guarded = ['id'];
 
-    public function product()
+    public function variation()
     {
-        return $this->belongsTo(SupplierProduct::class, 'product_id');
+        return $this->belongsTo(\App\Models\Variation::class, 'variation_id');
     }
 
     public function lot_details()

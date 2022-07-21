@@ -871,4 +871,42 @@ class PurchaseOrderController extends Controller
             return $output;
         }
     }
+    public function getPurchaseOrderLines($purchase_order_id)
+    {
+        $business_id = request()->session()->get('user.business_id');
+
+        $purchase_order = Transaction::where('business_id', $business_id)
+                        ->where('type', 'purchase_order')
+                        ->with(['purchase_lines', 'purchase_lines.variations',
+                            'purchase_lines.product', 'purchase_lines.product.unit', 'purchase_lines.variations.product_variation' ])
+                        ->findOrFail($purchase_order_id);
+
+        $taxes = TaxRate::where('business_id', $business_id)
+                            ->ExcludeForTaxGroup()
+                            ->get();
+
+        $sub_units_array = [];
+        foreach ($purchase_order->purchase_lines as $pl) {
+            $sub_units_array[$pl->id] = $this->productUtil->getSubUnits($business_id, $pl->product->unit->id, false, $pl->product_id);
+        }
+        $hide_tax = request()->session()->get('business.enable_inline_tax') == 1 ? '' : 'hide';
+        $currency_details = $this->transactionUtil->purchaseCurrencyDetails($business_id);
+        $row_count = request()->input('row_count');
+
+        $html =  view('purchase.partials.purchase_order_lines')
+                ->with(compact(
+                    'purchase_order',
+                    'taxes',
+                    'hide_tax',
+                    'currency_details',
+                    'row_count',
+                    'sub_units_array'
+                ))->render();
+
+        return [
+            'html' => $html,
+            'po' => $purchase_order
+        ];
+
+    }
 }

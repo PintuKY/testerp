@@ -1430,4 +1430,8 @@ return [
     'you_cannot_delete_this_supplier' => "Cannot delete the supplier - Transactions already exist for the supplier.",
     'driver_mobile_already_registered' => ':mobile Already registered for :Driver',
     'driver_email_already_registered' => ':email Already registered for :Driver',
+    'transaction_id' => 'Transaction Id',
+    'document' => 'Document',
+    'media_type' => 'Media Type',
+    'sale_doc' => 'Sell Document',
 ];

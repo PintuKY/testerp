@@ -637,9 +637,9 @@ class TransactionUtil extends Util
             'updated_at' => Carbon::now()->toDateTimeString()
         ]);
         if ($master_list_less_id) {
-            MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_days->id])->whereNotIn('id', $master_list_less_id)->delete();
+            MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_days->id])->whereNotIn('id', $master_list_less_id)->forceDelete();
         } else {
-            MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_days->id])->delete();
+            MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_days->id])->forceDelete();
         }
         TransactionSellLinesDay::where('transaction_sell_lines_id', $sell_days->id)->delete();
         foreach ($new_days as $day) {
@@ -772,9 +772,9 @@ class TransactionUtil extends Util
             'updated_at' => Carbon::now()->toDateTimeString()
         ]);
         if ($master_list_less_id) {
-            MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_days->id])->whereNotIn('id', $master_list_less_id)->delete();
+            MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_days->id])->whereNotIn('id', $master_list_less_id)->forceDelete();
         } else {
-            MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_days->id])->delete();
+            MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_days->id])->forceDelete();
         }
         TransactionSellLinesDay::where('transaction_sell_lines_id', $sell_days->id)->delete();
         $date = [];
@@ -786,9 +786,12 @@ class TransactionUtil extends Util
                 'updated_at' => Carbon::now(),
             ]);
             $total_days = $sell_days->number_of_days;
+
+
             if ($master_list_less != 0) {
                 $day_passed = ($total_days - $master_list_less);
                 $totalPurchaseDays = count($new_days);
+                $total_days_remaining = $day_passed;
                 if ($total_days == 0 || $total_days == null) {
                     $loop = 1;
                 } else {
@@ -801,24 +804,36 @@ class TransactionUtil extends Util
                 } else {
                     $loop = ceil($total_days / $totalPurchaseDays);
                 }
+                $total_days_remaining = $sell_days->number_of_days;
             }
+            Log::info('total_days_remaining====='.$total_days_remaining);
             $getDayName = getDayNameByDayNumber($day);
-            $getNextDate = Carbon::parse($sell_days->delivery_date)->next($getDayName)->format('Y-m-d');
+            $getNextDate = Carbon::parse($sell_days->start_date)->next($getDayName)->format('Y-m-d');
 
             $sDate = Carbon::parse($getNextDate);
             $x = 7;
 
             for ($i = 1; $i <= $loop; $i++) {
                 $total_record = MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_days->id])->count();
-                if ($total_days > $total_record) {
+                $getDate = MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_days->id])->pluck('delivery_date')->toArray();
+                if ($total_days_remaining > $total_record) {
                     $dval = ($i == 1) ? $getNextDate : $sDate->addDays($x);
-                    $date[] = Carbon::parse($dval)->format('Y-m-d');
+                    $newdate = Carbon::parse($dval)->format('Y-m-d');
+                    if (in_array($newdate, $getDate))
+                    {
+
+                    }
+                    else
+                    {
+                        $date[] = Carbon::parse($dval)->format('Y-m-d');
+                    }
                     if ($i != 1) {
                         $x = $x++;
                     }
                 }
             }
         }
+
         usort($date, function ($a, $b) {
             return strtotime($a) - strtotime($b);
         });
@@ -914,7 +929,7 @@ class TransactionUtil extends Util
 
                         $getDayName = getDayNameByDayNumber($day);
 
-                        $getNextDate = Carbon::parse($sell_day->delivery_date)->next($getDayName)->format('Y-m-d');
+                        $getNextDate = Carbon::parse($sell_day->start_date)->next($getDayName)->format('Y-m-d');
 
                         $sDate = Carbon::parse($getNextDate);
 
@@ -1869,7 +1884,7 @@ class TransactionUtil extends Util
 
         $output['total_return'] = $transaction->total_return;
 
-        $output['subtotal_return'] = ($transaction->final_total != 0) ? $this->num_f($parent_sell->$transaction, $show_currency, $business_details) : 0;
+        $output['subtotal_return'] = ($transaction->final_total != 0) ? $this->num_f($transaction->final_total, $show_currency, $business_details) : 0;
 
         $output['total_return_amount'] = ($transaction->total_return != 0) ? $this->num_f($transaction->total_return, $show_currency, $business_details) : 0;
         $output['final_amounts'] = ($transaction->final_total != 0) ? $this->num_f($transaction->final_total, $show_currency, $business_details) : 0;
@@ -5250,63 +5265,6 @@ class TransactionUtil extends Util
 
     /**
      * common function to get
-     * list purchase
-     * @param int $business_id
-     *
-     * @return object
-     */
-    public function getListPurchases($business_id)
-    {
-        $purchases = Transaction::leftJoin('contacts', 'transactions.contact_id', '=', 'contacts.id')
-            ->leftJoin(
-                'kitchens_locations',
-                'transactions.location_id',
-                '=',
-                'kitchens_locations.id'
-            )
-            ->leftJoin(
-                'transaction_payments AS TP',
-                'transactions.id',
-                '=',
-                'TP.transaction_id'
-            )
-            ->leftJoin(
-                'transactions AS PR',
-                'transactions.id',
-                '=',
-                'PR.return_parent_id'
-            )
-            ->leftJoin('users as u', 'transactions.created_by', '=', 'u.id')
-            ->where('transactions.business_id', $business_id)
-            ->where('transactions.type', 'purchase')
-            ->select(
-                'transactions.id',
-                'transactions.document',
-                'transactions.transaction_date',
-                'transactions.ref_no',
-                'contacts.name',
-                'contacts.supplier_business_name',
-                'transactions.status',
-                'transactions.payment_status',
-                'transactions.final_total',
-                'kitchens_locations.name as location_name',
-                /*'transactions.pay_term_number',
-                'transactions.pay_term_type',*/
-                'PR.id as return_transaction_id',
-                DB::raw('SUM(TP.amount) as amount_paid'),
-                DB::raw('(SELECT SUM(TP2.amount) FROM transaction_payments AS TP2 WHERE
-                        TP2.transaction_id=PR.id ) as return_paid'),
-                DB::raw('COUNT(PR.id) as return_exists'),
-                DB::raw('COALESCE(PR.final_total, 0) as amount_return'),
-                DB::raw("CONCAT(COALESCE(u.surname, ''),' ',COALESCE(u.first_name, ''),' ',COALESCE(u.last_name,'')) as added_by")
-            )
-            ->groupBy('transactions.id');
-
-        return $purchases;
-    }
-
-    /**
-     * common function to get
      * list sell
      * @param int $business_id
      *
@@ -5472,7 +5430,7 @@ class TransactionUtil extends Util
                 'ref_no' => in_array($transaction->type, ['sell', 'sell_return']) ? $transaction->invoice_no : $transaction->ref_no,
                 'type' => $transaction_types[$transaction->type],
                 'location' => $transaction->location->name,
-                'payment_status' => __('lang_v1.' . $transaction->payment_status),
+                'payment_status' => ($transaction->payment_status) ? __('lang_v1.' . $transaction->payment_status) : '',
                 'total' => in_array($transaction->type, ['sell', 'purchase_return']) ? $transaction->total : '',
                 'payment_method' => '',
                 'debit' => in_array($transaction->type, ['sell', 'purchase_return']) ? $transaction->final_total : '',
@@ -6139,7 +6097,7 @@ class TransactionUtil extends Util
         return $parent_payment;
     }
 
-    public function addSellReturn($input, $business_id, $user_id, $uf_number = true)
+    public function addSellReturn($request, $input, $business_id, $user_id, $uf_number = true)
     {
 
         /* $discount = [
@@ -6199,12 +6157,15 @@ class TransactionUtil extends Util
             $sell_return_data['status'] = 'final';
             $sell_return_data['created_by'] = $user_id;
             $sell_return_data['return_parent_id'] = $sell->id;
+            $sell_return_data['document'] = $this->uploadFiles($request, 'sell_document', 'documents');
+
             $sell_return = Transaction::create($sell_return_data);
 
             $this->activityLog($sell_return, 'added');
         } else {
             $sell_return_data['invoice_no'] = $sell_return_data['invoice_no'] ?? $sell_return->invoice_no;
             $sell_return_before = $sell_return->replicate();
+            $sell_return_data['document'] = $this->uploadFiles($request, 'sell_document', 'documents');
 
             $sell_return->update($sell_return_data);
 

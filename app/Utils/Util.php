@@ -772,7 +772,6 @@ dd($response);
                 }
             }
         }
-
         return $uploaded_file_name;
     }
 

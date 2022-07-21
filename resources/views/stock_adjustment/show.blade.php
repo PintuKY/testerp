@@ -56,7 +56,7 @@
 							@foreach( $stock_adjustment->stock_adjustment_lines as $stock_adjustment_line )
 								<tr>
 									<td>
-										{{ $stock_adjustment_line->variation->full_name }}
+										{{ $stock_adjustment_line->product->name }}
 									</td>
 									@if(!empty($lot_n_exp_enabled))
 						                <td>{{ $stock_adjustment_line->lot_details->lot_number ?? '--' }}

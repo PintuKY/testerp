@@ -2,9 +2,9 @@
     <td>
         {{$product->product_name}}
         <br/>
-        {{$product->sub_sku}}
+        {{$product->sku}}
 
-        @if( session()->get('business.enable_lot_number') == 1 || session()->get('business.enable_product_expiry') == 1)
+        {{-- @if( session()->get('business.enable_lot_number') == 1 || session()->get('business.enable_product_expiry') == 1)
         @php
             $lot_enabled = session()->get('business.enable_lot_number');
             $exp_enabled = session()->get('business.enable_product_expiry');
@@ -12,13 +12,13 @@
             if(!empty($product->lot_no_line_id)){
                 $lot_no_line_id = $product->lot_no_line_id;
             }
-        @endphp
+        @endphp --}}
 
-        @if($product->enable_stock == 1)
+        {{-- @if($product->enable_stock == 1) --}}
             <br>
             <small class="text-muted" style="white-space: nowrap;">@lang('report.current_stock'): <span class="qty_available_text">{{$product->formatted_qty_available}}</span> {{ $product->unit }}</small>
-        @endif
-        @if(!empty($product->lot_numbers))
+        {{-- @endif --}}
+        {{-- @if(!empty($product->lot_numbers))
             <select class="form-control lot_number" name="products[{{$row_index}}][lot_no_line_id]">
                 <option value="">@lang('lang_v1.lot_n_expiry')</option>
                 @foreach($product->lot_numbers as $lot_number)
@@ -42,7 +42,7 @@
                 @endforeach
             </select>
         @endif
-    @endif
+    @endif --}}
     </td>
     <td>
         {{-- If edit then transaction sell lines will be present --}}
@@ -52,11 +52,11 @@
 
         <input type="hidden" name="products[{{$row_index}}][product_id]" class="form-control product_id" value="{{$product->product_id}}">
 
-        <input type="hidden" value="{{$product->variation_id}}"
-            name="products[{{$row_index}}][variation_id]">
+        <input type="hidden" value="{{$product->product_id}}"
+            name="products[{{$row_index}}][product_id]">
 
-        <input type="hidden" value="{{$product->enable_stock}}"
-            name="products[{{$row_index}}][enable_stock]">
+        {{-- <input type="hidden" value="{{$product->enable_stock}}"
+            name="products[{{$row_index}}][enable_stock]"> --}}
 
         @if(empty($product->quantity_ordered))
             @php
@@ -65,11 +65,9 @@
         @endif
 
         <input type="text" class="form-control product_quantity input_number input_quantity" value="{{@format_quantity($product->quantity_ordered)}}" name="products[{{$row_index}}][quantity]"
-        @if($product->unit_allow_decimal == 1) data-decimal=1 @else data-rule-abs_digit="true" data-msg-abs_digit="@lang('lang_v1.decimal_value_not_allowed')" data-decimal=0 @endif
-        data-rule-required="true" data-msg-required="@lang('validation.custom-messages.this_field_is_required')" @if($product->enable_stock) data-rule-max-value="{{$product->qty_available}}" data-msg-max-value="@lang('validation.custom-messages.quantity_not_available', ['qty'=> $product->formatted_qty_available, 'unit' => $product->unit  ])"
+        data-rule-required="true" data-msg-required="@lang('validation.custom-messages.this_field_is_required')" data-rule-max-value="{{$product->qty_available}}" data-decimal=0 data-msg-max-value="@lang('validation.custom-messages.quantity_not_available', ['qty'=> $product->formatted_qty_available, 'unit' => $product->unit  ])"
         data-qty_available="{{$product->qty_available}}"
-        data-msg_max_default="@lang('validation.custom-messages.quantity_not_available', ['qty'=> $product->formatted_qty_available, 'unit' => $product->unit  ])"
-         @endif >
+        data-msg_max_default="@lang('validation.custom-messages.quantity_not_available', ['qty'=> $product->formatted_qty_available, 'unit' => $product->unit  ])" >
         {{$product->unit}}
     </td>
     <td>

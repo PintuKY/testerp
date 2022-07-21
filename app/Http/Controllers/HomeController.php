@@ -407,7 +407,7 @@ class HomeController extends Controller
                 ->editColumn('supplier', '@if(!empty($supplier_business_name)) {{$supplier_business_name}}, <br> @endif {{$supplier}}')
                 ->editColumn('ref_no', function ($row) {
                     if (auth()->user()->can('purchase.view')) {
-                        return  '<a href="#" data-href="' . action('PurchaseController@show', [$row->id]) . '"
+                        return  '<a href="#" data-href="' . action('SupplierPurchaseController@show', [$row->id]) . '"
                                     class="btn-modal" data-container=".view_modal">' . $row->ref_no . '</a>';
                     }
                     return $row->ref_no;

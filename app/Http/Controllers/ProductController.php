@@ -471,7 +471,7 @@ class ProductController extends Controller
                 $this->moduleUtil->getModuleData('after_product_saved', ['product' => $product, 'request' => $request]);
             }
 
-            Media::uploadMedia($product->business_id, $product, $request, 'product_brochure', true);
+            Media::uploadMedias($product->business_id, $product, $request, 'product_brochure', true);
 
             DB::commit();
             $output = ['success' => 1,
@@ -550,7 +550,8 @@ class ProductController extends Controller
                             ->with(['product_locations'])
                             ->where('id', $id)
                             ->firstOrFail();
-
+        $media = Media::where('business_id', $business_id)
+            ->where('model_id', $id)->first();
         //Sub-category
         $sub_categories = [];
         $sub_categories = Category::where('business_id', $business_id)
@@ -579,7 +580,7 @@ class ProductController extends Controller
         $pos_module_data = $this->moduleUtil->getModuleData('get_product_screen_top_view');
 
         return view('product.edit')
-                ->with(compact('categories', 'units', 'sub_units', 'taxes', 'tax_attributes', 'barcode_types', 'product', 'sub_categories', 'default_profit_percent', 'business_locations', 'rack_details', 'selling_price_group_count', 'module_form_parts', 'product_types', 'common_settings','pos_module_data'));
+                ->with(compact('media','categories', 'units', 'sub_units', 'taxes', 'tax_attributes', 'barcode_types', 'product', 'sub_categories', 'default_profit_percent', 'business_locations', 'rack_details', 'selling_price_group_count', 'module_form_parts', 'product_types', 'common_settings','pos_module_data'));
     }
 
     /**
@@ -668,7 +669,7 @@ class ProductController extends Controller
                 $variation->sell_price_inc_tax = $this->productUtil->num_uf($single_data['single_dsp_inc_tax']);
                 $variation->save();
 
-                Media::uploadMedia($product->business_id, $variation, $request, 'variation_images');
+                Media::uploadMedias($product->business_id, $variation, $request, 'variation_images',true);
             } elseif ($product->type == 'variable') {
                 //Update existing variations
                 $input_variations_edit = $request->get('product_variation_edit');
@@ -727,7 +728,7 @@ class ProductController extends Controller
                 $this->moduleUtil->getModuleData('after_product_saved', ['product' => $product, 'request' => $request]);
             }
 
-            Media::uploadMedia($product->business_id, $product, $request, 'product_brochure', true);
+            Media::uploadMedias($product->business_id, $product, $request, 'product_brochure', true);
 
             DB::commit();
             $output = ['success' => 1,

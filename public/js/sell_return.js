@@ -15,30 +15,61 @@ $(document).ready(function() {
         ignoreReadonly: true,
     });
 
-    pos_form_validator = pos_form_obj.validate({
+    pos_form_validator = pos_form_obj
+        .submit(function (e) {
+            e.preventDefault();
+        })
+        .validate({
         submitHandler: function(form) {
             var cnf = true;
-
+            var url = $(form).attr('action');
             if (cnf) {
-                var data = $(form).serialize();
-                var url = $(form).attr('action');
-                $.ajax({
-                    method: 'POST',
-                    url: url,
-                    data: data,
-                    dataType: 'json',
-                    success: function(result) {
-                        if (result.success == 1) {
-                            toastr.success(result.msg);
-                            //Check if enabled or not
-                            if (result.receipt.is_enabled) {
-                                pos_print(result.receipt);
+                var files = $('#sell_document')[0].files;
+                var data = '';
+                if (files.length > 0) {
+                    data = new FormData(pos_form_obj.get(0));
+                    data.append('file', files[0]);
+
+                    $.ajax({
+                        method: 'POST',
+                        url: url,
+                        data: data,
+                        contentType: false,
+                        processData: false,
+                        dataType: 'json',
+                        success: function (result) {
+                            if (result.success == 1) {
+                                toastr.success(result.msg);
+                                //Check if enabled or not
+                                if (result.receipt.is_enabled) {
+                                    pos_print(result.receipt);
+                                }
+                            } else {
+                                toastr.error(result.msg);
                             }
-                        } else {
-                            toastr.error(result.msg);
-                        }
-                    },
-                });
+                        },
+                    });
+                }else{
+                     data = $(form).serialize();
+
+                    $.ajax({
+                        method: 'POST',
+                        url: url,
+                        data: data,
+                        dataType: 'json',
+                        success: function (result) {
+                            if (result.success == 1) {
+                                toastr.success(result.msg);
+                                //Check if enabled or not
+                                if (result.receipt.is_enabled) {
+                                    pos_print(result.receipt);
+                                }
+                            } else {
+                                toastr.error(result.msg);
+                            }
+                        },
+                    });
+                }
             }
             return false;
         },

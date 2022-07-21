@@ -45,19 +45,19 @@
     @foreach($purchase->supplierPurchaseLines as $purchase_line)
         <tr @if(!empty($purchase_line->purchase_order_line) && !empty($common_settings['enable_purchase_order'])) data-purchase_order_id="{{$purchase_line->purchase_order_line->supplier_transactions_id}}" @endif>
             <td><span class="sr_number"></span></td>
-            <td>
+            {{-- <td>
                 {{ $purchase_line->product->name }} ({{$purchase_line->variations->sub_sku}})
                 @if( $purchase_line->product->type == 'variable') 
                     <br/>(<b>{{ $purchase_line->variations->product_variation->name}}</b> : {{ $purchase_line->variations->name}})
                 @endif
-            </td>
+            </td> --}}
 
             <td>
                 @if(!empty($purchase_line->purchase_order_line_id) && !empty($common_settings['enable_purchase_order']))
                     {!! Form::hidden('purchases[' . $loop->index . '][purchase_order_line_id]', $purchase_line->purchase_order_line_id ); !!}
                 @endif
                 {!! Form::hidden('purchases[' . $loop->index . '][product_id]', $purchase_line->product_id ); !!}
-                {!! Form::hidden('purchases[' . $loop->index . '][variation_id]', $purchase_line->variation_id ); !!}
+                {{-- {!! Form::hidden('purchases[' . $loop->index . '][variation_id]', $purchase_line->variation_id ); !!} --}}
                 {!! Form::hidden('purchases[' . $loop->index . '][purchase_line_id]',
                 $purchase_line->id); !!}
 
@@ -86,7 +86,7 @@
                 @endif
                 >
 
-                <input type="hidden" class="base_unit_cost" value="{{$purchase_line->variations->default_purchase_price}}">
+                <input type="hidden" class="base_unit_cost" value="{{$purchase_line->product->purchase_price}}">
                 @if(!empty($purchase_line->sub_units_options))
                     <br>
                     <select name="purchases[{{$loop->index}}][sub_unit_id]" class="form-control input-sm sub_unit">
@@ -104,7 +104,7 @@
 
                 <input type="hidden" name="purchases[{{$loop->index}}][product_unit_id]" value="{{$purchase_line->product->unit->id}}">
 
-                <input type="hidden" class="base_unit_selling_price" value="{{$purchase_line->variations->sell_price_inc_tax}}">
+                <input type="hidden" class="base_unit_selling_price" value="{{$purchase_line->product->purchase_price_inc_tax}}">
             </td>
             <td>
                 {!! Form::text('purchases[' . $loop->index . '][pp_without_discount]', number_format($purchase_line->pp_without_discount/$purchase->exchange_rate, $currency_precision, $currency_details->decimal_separator, $currency_details->thousand_separator), ['class' => 'form-control input-sm purchase_unit_cost_without_discount input_number', 'required']); !!}
@@ -150,7 +150,7 @@
             <td class="@if(!session('business.enable_editing_product_from_purchase') || !empty($is_purchase_order)) hide @endif">
                 @php
                     $pp = $purchase_line->purchase_price_inc_tax;
-                    $sp = $purchase_line->variations->sell_price_inc_tax;
+                    $sp = $purchase_line->product->purchase_price_inc_tax;
                     if(!empty($purchase_line->sub_unit->base_unit_multiplier)) {
                         $sp = $sp * $purchase_line->sub_unit->base_unit_multiplier;
                     }

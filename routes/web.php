@@ -380,6 +380,8 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
 
     //common controller for document & note
     Route::get('get-document-note-page', 'DocumentAndNoteController@getDocAndNoteIndexPage');
+    Route::get('contact/get-document-note-page', 'ContactController@getDocAndNoteIndexPage');
+    Route::get('contact/note-documents', 'ContactController@getNoteDocument');
     Route::post('post-document-upload', 'DocumentAndNoteController@postMedia');
     Route::resource('note-documents', 'DocumentAndNoteController');
     Route::resource('purchase-order', 'PurchaseOrderController');

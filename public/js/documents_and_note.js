@@ -143,8 +143,23 @@ function getDocAndNoteIndexPage() {
     });
 }
 
+function getDocAndNote() {
+    var notable_type = $('#notable_type').val();
+    var notable_id = $('#notable_id').val();
+    $.ajax({
+        method: "GET",
+        dataType: "html",
+        url: '/contact/get-document-note-page',
+        async: false,
+        data: {'notable_type' : notable_type, 'notable_id' : notable_id},
+        success: function(result){
+            $('.document_note_body').html(result);
+        }
+    });
+}
+
 function initializeDocumentAndNoteDataTable() {
-    
+
     documents_and_notes_data_table = $('#documents_and_notes_table').DataTable({
         processing: true,
         serverSide: true,
@@ -166,9 +181,41 @@ function initializeDocumentAndNoteDataTable() {
         columns: [
             { data: 'action', name: 'action' },
             { data: 'heading', name: 'heading' },
-            { data: 'createdBy'},
+            { data: 'transaction_id', name: 'transaction_id' },
             { data: 'created_at', name: 'created_at' },
             { data: 'updated_at', name: 'updated_at' },
         ]
     });
 }
+
+/*
+function initializeDocumentAndNoteDataTableContact() {
+
+    documents_and_notes_data_table = $('#documents_and_notes_table').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax:{
+            url: '/contact/note-documents',
+            data: function(d) {
+                d.notable_id = $('#notable_id').val();
+                d.notable_type = $('#notable_type').val();
+            }
+        },
+        columnDefs: [
+            {
+                targets: [0, 2, 4],
+                orderable: false,
+                searchable: false,
+            },
+        ],
+        columns: [
+            { data: 'action', name: 'action' },
+            { data: 'transaction_id', name: 'transaction_id' },
+            { data: 'shipping_document', name: 'shipping_document' },
+            { data: 'sale_doc', name: 'sale_doc' },
+            { data: 'created_at', name: 'created_at' },
+            { data: 'updated_at', name: 'updated_at' },
+        ]
+    });
+}
+*/

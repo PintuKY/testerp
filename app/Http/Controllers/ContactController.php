@@ -25,6 +25,7 @@ use Spatie\Activitylog\Models\Activity;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Barryvdh\DomPDF;
+
 class ContactController extends Controller
 {
     protected $commonUtil;
@@ -1331,5 +1332,94 @@ class ContactController extends Controller
             'is_mobile_exists' => !empty($contacts),
             'msg' => __('lang_v1.mobile_already_registered', ['contacts' => implode(', ', $contacts), 'mobile' => $mobile_number])
         ];
+    }
+
+    /**
+     * get docus & note index page
+     * through ajax
+     * @return \Illuminate\Http\Response
+     */
+    public function getDocAndNoteIndexPage(Request $request)
+    {
+        if (request()->ajax()) {
+            $business_id = request()->session()->get('user.business_id');
+            $notable_type = $request->get('notable_type');
+            $notable_id = $request->get('notable_id');
+            $document_note = Transaction::with(['media','payment_lines','location'])->where('contact_id', $notable_id)->get();
+
+            return view('contact.documents_and_notes.index')
+                ->with(compact('document_note','notable_type', 'notable_id'));
+        }
+    }
+
+    public function getNoteDocument()
+    {
+        if (request()->ajax()) {
+            $business_id = request()->session()->get('user.business_id');
+            $user_id = request()->session()->get('user.id');
+            //model id like project_id, user_id
+            $notable_id = request()->get('notable_id');
+            //model name like App\Models\User
+            $notable_type = request()->get('notable_type');
+
+            $document_note = Transaction::with('media')->where('contact_id', $notable_id)->get();
+
+            return Datatables::of($document_note)
+                ->addColumn('action', function ($row) {
+                    $html = '<div class="btn-group">
+                                    <button class="btn btn-info dropdown-toggle btn-xs" type="button"  data-toggle="dropdown" aria-expanded="false">
+                                        ' . __("messages.action") . '
+                                        <span class="caret"></span>
+                                        <span class="sr-only">
+                                            ' . __("messages.action") . '
+                                        </span>
+                                    </button>
+                                      <ul class="dropdown-menu dropdown-menu-left" role="menu">
+                                        ';
+
+                    $html .= '</ul>
+                                </div>';
+
+                    return $html;
+                })
+                ->editColumn('created_at', '
+                        {{@format_date($created_at)}}
+                    ')
+                ->editColumn('updated_at', '
+                        {{@format_date($updated_at)}}
+                    ')
+                ->editColumn(
+                    'transaction_id',
+                    function ($row) {
+                        return $row->id;
+                    }
+                )
+                ->editColumn(
+                    'shipping_document',
+                    function ($row) {
+
+                        if ($row->media[0]) {
+                            $media = $row->media[0]->file_name;
+                        }else{
+                            $media = 'document';
+                        }
+                        return $media;
+                    }
+                )
+                ->editColumn(
+                    'sale_doc',
+                    function ($row) {
+
+                        if ($row) {
+                            $media = $row->document;
+                        }
+                        return $media;
+                    }
+                )
+                ->removeColumn('id')
+                ->rawColumns(['action', 'heading', 'created_at', 'updated_at'])
+                ->make(true);
+
+        }
     }
 }

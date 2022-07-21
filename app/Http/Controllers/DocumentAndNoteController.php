@@ -57,7 +57,7 @@ class DocumentAndNoteController extends Controller
                 ->get();
 
             $permissions = $this->__getPermission($business_id, $notable_id, $notable_type);
-            
+
             if (!empty($permissions) && in_array('view', $permissions)) {
                 return Datatables::of($document_note)
                     ->addColumn('action', function ($row) use ($notable_type, $permissions) {
@@ -212,7 +212,7 @@ class DocumentAndNoteController extends Controller
     public function store(Request $request)
     {
         try {
-            
+
             //model id like project_id, user_id
             $notable_id = request()->get('notable_id');
             //model name like App\Models\User
@@ -231,9 +231,9 @@ class DocumentAndNoteController extends Controller
             //find model to which document is to be added
             $model = $notable_type::where('business_id', $input['business_id'])
                 ->findOrFail($notable_id);
-            
+
             $model_note = $model->documentsAndnote()->create($input);
-            
+
             if (!empty($request->get('file_name')[0])) {
                 $file_names = explode(',', $request->get('file_name')[0]);
                 $business_id = request()->session()->get('user.business_id');
@@ -455,6 +455,7 @@ class DocumentAndNoteController extends Controller
             $business_id = request()->session()->get('user.business_id');
             $notable_type = $request->get('notable_type');
             $notable_id = $request->get('notable_id');
+
             $permissions = $this->__getPermission($business_id, $notable_id, $notable_type);
 
             return view('documents_and_notes.index')

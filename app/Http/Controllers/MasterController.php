@@ -6,9 +6,14 @@ use App\Exports\MasterListExport;
 use App\Models\Business;
 use App\Models\BusinessLocation;
 use App\Models\MasterList;
+use App\Models\Product;
+use App\Models\Transaction;
 use App\Models\TransactionActivity;
 use App\Models\TransactionSellLine;
+use App\Models\TransactionSellLinesDay;
 use App\Utils\AppConstant;
+use App\Utils\ProductUtil;
+use App\Utils\TransactionUtil;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
@@ -26,10 +31,12 @@ class MasterController extends Controller
      * @param Util $commonUtil
      * @return void
      */
-    public function __construct(BusinessUtil $businessUtil, ModuleUtil $moduleUtil)
+    public function __construct(TransactionUtil $transactionUtil,BusinessUtil $businessUtil, ModuleUtil $moduleUtil,ProductUtil $productUtil)
     {
         $this->businessUtil = $businessUtil;
         $this->moduleUtil = $moduleUtil;
+        $this->productUtil = $productUtil;
+        $this->transactionUtil = $transactionUtil;
     }
 
     /**
@@ -86,9 +93,8 @@ class MasterController extends Controller
                 ->addColumn('type', function ($row) {
                     if($row->transaction_sell_lines){
                         if($row->transaction_sell_lines_id == $row->transaction_sell_lines->id){
-                            $type = $row->transaction_sell_lines->unit_name;
+                            $type = $row->transaction_sell_lines->product_name. '('.$row->transaction_sell_lines->unit_name.')';
                         }
-
                     }
                     return $type;
                 })
@@ -101,35 +107,33 @@ class MasterController extends Controller
                     return $data;
                 })
                 ->addColumn('pax', function ($row) {
-                    //dd($row->transaction_sell_lines->transactionSellLinesVariants[0]->pax);
                     $pax = [];
                     if (isset($row->transaction_sell_lines->transactionSellLinesVariants)) {
                         foreach ($row->transaction_sell_lines->transactionSellLinesVariants as $value) {
                             if (str_contains($value->pax, 'Serving Pax')) {
-                                $pax[] = $value->pax;
+                                $pax[] = $value->addon;
                             }
                         }
                     }
-                    return implode(',',$pax);
+                    return implode(',', $pax);
                 })
                 ->addColumn('addon', function ($row) {
                     $addon = [];
                     if (isset($row->transaction_sell_lines->transactionSellLinesVariants)) {
                         foreach ($row->transaction_sell_lines->transactionSellLinesVariants as $value) {
                             if (str_contains($value->pax, 'Add on')) {
-                                $addon_pax = ($value->value != 'None') ? '+' . $value->value : '';
-                                $addon[] = str_replace("Add on:", "", $value->pax) . '' . $addon_pax;
+                                $addon_pax = ($value->addon  != 'None') ? '+'.$value->addon : '';
+                                $addon[] = str_replace("Add on:","",$value->pax).''.$addon_pax;
                             }
                         }
-
                     }
-                    return $row->transaction_sell_lines->transactionSellLinesVariants[0]->addon;
+                    return implode(',', $addon);
                 })
-                ->addColumn('date', function ($row) {
+                ->editColumn('date', function ($row) {
                     if($row->time_slot == AppConstant::STATUS_INACTIVE){
                         $date = $row->start_date;
                     }else{
-                        $date = $row->delivery_date. ' ' . $row->delivery_time;
+                        $date = $row->delivery_date;
                     }
                     return $date;
                 })
@@ -147,6 +151,12 @@ class MasterController extends Controller
                 })
                 ->addColumn('driver_name', function ($row) {
                     return 'Amar';
+                })
+                ->addColumn('meal_type', function ($row) {
+                    return getMealTypes($row->time_slot);
+                })
+                ->filterColumn('date', function ($query, $keyword) {
+                    $query->whereRaw("DATE_FORMAT(delivery_date,'%Y-%m-%d') LIKE ?", ["%$keyword%"]);
                 })
                 ->make(true);
         }
@@ -191,9 +201,8 @@ class MasterController extends Controller
                 ->addColumn('type', function ($row) {
                     if($row->transaction_sell_lines){
                         if($row->transaction_sell_lines_id == $row->transaction_sell_lines->id){
-                            $type = $row->transaction_sell_lines->unit_name;
+                            $type = $row->transaction_sell_lines->product_name. '('.$row->transaction_sell_lines->unit_name.')';
                         }
-
                     }
                     return $type;
                 })
@@ -252,6 +261,9 @@ class MasterController extends Controller
                 })
                 ->addColumn('driver_name', function ($row) {
                     return 'Amar';
+                })
+                ->addColumn('meal_type', function ($row) {
+                    return getMealTypes($row->time_slot);
                 })
                 ->make(true);
         }
@@ -358,9 +370,6 @@ class MasterController extends Controller
      */
     public function edit($id)
     {
-
-
-
         $current_time = Carbon::parse(now())->format('H:i');
 
         if ($current_time == AppConstant::DELIVERED_LUNCH_STATUS_TIME) {
@@ -379,12 +388,204 @@ class MasterController extends Controller
                 ]);
             }
         }
-
-
         $master_list = MasterList::findOrFail($id);
 
+        $transaction = Transaction::findOrFail($master_list->transaction_id);
+        $sell_line = TransactionSellLine::findOrFail($master_list->transaction_sell_lines_id);
+        $location_id = $transaction->location_id;
+        $sell_details = TransactionSellLine::
+        join(
+            'products AS p',
+            'transaction_sell_lines.product_id',
+            '=',
+            'p.id'
+        )
+            ->join(
+                'variations AS variations',
+                'transaction_sell_lines.variation_id',
+                '=',
+                'variations.id'
+            )
+            ->join(
+                'product_variations AS pv',
+                'variations.product_variation_id',
+                '=',
+                'pv.id'
+            )
+            ->join(
+                'transaction_sell_lines_variants',
+                'transaction_sell_lines_variants.transaction_sell_lines_id',
+                '=',
+                'transaction_sell_lines.id'
+            )
+            ->leftjoin('units', 'units.id', '=', 'p.unit_id')
+            ->where('transaction_sell_lines.transaction_id', $master_list->transaction_id)
+            ->with(['so_line'])
+            ->select(
+                \Illuminate\Support\Facades\DB::raw("IF(pv.is_dummy = 0, CONCAT(p.name, ' (', pv.name, ':',variations.name, ')'), p.name) AS product_name"),
+                'p.id as product_id',
+                'p.name as product_actual_name',
+                'p.type as product_type',
+                'pv.name as product_variation_name',
+                'pv.is_dummy as is_dummy',
+                'variations.name as variation_name',
+                'variations.sub_sku',
+                'p.barcode_type',
+                'variations.id as variation_id',
+                'units.short_name as unit',
+                'units.allow_decimal as unit_allow_decimal',
+                'transaction_sell_lines.tax_id as tax_id',
+                'transaction_sell_lines.item_tax as item_tax',
+                'transaction_sell_lines.unit_price as default_sell_price',
+                'transaction_sell_lines.unit_price_before_discount as unit_price_before_discount',
+                'transaction_sell_lines.unit_price_inc_tax as sell_price_inc_tax',
+                'transaction_sell_lines.id as transaction_sell_lines_id',
+                'transaction_sell_lines.id',
+                'transaction_sell_lines.quantity as quantity_ordered',
+                'transaction_sell_lines.total_item_value as total_item_value',
+                'transaction_sell_lines.sell_line_note as sell_line_note',
+                'transaction_sell_lines.parent_sell_line_id',
+                'transaction_sell_lines.lot_no_line_id',
+                'transaction_sell_lines.line_discount_type',
+                'transaction_sell_lines.line_discount_amount',
+                'transaction_sell_lines.res_service_staff_id',
+                'transaction_sell_lines.time_slot',
+                'transaction_sell_lines.start_date',
+                'transaction_sell_lines.delivery_date',
+                'transaction_sell_lines.delivery_time',
+                'transaction_sell_lines.unit_price_inc_tax',
+                'transaction_sell_lines.unit_price_inc_tax',
+                'units.id as unit_id',
+                'transaction_sell_lines.sub_unit_id',
+                'transaction_sell_lines_variants.value',
+                'transaction_sell_lines_variants.name as transaction_sell_lines_variants_name',
+            /*DB::raw('vld.qty_available + transaction_sell_lines.quantity AS qty_available')*/
+            )
+            ->get();
+        $transaction_sell_lines_id = [];
+        $transaction_sell_lines_days = '';
+        $time_slot = '';
+        $product_id = [];
+        $product_name = [];
+        $edit_product = [];
+        if (!empty($sell_details)) {
+            foreach ($sell_details as $key => $value) {
+                $product_id[] = $value->product_id;
+                $edit_product[$value->product_id] = [
+                    'start_date' => $value->start_date,
+                    'time_slot' => $value->time_slot,
+                    'delivery_date' => $value->delivery_date,
+                    'delivery_time' => $value->delivery_time,
+                    'unit_value' => $value->unit_value,
+                    'quantity' => $value->quantity_ordered,
+                    'total_item_value' => $value->total_item_value,
+                    'unit' => $value->unit,
+                    'unit_id' => $value->unit_id,
+                    'default_sell_price' => $value->default_sell_price,
+                    'unit_price_before_discount' => $value->unit_price_before_discount,
+                ];
+                $product_name[] = $value->product_actual_name;
+                //If modifier or combo sell line then unset
+                if (!empty($sell_details[$key]->parent_sell_line_id)) {
+                    unset($sell_details[$key]);
+                } else {
+                    if ($transaction->status != 'final') {
+                        $actual_qty_avlbl = $value->qty_available - $value->quantity_ordered;
+                        $sell_details[$key]->qty_available = $actual_qty_avlbl;
+                        $value->qty_available = $actual_qty_avlbl;
+                    }
+                    //$number_of_days = $value->number_of_days;
+                    $time_slot = $value->time_slot;
+
+                    $transaction_sell_lines_days = TransactionSellLinesDay::where('transaction_sell_lines_id', $value->transaction_sell_lines_id)->get();
+                    foreach ($transaction_sell_lines_days as $days) {
+                        $transaction_sell_lines_id[$value->product_id][] = $days->day;
+                    }
+                    $sell_details[$key]->formatted_qty_available = $this->productUtil->num_f($value->qty_available, false, null, true);
+                    $lot_numbers = [];
+                    $business_id = request()->session()->get('user.business_id');
+                    if (request()->session()->get('business.enable_lot_number') == 1) {
+                        $lot_number_obj = $this->transactionUtil->getLotNumbersFromVariation($value->variation_id, $business_id, $location_id);
+                        foreach ($lot_number_obj as $lot_number) {
+                            //If lot number is selected added ordered quantity to lot quantity available
+                            if ($value->lot_no_line_id == $lot_number->purchase_line_id) {
+                                $lot_number->qty_available += $value->quantity_ordered;
+                            }
+
+                            $lot_number->qty_formated = $this->transactionUtil->num_f($lot_number->qty_available);
+                            $lot_numbers[] = $lot_number;
+                        }
+                    }
+                    $sell_details[$key]->lot_numbers = $lot_numbers;
+
+                    if (!empty($value->sub_unit_id)) {
+                        $value = $this->productUtil->changeSellLineUnit($business_id, $value);
+                        $sell_details[$key] = $value;
+                    }
+
+                    if ($this->transactionUtil->isModuleEnabled('modifiers')) {
+                        //Add modifier details to sel line details
+                        $sell_line_modifiers = TransactionSellLine::where('parent_sell_line_id', $sell_details[$key]->transaction_sell_lines_id)
+                            ->where('children_type', 'modifier')
+                            ->get();
+                        $modifiers_ids = [];
+                        if (count($sell_line_modifiers) > 0) {
+                            $sell_details[$key]->modifiers = $sell_line_modifiers;
+                            foreach ($sell_line_modifiers as $sell_line_modifier) {
+                                $modifiers_ids[] = $sell_line_modifier->variation_id;
+                            }
+                        }
+                        $sell_details[$key]->modifiers_ids = $modifiers_ids;
+
+                        //add product modifier sets for edit
+                        $this_product = Product::find($sell_details[$key]->product_id);
+                        if (count($this_product->modifier_sets) > 0) {
+                            $sell_details[$key]->product_ms = $this_product->modifier_sets;
+                        }
+                    }
+
+                    //Get details of combo items
+                    if ($sell_details[$key]->product_type == 'combo') {
+                        $sell_line_combos = TransactionSellLine::where('parent_sell_line_id', $sell_details[$key]->transaction_sell_lines_id)
+                            ->where('children_type', 'combo')
+                            ->get()
+                            ->toArray();
+                        if (!empty($sell_line_combos)) {
+                            $sell_details[$key]->combo_products = $sell_line_combos;
+                        }
+
+                        //calculate quantity available if combo product
+                        $combo_variations = [];
+                        foreach ($sell_line_combos as $combo_line) {
+                            $combo_variations[] = [
+                                'variation_id' => $combo_line['variation_id'],
+                                'quantity' => $combo_line['quantity'] / $sell_details[$key]->quantity_ordered,
+                                'unit_id' => null
+                            ];
+                        }
+                        $sell_details[$key]->qty_available =
+                            $this->productUtil->calculateComboQuantity($location_id, $combo_variations);
+
+                        if ($transaction->status == 'final') {
+                            $sell_details[$key]->qty_available = $sell_details[$key]->qty_available + $sell_details[$key]->quantity_ordered;
+                        }
+
+                        $sell_details[$key]->formatted_qty_available = $this->productUtil->num_f($sell_details[$key]->qty_available, false, null, true);
+                    }
+                }
+            }
+        }
+        $product_ids = array_unique($product_id);
+        $product_count = count($product_ids);
+        $product_names = array_unique($product_name);
+        $tran_sell_days = TransactionSellLinesDay::where('transaction_sell_lines_id',$master_list->transaction_sell_lines_id)->pluck('day')->toArray();
+        $days = [];
+        foreach($tran_sell_days as $day){
+            $days[] = getDayNameByDayNumber($day);
+        }
+        $transaction_sell_lines_days_val = implode(',', $days);
         return view('master.edit')
-            ->with(compact('master_list'));
+            ->with(compact('master_list','transaction','sell_line','product_ids','product_count','edit_product','product_names','sell_details','transaction_sell_lines_days_val'));
     }
 
 

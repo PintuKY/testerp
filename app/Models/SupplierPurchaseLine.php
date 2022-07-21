@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\SupplierProduct;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class SupplierPurchaseLine extends Model
 {
@@ -15,13 +16,9 @@ class SupplierPurchaseLine extends Model
 
     public function product()
     {
-        return $this->belongsTo(\App\Models\Product::class, 'product_id');
+        return $this->belongsTo(SupplierProduct::class, 'product_id');
     }
 
-    public function variations()
-    {
-        return $this->belongsTo(\App\Models\Variation::class, 'variation_id');
-    }
 
     public function subUnit()
     {

@@ -119,6 +119,7 @@ class BusinessLocationController extends Controller
      */
     public function create()
     {
+
         if (!auth()->user()->can('business_settings.access')) {
             abort(403, 'Unauthorized action.');
         }
@@ -322,14 +323,15 @@ class BusinessLocationController extends Controller
             ];
         } catch (\Exception $e) {
             dd($e->getMessage());
+            dd($e->getMessage());
             \Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
             $output = ['success' => false,
                 'msg' => __("messages.something_went_wrong")
             ];
         }
-
         return $output;
+        //return redirect('business-location');
     }
 
     /**

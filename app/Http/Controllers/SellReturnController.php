@@ -248,8 +248,119 @@ class SellReturnController extends Controller
             $sell->sell_lines[$key]->formatted_qty = $this->transactionUtil->num_f($value->quantity, false, null, true);
         }
 
+        $sell_details = TransactionSellLine::
+        join(
+            'products AS p',
+            'transaction_sell_lines.product_id',
+            '=',
+            'p.id'
+        )
+            ->join(
+                'variations AS variations',
+                'transaction_sell_lines.variation_id',
+                '=',
+                'variations.id'
+            )
+            ->join(
+                'product_variations AS pv',
+                'variations.product_variation_id',
+                '=',
+                'pv.id'
+            )
+            ->join(
+                'transaction_sell_lines_variants',
+                'transaction_sell_lines_variants.transaction_sell_lines_id',
+                '=',
+                'transaction_sell_lines.id'
+            )
+            /*->join(
+                'transaction_sell_lines_days',
+                'transaction_sell_lines_days.transaction_sell_lines_id',
+                '=',
+                'transaction_sell_lines.id'
+            )*/
+            /*->leftjoin('variation_location_details AS vld', function ($join) use ($location_id) {
+                $join->on('variations.id', '=', 'vld.variation_id')
+                    ->where('vld.location_id', '=', $location_id);
+            })*/
+            ->leftjoin('units', 'units.id', '=', 'p.unit_id')
+            ->where('transaction_sell_lines.transaction_id', $id)
+            ->with(['so_line'])
+            ->select(
+                \Illuminate\Support\Facades\DB::raw("IF(pv.is_dummy = 0, CONCAT(p.name, ' (', pv.name, ':',variations.name, ')'), p.name) AS product_name"),
+                'p.id as product_id',
+                'p.name as product_actual_name',
+                'p.type as product_type',
+                'pv.name as product_variation_name',
+                'pv.is_dummy as is_dummy',
+                'variations.name as variation_name',
+                'variations.sub_sku',
+                'p.barcode_type',
+                'variations.id as variation_id',
+                'units.short_name as unit',
+                'units.allow_decimal as unit_allow_decimal',
+                'transaction_sell_lines.tax_id as tax_id',
+                'transaction_sell_lines.item_tax as item_tax',
+                'transaction_sell_lines.unit_price as default_sell_price',
+                'transaction_sell_lines.unit_price_before_discount as unit_price_before_discount',
+                'transaction_sell_lines.unit_price_inc_tax as sell_price_inc_tax',
+                'transaction_sell_lines.id as transaction_sell_lines_id',
+                'transaction_sell_lines.id',
+                'transaction_sell_lines.quantity as quantity_ordered',
+                'transaction_sell_lines.total_item_value as total_item_value',
+                'transaction_sell_lines.return_amount as return_amount',
+                'transaction_sell_lines.sell_line_note as sell_line_note',
+                'transaction_sell_lines.parent_sell_line_id',
+                'transaction_sell_lines.lot_no_line_id',
+                'transaction_sell_lines.line_discount_type',
+                'transaction_sell_lines.line_discount_amount',
+                'transaction_sell_lines.res_service_staff_id',
+                'transaction_sell_lines.time_slot',
+                'transaction_sell_lines.start_date',
+                'transaction_sell_lines.delivery_date',
+                'transaction_sell_lines.delivery_time',
+                'transaction_sell_lines.unit_price_inc_tax',
+                'transaction_sell_lines.unit_price_inc_tax',
+                'units.id as unit_id',
+                'transaction_sell_lines.sub_unit_id',
+                'transaction_sell_lines_variants.value',
+                'transaction_sell_lines_variants.name as transaction_sell_lines_variants_name',
+            /*DB::raw('vld.qty_available + transaction_sell_lines.quantity AS qty_available')*/
+            )
+            ->get();
+        $transaction_sell_lines_id = [];
+        $transaction_sell_lines_days = '';
+        $time_slot = '';
+        $product_id = [];
+        $product_name = [];
+        $edit_product = [];
+        if (!empty($sell_details)) {
+            foreach ($sell_details as $key => $value) {
+                $product_id[] = $value->product_id;
+                $edit_product[$value->product_id] = [
+                    'start_date' => $value->start_date,
+                    'time_slot' => $value->time_slot,
+                    'delivery_date' => $value->delivery_date,
+                    'delivery_time' => $value->delivery_time,
+                    'unit_value' => $value->unit_value,
+                    'quantity' => $value->quantity_ordered,
+                    'total_item_value' => $value->total_item_value,
+                    'unit' => $value->unit,
+                    'unit_id' => $value->unit_id,
+                    'default_sell_price' => $value->default_sell_price,
+                    'unit_price_before_discount' => $value->unit_price_before_discount,
+                    'return_amount' => $value->return_amount,
+                ];
+                $product_name[] = $value->product_actual_name;
+            }
+        }
+        $product_ids = array_unique($product_id);
+        $product_count = count($product_ids);
+        $product_names = array_unique($product_name);
         return view('sell_return.add')
-            ->with(compact('sell'));
+            ->with(compact('sell','edit_product',
+                'product_ids',
+                'product_names'));
     }
 
     /**
@@ -260,6 +371,8 @@ class SellReturnController extends Controller
      */
     public function store(Request $request)
     {
+
+
         if (!auth()->user()->can('access_sell_return') && !auth()->user()->can('access_own_sell_return')) {
             abort(403, 'Unauthorized action.');
         }
@@ -279,7 +392,7 @@ class SellReturnController extends Controller
 
                 DB::beginTransaction();
 
-                $sell_return =  $this->transactionUtil->addSellReturn($input, $business_id, $user_id);
+                $sell_return =  $this->transactionUtil->addSellReturn($request,$input, $business_id, $user_id);
 
                 $receipt = $this->receiptContent($business_id, $sell_return->location_id, $sell_return->id);
 
@@ -290,7 +403,9 @@ class SellReturnController extends Controller
                             'receipt' => $receipt
                         ];
             }
+
         } catch (\Exception $e) {
+            dd('ccc'.$e->getMessage());
             DB::rollBack();
 
             if (get_class($e) == \App\Exceptions\PurchaseSellMismatch::class) {
@@ -299,13 +414,12 @@ class SellReturnController extends Controller
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
                 $msg = __('messages.something_went_wrong');
             }
-
             $output = ['success' => 0,
                             'msg' => $msg
                         ];
         }
-
         return $output;
+
     }
 
     /**
@@ -376,8 +490,113 @@ class SellReturnController extends Controller
            ->latest()
            ->get();
 
+        $sell_details = TransactionSellLine::
+        join(
+            'products AS p',
+            'transaction_sell_lines.product_id',
+            '=',
+            'p.id'
+        )
+            ->join(
+                'variations AS variations',
+                'transaction_sell_lines.variation_id',
+                '=',
+                'variations.id'
+            )
+            ->join(
+                'product_variations AS pv',
+                'variations.product_variation_id',
+                '=',
+                'pv.id'
+            )
+            ->join(
+                'transaction_sell_lines_variants',
+                'transaction_sell_lines_variants.transaction_sell_lines_id',
+                '=',
+                'transaction_sell_lines.id'
+            )
+            /*->join(
+                'transaction_sell_lines_days',
+                'transaction_sell_lines_days.transaction_sell_lines_id',
+                '=',
+                'transaction_sell_lines.id'
+            )*/
+            /*->leftjoin('variation_location_details AS vld', function ($join) use ($location_id) {
+                $join->on('variations.id', '=', 'vld.variation_id')
+                    ->where('vld.location_id', '=', $location_id);
+            })*/
+            ->leftjoin('units', 'units.id', '=', 'p.unit_id')
+            ->where('transaction_sell_lines.transaction_id', $id)
+            ->with(['so_line'])
+            ->select(
+                \Illuminate\Support\Facades\DB::raw("IF(pv.is_dummy = 0, CONCAT(p.name, ' (', pv.name, ':',variations.name, ')'), p.name) AS product_name"),
+                'p.id as product_id',
+                'p.name as product_actual_name',
+                'p.type as product_type',
+                'pv.name as product_variation_name',
+                'pv.is_dummy as is_dummy',
+                'variations.name as variation_name',
+                'variations.sub_sku',
+                'p.barcode_type',
+                'variations.id as variation_id',
+                'units.short_name as unit',
+                'units.allow_decimal as unit_allow_decimal',
+                'transaction_sell_lines.tax_id as tax_id',
+                'transaction_sell_lines.item_tax as item_tax',
+                'transaction_sell_lines.unit_price as default_sell_price',
+                'transaction_sell_lines.unit_price_before_discount as unit_price_before_discount',
+                'transaction_sell_lines.unit_price_inc_tax as sell_price_inc_tax',
+                'transaction_sell_lines.id as transaction_sell_lines_id',
+                'transaction_sell_lines.id',
+                'transaction_sell_lines.quantity as quantity_ordered',
+                'transaction_sell_lines.return_amount as return_amount',
+                'transaction_sell_lines.total_item_value as total_item_value',
+                'transaction_sell_lines.sell_line_note as sell_line_note',
+                'transaction_sell_lines.parent_sell_line_id',
+                'transaction_sell_lines.lot_no_line_id',
+                'transaction_sell_lines.line_discount_type',
+                'transaction_sell_lines.line_discount_amount',
+                'transaction_sell_lines.res_service_staff_id',
+                'transaction_sell_lines.time_slot',
+                'transaction_sell_lines.start_date',
+                'transaction_sell_lines.delivery_date',
+                'transaction_sell_lines.delivery_time',
+                'transaction_sell_lines.unit_price_inc_tax',
+                'transaction_sell_lines.unit_price_inc_tax',
+                'units.id as unit_id',
+                'transaction_sell_lines.sub_unit_id',
+                'transaction_sell_lines_variants.value',
+                'transaction_sell_lines_variants.name as transaction_sell_lines_variants_name',
+            )
+            ->get();
+        $product_id = [];
+        $product_name = [];
+        $edit_product = [];
+        if (!empty($sell_details)) {
+            foreach ($sell_details as $key => $value) {
+                $product_id[] = $value->product_id;
+                $edit_product[$value->product_id] = [
+                    'start_date' => $value->start_date,
+                    'time_slot' => $value->time_slot,
+                    'delivery_date' => $value->delivery_date,
+                    'delivery_time' => $value->delivery_time,
+                    'unit_value' => $value->unit_value,
+                    'quantity' => $value->quantity_ordered,
+                    'total_item_value' => $value->total_item_value,
+                    'unit' => $value->unit,
+                    'unit_id' => $value->unit_id,
+                    'default_sell_price' => $value->default_sell_price,
+                    'unit_price_before_discount' => $value->unit_price_before_discount,
+                    'return_amount' => $value->return_amount,
+                ];
+                $product_name[] = $value->product_actual_name;
+            }
+        }
+        $product_ids = array_unique($product_id);
+        $product_count = count($product_ids);
+        $product_names = array_unique($product_name);
         return view('sell_return.show')
-            ->with(compact('sell', 'sell_taxes', 'total_discount', 'activities'));
+            ->with(compact('edit_product','product_names','product_ids','sell', 'sell_taxes', 'total_discount', 'activities','product_count'));
     }
 
     /**
@@ -442,6 +661,7 @@ class SellReturnController extends Controller
                             'msg' => __('lang_v1.success'),
                         ];
             } catch (\Exception $e) {
+                dd('bbb'.$e->getMessage());
                 DB::rollBack();
 
                 if (get_class($e) == \App\Exceptions\PurchaseSellMismatch::class) {
@@ -497,7 +717,18 @@ class SellReturnController extends Controller
             $receipt_printer_type = is_null($printer_type) ? $location_details->receipt_printer_type : $printer_type;
 
             $receipt_details = $this->transactionUtil->getReceiptDetails($transaction_id, $location_id, $invoice_layout, $business_details, $location_details, $receipt_printer_type);
-
+            $unique_array = [];
+            $edit_product = [];
+            foreach($receipt_details->lines as $element) {
+                $hash = $element['product_id'];
+                $unique_array[$hash] = $element;
+                $edit_product[$element['product_id']] = [
+                    'quantity' => $element['quantity_uf'],
+                    'total_item_value' =>  $element['total_item_value'],
+                    'return_amount' => $element['return_amount'],
+                ];
+            }
+            $total_sell = array_values($unique_array);
             //If print type browser - return the content, printer - return printer config data, and invoice format config
             $output['print_title'] = $receipt_details->invoice_no;
             if ($receipt_printer_type == 'printer') {
@@ -506,7 +737,7 @@ class SellReturnController extends Controller
                 $output['data'] = $receipt_details;
 
             } else {
-                $output['html_content'] = view('sell_return.receipt', compact('receipt_details'))->render();
+                $output['html_content'] = view('sell_return.receipt', compact('edit_product','receipt_details','total_sell'))->render();
             }
         }
 
@@ -543,6 +774,7 @@ class SellReturnController extends Controller
                     $output = ['success' => 1, 'receipt' => $receipt];
                 }
             } catch (\Exception $e) {
+                dd('aaa'.$e->getMessage());
                 $output = ['success' => 0,
                         'msg' => trans("messages.something_went_wrong")
                         ];

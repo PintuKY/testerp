@@ -1,5 +1,6 @@
 <table class="table table-condensed">
 	@forelse($medias as $media)
+        @if($media->file_name)
 		<tr>
 			<td>
 				@if(isFileImage($media->display_url))
@@ -21,6 +22,7 @@
 				@endif
 			</td>
 		</tr>
+        @endif
 	@empty
 		<tr>
 			<td colspan="3" class="text-center">@lang('lang_v1.no_attachment_found')</td>

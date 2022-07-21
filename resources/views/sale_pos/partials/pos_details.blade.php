@@ -113,6 +113,8 @@
 									id="round_off_amount" value=0>
 								<input type="hidden" name="final_total"
 									id="final_total_input" value=0>
+                                <input type="hidden" name="final_total_new"
+									id="final_total_input_new" value=0>
 								<span id="total_payable" class="text-success lead text-bold">0</span>
 								@if(empty($edit))
 									<button type="button" class="btn btn-danger btn-flat btn-xs pull-right" id="pos-cancel">@lang('sale.cancel')</button>

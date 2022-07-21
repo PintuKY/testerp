@@ -283,12 +283,14 @@ $multiplier = 1;
                         </div>
                     @endif
                     <div class="col-sm-3">
+
                         <div class="form-group">
                             {!! Form::label('upload_document', __('purchase.attach_document') . ':') !!}
                             {!! Form::file('sell_document', ['id' => 'upload_document', 'accept' => implode(',', array_keys(config('constants.document_upload_mimes_types')))]); !!}
                             <p class="help-block">@lang('purchase.max_file_size', ['size' => (config('constants.document_size_limit') / 1000000)])
                                 @includeIf('components.document_help_text')</p>
                         </div>
+                        @include('sell.partials.document_table', ['medias' => $transaction->document])
                     </div>
                     <div class="clearfix"></div>
                     @if((!empty($pos_settings['enable_sales_order']) && $transaction->type != 'sales_order') || $is_order_request_enabled)
@@ -425,7 +427,7 @@ $multiplier = 1;
                                     </tbody>
                                 </table>
                                 <input type="hidden" class="total_item_price" id="total_{{$productId}}"
-                                       name="product[{{$productId}}][total]" value="{{@num_format($edit_product[$productId]['total_item_value'])}}">
+                                       name="product[{{$productId}}][total]" value="{{@num_format($edit_product[$productId]['total_item_value'] * $edit_product[$productId]['quantity'])}}">
 
                                 <div class="row pos_table_{{$productId}}">
                                     <div class="col-md-12 col-sm-12">
@@ -554,7 +556,7 @@ $multiplier = 1;
                                                                name="product[{{$productId}}][product_unit_id]"
                                                                value="{{$edit_product[$productId]['unit_id']}}">
 
-                                                        {{$edit_product[$productId]['unit']}}
+
 
 
                                                         <input type="hidden" class="base_unit_multiplier"
@@ -897,6 +899,7 @@ $multiplier = 1;
                                    id="round_off_amount" value=0>
                         @endif
                         <div><b>@lang('sale.total_payable'): </b>
+                            <input type="hidden" value="{{$transaction->final_total}}" name="final_total_new" id="final_total_input_new">
                             <input type="hidden" value="{{$transaction->final_total}}" name="final_total" id="final_total_input">
                             <input type="hidden" value="{{$transaction->final_total}}" name="final_totals" id="final_total_inputs">
                             <span id="total_payable">0</span>

@@ -148,6 +148,7 @@ return [
     'attributes' => [],
     'custom-messages' => [
         'quantity_not_available' => 'Only :qty :unit available',
+        'return_amount_less_then_total_amount' => 'Return amount is less then :total .',
         'this_field_is_required' => 'This field is required'
     ],
 

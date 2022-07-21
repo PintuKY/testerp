@@ -325,7 +325,7 @@
                        value="{{$productData->product->unit->id}}">
                 @if(count($sub_units) > 0)
                     <br>
-                    <select name="products[{{$productData->id}}][sub_unit_id]" class="form-control input-sm sub_unit">
+                    <select name="products[{{$productData->id}}][sub_unit_id]" class="hide form-control input-sm sub_unit">
                         @foreach($sub_units as $key => $value)
                             <option value="{{$key}}" data-multiplier="{{$value['multiplier']}}"
                                     data-unit_name="{{$value['name']}}" data-allow_decimal="{{$value['allow_decimal']}}"
@@ -334,8 +334,7 @@
                             </option>
                         @endforeach
                     </select>
-                @else
-                    {{$productData->product->unit->short_name}}
+
                 @endif
 
                 <input type="hidden" class="base_unit_multiplier"
@@ -455,7 +454,7 @@
                         <h5>{{$productData->product_variation->variation_template->name}}</h5>
                         <select class="form-control select_variation_value select2" required
                                 name="products[{{$productData->id}}][variation_value_id]" data-productId="{{$product_id}}">
-                            <option value="">Please Select</option>
+                            {{--<option value="">Please Select</option>--}}
                             @foreach ($selected_variation as $key => $product_variation_name_data)
                                 <option value="{{$product_variation_name_data->id}}"
                                         data-price="{{number_format($product_variation_name_data->default_sell_price,2,'.')}}"
@@ -663,8 +662,8 @@
                                value="{{$productData->product->unit->id}}">
                         @if(count($sub_units) > 0)
 
-                            <label for="sub_unit_id">Sub Unit Id:*</label>
-                            <select name="product[{{$product_id}}][sub_unit_id]" class="form-control input-sm sub_unit">
+                            {{--<label for="sub_unit_id">Sub Unit Id:*</label>--}}
+                            <select name="product[{{$product_id}}][sub_unit_id]" class="hide form-control input-sm sub_unit">
                                 @foreach($sub_units as $key => $value)
                                     <option value="{{$key}}" data-multiplier="{{$value['multiplier']}}"
                                             data-unit_name="{{$value['name']}}"
@@ -674,8 +673,8 @@
                                     </option>
                                 @endforeach
                             </select>
-                        @else
-                            {{$productData->product->unit->short_name}}
+                        {{--@else
+                            {{$productData->product->unit->short_name}}--}}
                         @endif
 
                         <input type="hidden" class="base_unit_multiplier"

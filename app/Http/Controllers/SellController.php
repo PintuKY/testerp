@@ -335,6 +335,7 @@ class SellController extends Controller
                 $sells->addSelect('transactions.is_recurring', 'transactions.recur_parent_id');
             }
             $sales_order_statuses = Transaction::sales_order_statuses();
+
             $datatable = Datatables::of($sells)
                 ->addColumn(
                     'action',
@@ -393,9 +394,9 @@ class SellController extends Controller
                         if (auth()->user()->can("sell.view") || auth()->user()->can("direct_sell.access")) {
                             if (!empty($row->document)) {
                                 $document_name = !empty(explode("_", $row->document, 2)[1]) ? explode("_", $row->document, 2)[1] : $row->document;
-                                $html .= '<li><a href="' . url('uploads/documents/' . $row->document) . '" download="' . $document_name . '"><i class="fas fa-download" aria-hidden="true"></i>' . __("purchase.download_document") . '</a></li>';
+                                $html .= '<li><a href="' . url('storage/documents/' . $row->document) . '" download="' . $document_name . '"><i class="fas fa-download" aria-hidden="true"></i>' . __("purchase.download_document") . '</a></li>';
                                 if (isFileImage($document_name)) {
-                                    $html .= '<li><a href="#" data-href="' . url('uploads/documents/' . $row->document) . '" class="view_uploaded_document"><i class="fas fa-image" aria-hidden="true"></i>' . __("lang_v1.view_document") . '</a></li>';
+                                    $html .= '<li><a href="#" data-href="' . url('storage/documents/' . $row->document) . '" class="view_uploaded_document"><i class="fas fa-image" aria-hidden="true"></i>' . __("lang_v1.view_document") . '</a></li>';
                                 }
                             }
                         }
@@ -567,6 +568,41 @@ class SellController extends Controller
                     return $status;
                 })
                 ->editColumn('so_qty_remaining', '{{@format_quantity($so_qty_remaining)}}')
+                ->addColumn(
+                    'shipping_details',
+                    function ($row) {
+                        $value =  $row->shipping_address_line_1.', <br>'.
+                            $row->shipping_address_line_2 .', <br>';
+                        if (!empty($row->contact->shipping_city)) {
+                            $value .= $row->contact->shipping_city.', <br>';
+                        }
+                        if (!empty($row->contact->shipping_state)) {
+                            $value .= $row->contact->shipping_state.', <br>';
+                        }
+                        if (!empty($row->contact->shipping_country)) {
+                            $value .= $row->contact->shipping_country.', <br>';
+                        }
+                        if (!empty($row->contact->shipping_zipcode)) {
+                            $value .= $row->contact->shipping_zipcode.', <br>';
+                        }
+                        if (!empty($row->shipping_custom_field_1)) {
+                            $value .= $row->shipping_custom_field_1;
+                        }
+                        if (!empty($row->shipping_custom_field_2)) {
+                            $value .= $row->shipping_custom_field_2;
+                        }
+                        if (!empty($row->shipping_custom_field_3)) {
+                            $value .= $row->shipping_custom_field_3;
+                        }
+                        if (!empty($row->shipping_custom_field_4)) {
+                            $value .= $row->shipping_custom_field_4;
+                        }
+                        if (!empty($row->shipping_custom_field_5)) {
+                            $value .= $row->shipping_custom_field_5;
+                        }
+                        return $value;
+                    }
+                )
                 ->setRowAttr([
                     'data-href' => function ($row) {
                         if (auth()->user()->can("sell.view") || auth()->user()->can("view_own_sell_only")) {
@@ -576,7 +612,7 @@ class SellController extends Controller
                         }
                     }]);
 
-            $rawColumns = ['final_total', 'action', 'total_paid', 'total_remaining', 'payment_status', 'invoice_no', 'discount_amount', 'tax_amount', 'total_before_tax', 'shipping_status', 'types_of_service_name', 'payment_methods', 'return_due', 'conatct_name', 'status'];
+            $rawColumns = ['final_total', 'action', 'total_paid', 'total_remaining', 'payment_status', 'invoice_no', 'discount_amount', 'tax_amount', 'total_before_tax', 'shipping_status', 'types_of_service_name', 'payment_methods', 'return_due', 'conatct_name', 'status', 'shipping_details'];
 
             return $datatable->rawColumns($rawColumns)
                 ->make(true);
@@ -1806,16 +1842,14 @@ class SellController extends Controller
         $default_time = $this->businessUtil->format_times(Carbon::parse(now())->format('H:i'));
         $default_date = $this->businessUtil->format_dates(Carbon::parse(now())->format('Y-m-d'));
         $role = 'sell';
-        $masterListCols = config('masterlist.'.$role.'_columns');
+        $masterListCols = config('masterlist.' . $role . '_columns');
         $tra_sell_lines = TransactionSellLine::with('product')->where(['transaction_id' => $id])->groupBy('product_id')->get();
         $tra_sell_lines_array = TransactionSellLine::with('product')->where(['transaction_id' => $id])->groupBy('product_id')->pluck('id')->toArray();
-        $sell_ids = implode(',',$tra_sell_lines_array);
+        $sell_ids = implode(',', $tra_sell_lines_array);
 
         return view('sell.edit')
-            ->with(compact('tra_sell_lines','sell_ids','masterListCols','master_list', 'edit_product', 'business_details', 'default_datetime', 'default_time','default_date',/*'number_of_days','transaction_sell_lines_id',*/ 'time_slot', 'taxes', 'sell_details', 'transaction', 'commission_agent', 'types', 'customer_groups', 'pos_settings', 'waiters', 'invoice_schemes', 'default_invoice_schemes', 'redeem_details', 'edit_discount', 'edit_price', 'shipping_statuses', 'statuses', 'sales_orders', 'payment_types', 'accounts', 'payment_lines', 'change_return', 'is_order_request_enabled', 'customer_due', 'transaction_sell_lines_days', 'transaction_sell_lines_id', 'product_ids', 'product_names', 'product_count', 'total_compensate'));
+            ->with(compact('tra_sell_lines', 'sell_ids', 'masterListCols', 'master_list', 'edit_product', 'business_details', 'default_datetime', 'default_time', 'default_date',/*'number_of_days','transaction_sell_lines_id',*/ 'time_slot', 'taxes', 'sell_details', 'transaction', 'commission_agent', 'types', 'customer_groups', 'pos_settings', 'waiters', 'invoice_schemes', 'default_invoice_schemes', 'redeem_details', 'edit_discount', 'edit_price', 'shipping_statuses', 'statuses', 'sales_orders', 'payment_types', 'accounts', 'payment_lines', 'change_return', 'is_order_request_enabled', 'customer_due', 'transaction_sell_lines_days', 'transaction_sell_lines_id', 'product_ids', 'product_names', 'product_count', 'total_compensate'));
     }
-
-
 
 
     /**
@@ -2413,7 +2447,7 @@ class SellController extends Controller
             }
 
         } catch (\Exception $e) {
-            dd('aaa'.$e->getMessage());
+            dd('aaa' . $e->getMessage());
             \Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
             $output['success'] = false;
             $output['msg'] = __('lang_v1.item_out_of_stock');

@@ -459,13 +459,13 @@ class SellPosController extends Controller
                 }
 
                 //upload document
-                $input['document'] = $this->transactionUtil->uploadFile($request, 'sell_document', 'documents');
+                $input['document'] = $this->transactionUtil->uploadFiles($request, 'sell_document', 'documents');
 
                 $contact = Contact::findOrFail($input['contact_id']);
                 $transaction = $this->transactionUtil->createSellTransaction($contact,$business_id, $input, $invoice_total, $user_id);
 
                 //Upload Shipping documents
-                Media::uploadMedia($business_id, $transaction, $request, 'shipping_documents', false, 'shipping_document');
+                Media::uploadMediaShipping($business_id, $transaction, $request, 'shipping_documents', true, 'shipping_document');
 
 
                 $this->transactionUtil->createOrUpdateSellLines($input,$transaction, $input['products'], $input['location_id'],/*$input['number_of_days'],$input['time_slot'],$input['has_purchase_due']*/);
@@ -539,7 +539,7 @@ class SellPosController extends Controller
                     $this->moduleUtil->getModuleData('after_sale_saved', ['transaction' => $transaction, 'input' => $input]);
                 }
 
-                Media::uploadMedia($business_id, $transaction, $request, 'documents');
+                Media::uploadMedias($business_id, $transaction, $request, 'documents');
 
                 $this->transactionUtil->activityLog($transaction, 'added');
 
@@ -1148,7 +1148,7 @@ class SellPosController extends Controller
                 }
 
                 //upload document
-                $document_name = $this->transactionUtil->uploadFile($request, 'sell_document', 'documents');
+                $document_name = $this->transactionUtil->uploadFiles($request, 'sell_document', 'documents');
                 if (!empty($document_name)) {
                     $input['document'] = $document_name;
                 }
@@ -1212,7 +1212,7 @@ class SellPosController extends Controller
                     $this->transactionUtil->updateCustomerRewardPoints($contact_id, $transaction->rp_earned, $rp_earned_before, $transaction->rp_redeemed, $rp_redeemed_before);
                 }
 
-                Media::uploadMedia($business_id, $transaction, $request, 'shipping_documents', false, 'shipping_document');
+                Media::uploadMediaShipping($business_id, $transaction, $request, 'shipping_documents', true, 'shipping_document');
 
                 if ($transaction->type == 'sell') {
 
@@ -1256,7 +1256,7 @@ class SellPosController extends Controller
                     $this->moduleUtil->getModuleData('after_sale_saved', ['transaction' => $transaction, 'input' => $input]);
                 }
 
-                Media::uploadMedia($business_id, $transaction, $request, 'documents');
+                Media::uploadMedias($business_id, $transaction, $request, 'documents');
 
                 $this->transactionUtil->activityLog($transaction, 'edited', $transaction_before);
 

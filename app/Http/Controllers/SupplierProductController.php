@@ -150,7 +150,7 @@ class SupplierProductController extends Controller
             'purchase_price'         => 'required',
             'category_id'            => 'required',
             'unit_id'                => 'required',
-            'description'            => 'sometimes',
+            'description'            => 'required',
             'weight'                 => 'sometimes',
             'purchase_price_inc_tax' => 'required',
             'tax'                    => 'sometimes',
@@ -158,21 +158,21 @@ class SupplierProductController extends Controller
             'alert_quantity'         => 'sometimes',
         ]);
         try {
-        $data['business_id'] =  $request->session()->get('user.business_id');
-        DB::beginTransaction();
-        $data['image']       = $this->productUtil->uploadFile($request, 'supplier_product_image', config('constants.product_img_path'), 'image');
-        $supplier_product    = SupplierProduct::create($data);
-        
-        if (empty(trim($request->input('sku')))) {
-            $sku = $this->productUtil->generateProductSku($supplier_product->id);
-            $supplier_product->sku = $sku;
-            $supplier_product->save();
-        }
-        Media::uploadMedia($supplier_product->business_id, $supplier_product, $request, 'product_brochure', true);
-        DB::commit();
-
-        $output = ['success' => true,
-       'msg' => 'Product Added Successfully'];
+            $data['business_id'] =  $request->session()->get('user.business_id');
+            DB::beginTransaction();
+            $data['image']       = $this->productUtil->uploadFile($request, 'supplier_product_image', config('constants.product_img_path'), 'image');
+            $supplier_product    = SupplierProduct::create($data);
+            
+            if (empty(trim($request->input('sku')))) {
+                $sku = $this->productUtil->generateProductSku($supplier_product->id);
+                $supplier_product->sku = $sku;
+                $supplier_product->save();
+            }
+            Media::uploadMedia($supplier_product->business_id, $supplier_product, $request, 'product_brochure', true);
+            DB::commit();
+            
+            $output = ['success' => true,
+            'msg' => 'Product Added Successfully'];
         }catch (\Exception $e) {
             DB::rollback();
             \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());

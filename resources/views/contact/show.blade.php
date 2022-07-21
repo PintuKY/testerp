@@ -184,7 +184,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="tab-pane 
+                        <div class="tab-pane
                             @if(!empty($view_type) &&  $view_type == 'stock_report')
                                 active
                             @else
@@ -194,7 +194,7 @@
                         </div>
                     @endif
                     @if(in_array($contact->type, ['both', 'customer']))
-                        <div class="tab-pane 
+                        <div class="tab-pane
                             @if(!empty($view_type) &&  $view_type == 'sales')
                                 active
                             @else
@@ -227,7 +227,7 @@
                         id="documents_and_notes_tab">
                         @include('contact.partials.documents_and_notes_tab')
                     </div>
-                    <div class="tab-pane 
+                    <div class="tab-pane
                         @if(!empty($view_type) &&  $view_type == 'payments')
                             active
                         @else
@@ -260,7 +260,7 @@
                             @endif
                             <div class="col-md-12">
                                 <div class="table-responsive">
-                                    <table class="table table-bordered table-striped" 
+                                    <table class="table table-bordered table-striped"
                                     id="rp_log_table" width="100%">
                                         <thead>
                                             <tr>
@@ -300,13 +300,13 @@
     </div>
 </section>
 <!-- /.content -->
-<div class="modal fade payment_modal" tabindex="-1" role="dialog" 
+<div class="modal fade payment_modal" tabindex="-1" role="dialog"
         aria-labelledby="gridSystemModalLabel">
 </div>
-<div class="modal fade edit_payment_modal" tabindex="-1" role="dialog" 
+<div class="modal fade edit_payment_modal" tabindex="-1" role="dialog"
     aria-labelledby="gridSystemModalLabel">
 </div>
-<div class="modal fade pay_contact_due_modal" tabindex="-1" role="dialog" 
+<div class="modal fade pay_contact_due_modal" tabindex="-1" role="dialog"
         aria-labelledby="gridSystemModalLabel"></div>
 @stop
 @section('javascript')
@@ -465,7 +465,7 @@ $(document).on('click', '#print_ledger_pdf', function() {
 @endif
 
 <!-- document & note.js -->
-@include('documents_and_notes.document_and_note_js')
+@include('contact.documents_and_notes.document_and_note_js')
 @if(!empty($contact_view_tabs))
     @foreach($contact_view_tabs as $key => $tabs)
         @foreach ($tabs as $index => $value)
@@ -478,7 +478,7 @@ $(document).on('click', '#print_ledger_pdf', function() {
 
 <script type="text/javascript">
     $(document).ready( function(){
-        
+
         $('#purchase_list_filter_date_range').daterangepicker(
             dateRangeSettings,
             function (start, end) {

@@ -372,6 +372,7 @@ class SellReturnController extends Controller
     public function store(Request $request)
     {
 
+
         if (!auth()->user()->can('access_sell_return') && !auth()->user()->can('access_own_sell_return')) {
             abort(403, 'Unauthorized action.');
         }
@@ -391,7 +392,7 @@ class SellReturnController extends Controller
 
                 DB::beginTransaction();
 
-                $sell_return =  $this->transactionUtil->addSellReturn($input, $business_id, $user_id);
+                $sell_return =  $this->transactionUtil->addSellReturn($request,$input, $business_id, $user_id);
 
                 $receipt = $this->receiptContent($business_id, $sell_return->location_id, $sell_return->id);
 
@@ -402,6 +403,7 @@ class SellReturnController extends Controller
                             'receipt' => $receipt
                         ];
             }
+
         } catch (\Exception $e) {
             dd('ccc'.$e->getMessage());
             DB::rollBack();
@@ -416,8 +418,8 @@ class SellReturnController extends Controller
                             'msg' => $msg
                         ];
         }
-
         return $output;
+
     }
 
     /**

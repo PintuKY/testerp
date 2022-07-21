@@ -1,4 +1,5 @@
-<table class="table table-condensed">
+@if($medias)
+    <table class="table table-condensed">
     <tr>
         <td>
             @if(isFileImage($medias))
@@ -13,3 +14,4 @@
         </td>
     </tr>
 </table>
+@endif

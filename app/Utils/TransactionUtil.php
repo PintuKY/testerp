@@ -6154,7 +6154,7 @@ class TransactionUtil extends Util
         return $parent_payment;
     }
 
-    public function addSellReturn($input, $business_id, $user_id, $uf_number = true)
+    public function addSellReturn($request, $input, $business_id, $user_id, $uf_number = true)
     {
 
         /* $discount = [
@@ -6214,12 +6214,15 @@ class TransactionUtil extends Util
             $sell_return_data['status'] = 'final';
             $sell_return_data['created_by'] = $user_id;
             $sell_return_data['return_parent_id'] = $sell->id;
+            $sell_return_data['document'] = $this->uploadFiles($request, 'sell_document', 'documents');
+
             $sell_return = Transaction::create($sell_return_data);
 
             $this->activityLog($sell_return, 'added');
         } else {
             $sell_return_data['invoice_no'] = $sell_return_data['invoice_no'] ?? $sell_return->invoice_no;
             $sell_return_before = $sell_return->replicate();
+            $sell_return_data['document'] = $this->uploadFiles($request, 'sell_document', 'documents');
 
             $sell_return->update($sell_return_data);
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\JobForApiData;
 use Illuminate\Support\Facades\Artisan;
 
 class ManageDataOfProductOrderAndCustomerController extends Controller
@@ -15,8 +16,10 @@ class ManageDataOfProductOrderAndCustomerController extends Controller
      */
     public function syncAllDetails()
     {
-        Artisan::call("sync:order");
-        return back();
+        dispatch(new JobForApiData($business_location_id = null , $type = 'all'));
+
+        return back()->with('success', 'Sync All Successfully');
+
     }
 
      /**
@@ -26,10 +29,11 @@ class ManageDataOfProductOrderAndCustomerController extends Controller
      */
     public function syncOrderDetails($business_location_id)
     {
-        Artisan::call("sync:order",[
-            'business_location_id' => $business_location_id
-        ]);
-        return back();
+
+        dispatch(new JobForApiData($business_location_id , $type = 'order'));
+
+        return back()->with('success', 'Sync Order Successfully');
+
     }
 
 
@@ -40,10 +44,11 @@ class ManageDataOfProductOrderAndCustomerController extends Controller
      */
     public function syncProductDetails($business_location_id)
     {
-        Artisan::call("sync:product",[
-            'business_location_id' => $business_location_id
-        ]);
-        return back();
+
+        dispatch(new JobForApiData($business_location_id , $type = 'product'));
+
+        return back()->with('success', 'Sync Product Successfully');
+
     }
 
      /**
@@ -53,9 +58,8 @@ class ManageDataOfProductOrderAndCustomerController extends Controller
      */
     public function syncCustomerDetails($business_location_id)
     {
-        Artisan::call("sync:customer",[
-            'business_location_id' => $business_location_id
-        ]);
-        return back();
+        dispatch(new JobForApiData($business_location_id , $type = 'customer'));
+
+        return back()->with('success', 'Sync Customer Successfully');
     }
 }

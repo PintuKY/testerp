@@ -6,16 +6,17 @@ $(document).ready(function() {
             .autocomplete({
                 source: function(request, response) {
                     $.getJSON(
-                        '/products/list',
+                        '/supplier-products/list',
                         { location_id: $('#location_id').val(), term: request.term },
                         response
                     );
                 },
                 minLength: 2,
                 response: function(event, ui) {
+
                     if (ui.content.length == 1) {
                         ui.item = ui.content[0];
-                        if (ui.item.qty_available > 0 && ui.item.enable_stock == 1) {
+                        if (ui.item.qty_available > 0) {
                             $(this)
                                 .data('ui-autocomplete')
                                 ._trigger('select', 'autocompleteselect', ui);
@@ -33,7 +34,7 @@ $(document).ready(function() {
                 select: function(event, ui) {
                     if (ui.item.qty_available > 0) {
                         $(this).val(null);
-                        stock_transfer_product_row(ui.item.variation_id);
+                        stock_adjustment_product_row(ui.item.product_id);
                     } else {
                         alert(LANG.out_of_stock);
                     }
@@ -42,19 +43,11 @@ $(document).ready(function() {
             .autocomplete('instance')._renderItem = function(ul, item) {
             if (item.qty_available <= 0) {
                 var string = '<li class="ui-state-disabled">' + item.name;
-                if (item.type == 'variable') {
-                    string += '-' + item.variation;
-                }
-                string += ' (' + item.sub_sku + ') (Out of stock) </li>';
+                string += ' (' + item.sku + ') (Out of stock) </li>';
                 return $(string).appendTo(ul);
-            } else if (item.enable_stock != 1) {
-                return ul;
-            } else {
+            }  else {
                 var string = '<div>' + item.name;
-                if (item.type == 'variable') {
-                    string += '-' + item.variation;
-                }
-                string += ' (' + item.sub_sku + ') </div>';
+                string += ' (' + item.sku + ') </div>';
                 return $('<li>')
                     .append(string)
                     .appendTo(ul);
@@ -323,18 +316,7 @@ $(document).on('change', 'select.sub_unit', function() {
 
 function update_table_row(tr) {
     var quantity = parseFloat(__read_number(tr.find('input.product_quantity')));
-    var multiplier = 1;
-
-    if (tr.find('select.sub_unit').length) {
-        multiplier = parseFloat(
-            tr.find('select.sub_unit')
-                .find(':selected')
-                .data('multiplier')
-        );
-    }
-    quantity = quantity * multiplier;
-    
-    var unit_price = parseFloat(tr.find('input.hidden_base_unit_price').val());
+    var unit_price = parseFloat(__read_number(tr.find('input.product_unit_price')));
     var row_total = 0;
     if (quantity && unit_price) {
         row_total = quantity * unit_price;
@@ -398,3 +380,20 @@ $(document).on('submit', '#update_stock_transfer_status_form', function(e) {
 $(document).on('shown.bs.modal', '.view_modal', function() {
     __currency_convert_recursively($('.view_modal'));
 });
+
+function stock_adjustment_product_row(product_id) {
+    console.log(12356899554)
+    var row_index = parseInt($('#product_row_index').val());
+    var location_id = $('select#location_id').val();
+    $.ajax({
+        method: 'POST',
+        url: '/stock-adjustments/get_supplier_product_row',
+        data: { row_index: row_index, product_id: product_id, location_id: location_id },
+        dataType: 'html',
+        success: function(result) {
+            $('table#stock_adjustment_product_table tbody').append(result);
+            update_table_total();
+            $('#product_row_index').val(row_index + 1);
+        },
+    });
+}

@@ -2,21 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\BusinessLocation;
-
-use App\Models\PurchaseLine;
-use App\Models\Transaction;
-use App\Models\TransactionSellLinesPurchaseLines;
-use App\Utils\ModuleUtil;
-
-use App\Utils\ProductUtil;
-use App\Utils\TransactionUtil;
-use Datatables;
-
 use DB;
-use Illuminate\Http\Request;
-use Spatie\Activitylog\Models\Activity;
+
+use Datatables;
 use Carbon\Carbon;
+use App\Utils\ModuleUtil;
+use App\Utils\ProductUtil;
+
+use App\Models\Transaction;
+use App\Models\PurchaseLine;
+use Illuminate\Http\Request;
+
+use App\Utils\TransactionUtil;
+use App\Models\KitchenLocation;
+use App\Models\SupplierProduct;
+use App\Models\BusinessLocation;
+use App\Models\SupplierTransaction;
+use Spatie\Activitylog\Models\Activity;
+use App\Models\TransactionSellLinesPurchaseLines;
 
 class StockTransferController extends Controller
 {
@@ -161,11 +164,13 @@ class StockTransferController extends Controller
         }
 
         $business_locations = BusinessLocation::forDropdown($business_id);
+        $kitchen_locations  = KitchenLocation::pluck('name','id');
+
 
         $statuses = $this->stockTransferStatuses();
 
         return view('stock_transfer.create')
-                ->with(compact('business_locations', 'statuses'));
+                ->with(compact('business_locations', 'statuses','kitchen_locations'));
     }
 
     private function stockTransferStatuses()
@@ -188,23 +193,22 @@ class StockTransferController extends Controller
         if (!auth()->user()->can('purchase.create')) {
             abort(403, 'Unauthorized action.');
         }
-
         try {
             $business_id = $request->session()->get('user.business_id');
-
+            
             //Check if subscribed or not
             if (!$this->moduleUtil->isSubscribed($business_id)) {
                 return $this->moduleUtil->expiredResponse(action('StockTransferController@index'));
             }
-
+            
             DB::beginTransaction();
-
+            
             $input_data = $request->only([ 'location_id', 'ref_no', 'transaction_date', 'additional_notes', 'shipping_charges', 'final_total']);
             $status = $request->input('status');
             $user_id = $request->session()->get('user.id');
-
+            
             $input_data['total_before_tax'] = $input_data['final_total'];
-
+            
             $input_data['type'] = 'sell_transfer';
             $input_data['business_id'] = $business_id;
             $input_data['created_by'] = $user_id;
@@ -212,77 +216,48 @@ class StockTransferController extends Controller
             $input_data['shipping_charges'] = $this->productUtil->num_uf($input_data['shipping_charges']);
             $input_data['payment_status'] = 'paid';
             $input_data['status'] = $status == 'completed' ? 'final' : $status;
-
+            
             //Update reference count
-            $ref_count = $this->productUtil->setAndGetReferenceCount('stock_transfer');
+            $ref_count = $this->productUtil->setAndGetReferenceCount('C');
             //Generate reference number
             if (empty($input_data['ref_no'])) {
                 $input_data['ref_no'] = $this->productUtil->generateReferenceNumber('stock_transfer', $ref_count);
             }
-
+            
             $products = $request->input('products');
             $sell_lines = [];
             $purchase_lines = [];
-
+                
             if (!empty($products)) {
                 foreach ($products as $product) {
+                    $supplier_product = SupplierProduct::find($product['product_id']);
                     $sell_line_arr = [
-                                'product_id' => $product['product_id'],
-                                'variation_id' => $product['variation_id'],
-                                'quantity' => $this->productUtil->num_uf($product['quantity']),
-                                'item_tax' => 0,
-                                'tax_id' => null];
-
-                    if (!empty($product['product_unit_id'])) {
-                        $sell_line_arr['product_unit_id'] = $product['product_unit_id'];
+                        'product_id' => $product['product_id'],
+                        'quantity' => $this->productUtil->num_uf($product['quantity']),
+                        'item_tax' => 0,
+                        'tax_id' => null];
+                        
+                        if (!empty($product['product_unit_id'])) {
+                            $sell_line_arr['product_unit_id'] = $supplier_product->unit_id;
+                        }
+                        
+                        $purchase_line_arr = $sell_line_arr;
+                        
+                        
+                        $sell_line_arr['unit_price'] = $this->productUtil->num_uf($supplier_product->purchase_price);
+                        $sell_line_arr['unit_price_inc_tax'] = $sell_line_arr['unit_price'];
+                        
+                        $purchase_line_arr['purchase_price'] = $sell_line_arr['unit_price'];
+                        $purchase_line_arr['purchase_price_inc_tax'] = $sell_line_arr['unit_price'];
+                        
+                       unset($purchase_line_arr['product_unit_id']);
+                        
+                        $sell_lines[] = $sell_line_arr;
+                        $purchase_lines[] = $purchase_line_arr;
                     }
-                    if (!empty($product['sub_unit_id'])) {
-                        $sell_line_arr['sub_unit_id'] = $product['sub_unit_id'];
-                    }
-
-                    $purchase_line_arr = $sell_line_arr;
-
-                    if (!empty($product['base_unit_multiplier'])) {
-                        $sell_line_arr['base_unit_multiplier'] = $product['base_unit_multiplier'];
-                    }
-
-                    $sell_line_arr['unit_price'] = $this->productUtil->num_uf($product['unit_price']);
-                    $sell_line_arr['unit_price_inc_tax'] = $sell_line_arr['unit_price'];
-
-                    $purchase_line_arr['purchase_price'] = $sell_line_arr['unit_price'];
-                    $purchase_line_arr['purchase_price_inc_tax'] = $sell_line_arr['unit_price'];
-
-                    if (!empty($product['lot_no_line_id'])) {
-                        //Add lot_no_line_id to sell line
-                        $sell_line_arr['lot_no_line_id'] = $product['lot_no_line_id'];
-
-                        //Copy lot number and expiry date to purchase line
-                        $lot_details = PurchaseLine::find($product['lot_no_line_id']);
-                        $purchase_line_arr['lot_number'] = $lot_details->lot_number;
-                        $purchase_line_arr['mfg_date'] = $lot_details->mfg_date;
-                        $purchase_line_arr['exp_date'] = $lot_details->exp_date;
-                    }
-
-
-
-                    if (!empty($product['base_unit_multiplier'])) {
-                        $purchase_line_arr['quantity'] = $purchase_line_arr['quantity'] * $product['base_unit_multiplier'];
-                        $purchase_line_arr['purchase_price'] = $purchase_line_arr['purchase_price'] / $product['base_unit_multiplier'];
-                        $purchase_line_arr['purchase_price_inc_tax'] = $purchase_line_arr['purchase_price_inc_tax'] / $product['base_unit_multiplier'];
-                    }
-
-                    if (isset($purchase_line_arr['sub_unit_id']) && $purchase_line_arr['sub_unit_id'] == $purchase_line_arr['product_unit_id']) {
-                        unset($purchase_line_arr['sub_unit_id']);
-                    }
-                    unset($purchase_line_arr['product_unit_id']);
-
-                    $sell_lines[] = $sell_line_arr;
-                    $purchase_lines[] = $purchase_line_arr;
                 }
-            }
-
-            //Create Sell Transfer transaction
-            $sell_transfer = Transaction::create($input_data);
+                //Create Sell Transfer transaction
+                $sell_transfer = SupplierTransaction::create($input_data);
 
             //Create Purchase Transfer at transfer location
             $input_data['type'] = 'purchase_transfer';
@@ -290,42 +265,42 @@ class StockTransferController extends Controller
             $input_data['transfer_parent_id'] = $sell_transfer->id;
             $input_data['status'] = $status == 'completed' ? 'received' : $status;
 
-            $purchase_transfer = Transaction::create($input_data);
+            $purchase_transfer = SupplierTransaction::create($input_data);
 
             //Sell Product from first location
             if (!empty($sell_lines)) {
-                $this->transactionUtil->createOrUpdateSellLines($sell_transfer, $sell_lines, $input_data['location_id'], false, null, [], false);
+                $this->transactionUtil->createOrUpdateSupplierProductSellLines($sell_transfer, $sell_lines, $input_data['location_id'], false, null, [], false);
             }
 
-            //Purchase product in second location
+            // //Purchase product in second location
             if (!empty($purchase_lines)) {
-                $purchase_transfer->purchase_lines()->createMany($purchase_lines);
+                $purchase_transfer->supplierPurchaseLines()->createMany($purchase_lines);
             }
 
-            //Decrease product stock from sell location
-            //And increase product stock at purchase location
-            if ($status == 'completed') {
-                foreach ($products as $product) {
-                    if ($product['enable_stock']) {
+            // //Decrease product stock from sell location
+            // //And increase product stock at purchase location
+            // if ($status == 'completed') {
+            //     foreach ($products as $product) {
+            //         if ($product['enable_stock']) {
 
-                        $decrease_qty = $this->productUtil
-                                    ->num_uf($product['quantity']);
-                        if (!empty($product['base_unit_multiplier'])) {
-                            $decrease_qty = $decrease_qty * $product['base_unit_multiplier'];
-                        }
-                    }
-                }
+            //             $decrease_qty = $this->productUtil
+            //                         ->num_uf($product['quantity']);
+            //             if (!empty($product['base_unit_multiplier'])) {
+            //                 $decrease_qty = $decrease_qty * $product['base_unit_multiplier'];
+            //             }
+            //         }
+            //     }
 
-                //Adjust stock over selling if found
-                $this->productUtil->adjustStockOverSelling($purchase_transfer);
+            // //     //Adjust stock over selling if found
+            //     $this->productUtil->adjustStockOverSelling($purchase_transfer);
 
-                //Map sell lines with purchase lines
-                $business = ['id' => $business_id,
-                            'accounting_method' => $request->session()->get('business.accounting_method'),
-                            'location_id' => $sell_transfer->location_id
-                        ];
-                $this->transactionUtil->mapPurchaseSell($business, $sell_transfer->sell_lines, 'purchase');
-            }
+            //     //Map sell lines with purchase lines
+            //     $business = ['id' => $business_id,
+            //                 'accounting_method' => $request->session()->get('business.accounting_method'),
+            //                 'location_id' => $sell_transfer->location_id
+            //             ];
+            //     // $this->transactionUtil->mapPurchaseSell($business, $sell_transfer->sell_lines, 'purchase');
+            // }
 
             $this->transactionUtil->activityLog($sell_transfer, 'added');
 

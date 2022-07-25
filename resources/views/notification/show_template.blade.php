@@ -56,7 +56,9 @@
                     <div class="form-group">
                       {!! Form::label('email_body', __('lang_v1.email_body').':') !!}
                       {!! Form::textarea('email_body', $notification_template['email_body'], ['class' => 'form-control', 'placeholder' => __('lang_v1.email_body'), 'rows' => 6]); !!}
+
                     </div>
+
                     @if(config('constants.enable_download_pdf') && $notification_template['template_for'] == 'new_sale')
                         <label>
                           {!! Form::checkbox('attach_pdf', true, false, ['class' => 'input-icheck notification_type']); !!}

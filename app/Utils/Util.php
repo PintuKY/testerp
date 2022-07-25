@@ -819,7 +819,6 @@ dd($response);
      */
     public function replaceTags($business_id, $data, $transaction, $contact = null)
     {
-
         if (!empty($transaction) && !is_object($transaction)) {
             $transaction = Transaction::where('business_id', $business_id)
                             ->with(['contact', 'payment_lines'])
@@ -906,6 +905,11 @@ dd($response);
                 $logo_name = $business_location->logo;
                 $business_logo = !empty($logo_name) ? '<img width="200px" src="' . asset('storage/business_location_logos/' . $logo_name) . '" alt="Business Logo" >' : '';
                 $data[$key] = str_replace('{business_logo}', $business_logo, $data[$key]);
+            }
+            //Replace transaction status
+            if (strpos($value, '{sell_status}') !== false) {
+                $sell_status = $transaction->status;
+                $data[$key] = str_replace('{sell_status}', $sell_status, $data[$key]);
             }
 
             //Replace invoice_url

@@ -75,6 +75,7 @@ sell_table = $('#sell_table').DataTable({
             { data: 'mobile', name: 'contacts.mobile'},
             { data: 'business_location', name: 'bl.name'},
             { data: 'payment_status', name: 'payment_status'},
+            { data: 'sell_status', name: 'sell_status'},
             { data: 'payment_methods', orderable: false, "searchable": false},
             { data: 'final_total', name: 'final_total'},
             { data: 'total_paid', name: 'total_paid', "searchable": false},
@@ -119,7 +120,7 @@ sell_table = $('#sell_table').DataTable({
             $( row ).find('td:eq(6)').attr('class', 'clickable_td');
         }
     });
-    
+
     $('#only_subscriptions').on('ifChanged', function(event){
         sell_table.ajax.reload();
     });

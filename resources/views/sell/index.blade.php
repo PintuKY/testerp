@@ -46,6 +46,7 @@
                         <th>@lang('lang_v1.contact_no')</th>
                         <th>@lang('sale.location')</th>
                         <th>@lang('sale.payment_status')</th>
+                        <th>@lang('sale.sell_status')</th>
                         <th>@lang('lang_v1.payment_method')</th>
                         <th>@lang('sale.total_amount')</th>
                         <th>@lang('sale.total_paid')</th>
@@ -165,6 +166,7 @@ $(document).ready( function(){
             { data: 'conatct_name', name: 'conatct_name'},
             { data: 'mobile', name: 'contacts.mobile'},
             { data: 'business_location', name: 'bl.name'},
+            { data: 'sell_status', name: 'sell_status'},
             { data: 'payment_status', name: 'payment_status'},
             { data: 'payment_methods', orderable: false, "searchable": false},
             { data: 'final_total', name: 'final_total'},

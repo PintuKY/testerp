@@ -57,4 +57,27 @@ return [
         3 => 'Both',
     ],
 
+    'user_status' => [
+        'final',
+        'processing',
+        'completed',
+        'cancelled',
+        'payment_pending',
+        'refund',
+        'failed',
+    ],
+    'admin_status' => [
+        'final',
+        'processing',
+        'completed',
+        'cancelled',
+        'payment_pending',
+        'refund',
+        'failed',
+    ],
+    'chef_status' => [
+        'final',
+        'completed',
+    ],
+
 ];

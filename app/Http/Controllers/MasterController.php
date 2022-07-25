@@ -48,12 +48,12 @@ class MasterController extends Controller
     {
         $role = 'user';
         $masterListCols = config('masterlist.' . $role . '_columns');
+        $masterListStatus= config('masterlist.' . $role . '_status');
         $business_id = request()->session()->get('user.business_id');
-
 
         if (request()->ajax()) {
             $sells = MasterList::with(['transasction','transaction_sell_lines','transaction_sell_lines.transactionSellLinesVariants']
-            );
+            )->whereIn('sell_status',$masterListStatus);
 
             if (!empty(request()->start_date) && !empty(request()->end_date)) {
                 $start = request()->start_date;

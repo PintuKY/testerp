@@ -28,6 +28,7 @@ class AppConstant
     const YESTERDAY = 'yesterday';
     const CUSTOMER = 'customer';
     const MAIN_PRICE = 'Main Price';
+    const REFUND = '4';
 
 }
 

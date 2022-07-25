@@ -479,12 +479,8 @@ class TransactionUtil extends Util
 
                 //Update purchase order line quantity received
                 $this->updateSalesOrderLine($line['so_line_id'], $line['quantity'], 0);
-
-
             }
         }
-
-
         foreach ($tra_sell_days as $sell_days) {
 
             $master_list_less =
@@ -843,9 +839,9 @@ class TransactionUtil extends Util
             'updated_at' => Carbon::now()->toDateTimeString()
         ]);
         if ($master_list_less_id) {
-            MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_days->id])->whereNotIn('id', $master_list_less_id)->forceDelete();
+            MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_days->id])->whereNotIn('id', $master_list_less_id)->delete();
         } else {
-            MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_days->id])->forceDelete();
+            MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_days->id])->delete();
         }
         TransactionSellLinesDay::where('transaction_sell_lines_id', $sell_days->id)->delete();
         foreach ($new_days as $day) {
@@ -978,9 +974,9 @@ class TransactionUtil extends Util
             'updated_at' => Carbon::now()->toDateTimeString()
         ]);
         if ($master_list_less_id) {
-            MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_days->id])->whereNotIn('id', $master_list_less_id)->forceDelete();
+            MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_days->id])->whereNotIn('id', $master_list_less_id)->delete();
         } else {
-            MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_days->id])->forceDelete();
+            MasterList::where(['transaction_id' => $transaction->id, 'transaction_sell_lines_id' => $sell_days->id])->delete();
         }
         TransactionSellLinesDay::where('transaction_sell_lines_id', $sell_days->id)->delete();
         $date = [];
@@ -5900,9 +5896,9 @@ class TransactionUtil extends Util
                 'transactions.is_export'
             );
 
-        if ($sale_type == 'sell') {
+        /*if ($sale_type == 'sell') {
             $sells->where('transactions.status', 'final');
-        }
+        }*/
 
         return $sells;
     }

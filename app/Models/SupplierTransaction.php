@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\SupplierProduct;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\SupplierTransactionSellLine;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class SupplierTransaction extends Model
 {   
@@ -18,7 +20,15 @@ class SupplierTransaction extends Model
     {
         return $this->hasMany(SupplierStockAdjustmentLine::class,'supplier_transaction_id');
     }
+    public function sell_lines()
+    {
+        return $this->hasMany(SupplierTransactionSellLine::class);
+    }
 
+    public function product()
+    {
+        return $this->belongsTo(SupplierProduct::class,'product_id');
+    }
     public static function supplierTransactionTypes()
     {
         return  [

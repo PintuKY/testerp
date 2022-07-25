@@ -237,7 +237,7 @@ class StockAdjustmentController extends Controller
 
                 }
             }
-                // $this->transactionUtil->mapPurchaseSell($business, $stock_adjustment->stock_adjustment_lines, 'stock_adjustment');
+                $this->transactionUtil->mapPurchaseSell($business, $stock_adjustment->stock_adjustment_lines, 'stock_adjustment');
                 $this->transactionUtil->activityLog($stock_adjustment, 'added', null, [], false);
             }
 

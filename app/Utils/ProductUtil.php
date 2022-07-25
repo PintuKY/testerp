@@ -1599,40 +1599,27 @@ class ProductUtil extends Util
         }
     }
 
-    /**
-     * Adjusts Supplier stock over selling with purchases, opening stocks andstock transfers
-     * Also maps with respective sells
-     *
-     * @param obj $supplierTransaction
-     *
-     * @return void
-     */
-    public function adjustSupplierStockOverSelling($supplierTransaction)
+    public function adjustSupplierProductStockOverSelling($transaction)
     {
-        if ($supplierTransaction->status != 'received') {
+        if ($transaction->status != 'received') {
             return false;
         }
-
-        foreach ($supplierTransaction->supplierPurchaseLines as $purchase_line) {
-            if ($purchase_line->product->enable_stock == 1) {
-
-                //Available quantity in the purchase line
-                $purchase_line_qty_avlbl = $purchase_line->quantity_remaining;
-
+        foreach ($transaction->supplierPurchaseLines as $purchase_line) {
+            // if ($purchase_line->product->enable_stock == 1) {
+        //Available quantity in the purchase line
+                $purchase_line_qty_avlbl = $purchase_line->getQuantityRemainingAttribute();
                 if ($purchase_line_qty_avlbl <= 0) {
                     continue;
                 }
 
                 //update sell line purchase line mapping
-                $sell_line_purchase_lines =
-                    SupplierTransactionSellLinesPurchaseLines::where('purchase_line_id', 0)
-                        ->join('supplier_transaction_sell_lines as stsl', 'stsl.id', '=', 'supplier_transaction_sell_lines_purchase_lines.sell_line_id')
-                        ->join('supplier_transactions as st', 'stsl.supplier_transaction_id', '=', 'st.id')
-                        ->where('st.location_id', $supplierTransaction->location_id)
-                        ->where('stsl.variation_id', $purchase_line->variation_id)
-                        ->where('stsl.product_id', $purchase_line->product_id)
-                        ->select('supplier_transaction_sell_lines_purchase_lines.*')
-                        ->get();
+                $sell_line_purchase_lines = SupplierTransactionSellLinesPurchaseLines::where('purchase_line_id', $purchase_line->id)
+                ->join('supplier_transaction_sell_lines as stsl', 'stsl.id', '=', 'supplier_transaction_sell_lines_purchase_lines.sell_line_id')
+                ->join('supplier_transactions as st', 'stsl.supplier_transaction_id', '=', 'st.id')
+                ->where('st.location_id', $transaction->location_id)
+                ->where('stsl.product_id', $purchase_line->product_id)
+                ->select('supplier_transaction_sell_lines_purchase_lines.*')
+                ->get();
 
                 foreach ($sell_line_purchase_lines as $slpl) {
                     if ($purchase_line_qty_avlbl > 0) {
@@ -1662,7 +1649,7 @@ class ProductUtil extends Util
                         }
                     }
                 }
-            }
+            // }
         }
     }
 

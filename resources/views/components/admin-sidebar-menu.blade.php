@@ -101,7 +101,7 @@
         <ul class="treeview-menu">
             <li><a href="{{route('sells.index')}}"><i class="fa fas fa-list"></i> <span>All sales</span></a></li>
             <li><a href="{{route('sells.create')}}"><i class="fa fas fa-plus-circle"></i> <span>Add Sale</span></a></li>
-            <li><a href="{{route('pos.index')}}"><i class="fa fas fa-list"></i> <span>List POS</span></a></li>
+            {{--<li><a href="{{route('pos.index')}}"><i class="fa fas fa-list"></i> <span>List POS</span></a></li>
             <li><a href="{{route('pos.create')}}"><i class="fa fas fa-plus-circle"></i> <span>POS</span></a></li>
             <li><a href="{{route('sells.create',['status' => 'draft'])}}"><i class="fa fas fa-plus-circle"></i> <span>Add Draft</span></a>
             </li>
@@ -110,12 +110,12 @@
             <li><a href="{{route('sells.create',['status' => 'quotation'])}}"><i class="fa fas fa-plus-circle"></i>
                     <span>Add Quotation</span></a></li>
             <li><a href="{{route('sells.quotations')}}"><i class="fa fas fa-pen-square"></i>
-                    <span>List quotations</span></a></li>
+                    <span>List quotations</span></a></li>--}}
             <li><a href="{{route('sell-return.index')}}"><i class="fa fas fa-undo"></i>
                     <span>List Sell Return</span></a></li>
             <li><a href="{{route('shipments')}}"><i class="fa fas fa-truck"></i> <span>Shipments</span></a></li>
             <li><a href="{{route('discount.index')}}"><i class="fa fas fa-percent"></i> <span>Discounts</span></a></li>
-            <li><a href="{{route('sales.import')}}"><i class="fa fas fa-file-import"></i> <span>Import Sales</span></a>
+           {{-- <li><a href="{{route('sales.import')}}"><i class="fa fas fa-file-import"></i> <span>Import Sales</span></a>--}}
             <li><a href="{{route('master.index')}}"><i class="fa fas fa-file-import"></i> <span>Master List</span></a>
             </li>
         </ul>

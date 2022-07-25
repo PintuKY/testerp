@@ -443,6 +443,7 @@ return [
    'available_tags' => 'Available Tags',
    'send_notification' => 'Send Notification',
    'new_sale_notification' => 'New Sale Notification',
+   'sale_notification' => 'Sale Notification',
    'send_email_only' => 'Send Email Only',
    'send_sms_only' => 'Send SMS Only',
    'send_both_email_n_sms' => 'Send Both Email & SMS',

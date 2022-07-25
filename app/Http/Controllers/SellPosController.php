@@ -33,6 +33,7 @@ use App\Models\BusinessLocation;
 use App\Models\Category;
 use App\Models\Contact;
 use App\Models\CustomerGroup;
+use App\Models\MasterList;
 use App\Models\Media;
 use App\Models\Product;
 use App\Models\SellingPriceGroup;
@@ -41,6 +42,7 @@ use App\Models\Transaction;
 use App\Models\TransactionSellLine;
 use App\Models\TypesOfService;
 use App\Models\User;
+use App\Utils\AppConstant;
 use App\Utils\BusinessUtil;
 use App\Utils\CashRegisterUtil;
 use App\Utils\ContactUtil;
@@ -1182,6 +1184,11 @@ class SellPosController extends Controller
 
                 $deleted_lines = $this->transactionUtil->createOrUpdateSellLines($input,$transaction, $input['products'], $input['location_id'], /*$input['number_of_days'],$input['time_slot'],*/ $status_before,'');
 
+                if($transaction->status != ''){
+                    MasterList::where('transaction_id',$transaction->id)->whereDate('delivery_date', '>=', date('Y-m-d'))->update([
+                        'sell_status'=>$transaction->status
+                    ]);
+                }
                 //Update update lines
                 $is_credit_sale = isset($input['is_credit_sale']) && $input['is_credit_sale'] == 1 ? true : false;
                 $new_sales_order_ids = $transaction->sales_order_ids ?? [];

@@ -282,6 +282,7 @@ class NotificationUtil extends Util
 
                 $data[$key] = str_replace('{business_logo}', $business_logo, $data[$key]);
             }
+
         }
         return $data;
     }

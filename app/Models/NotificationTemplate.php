@@ -50,7 +50,7 @@ class NotificationTemplate extends Model
                 'name' => __('lang_v1.new_sale'),
                 'extra_tags' => [
                     ['{business_name}', '{business_logo}'],
-                    ['{invoice_number}', '{invoice_url}', '{total_amount}', '{paid_amount}', '{due_amount}', '{cumulative_due_amount}', '{due_date}'],
+                    ['{sell_status}','{invoice_number}', '{invoice_url}', '{total_amount}', '{paid_amount}', '{due_amount}', '{cumulative_due_amount}', '{due_date}'],
                     ['{location_name}', '{location_address}', '{location_email}', '{location_phone}', '{location_custom_field_1}', '{location_custom_field_2}', '{location_custom_field_3}', '{location_custom_field_4}'],
                     ['{contact_name}'],
                     ['{shipping_custom_field_1}', '{shipping_custom_field_2}', '{shipping_custom_field_3}', '{shipping_custom_field_4}', '{shipping_custom_field_5}']
@@ -70,7 +70,6 @@ class NotificationTemplate extends Model
                     ['{business_name}', '{business_logo}'],
                     ['{invoice_number}', '{due_amount}', '{cumulative_due_amount}', '{due_date}'],
                     ['{contact_name}']
-
                 ]
             ],
             'new_booking' => [
@@ -147,7 +146,7 @@ class NotificationTemplate extends Model
 
     public static function notificationTags()
     {
-        return ['{contact_name}', '{invoice_number}', '{total_amount}',
+        return ['{sell_type}','{contact_name}', '{invoice_number}', '{total_amount}',
         '{paid_amount}', '{due_amount}', '{business_name}', '{business_logo}', '{cumulative_due_amount}', '{due_date}', '{contact_business_name}'];
     }
 

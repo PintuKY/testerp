@@ -29,7 +29,6 @@ $(document).ready(function() {
                 if (files.length > 0) {
                     data = new FormData(pos_form_obj.get(0));
                     data.append('file', files[0]);
-
                     $.ajax({
                         method: 'POST',
                         url: url,

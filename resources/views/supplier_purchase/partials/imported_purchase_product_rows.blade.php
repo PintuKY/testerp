@@ -1,13 +1,11 @@
 @foreach($formatted_data as $data)
-	@include('purchase.partials.purchase_entry_row', [
-		'variations' => [$data['variation']],
-		'product' => $data['product'],
+	@include('supplier_purchase.partials.purchase_entry_row', [
+		'supplier_products' => [$data['supplier_product']],
 		'row_count' => $row_count,
-		'variation_id' => $data['variation']->id,
+		'supplier_product_id' => $data['supplier_product']->id,
 		'taxes' => $taxes,
 		'currency_details' => $currency_details,
 		'hide_tax' => $hide_tax,
-		'sub_units' => $data['sub_units'],
 		'imported_data' =>  $data
 	])
 	@php

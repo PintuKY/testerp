@@ -6,7 +6,7 @@ $(document).ready(function() {
             .autocomplete({
                 source: function(request, response) {
                     $.getJSON(
-                        '/products/list',
+                        '/supplier-products/list',
                         { location_id: $('#location_id').val(), term: request.term },
                         response
                     );
@@ -15,7 +15,7 @@ $(document).ready(function() {
                 response: function(event, ui) {
                     if (ui.content.length == 1) {
                         ui.item = ui.content[0];
-                        if (ui.item.qty_available > 0 && ui.item.enable_stock == 1) {
+                        if (ui.item.qty_available > 0) {
                             $(this)
                                 .data('ui-autocomplete')
                                 ._trigger('select', 'autocompleteselect', ui);
@@ -33,7 +33,7 @@ $(document).ready(function() {
                 select: function(event, ui) {
                     if (ui.item.qty_available > 0) {
                         $(this).val(null);
-                        stock_adjustment_product_row(ui.item.variation_id);
+                        stock_adjustment_product_row(ui.item.product_id);
                     } else {
                         alert(LANG.out_of_stock);
                     }
@@ -42,19 +42,11 @@ $(document).ready(function() {
             .autocomplete('instance')._renderItem = function(ul, item) {
             if (item.qty_available <= 0) {
                 var string = '<li class="ui-state-disabled">' + item.name;
-                if (item.type == 'variable') {
-                    string += '-' + item.variation;
-                }
-                string += ' (' + item.sub_sku + ') (Out of stock) </li>';
+                string += ' (' + item.sku + ') (Out of stock) </li>';
                 return $(string).appendTo(ul);
-            } else if (item.enable_stock != 1) {
-                return ul;
-            } else {
+            }  else {
                 var string = '<div>' + item.name;
-                if (item.type == 'variable') {
-                    string += '-' + item.variation;
-                }
-                string += ' (' + item.sub_sku + ') </div>';
+                string += ' (' + item.sku + ') </div>';
                 return $('<li>')
                     .append(string)
                     .appendTo(ul);
@@ -120,7 +112,7 @@ $(document).ready(function() {
             { data: 'action', name: 'action' },
             { data: 'transaction_date', name: 'transaction_date' },
             { data: 'ref_no', name: 'ref_no' },
-            { data: 'location_name', name: 'BL.name' },
+            { data: 'location_name', name: 'KL.name' },
             { data: 'adjustment_type', name: 'adjustment_type' },
             { data: 'final_total', name: 'final_total' },
             { data: 'total_amount_recovered', name: 'total_amount_recovered' },
@@ -160,13 +152,13 @@ $(document).ready(function() {
     });
 });
 
-function stock_adjustment_product_row(variation_id) {
+function stock_adjustment_product_row(product_id) {
     var row_index = parseInt($('#product_row_index').val());
     var location_id = $('select#location_id').val();
     $.ajax({
         method: 'POST',
-        url: '/stock-adjustments/get_product_row',
-        data: { row_index: row_index, variation_id: variation_id, location_id: location_id },
+        url: '/stock-adjustments/get_supplier_product_row',
+        data: { row_index: row_index, product_id: product_id, location_id: location_id },
         dataType: 'html',
         success: function(result) {
             $('table#stock_adjustment_product_table tbody').append(result);

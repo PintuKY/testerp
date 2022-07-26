@@ -3,9 +3,11 @@
 namespace App\Console\Commands;
 
 use App\Models\ApiSetting;
+use App\Models\BusinessLocation;
 use App\Models\Contact;
 use Exception;
 use Illuminate\Console\Command;
+use App\Utils\ContactUtil;
 
 class SyncCustomer extends Command
 {
@@ -28,15 +30,18 @@ class SyncCustomer extends Command
      *
      * @return int
      */
-    public function handle()
+    protected $contactUtil;
+
+    public function handle(ContactUtil $contactUtil)
     {
+        $this->contactUtil = $contactUtil;
         $business_location_id = $this->argument('business_location_id');
         if ($business_location_id !== 'all') {
             $this->syncCustomerDetails($business_location_id);
         } else {
             $apiSettings = ApiSetting::get();
             foreach ($apiSettings as $apiSetting) {
-                $this->syncCustomerDetails($apiSetting->id);
+                $this->syncCustomerDetails($apiSetting->business_locations_id);
             }
         }
         return true;
@@ -49,18 +54,17 @@ class SyncCustomer extends Command
      */
     public function syncCustomerDetails($bussiness_location_id)
     {
-
         $i = 1;
         while (true) {
             try {
-                $customerEndpoint = config("api.customer_endpoint") . '?page=' . $i;
+                $customerEndpoint = config("api.customer_endpoint") . '?page=' . $i. '&orderby=registered_date&order=desc';
                 $customers = getData(getConfiguration($bussiness_location_id), $customerEndpoint);
                 if (count($customers) <= 0) {
                     break;
                 }
                 if (isset($customers)) {
                     foreach ($customers as $customer) {
-                        Contact::updateOrCreate(
+                        $contact = Contact::updateOrCreate(
                             [
                                 'contact_id' => $customer->id,
                                 'business_location_id' => $bussiness_location_id
@@ -73,7 +77,7 @@ class SyncCustomer extends Command
                                 'first_name' => $customer->first_name,
                                 'last_name' => $customer->last_name,
                                 'email' => $customer->email,
-                                'contact_id' => $customer->id,
+                                'contact_id' => $this->getContactId($bussiness_location_id).''.$customer->id,
                                 'city' => optional($customer->billing)->city,
                                 'state' => optional($customer->billing)->state,
                                 'country' => optional($customer->billing)->country,
@@ -95,6 +99,12 @@ class SyncCustomer extends Command
 
                             ]
                         );
+                        if($contact->wasRecentlyCreated){
+                            $this->contactUtil->activityLog($contact, 'added');
+                        } else {
+                            $this->contactUtil->activityLog($contact, 'updated');
+                        }
+
                     }
                 } else {
                     break;
@@ -104,5 +114,10 @@ class SyncCustomer extends Command
             }
             $i++;
         }
+    }
+
+    public function getContactId($business_location_id)
+    {
+        return BusinessLocation::where('id', $business_location_id)->value('location_id');
     }
 }

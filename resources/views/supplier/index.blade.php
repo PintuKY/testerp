@@ -114,6 +114,7 @@
 <!-- /.content -->
 @stop
 @section('javascript')
+<script src="{{ asset('js/supplier.js?v=' . $asset_v) }}"></script>
 @if(!empty($api_key))
 <script>
   // This example adds a search box to a map, using the Google Place Autocomplete

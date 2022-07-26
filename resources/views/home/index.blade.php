@@ -15,12 +15,12 @@
           <select class="btn btn-success set-business-location-id">
             <option value="">Select</option>
               @foreach (getApiSettingData() as $item)
-                <option value="{{ $item->id??'' }}">{{ $item->url??'' }}</option>
+                <option value="{{ $item->business_locations_id??'' }}">{{ $item->url??'' }}</option>
               @endforeach
           </select>
-          <a class="btn btn-warning syncCustomer" href="">Sync Customer</a>
-          <a class="btn btn-warning syncProduct" href="">Sync Product</a>
-          <a class="btn btn-warning syncOrder" href="">Sync Order</a>
+          {{-- <a class="btn btn-warning syncCustomer" href="">Sync Customer</a> --}}
+          {{-- <a class="btn btn-warning syncProduct" href="">Sync Product</a> --}}
+          {{-- <a class="btn btn-warning syncOrder" href="">Sync Order</a> --}}
           <a class="btn btn-warning syncAll" href="{{route('sync.all')}}">Sync All</a>
         </label>
 </section>

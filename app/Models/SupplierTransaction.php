@@ -14,6 +14,10 @@ class SupplierTransaction extends Model
     protected $table = 'supplier_transactions';
     protected $guarded = ['id'];
 
+    public function stock_adjustment_lines()
+    {
+        return $this->hasMany(SupplierStockAdjustmentLine::class,'supplier_transaction_id');
+    }
 
     public static function supplierTransactionTypes()
     {
@@ -34,7 +38,7 @@ class SupplierTransaction extends Model
     
     public function location()
     {
-        return $this->belongsTo(\App\Models\BusinessLocation::class, 'location_id');
+        return $this->belongsTo(\App\Models\KitchenLocation::class, 'location_id');
     }
 
     public function supplierPurchaseLines()

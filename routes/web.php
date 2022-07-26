@@ -111,13 +111,6 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
 
     Route::resource('products', 'ProductController');
 
-    Route::post('/import-purchase-products', 'PurchaseController@importPurchaseProducts');
-    Route::post('/purchases/update-status', 'PurchaseController@updateStatus');
-    Route::get('/purchases/get_products', 'PurchaseController@getProducts');
-    Route::get('/purchases/get_suppliers', 'PurchaseController@getSuppliers');
-    Route::post('/purchases/get_purchase_entry_row', 'PurchaseController@getPurchaseEntryRow');
-    Route::post('/purchases/check_ref_number', 'PurchaseController@checkRefNumber');
-    Route::resource('purchases', 'PurchaseController')->except(['show']);
 
     Route::get('/toggle-subscription/{id}', 'SellPosController@toggleRecurringInvoices');
     Route::post('/sells/pos/get-types-of-service-details', 'SellPosController@getTypesOfServiceDetails');
@@ -254,6 +247,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
 
     Route::get('/stock-adjustments/remove-expired-stock/{purchase_line_id}', 'StockAdjustmentController@removeExpiredStock');
     Route::post('/stock-adjustments/get_product_row', 'StockAdjustmentController@getProductRow');
+    Route::post('/stock-adjustments/get_supplier_product_row', 'StockAdjustmentController@getSupplierProductRow');
     Route::resource('stock-adjustments', 'StockAdjustmentController');
 
     Route::get('/cash-register/register-details', 'CashRegisterController@getRegisterDetails');
@@ -392,7 +386,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::resource('note-documents', 'DocumentAndNoteController');
     Route::resource('purchase-order', 'PurchaseOrderController');
     Route::get('get-purchase-orders/{contact_id}', 'PurchaseOrderController@getPurchaseOrders');
-    Route::get('get-purchase-order-lines/{purchase_order_id}', 'PurchaseController@getPurchaseOrderLines');
+    Route::get('get-purchase-order-lines/{purchase_order_id}', 'PurchaseOrderController@getPurchaseOrderLines');
     Route::get('edit-purchase-orders/{id}/status', 'PurchaseOrderController@getEditPurchaseOrderStatus');
     Route::put('update-purchase-orders/{id}/status', 'PurchaseOrderController@postEditPurchaseOrderStatus');
     Route::resource('sales-order', 'SalesOrderController')->only(['index']);
@@ -412,13 +406,23 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/suppliers/ledger', 'SupplierController@getLedger');
     Route::get('/supplier/payments/{supplier_id}', 'SupplierController@getSupplierPayments')->name('supplier.payments');
 
+    // supplier product 
+    Route::get('supplier-products/list', 'SupplierProductController@getProducts');
+    Route::resource('supplier-products', 'SupplierProductController');
+
+    // supplier product unit
+    Route::resource('supplier-product-units', 'SupplierProductUnitController');
+    Route::resource('supplier-product-categories', 'SupplierProductCategoryController');
+
     // supplier purchases modules
     Route::post('/supplier-purchases/update-status', 'SupplierPurchaseController@updateStatus');
     Route::get('/supplier-purchases/get_products', 'SupplierPurchaseController@getProducts');
     Route::get('/suppliers-purchases/get_suppliers', 'SupplierPurchaseController@getSuppliers');
-    // Route::post('/supplier-purchases/get_purchase_entry_row', 'SupplierPurchaseController@getPurchaseEntryRow');
+    Route::post('/supplier-purchases/get_purchase_entry_row', 'SupplierPurchaseController@getPurchaseEntryRow');
     // Route::post('/supplier-purchases/check_ref_number', 'SupplierPurchaseController@checkRefNumber');
     Route::resource('/supplier-purchases', 'SupplierPurchaseController');
+    Route::post('/import-supplier-purchase-products', 'SupplierPurchaseController@importPurchaseProducts');
+
 
 
     //Supplier Transaction payments...
@@ -446,7 +450,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
 Route::middleware(['EcomApi'])->prefix('api/ecom')->group(function () {
     Route::get('products/{id?}', 'ProductController@getProductsApi');
     //Route::get('categories', 'CategoryController@getCategoriesApi');
-    Route::get('brands', 'BrandController@getBrandsApi');
+    // Route::get('brands', 'BrandController@getBrandsApi');
     Route::post('customers', 'ContactController@postCustomersApi');
     Route::get('settings', 'BusinessController@getEcomSettings');
     Route::get('variations', 'ProductController@getVariationsApi');
@@ -462,8 +466,6 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone'])->group(function () {
     Route::get('/load-more-notifications', 'HomeController@loadMoreNotifications');
     Route::get('/get-total-unread', 'HomeController@getTotalUnreadNotifications');
-    Route::get('/purchases/print/{id}', 'PurchaseController@printInvoice');
-    Route::get('/purchases/{id}', 'PurchaseController@show');
     Route::get('/download-purchase-order/{id}/pdf', 'PurchaseOrderController@downloadPdf')->name('purchaseOrder.downloadPdf');
     Route::get('/sells/{id}', 'SellController@show');
     Route::get('/master_list/{id}/{sell_id}', 'MasterController@getMasterList');

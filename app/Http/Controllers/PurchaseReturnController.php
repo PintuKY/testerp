@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AccountTransaction;
 use App\Models\PurchaseLine;
 use App\Models\Transaction;
+use App\Utils\AppConstant;
 use App\Utils\ProductUtil;
 use App\Utils\TransactionUtil;
 use Illuminate\Http\Request;
@@ -293,7 +294,7 @@ class PurchaseReturnController extends Controller
                 $return_transaction_data['business_id'] = $business_id;
                 $return_transaction_data['location_id'] = $purchase->location_id;
                 $return_transaction_data['type'] = 'purchase_return';
-                $return_transaction_data['status'] = 'final';
+                $return_transaction_data['status'] = AppConstant::FINAL;
                 $return_transaction_data['supplier_id'] = $purchase->supplier_id;
                 $return_transaction_data['transaction_date'] = Carbon::now();
                 $return_transaction_data['created_by'] = request()->session()->get('user.id');

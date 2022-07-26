@@ -58,26 +58,26 @@ return [
     ],
 
     'user_status' => [
-        'final',
-        'processing',
-        'completed',
-        'cancelled',
-        'payment_pending',
-        'refund',
-        'failed',
+        \App\Utils\AppConstant::FINAL,
+        \App\Utils\AppConstant::PROCESSING,
+        \App\Utils\AppConstant::COMPLETED,
+        \App\Utils\AppConstant::CANCELLED,
+        \App\Utils\AppConstant::PAYMENT_PENDING,
+        \App\Utils\AppConstant::REFUND,
+        \App\Utils\AppConstant::FAILED,
     ],
     'admin_status' => [
-        'final',
-        'processing',
-        'completed',
-        'cancelled',
-        'payment_pending',
-        'refund',
-        'failed',
+        \App\Utils\AppConstant::FINAL,
+        \App\Utils\AppConstant::PROCESSING,
+        \App\Utils\AppConstant::COMPLETED,
+        \App\Utils\AppConstant::CANCELLED,
+        \App\Utils\AppConstant::PAYMENT_PENDING,
+        \App\Utils\AppConstant::REFUND,
+        \App\Utils\AppConstant::FAILED,
     ],
-    'chef_status' => [
-        'final',
-        'completed',
+    'saif_status' => [
+        \App\Utils\AppConstant::FINAL,
+        \App\Utils\AppConstant::COMPLETED,
     ],
 
 ];

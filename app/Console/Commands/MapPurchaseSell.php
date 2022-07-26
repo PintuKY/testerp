@@ -7,6 +7,7 @@ use App\Models\Transaction;
 use App\Models\TransactionSellLinesPurchaseLines;
 use App\Models\PurchaseLine;
 
+use App\Utils\AppConstant;
 use Illuminate\Console\Command;
 
 use App\Utils\TransactionUtil;
@@ -87,7 +88,7 @@ class MapPurchaseSell extends Command
                 $transactions = Transaction::where('business_id', $business->id)
                                     ->with('sell_lines')
                                     ->where('type', 'sell')
-                                    ->where('status', 'final')
+                                    ->whereIn('status', [AppConstant::FINAL,AppConstant::COMPLETED,AppConstant::PROCESSING])
                                     ->orderBy('created_at', 'asc')
                                     ->get();
 

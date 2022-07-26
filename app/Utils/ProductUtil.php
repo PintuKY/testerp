@@ -321,7 +321,9 @@ class ProductUtil extends Util
             'T.id'
         )
             ->where('T.type', 'sell')
-            ->where('T.status', 'final')
+            ->where('T.status', AppConstant::FINAL)
+            ->orWhere('T.status', AppConstant::PROCESSING)
+            ->orWhere('T.status', AppConstant::COMPLETED)
             ->where('T.business_id', $product->business_id)
             ->where('transaction_sell_lines.product_id', $product->id)
             ->whereNotIn('transaction_sell_lines.variation_id', $variations_ids)
@@ -652,7 +654,9 @@ class ProductUtil extends Util
             ->leftjoin('units as u', 'u.id', '=', 'p.unit_id')
             ->where('transactions.business_id', $business_id)
             ->where('transactions.type', 'sell')
-            ->where('transactions.status', 'final');
+            ->where('transactions.status', AppConstant::FINAL)
+            ->orWhere('transactions.status', AppConstant::PROCESSING)
+            ->orWhere('transactions.status', AppConstant::COMPLETED);
 
         $permitted_locations = auth()->user()->permitted_locations();
         if ($permitted_locations != 'all') {
@@ -755,33 +759,37 @@ class ProductUtil extends Util
      */
     public function adjustProductStockForInvoice($status_before, $transaction, $input, $uf_data = true)
     {
-        if ($status_before == 'final' && $transaction->status == 'draft') {
-            foreach ($input['products'] as $product) {
-                if (!empty($product['transaction_sell_lines_id'])) {
-                    //$this->updateProductQuantity($input['location_id'], $product['product_id'], $product['variation_id'], $product['quantity'], 0, null, false);
+        if ($status_before == AppConstant::FINAL || $status_before == AppConstant::COMPLETED || $status_before == AppConstant::PROCESSING) {
+            if($transaction->status == AppConstant::PAYMENT_PENDING){
+                foreach ($input['products'] as $product) {
+                    if (!empty($product['transaction_sell_lines_id'])) {
+                        //$this->updateProductQuantity($input['location_id'], $product['product_id'], $product['variation_id'], $product['quantity'], 0, null, false);
 
-                    //Adjust quantity for combo items.
-                    if (isset($product['product_type']) && $product['product_type'] == 'combo') {
-                        //Giving quantity in minus will increase the qty
-                        foreach ($product['combo'] as $value) {
-                            //$this->updateProductQuantity($input['location_id'], $value['product_id'], $value['variation_id'], $value['quantity'], 0, null, false);
+                        //Adjust quantity for combo items.
+                        if (isset($product['product_type']) && $product['product_type'] == 'combo') {
+                            //Giving quantity in minus will increase the qty
+                            foreach ($product['combo'] as $value) {
+                                //$this->updateProductQuantity($input['location_id'], $value['product_id'], $value['variation_id'], $value['quantity'], 0, null, false);
+                            }
+
+                            // $this->updateEditedSellLineCombo($product['combo'], $input['location_id']);
                         }
-
-                        // $this->updateEditedSellLineCombo($product['combo'], $input['location_id']);
                     }
                 }
             }
-        } elseif ($status_before == 'draft' && $transaction->status == 'final') {
-            foreach ($input['products'] as $product) {
-                $uf_quantity = $uf_data ? $this->num_uf($product['quantity']) : $product['quantity'];
-
-
-            }
-        } elseif ($status_before == 'final' && $transaction->status == 'final') {
-            foreach ($input['products'] as $product) {
-                if (empty($product['transaction_sell_lines_id'])) {
+        } elseif ($status_before == AppConstant::PAYMENT_PENDING) {
+            if ($transaction->status == AppConstant::FINAL || $transaction->status == AppConstant::COMPLETED || $transaction->status == AppConstant::PROCESSING) {
+                foreach ($input['products'] as $product) {
                     $uf_quantity = $uf_data ? $this->num_uf($product['quantity']) : $product['quantity'];
+                }
+            }
+        } elseif ($status_before == AppConstant::FINAL || $status_before == AppConstant::COMPLETED || $status_before == AppConstant::PROCESSING) {
+            if ($transaction->status == AppConstant::FINAL || $transaction->status == AppConstant::COMPLETED || $transaction->status == AppConstant::PROCESSING) {
+                foreach ($input['products'] as $product) {
+                    if (empty($product['transaction_sell_lines_id'])) {
+                        $uf_quantity = $uf_data ? $this->num_uf($product['quantity']) : $product['quantity'];
 
+                    }
                 }
             }
         }
@@ -1910,7 +1918,9 @@ class ProductUtil extends Util
             ->leftjoin('transaction_sell_lines as sl', 'sl.variation_id', '=', 'variations.id')
             ->join('transactions as t', 'sl.transaction_id', '=', 't.id')
             ->where('t.location_id', $location_id)
-            ->where('t.status', 'final')
+            ->where('t.status', AppConstant::FINAL)
+            ->orWhere('t.status', AppConstant::PROCESSING)
+            ->orWhere('t.status', AppConstant::COMPLETED)
             ->where('p.business_id', $business_id)
             ->where('variations.id', $variation_id)
             ->select(
@@ -1993,7 +2003,7 @@ class ProductUtil extends Util
         $stock = 0;
         foreach ($stock_history as $stock_line) {
             if ($stock_line->transaction_type == 'sell') {
-                if ($stock_line->status != 'final') {
+                if ($stock_line->status != AppConstant::FINAL || $stock_line->status != AppConstant::PROCESSING || $stock_line->status != AppConstant::COMPLETED) {
                     continue;
                 }
                 $quantity_change = -1 * $stock_line->sell_line_quantity;
@@ -2048,7 +2058,7 @@ class ProductUtil extends Util
                     'additional_notes' => $stock_line->additional_notes
                 ];
             } elseif ($stock_line->transaction_type == 'sell_transfer') {
-                if ($stock_line->status != 'final') {
+                if ($stock_line->status != AppConstant::FINAL || $stock_line->status != AppConstant::PROCESSING || $stock_line->status != AppConstant::COMPLETED) {
                     continue;
                 }
                 $quantity_change = -1 * $stock_line->sell_line_quantity;
@@ -2079,7 +2089,7 @@ class ProductUtil extends Util
                     'transaction_id' => $stock_line->transaction_id
                 ];
             } elseif ($stock_line->transaction_type == 'production_sell') {
-                if ($stock_line->status != 'final') {
+                if ($stock_line->status != AppConstant::FINAL || $stock_line->status != AppConstant::PROCESSING || $stock_line->status != AppConstant::COMPLETED) {
                     continue;
                 }
                 $quantity_change = -1 * $stock_line->sell_line_quantity;

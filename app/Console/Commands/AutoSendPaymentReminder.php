@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Utils\AppConstant;
 use Illuminate\Console\Command;
 use App\Utils\NotificationUtil;
 use App\Models\Business;
@@ -86,7 +87,7 @@ class AutoSendPaymentReminder extends Command
                 if (!empty($data['auto_send']) || !empty($data['auto_send_sms'])) {
                     $overdue_sells = Transaction::where('transactions.business_id', $business->id)
                                     ->where('transactions.type', 'sell')
-                                    ->where('transactions.status', 'final')
+                                    ->whereIn('transactions.status', [AppConstant::FINAL,AppConstant::COMPLETED,AppConstant::PROCESSING])
                                     ->leftjoin('activity_log as a', function($join){
                                         $join->on('a.subject_id', '=', 'transactions.id')
                                             ->where('subject_type', 'App\Models\Transaction')

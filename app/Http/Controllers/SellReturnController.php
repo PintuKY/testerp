@@ -6,6 +6,7 @@ use App\Models\BusinessLocation;
 use App\Models\Transaction;
 use App\Models\Contact;
 use App\Models\User;
+use App\Utils\AppConstant;
 use App\Utils\BusinessUtil;
 use App\Utils\ContactUtil;
 
@@ -81,7 +82,9 @@ class SellReturnController extends Controller
                     )
                     ->where('transactions.business_id', $business_id)
                     ->where('transactions.type', 'sell_return')
-                    ->where('transactions.status', 'final')
+                    ->where('transactions.status', AppConstant::FINAL)
+                    ->orWhere('transactions.status', AppConstant::COMPLETED)
+                    ->orWhere('transactions.status', AppConstant::PROCESSING)
                     ->select(
                         'transactions.id',
                         'transactions.transaction_date',

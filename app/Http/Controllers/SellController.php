@@ -18,6 +18,7 @@ use App\Models\TransactionSellLinesDay;
 use App\Models\TypesOfService;
 use App\Models\User;
 use App\Models\VariationValueTemplate;
+use App\Utils\AppConstant;
 use App\Utils\BusinessUtil;
 use App\Utils\ContactUtil;
 use App\Utils\ModuleUtil;
@@ -1657,7 +1658,7 @@ class SellController extends Controller
                 if (!empty($sell_details[$key]->parent_sell_line_id)) {
                     unset($sell_details[$key]);
                 } else {
-                    if ($transaction->status != 'final') {
+                    if ($transaction->status != AppConstant::FINAL || $transaction->status != AppConstant::COMPLETED || $transaction->status != AppConstant::PROCESSING ) {
                         $actual_qty_avlbl = $value->qty_available - $value->quantity_ordered;
                         $sell_details[$key]->qty_available = $actual_qty_avlbl;
                         $value->qty_available = $actual_qty_avlbl;
@@ -1733,7 +1734,7 @@ class SellController extends Controller
                         $sell_details[$key]->qty_available =
                             $this->productUtil->calculateComboQuantity($location_id, $combo_variations);
 
-                        if ($transaction->status == 'final') {
+                        if ($transaction->status == AppConstant::FINAL || $transaction->status == AppConstant::COMPLETED || $transaction->status == AppConstant::PROCESSING) {
                             $sell_details[$key]->qty_available = $sell_details[$key]->qty_available + $sell_details[$key]->quantity_ordered;
                         }
 

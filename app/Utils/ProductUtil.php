@@ -18,6 +18,7 @@ use App\Models\BusinessLocation;
 use App\Models\ProductVariation;
 use App\Models\VariationTemplate;
 use Illuminate\Support\Facades\DB;
+use App\Models\SupplierTransaction;
 use App\Models\TransactionSellLine;
 use App\Models\VariationGroupPrice;
 use Illuminate\Support\Facades\Log;
@@ -425,6 +426,31 @@ class ProductUtil extends Util
             $supplier_product_location_details->qty_available += $qty_difference;
             $supplier_product_location_details->save();
         }
+
+        return true;
+    }
+    public function decreaseSupplierProductQuantity($product_id, $location_id, $new_quantity, $old_quantity = 0)
+    {
+        $qty_difference = $new_quantity - $old_quantity;
+        $product = SupplierProduct::find($product_id);
+
+        //Check if stock is enabled or not.
+        // if ($product->enable_stock == 1) {
+            //Decrement Quantity in variations location table
+            $details = SupplierProductLocationDetail::where('product_id', $product_id)
+                ->where('location_id', $location_id)
+                ->first();
+
+            //If location details not exists create new one
+            if (empty($details)) {
+                $details = SupplierProductLocationDetail::create([
+                            'product_id' => $product_id,
+                            'location_id' => $location_id,
+                            'qty_available' => 0
+                          ]);
+            }
+            
+            $details->decrement('qty_available', $qty_difference);
 
         return true;
     }
@@ -1311,7 +1337,7 @@ class ProductUtil extends Util
                 $updated_purchase_line_ids[] = $supplier_purchase_line->id;
                 $old_qty = $supplier_purchase_line->quantity;
                 
-                $this->updateProductStock($before_status, $supplier_transaction, $data['product_id'], $data['variation_id'], $new_quantity, $supplier_purchase_line->quantity, $currency_details);
+                $this->updateSupplierProductStock($before_status, $supplier_transaction, $data['product_id'], $data['variation_id'], $new_quantity, $supplier_purchase_line->quantity, $currency_details);
             } else {
                 //create newly added supplier purchase lines
                 $supplier_purchase_line = new SupplierPurchaseLine();
@@ -1441,6 +1467,25 @@ class ProductUtil extends Util
         }
     }
 
+    public function updateSupplierProductStock($status_before, $transaction, $product_id, $new_quantity, $old_quantity, $currency_details)
+    {
+        $new_quantity_f = $this->num_f($new_quantity);
+        $old_qty = $this->num_f($old_quantity);
+        //Update quantity for existing products
+        if ($status_before == 'received' && $transaction->status == 'received') {
+            //if status received update existing quantity
+            $this->updateSupplierProductQuantity($transaction->location_id, $product_id, $new_quantity_f, $old_qty, $currency_details);
+        } elseif ($status_before == 'received' && $transaction->status != 'received') {
+            //decrease quantity only if status changed from received to not received
+            $this->decreaseSupplierProductQuantity(
+                $product_id,
+                $transaction->location_id,
+                $old_quantity
+            );
+        } elseif ($status_before != 'received' && $transaction->status == 'received') {
+            $this->updateSupplierProductQuantity($transaction->location_id, $product_id, $new_quantity_f, 0, $currency_details);
+        }
+    }
     /**
      * Recalculates purchase line data according to subunit data
      *
@@ -1611,7 +1656,7 @@ class ProductUtil extends Util
                 if ($purchase_line_qty_avlbl <= 0) {
                     continue;
                 }
-
+                
                 //update sell line purchase line mapping
                 $sell_line_purchase_lines = SupplierTransactionSellLinesPurchaseLines::where('purchase_line_id', $purchase_line->id)
                 ->join('supplier_transaction_sell_lines as stsl', 'stsl.id', '=', 'supplier_transaction_sell_lines_purchase_lines.sell_line_id')
@@ -1620,7 +1665,7 @@ class ProductUtil extends Util
                 ->where('stsl.product_id', $purchase_line->product_id)
                 ->select('supplier_transaction_sell_lines_purchase_lines.*')
                 ->get();
-
+                
                 foreach ($sell_line_purchase_lines as $slpl) {
                     if ($purchase_line_qty_avlbl > 0) {
                         if ($slpl->quantity <= $purchase_line_qty_avlbl) {
@@ -1635,11 +1680,11 @@ class ProductUtil extends Util
                             $slpl->purchase_line_id = $purchase_line->id;
                             $slpl->quantity = $purchase_line_qty_avlbl;
                             $slpl->save();
-
+                            
                             //update purchase line quantity sold
                             $purchase_line->quantity_sold += $slpl->quantity;
                             $purchase_line->save();
-
+                            
                             SupplierTransactionSellLinesPurchaseLines::create([
                                 'sell_line_id' => $slpl->sell_line_id,
                                 'purchase_line_id' => 0,
@@ -2083,6 +2128,250 @@ class ProductUtil extends Util
         ];
 
         return $output;
+    }
+
+    public function getSupplierProductStockDetails($business_id, $product_id, $location_id)
+    {
+        $purchase_details = SupplierProduct::join('supplier_product_units', 'supplier_products.unit_id', '=', 'supplier_product_units.id')
+            ->leftjoin('supplier_purchase_lines as spl', 'spl.product_id', '=', 'supplier_products.id')
+            ->leftjoin('supplier_transactions as st', 'spl.supplier_transactions_id', '=', 'st.id')
+            ->where('st.location_id', $location_id)
+            ->where('st.status', 'received')
+            ->where('supplier_products.business_id', $business_id)
+            ->where('supplier_products.id', $product_id)
+            ->select(
+                DB::raw("SUM(IF(st.type='purchase' AND st.status='received', spl.quantity, 0)) as total_purchase"),
+                DB::raw("SUM(IF(st.type='purchase' OR st.type='purchase_return', spl.quantity_returned, 0)) as total_purchase_return"),
+                DB::raw("SUM(spl.quantity_adjusted) as total_adjusted"),
+                DB::raw("SUM(IF(st.type='opening_stock', spl.quantity, 0)) as total_opening_stock"),
+                DB::raw("SUM(IF(st.type='purchase_transfer', spl.quantity, 0)) as total_purchase_transfer"),
+                'supplier_products.name as product',
+                'supplier_products.sku',
+                'supplier_products.id as product_id',
+                'supplier_product_units.short_name as unit',
+            )
+            ->get()->first();
+
+        $sell_details = SupplierProduct::leftjoin('supplier_transaction_sell_lines as sl', 'sl.product_id', '=', 'supplier_products.id')
+            ->join('supplier_transactions as st', 'sl.supplier_transaction_id', '=', 'st.id')
+            ->where('st.location_id', $location_id)
+            ->where('st.status', 'final')
+            ->where('supplier_products.business_id', $business_id)
+            ->where('supplier_products.id', $product_id)
+
+            ->select(
+                DB::raw("SUM(IF(st.type='sell', sl.quantity, 0)) as total_sold"),
+                DB::raw("SUM(IF(st.type='sell', sl.qty_returned, 0)) as total_sell_return"),
+                DB::raw("SUM(IF(st.type='sell_transfer', sl.quantity, 0)) as total_sell_transfer")
+            )
+            ->get()->first();
+
+        $current_stock = SupplierProductLocationDetail::where('product_id',
+            $product_id)
+            ->where('location_id', $location_id)
+            ->first();
+
+        $product_name = $purchase_details->product . ' (' . $purchase_details->sku . ')';
+
+        $output = [
+            'product' => $product_name, 
+            'unit' => $purchase_details->unit,
+            'total_purchase' => $purchase_details->total_purchase,
+            'total_purchase_return' => $purchase_details->total_purchase_return,
+            'total_adjusted' => $purchase_details->total_adjusted,
+            'total_opening_stock' => $purchase_details->total_opening_stock,
+            'total_purchase_transfer' => $purchase_details->total_purchase_transfer,
+            'total_sold' => $sell_details->total_sold,
+            'total_sell_return' => $sell_details->total_sell_return,
+            'total_sell_transfer' => $sell_details->total_sell_transfer,
+            'current_stock' => $current_stock->qty_available ?? 0
+        ];
+        return $output;
+    }
+    public function getSupplierProductStockHistory($business_id, $product_id, $location_id)
+    {
+        $stock_history = SupplierTransaction::leftjoin('supplier_transaction_sell_lines as sl', 
+            'sl.supplier_transaction_id', '=', 'supplier_transactions.id')
+                                ->leftjoin('supplier_purchase_lines as pl', 
+                                    'pl.supplier_transactions_id', '=', 'supplier_transactions.id')
+                                ->leftjoin('supplier_stock_adjustment_lines as al', 
+                                    'al.supplier_transaction_id', '=', 'supplier_transactions.id')
+                                ->leftjoin('supplier_transactions as return', 'supplier_transactions.return_parent_id', '=', 'supplier_transactions.id')
+                                ->leftjoin('supplier_purchase_lines as rpl', 
+                                    'rpl.supplier_transactions_id', '=', 'return.id')
+                                ->leftjoin('supplier_transaction_sell_lines as rsl', 
+                                        'rsl.supplier_transaction_id', '=', 'return.id')
+                                ->where('supplier_transactions.location_id', $location_id)
+                                ->where( function($q) use ($product_id){
+                                    $q->where('sl.product_id', $product_id)
+                                        ->orWhere('pl.product_id', $product_id)
+                                        ->orWhere('al.product_id', $product_id)
+                                        ->orWhere('rpl.product_id', $product_id)
+                                        ->orWhere('rsl.product_id', $product_id);
+                                })
+                                ->whereIn('supplier_transactions.type', ['sell', 'purchase', 'stock_adjustment', 'opening_stock', 'sell_transfer', 'purchase_transfer', 'production_purchase', 'purchase_return', 'sell_return', 'production_sell'])
+                                ->select(
+                                    'supplier_transactions.id as transaction_id',
+                                    'supplier_transactions.type as transaction_type',
+                                    'sl.quantity as sell_line_quantity',
+                                    'pl.quantity as purchase_line_quantity',
+                                    'rsl.qty_returned as sell_return',
+                                    'rpl.quantity_returned as purchase_return',
+                                    'al.quantity as stock_adjusted',
+                                    'pl.quantity_returned as combined_purchase_return',
+                                    'supplier_transactions.return_parent_id',
+                                    'supplier_transactions.transaction_date',
+                                    'supplier_transactions.status',
+                                    'supplier_transactions.invoice_no',
+                                    'supplier_transactions.ref_no',
+                                    'supplier_transactions.additional_notes'
+                                )
+                                ->orderBy('supplier_transactions.transaction_date', 'asc')
+                                ->get();
+
+        $stock_history_array = [];
+        $stock = 0;
+        foreach ($stock_history as $stock_line) {
+            if ($stock_line->transaction_type == 'sell') {
+                if ($stock_line->status != 'final') {
+                    continue;
+                }
+                $quantity_change =  -1 * $stock_line->sell_line_quantity;
+                $stock += $quantity_change;
+                $stock_history_array[] = [
+                    'date' => $stock_line->transaction_date,
+                    'quantity_change' => $quantity_change,
+                    'stock' => $this->roundQuantity($stock),
+                    'type' => 'sell',
+                    'type_label' => __('sale.sale'),
+                    'ref_no' => $stock_line->invoice_no,
+                    'transaction_id' => $stock_line->transaction_id
+                ];
+            } elseif ($stock_line->transaction_type == 'purchase') {
+                if ($stock_line->status != 'received') {
+                    continue;
+                }
+                $quantity_change = $stock_line->purchase_line_quantity;
+                $stock += $quantity_change;
+                $stock_history_array[] = [
+                    'date' => $stock_line->transaction_date,
+                    'quantity_change' => $quantity_change,
+                    'stock' => $this->roundQuantity($stock),
+                    'type' => 'purchase',
+                    'type_label' => __('lang_v1.purchase'),
+                    'ref_no' => $stock_line->ref_no,
+                    'transaction_id' => $stock_line->transaction_id
+                ];
+            } elseif ($stock_line->transaction_type == 'stock_adjustment') {
+                $quantity_change = -1 * $stock_line->stock_adjusted;
+                $stock += $quantity_change;
+                $stock_history_array[] = [
+                    'date' => $stock_line->transaction_date,
+                    'quantity_change' => $quantity_change,
+                    'stock' => $this->roundQuantity($stock),
+                    'type' => 'stock_adjustment',
+                    'type_label' => __('stock_adjustment.stock_adjustment'),
+                    'ref_no' => $stock_line->ref_no,
+                    'transaction_id' => $stock_line->transaction_id
+                ];
+            } elseif ($stock_line->transaction_type == 'opening_stock') {
+                $quantity_change = $stock_line->purchase_line_quantity;
+                $stock += $quantity_change;
+                $stock_history_array[] = [
+                    'date' => $stock_line->transaction_date,
+                    'quantity_change' => $quantity_change,
+                    'stock' => $this->roundQuantity($stock),
+                    'type' => 'opening_stock',
+                    'type_label' => __('report.opening_stock'),
+                    'ref_no' => $stock_line->ref_no ?? '',
+                    'transaction_id' => $stock_line->transaction_id,
+                    'additional_notes' => $stock_line->additional_notes
+                ];
+            } elseif ($stock_line->transaction_type == 'sell_transfer') {
+                if ($stock_line->status != 'final') {
+                    continue;
+                }
+                $quantity_change = -1 * $stock_line->sell_line_quantity;
+                $stock += $quantity_change;
+                $stock_history_array[] = [
+                    'date' => $stock_line->transaction_date,
+                    'quantity_change' => $quantity_change,
+                    'stock' => $this->roundQuantity($stock),
+                    'type' => 'sell_transfer',
+                    'type_label' => __('lang_v1.stock_transfers') . ' (' . __('lang_v1.out') . ')',
+                    'ref_no' => $stock_line->ref_no,
+                    'transaction_id' => $stock_line->transaction_id
+                ];
+            } elseif ($stock_line->transaction_type == 'purchase_transfer') {
+                if ($stock_line->status != 'received') {
+                    continue;
+                }
+                
+                $quantity_change = $stock_line->purchase_line_quantity;
+                $stock += $quantity_change;
+                $stock_history_array[] = [
+                    'date' => $stock_line->transaction_date,
+                    'quantity_change' => $quantity_change,
+                    'stock' => $this->roundQuantity($stock),
+                    'type' => 'purchase_transfer',
+                    'type_label' => __('lang_v1.stock_transfers') . ' (' . __('lang_v1.in') . ')',
+                    'ref_no' => $stock_line->ref_no,
+                    'transaction_id' => $stock_line->transaction_id
+                ];
+            } elseif ($stock_line->transaction_type == 'production_sell') {
+                if ($stock_line->status != 'final') {
+                    continue;
+                }
+                $quantity_change =  -1 * $stock_line->sell_line_quantity;
+                $stock += $quantity_change;
+                $stock_history_array[] = [
+                    'date' => $stock_line->transaction_date,
+                    'quantity_change' => $quantity_change,
+                    'stock' => $this->roundQuantity($stock),
+                    'type' => 'sell',
+                    'type_label' => __('manufacturing::lang.ingredient'),
+                    'ref_no' => '',
+                    'transaction_id' => $stock_line->transaction_id
+                ];
+            } elseif ($stock_line->transaction_type == 'production_purchase') {
+                $quantity_change = $stock_line->purchase_line_quantity;
+                $stock += $quantity_change;
+                $stock_history_array[] = [
+                    'date' => $stock_line->transaction_date,
+                    'quantity_change' => $quantity_change,
+                    'stock' => $this->roundQuantity($stock),
+                    'type' => 'production_purchase',
+                    'type_label' => __('manufacturing::lang.manufactured'),
+                    'ref_no' => $stock_line->ref_no,
+                    'transaction_id' => $stock_line->transaction_id
+                ];
+            } elseif ($stock_line->transaction_type == 'purchase_return') {
+                $quantity_change =  -1 * ($stock_line->combined_purchase_return + $stock_line->purchase_return);
+                $stock += $quantity_change;
+                $stock_history_array[] = [
+                    'date' => $stock_line->transaction_date,
+                    'quantity_change' => $quantity_change,
+                    'stock' => $this->roundQuantity($stock),
+                    'type' => 'purchase_return',
+                    'type_label' => __('lang_v1.purchase_return'),
+                    'ref_no' => $stock_line->ref_no,
+                    'transaction_id' => $stock_line->transaction_id
+                ];
+            } elseif ($stock_line->transaction_type == 'sell_return') {
+                $quantity_change = $stock_line->sell_return;
+                $stock += $quantity_change;
+                $stock_history_array[] = [
+                    'date' => $stock_line->transaction_date,
+                    'quantity_change' => $quantity_change,
+                    'stock' => $this->roundQuantity($stock),
+                    'type' => 'purchase_transfer',
+                    'type_label' => __('lang_v1.sell_return'),
+                    'ref_no' => $stock_line->invoice_no,
+                    'transaction_id' => $stock_line->transaction_id
+                ];
+            } 
+        }
+        return array_reverse($stock_history_array);
     }
 
     public function getVariationStockHistory($business_id, $variation_id, $location_id)

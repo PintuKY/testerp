@@ -207,6 +207,13 @@ class StockAdjustmentController extends Controller
                     }
                     $product_data[] = $adjustment_line;
 
+                    // /Decrease available quantity
+                    $this->productUtil->decreaseSupplierProductQuantity(
+                        $product['product_id'],
+                        $input_data['location_id'],
+                        $this->productUtil->num_uf($product['quantity'])
+                    );
+
                 }
 
                 $stock_adjustment = SupplierTransaction::create($input_data);
@@ -216,28 +223,8 @@ class StockAdjustmentController extends Controller
                 $business = ['id' => $business_id,
                 'accounting_method' => $request->session()->get('business.accounting_method'),
                 'location_id' => $input_data['location_id']
-            ];
-            foreach ($stock_adjustment_lines as $line) {
-                $product_at_kitchen_location                = SupplierProductLocationDetail::with('product')
-                                                              ->where('product_id',$line->product_id)
-                                                              ->where('location_id',$input_data['location_id'])->first();
-                $product_at_kitchen_location->qty_available = $product_at_kitchen_location->qty_available - $line->quantity;
-                if($product_at_kitchen_location->qty_available >= 0) {
-                    $product_at_kitchen_location->save(); 
-                }else{
-                    $mismatch_error = trans(
-                        "lang_v1.quantity_mismatch_exception",
-                        ['product' => $product_at_kitchen_location->product->name]
-                    );
-                    throw new PurchaseSellMismatch($mismatch_error);
-    
-                    $output = ['success' => 0,
-                                    'msg' => $msg
-                                ];
-
-                }
-            }
-                $this->transactionUtil->mapPurchaseSell($business, $stock_adjustment->stock_adjustment_lines, 'stock_adjustment');
+                ];
+                $this->transactionUtil->mapSupplierProductPurchaseSell($business, $stock_adjustment->stock_adjustment_lines, 'stock_adjustment');
                 $this->transactionUtil->activityLog($stock_adjustment, 'added', null, [], false);
             }
 

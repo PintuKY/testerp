@@ -406,15 +406,15 @@ class SupplierPurchaseController extends Controller
             //Add Purchase payments
             $this->supplierTransactionUtil->createOrUpdateSupplierPaymentLines($supplier_transaction, $request->input('payment'));
 
-            //update payment status
-            // $this->transactionUtil->updatePaymentStatus($transaction->id, $transaction->final_total);
+            // update payment status
+            $this->supplierTransactionUtil->updatePaymentStatus($supplier_transaction->id, $supplier_transaction->final_total);
 
-            // if (!empty($supplier_transaction->purchase_order_ids)) {
-            //     $this->supplierTransactionUtil->updatePurchaseOrderStatus($supplier_transaction->purchase_order_ids);
-            // }
+            if (!empty($supplier_transaction->purchase_order_ids)) {
+                $this->supplierTransactionUtil->updatePurchaseOrderStatus($supplier_transaction->purchase_order_ids);
+            }
 
             //Adjust stock over selling if found
-            $this->productUtil->adjustSupplierStockOverSelling($supplier_transaction);
+            $this->productUtil->adjustSupplierProductStockOverSelling($supplier_transaction);
 
             $this->supplierTransactionUtil->activityLog($supplier_transaction, 'added');
 
@@ -835,7 +835,7 @@ class SupplierPurchaseController extends Controller
             $this->supplierTransactionUtil->adjustMappingSupplierPurchaseSellAfterEditingSupplierPurchase($before_status, $transaction, $delete_purchase_lines);
 
             //Adjust stock over selling if found
-            $this->productUtil->adjustSupplierStockOverSelling($transaction);
+            $this->productUtil->adjustSupplierProductStockOverSelling($transaction);
 
             $new_purchase_order_ids = $transaction->purchase_order_ids ?? [];
             $purchase_order_ids = array_merge($purchase_order_ids, $new_purchase_order_ids);
@@ -1114,7 +1114,7 @@ class SupplierPurchaseController extends Controller
             $this->supplierTransactionUtil->adjustMappingSupplierPurchaseSellAfterEditingSupplierPurchase($before_status, $transaction, null);
 
             //Adjust stock over selling if found
-            $this->productUtil->adjustSupplierStockOverSelling($transaction);
+            $this->productUtil->adjustSupplierProductStockOverSelling($transaction);
             DB::commit();
             $output = ['success' => 1,
                             'msg' => __('purchase.purchase_update_success')

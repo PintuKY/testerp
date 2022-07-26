@@ -408,6 +408,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
 
     // supplier product 
     Route::get('/supplier-products/quick_add', 'SupplierProductController@quickAdd');
+    Route::get('/supplier-products/stock-history/{id}', 'SupplierProductController@productStockHistory');
     Route::post('/supplier-products/save_quick_product', 'SupplierProductController@saveQuickProduct');
     Route::get('supplier-products/list', 'SupplierProductController@getProducts');
     Route::resource('supplier-products', 'SupplierProductController');

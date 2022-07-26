@@ -9,7 +9,9 @@ use App\Models\Supplier;
 use App\Utils\ModuleUtil;
 use App\Utils\ProductUtil;
 use Illuminate\Http\Request;
+use App\Models\KitchenLocation;
 use App\Models\SupplierProduct;
+use App\Models\BusinessLocation;
 use Illuminate\Support\Facades\DB;
 use App\Models\SupplierProductUnit;
 use Illuminate\Support\Facades\Log;
@@ -96,6 +98,10 @@ class SupplierProductController extends Controller
                     if (auth()->user()->can('product.delete')) {
                         $html .=
                         '<li><a href="' . action('SupplierProductController@destroy', [$row->id]) . '" class="delete-supplier-product"><i class="fa fa-trash"></i> ' . __("messages.delete") . '</a></li>';
+                    }
+                    if (auth()->user()->can('product.view')) {
+                        $html .=
+                        '<li><a href="' . action('SupplierProductController@productStockHistory', [$row->id]) . '"><i class="fas fa-history"></i> ' . __("lang_v1.product_stock_history") . '</a></li>';
                     }
                     $html .= '</ul></div>';
                     return $html;
@@ -316,5 +322,31 @@ class SupplierProductController extends Controller
 
             return json_encode($result);
         }
+    }
+    public function productStockHistory($id)
+    {
+        if (!auth()->user()->can('product.view')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $business_id = request()->session()->get('user.business_id');
+
+        if (request()->ajax()) {
+            Log::info('stock_history');
+            $stock_details = $this->productUtil->getSupplierProductStockDetails($business_id, $id, request()->input('location_id'));
+            $stock_history = $this->productUtil->getSupplierProductStockHistory($business_id, $id, request()->input('location_id'));
+
+            return view('supplier-product.stock_history_details')
+                ->with(compact('stock_details', 'stock_history'));
+        }
+        
+        $product = SupplierProduct::where('business_id', $business_id)->findOrFail($id);
+        
+        //Get all business locations
+        $business_locations = BusinessLocation::forDropdown($business_id);
+        $kitchen_locations  = KitchenLocation::pluck('name','id');
+        
+        return view('supplier-product.stock-history')
+                ->with(compact('product', 'kitchen_locations'));
     }
 }

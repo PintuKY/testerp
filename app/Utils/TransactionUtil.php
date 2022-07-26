@@ -3753,6 +3753,14 @@ class TransactionUtil extends Util
 
         return $status;
     }
+    public function updateSupplierProductPaymentStatus($transaction_id, $final_amount = null)
+    {
+        $status = $this->calculatePaymentStatus($transaction_id, $final_amount);
+        Transaction::where('id', $transaction_id)
+            ->update(['payment_status' => $status]);
+
+        return $status;
+    }
 
     /**
      * Purchase currency details
@@ -4210,7 +4218,6 @@ class TransactionUtil extends Util
                     $qty_selling = $qty_selling - $row->quantity_available;
                     $qty_allocated = $row->quantity_available;
                 }
-
                 //Check for sell mapping or stock adjsutment mapping
                 if ($mapping_type == 'stock_adjustment') {
                     //Mapping of stock adjustment
@@ -4265,11 +4272,7 @@ class TransactionUtil extends Util
             if (!($qty_selling == 0 || is_null($qty_selling))) {
                 //If overselling not allowed through exception else create mapping with blank purchase_line_id
                 if (!$allow_overselling) {
-                    $variation = Variation::find($line->variation_id);
                     $mismatch_name = $product->name;
-                    if (!empty($variation->sub_sku)) {
-                        $mismatch_name .= ' ' . 'SKU: ' . $variation->sub_sku;
-                    }
                     if (!empty($qty_selling)) {
                         $mismatch_name .= ' ' . 'Quantity: ' . abs($qty_selling);
                     }

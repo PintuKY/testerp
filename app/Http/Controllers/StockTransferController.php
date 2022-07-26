@@ -285,12 +285,28 @@ class StockTransferController extends Controller
                 foreach ($products as $product) {
                     // if ($product['enable_stock']) {
 
-                        $decrease_qty = $this->productUtil
+                        $qty = $this->productUtil
                                     ->num_uf($product['quantity']);
                         if (!empty($product['base_unit_multiplier'])) {
-                            $decrease_qty = $decrease_qty * $product['base_unit_multiplier'];
+                            $qty = $qty * $product['base_unit_multiplier'];
                         }
+
+                        $this->productUtil->decreaseSupplierProductQuantity(
+                            $product['product_id'],
+                            $sell_transfer->location_id,
+                            $qty
+                        );
+
+                        $this->productUtil->updateSupplierProductQuantity(
+                            $purchase_transfer->location_id,
+                            $product['product_id'],
+                            $qty,
+                            0,
+                            null,
+                            false
+                        );
                     // }
+
                 }
 
                 //Adjust stock over selling if found

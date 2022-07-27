@@ -358,13 +358,13 @@ class Transaction extends Model
     public static function sell_statuses()
     {
         return [
-            'final' => __('sale.final'),
-            'processing' => __('sale.processing'),
-            'completed' => __('sale.completed'),
-            'cancelled' => __('sale.cancelled'),
-            'payment_pending' => __('sale.payment_pending'),
-            'refund' => __('sale.refund'),
-            'failed' => __('sale.failed'),
+            '1' => __('sale.final'),
+            '2' => __('sale.processing'),
+            '3' => __('sale.completed'),
+            '4' => __('sale.cancelled'),
+            '5' => __('sale.payment_pending'),
+            '6' => __('sale.refund'),
+            '7' => __('sale.failed'),
         ];
     }
 

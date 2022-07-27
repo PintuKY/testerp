@@ -46,14 +46,49 @@ class MasterController extends Controller
      */
     public function index()
     {
+
         $role = 'user';
         $masterListCols = config('masterlist.' . $role . '_columns');
         $masterListStatus= config('masterlist.' . $role . '_status');
         $business_id = request()->session()->get('user.business_id');
+        $sells = MasterList::whereHas('transasction', function ($query) use($masterListStatus){
+            $query->whereIn('status',$masterListStatus);
+        })->with(['transaction_sell_lines','transaction_sell_lines.transactionSellLinesVariants']
+        );
 
+        /*$business_id = BusinessLocation::with(['kitchenLocation' => function ($q) {
+            $q->select('name as kitchen_name', 'id');
+        }]);*/
+
+        if (!empty(request()->start_date) && !empty(request()->end_date)) {
+            $start = request()->start_date;
+            $end = request()->end_date;
+            $sells->whereDate('master_list.delivery_date', '>=', $start)
+                ->whereDate('master_list.delivery_date', '<=', $end);
+        }
+
+        if (!empty(request()->type)) {
+            $type = request()->type;
+            $sells->where('master_list.time_slot', '=', $type);
+        }
+
+        if (!empty(request()->location)) {
+            $sells->whereHas('transasction', function ($query) {
+                $query->where('location_id', request()->location);
+            });
+        }
+        $sell = $sells->get();
+        $lunch = $sell->where('time_slot',AppConstant::LUNCH)->count();
+        $dinner = $sell->where('time_slot',AppConstant::DINNER)->count();
         if (request()->ajax()) {
-            $sells = MasterList::with(['transasction','transaction_sell_lines','transaction_sell_lines.transactionSellLinesVariants']
-            )->whereIn('sell_status',$masterListStatus);
+            $sells = MasterList::whereHas('transasction', function ($query) use($masterListStatus){
+                $query->whereIn('status',$masterListStatus);
+            })->with(['transaction_sell_lines','transaction_sell_lines.transactionSellLinesVariants']
+            );
+
+            /*$business_id = BusinessLocation::with(['kitchenLocation' => function ($q) {
+                $q->select('name as kitchen_name', 'id');
+            }]);*/
 
             if (!empty(request()->start_date) && !empty(request()->end_date)) {
                 $start = request()->start_date;
@@ -69,10 +104,9 @@ class MasterController extends Controller
 
             if (!empty(request()->location)) {
                 $sells->whereHas('transasction', function ($query) {
-                    $query->where('business_id', request()->location);
+                    $query->where('location_id', request()->location);
                 });
             }
-
             return Datatables::of($sells)
                 ->addColumn(
                     'action', function ($row) {
@@ -121,7 +155,7 @@ class MasterController extends Controller
                     $addon = [];
                     if (isset($row->transaction_sell_lines->transactionSellLinesVariants)) {
                         foreach ($row->transaction_sell_lines->transactionSellLinesVariants as $value) {
-                            if (str_contains($value->pax, 'Add on')) {
+                            if (str_contains($value->pax, 'Add on:')) {
                                 $addon_pax = ($value->addon  != 'None') ? '+'.$value->addon : '';
                                 $addon[] = str_replace("Add on:","",$value->pax).''.$addon_pax;
                             }
@@ -160,9 +194,9 @@ class MasterController extends Controller
                 })
                 ->make(true);
         }
-        $business_locations = Business::forDropdown();
+        $business_locations = BusinessLocation::forDropdown($business_id);
         $type = config('masterlist.product_type');
-        return view('master.index', compact('masterListCols', 'business_locations', 'type'));
+        return view('master.index', compact('masterListCols', 'business_locations', 'type','lunch','dinner'));
 
     }
 
@@ -170,7 +204,37 @@ class MasterController extends Controller
     {
         $role = 'user';
         $masterListCols = config('masterlist.' . $role . '_columns');
+        $masterListStatus= config('masterlist.' . $role . '_status');
+        $business_id = request()->session()->get('user.business_id');
+        $sells = MasterList::whereHas('transasction', function ($query) use($masterListStatus){
+            $query->whereIn('status',$masterListStatus);
+        })->with(['transaction_sell_lines','transaction_sell_lines.transactionSellLinesVariants']
+        );
 
+        /*$business_id = BusinessLocation::with(['kitchenLocation' => function ($q) {
+            $q->select('name as kitchen_name', 'id');
+        }]);*/
+
+        if (!empty(request()->start_date) && !empty(request()->end_date)) {
+            $start = request()->start_date;
+            $end = request()->end_date;
+            $sells->whereDate('master_list.delivery_date', '>=', $start)
+                ->whereDate('master_list.delivery_date', '<=', $end);
+        }
+
+        if (!empty(request()->type)) {
+            $type = request()->type;
+            $sells->where('master_list.time_slot', '=', $type);
+        }
+
+        if (!empty(request()->location)) {
+            $sells->whereHas('transasction', function ($query) {
+                $query->where('location_id', request()->location);
+            });
+        }
+        $sell = $sells->get();
+        $lunch = $sell->where('time_slot',AppConstant::LUNCH)->count();
+        $dinner = $sell->where('time_slot',AppConstant::DINNER)->count();
         if (request()->ajax()) {
             $sells = MasterList::where(['transaction_id'=>$id,'transaction_sell_lines_id'=>$sell_id])->with(['transaction_sell_lines' => function ($query) {
                 $query->with('transactionSellLinesVariants');
@@ -190,7 +254,7 @@ class MasterController extends Controller
 
             if (!empty(request()->location)) {
                 $sells->whereHas('transasction', function ($query) {
-                    $query->where('business_id', request()->location);
+                    $query->where('location_id', request()->location);
                 });
             }
 
@@ -489,7 +553,7 @@ class MasterController extends Controller
                 if (!empty($sell_details[$key]->parent_sell_line_id)) {
                     unset($sell_details[$key]);
                 } else {
-                    if ($transaction->status != 'final') {
+                    if ($transaction->status != AppConstant::FINAL || $transaction->status != AppConstant::COMPLETED || $transaction->status != AppConstant::PROCESSING) {
                         $actual_qty_avlbl = $value->qty_available - $value->quantity_ordered;
                         $sell_details[$key]->qty_available = $actual_qty_avlbl;
                         $value->qty_available = $actual_qty_avlbl;
@@ -565,8 +629,7 @@ class MasterController extends Controller
                         }
                         $sell_details[$key]->qty_available =
                             $this->productUtil->calculateComboQuantity($location_id, $combo_variations);
-
-                        if ($transaction->status == 'final') {
+                        if($transaction->status == AppConstant::FINAL || $transaction->status == AppConstant::COMPLETED || $transaction->status == AppConstant::PROCESSING){
                             $sell_details[$key]->qty_available = $sell_details[$key]->qty_available + $sell_details[$key]->quantity_ordered;
                         }
 

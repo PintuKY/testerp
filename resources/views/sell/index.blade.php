@@ -202,12 +202,10 @@ $(document).ready( function(){
                 footer_total_remaining += $(data[r].total_remaining).data('orig-value') ? parseFloat($(data[r].total_remaining).data('orig-value')) : 0;
                 footer_total_sell_return_due += $(data[r].return_due).find('.sell_return_due').data('orig-value') ? parseFloat($(data[r].return_due).find('.sell_return_due').data('orig-value')) : 0;
             }
-
             $('.footer_total_sell_return_due').html(__currency_trans_from_en(footer_total_sell_return_due));
             $('.footer_total_remaining').html(__currency_trans_from_en(footer_total_remaining));
             $('.footer_total_paid').html(__currency_trans_from_en(footer_total_paid));
             $('.footer_sale_total').html(__currency_trans_from_en(footer_sale_total));
-
             $('.footer_payment_status_count').html(__count_status(data, 'payment_status'));
             $('.service_type_count').html(__count_status(data, 'types_of_service_name'));
             $('.payment_method_count').html(__count_status(data, 'payment_methods'));

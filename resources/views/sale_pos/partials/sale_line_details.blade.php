@@ -18,16 +18,22 @@
 
             <th>{{ __('sale.subtotal') }}</th>
         </tr>
-        @foreach($sell->sell_lines as $sell_line)
-            @if($sell_line->product->id == $productId)
+
+        @foreach($sell_details as $sell_line)
+       {{-- @foreach($sell->sell_lines as $sell_line)--}}
+            @if($sell_line->product_id == $productId){{--
+            @if($sell_line->product->id == $productId)--}}
                 <tr>
                     <td>{{ $loop->iteration }}</td>
                     <td>
-                        @if( $sell_line->product->type == 'variable')
+                        {{--@if( $sell_line->product->type == 'variable')
                             {{ $sell_line->variations->product_variation->name ?? ''}}
                             - {{ $sell_line->variations->name ?? ''}}
+                        @endif--}}
+                        @if( $sell_line->product_type == 'variable')
+                            {{ $sell_line->pax ?? ''}}
+                            - {{ $sell_line->transaction_sell_lines_variants_name ?? ''}}
                         @endif
-
 
                         @if(!empty($sell_line->sell_line_note))
                             <br> {{$sell_line->sell_line_note}}
@@ -49,7 +55,7 @@
 
                     <td>
                 <span class="display_currency"
-                      data-currency_symbol="true">{{  ($sell_line->transactionSellLinesVariants->isNotEmpty()) ? $sell_line->transactionSellLinesVariants[0]->value : '0'}}</span>
+                      data-currency_symbol="true">{{  ($sell_line->value) ? $sell_line->value : '0'}}</span>
                     </td>
                 </tr>
             @endif

@@ -6,6 +6,7 @@ use App\Models\BusinessLocation;
 use App\Models\Transaction;
 use App\Models\Contact;
 use App\Models\User;
+use App\Utils\AppConstant;
 use App\Utils\BusinessUtil;
 use App\Utils\ContactUtil;
 
@@ -81,7 +82,9 @@ class SellReturnController extends Controller
                     )
                     ->where('transactions.business_id', $business_id)
                     ->where('transactions.type', 'sell_return')
-                    ->where('transactions.status', 'final')
+                    ->where('transactions.status', AppConstant::FINAL)
+                    ->orWhere('transactions.status', AppConstant::COMPLETED)
+                    ->orWhere('transactions.status', AppConstant::PROCESSING)
                     ->select(
                         'transactions.id',
                         'transactions.transaction_date',
@@ -285,7 +288,7 @@ class SellReturnController extends Controller
             })*/
             ->leftjoin('units', 'units.id', '=', 'p.unit_id')
             ->where('transaction_sell_lines.transaction_id', $id)
-            ->with(['so_line'])
+            ->with(['so_line','lot_details'])
             ->select(
                 \Illuminate\Support\Facades\DB::raw("IF(pv.is_dummy = 0, CONCAT(p.name, ' (', pv.name, ':',variations.name, ')'), p.name) AS product_name"),
                 'p.id as product_id',
@@ -324,6 +327,7 @@ class SellReturnController extends Controller
                 'units.id as unit_id',
                 'transaction_sell_lines.sub_unit_id',
                 'transaction_sell_lines_variants.value',
+                'transaction_sell_lines_variants.pax',
                 'transaction_sell_lines_variants.name as transaction_sell_lines_variants_name',
             /*DB::raw('vld.qty_available + transaction_sell_lines.quantity AS qty_available')*/
             )
@@ -360,7 +364,7 @@ class SellReturnController extends Controller
         return view('sell_return.add')
             ->with(compact('sell','edit_product',
                 'product_ids',
-                'product_names'));
+                'product_names','sell_details'));
     }
 
     /**
@@ -566,6 +570,7 @@ class SellReturnController extends Controller
                 'units.id as unit_id',
                 'transaction_sell_lines.sub_unit_id',
                 'transaction_sell_lines_variants.value',
+                'transaction_sell_lines_variants.pax',
                 'transaction_sell_lines_variants.name as transaction_sell_lines_variants_name',
             )
             ->get();

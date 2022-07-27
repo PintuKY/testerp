@@ -52,6 +52,9 @@
 <script src="{{ asset('js/payment.js?v=' . $asset_v) }}"></script>
 <script>
     $(document).ready(function(){
+        var lunch = "{{$lunch}}";
+        var dinner = "{{$dinner}}";
+        $('.pax').html('Lunch:'+lunch+'<br/> Dinner:'+dinner);
         $('#master_list_filter_date_range').daterangepicker(
             dateRangeSettings,
             function (start, end) {
@@ -68,7 +71,7 @@
             var masterListCols = columns;
             master_table = $('#master_table').DataTable({
                 processing: true,
-                serverSide: true,
+                serverSide: false,
                 aaSorting: [
                     [0, 'desc']
                 ],

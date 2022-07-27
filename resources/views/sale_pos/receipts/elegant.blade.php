@@ -464,13 +464,15 @@
                                     <td class="price_cal">
                                         <div class="pull-right">
                                             <b>@lang('sale.item'):</b>
-                                            <span class="total_quantity">{{  @num_format($edit_product[$productId]['quantity']) }}</span>
+                                            <span
+                                                class="total_quantity">{{  @num_format($edit_product[$productId]['quantity']) }}</span>
                                             @php
                                                 $total_item_value = $edit_product[$productId]['total_item_value'];
                                                 $total_quantity = $edit_product[$productId]['quantity']
                                             @endphp
                                             <b>@lang('sale.total'): </b>
-                                            <span class="price_totals total_prices price_totals">${{round($total_item_value * $total_quantity,2)}}</span>
+                                            <span
+                                                class="price_totals total_prices price_totals">${{round($total_item_value * $total_quantity,2)}}</span>
                                         </div>
                                     </td>
                                 </tr>

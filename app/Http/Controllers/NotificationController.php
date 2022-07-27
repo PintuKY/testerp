@@ -49,7 +49,6 @@ class NotificationController extends Controller
             $transaction = Booking::where('business_id', $business_id)
                 ->with(['customer'])
                 ->find($id);
-
             $contact = $transaction->customer;
         } elseif ($template_for == 'send_ledger') {
             $contact = Contact::find($id);
@@ -57,10 +56,32 @@ class NotificationController extends Controller
             $transaction = Transaction::where('business_id', $business_id)
                 ->with(['contact'])
                 ->find($id);
-
             $contact = $transaction->contact;
         }
+        $product_id = [];
+        $product_name = [];
+        $edit_product = [];
+        foreach ($transaction->sell_lines as $key => $value) {
+            $product_id[] = $value->product_id;
+            $product_name[] = $value->product->name;
+            $edit_product[$value->product_id] = [
+                'start_date' => $value->start_date,
+                'time_slot' => $value->time_slot,
+                'delivery_date' => $value->delivery_date,
+                'delivery_time' => $value->delivery_time,
+                'unit_value' => $value->unit_value,
+                'quantity' => $value->quantity,
+                'total_item_value' => $value->total_item_value,
+                'unit' => $value->unit,
+                'unit_id' => $value->unit_id,
+                'default_sell_price' => $value->default_sell_price,
+                'unit_price_before_discount' => $value->unit_price_before_discount,
+            ];
 
+        }
+        $product_ids = array_unique($product_id);
+        $product_count = count($product_ids);
+        $product_names = array_unique($product_name);
         $customer_notifications = NotificationTemplate::customerNotifications();
         $supplier_notifications = NotificationTemplate::supplierNotifications();
         $general_notifications = NotificationTemplate::generalNotifications();
@@ -83,9 +104,9 @@ class NotificationController extends Controller
         $start_date = request()->input('start_date');
         $end_date = request()->input('end_date');
 
-
         return view('notification.show_template')
-            ->with(compact('notification_template', 'transaction', 'tags', 'template_name', 'contact', 'start_date', 'end_date'));
+            ->with(compact('product_ids',
+                'product_names','edit_product','notification_template', 'transaction', 'tags', 'template_name', 'contact', 'start_date', 'end_date'));
     }
 
     /**
@@ -96,10 +117,10 @@ class NotificationController extends Controller
      */
     public function send(Request $request)
     {
+
         // if (!auth()->user()->can('send_notification')) {
         //     abort(403, 'Unauthorized action.');
         // }
-
         $notAllowed = $this->notificationUtil->notAllowedInDemo();
         if (!empty($notAllowed)) {
             return $notAllowed;
@@ -118,13 +139,47 @@ class NotificationController extends Controller
 
             $transaction = !empty($transaction_id) ? Transaction::find($transaction_id) : null;
 
+            $product_id = [];
+            $product_name = [];
+            $edit_product = [];
+            foreach ($transaction->sell_lines as $key => $value) {
+                $product_id[] = $value->product_id;
+                $product_name[] = $value->product->name;
+                $edit_product[$value->product_id] = [
+                    'start_date' => $value->start_date,
+                    'time_slot' => $value->time_slot,
+                    'delivery_date' => $value->delivery_date,
+                    'delivery_time' => $value->delivery_time,
+                    'unit_value' => $value->unit_value,
+                    'quantity' => $value->quantity,
+                    'total_item_value' => $value->total_item_value,
+                    'unit' => $value->unit,
+                    'unit_id' => $value->unit_id,
+                    'default_sell_price' => $value->default_sell_price,
+                    'unit_price_before_discount' => $value->unit_price_before_discount,
+                ];
+            }
+            $product_ids = array_unique($product_id);
+            $product_count = count($product_ids);
+            $product_names = array_unique($product_name);
 
-            $orig_data = [
-                'email_body' => $data['email_body'],
-                'sms_body' => $data['sms_body'],
-                'subject' => $data['subject'],
-                'whatsapp_text' => $data['whatsapp_text']
-            ];
+            if ($request->input('template_for') == 'new_sale') {
+                $orig_data = [
+                    'email_body' => view('notification.product')->with(compact('product_ids',
+                            'product_names','edit_product', 'transaction'))->render(),
+                    'sms_body' => $data['sms_body'],
+                    'subject' => $data['subject'],
+                    'whatsapp_text' => $data['whatsapp_text']
+                ];
+            }else{
+                $orig_data = [
+                    'email_body' => $data['email_body'],
+                    'sms_body' => $data['sms_body'],
+                    'subject' => $data['subject'],
+                    'whatsapp_text' => $data['whatsapp_text']
+                ];
+            }
+
 
             if ($request->input('template_for') == 'new_booking') {
                 $tag_replaced_data = $this->notificationUtil->replaceBookingTags($business_id, $orig_data, $transaction_id, $transaction->location_id);

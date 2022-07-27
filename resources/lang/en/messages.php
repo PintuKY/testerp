@@ -46,4 +46,7 @@ return [
     'activate' => 'Activate',
     'deactivate' => 'Deactivate',
     'sync' => 'Sync',
+    'sync_product' => 'Sync Product',
+    'sync_customer' => 'Sync Customer',
+    'sync_order' => 'Sync Order'
 ];

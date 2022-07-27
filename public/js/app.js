@@ -78,7 +78,7 @@ $(document).ready(function () {
     var brands_table = $('#brands_table').DataTable({
         processing: true,
         serverSide: true,
-        ajax: '/brands',
+        ajax: '/supplier-product-brands',
         columnDefs: [
             {
                 targets: 2,

@@ -61,6 +61,17 @@
               </div>
               <div class="col-12 col-md-6 ">
                 <div class="form-group d-block">
+                   {{ Form::label('brand', 'Brand' . ':') }}
+                    <div class="input-group">
+                      {{ Form::select('brand_id', $brands, null, ['placeholder' => __('messages.please_select'), 'class' => 'form-control select2', 'style' => 'width:100%','id'=>'brand_id']); }}
+                      <span class="input-group-btn">                   
+                        <button type="button" @if(!auth()->user()->can('unit.create')) disabled @endif class="btn btn-default bg-white btn-flat btn-modal" data-href="{{route('supplier-product-brands.create',['quick_add' => true])}}" title="Add Brands" data-container=".add_brand_modal"><i class="fa fa-plus-circle text-primary fa-lg"></i></button>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              <div class="col-12 col-md-6 ">
+                <div class="form-group d-block">
                    {{ Form::label('weight','Weight' . ':') }}
                    {{ Form::text('weight', null, ['class' => 'form-control',
                       'placeholder' => 'Weight']); }}
@@ -119,6 +130,7 @@
 
   <div class="modal fade add_unit_modal" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel"></div>
   <div class="modal fade add_category_modal" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel"></div>
+  <div class="modal fade add_brand_modal" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel"></div>
   <div class="modal fade supplier_modal" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel">
 	@include('supplier.create', ['quick_add' => true])
 </div>
@@ -181,6 +193,37 @@ $(document).ready(function() {
 
     });
     });
+</script>
+<script>
+  //Quick add brand
+$(document).on('submit', 'form#quick_add_brand_form', function(e) {
+    e.preventDefault();
+    var form = $(this);
+    var data = form.serialize();
+
+    $.ajax({
+        method: 'POST',
+        url: $(this).attr('action'),
+        dataType: 'json',
+        data: data,
+        beforeSend: function(xhr) {
+            __disable_submit_button(form.find('button[type="submit"]'));
+        },
+        success: function(result) {
+            if (result.success == true) {
+                var newOption = new Option(result.data.name, result.data.id, true, true);
+                // Append it to the select
+                $('#brand_id')
+                    .append(newOption)
+                    .trigger('change');
+                $('div.add_brand_modal').modal('hide');
+                toastr.success(result.msg);
+            } else {
+                toastr.error(result.msg);
+            }
+        },
+    });
+});
 </script>
 @stop
 

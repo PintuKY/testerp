@@ -71,6 +71,8 @@
             </li>
             <li><a href="{{route('supplier-product-categories.index')}}"><i class="fa fas fa-list"></i> <span>Categories</span></a>
             </li>
+            <li><a href="{{route('supplier-product-brands.index')}}"><i class="fa fas fa-list"></i> <span>Brands</span></a>
+            </li>
         </ul>
     </li>
     <li class="treeview" id="tour_step6">

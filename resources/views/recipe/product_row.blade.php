@@ -31,13 +31,10 @@ product_table ingredient_table_{{$ingredient->id}}"
         </td>
 
         <td>
-            {{ $ingredient->description }}
+            {!! $ingredient->description !!}
         </td>
         <td>
-            <div class="form-group">
-                {!! Form::label('measure_type', __( 'ingredient.measure' )) !!}
-                {!! Form::select('recipe[' . $ingredient->id . '][measure_type]', ingredientMeasure(), null, ['placeholder' => 'Select Please', 'class' => 'form-control select2', 'style' => 'width:100%']); !!}
-            </div>
+            {{ $ingredient->unit->name }}
         </td>
         <td>
             <div class="form-group">

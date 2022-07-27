@@ -37,7 +37,7 @@
                     <div class="row col-sm-12 ing_product_div" style="min-height: 0">
 
 
-                        <dsiv class="table-responsive">
+                        <div class="table-responsive">
                             @foreach($menu->recipe_items as $ingredient)
                                 <input type="hidden" value="{{$ingredient->ingredient_id}}" name="recipe[{{$ingredient->ingredient_id}}][ingredient_id]" id="ingredient_id">
 
@@ -73,13 +73,15 @@ product_table ingredient_table_{{$ingredient->ingredient_id}}"
                                         </td>
 
                                         <td>
-                                            {{ $ingredient->ingredient->description }}
+                                            {!!$ingredient->ingredient->description !!}
                                         </td>
                                         <td>
-                                            <div class="form-group">
+                                            {!!$ingredient->ingredient->unit->name !!}
+
+                                            {{-- <div class="form-group">
                                                 {!! Form::label('measure_type', __( 'ingredient.measure' )) !!}
                                                 {!! Form::select('recipe[' . $ingredient->ingredient_id . '][measure_type]', ingredientMeasure(), $ingredient->measure_type, ['placeholder' => 'Select Please', 'class' => 'form-control select2', 'style' => 'width:100%']); !!}
-                                            </div>
+                                            </div> --}}
                                         </td>
                                         <td>
                                             <div class="form-group">
@@ -91,7 +93,7 @@ product_table ingredient_table_{{$ingredient->ingredient_id}}"
                                     </tbody>
                                 </table>
                             @endforeach
-                        </dsiv>
+                        </div>
                         <div class="table-responsive ing">
 
                         </div>

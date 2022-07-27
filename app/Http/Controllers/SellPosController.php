@@ -689,7 +689,6 @@ class SellPosController extends Controller
 
         $receipt_details = $this->transactionUtil->getReceiptDetails($transaction_id, $location_id, $invoice_layout, $business_details, $location_details, $receipt_printer_type);
 
-
         $unique_array = [];
         $edit_product = [];
         foreach($receipt_details->lines as $element) {
@@ -697,7 +696,7 @@ class SellPosController extends Controller
             $unique_array[$hash] = $element;
             $edit_product[$element['product_id']] = [
                 'quantity' => $element['quantity_uf'],
-                'total_item_value' =>  $element['total_item_value'],
+                'total_item_value' =>  $element['total_item_value_uf'],
             ];
         }
         $total_sell = array_values($unique_array);
@@ -1683,6 +1682,7 @@ class SellPosController extends Controller
                     $output = ['success' => 1, 'receipt' => $receipt];
                 }
             } catch (\Exception $e) {
+                dd($e->getMessage());
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
 
                 $output = ['success' => 0,

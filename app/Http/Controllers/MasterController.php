@@ -155,7 +155,7 @@ class MasterController extends Controller
                     $addon = [];
                     if (isset($row->transaction_sell_lines->transactionSellLinesVariants)) {
                         foreach ($row->transaction_sell_lines->transactionSellLinesVariants as $value) {
-                            if (str_contains($value->pax, 'Add on')) {
+                            if (str_contains($value->pax, 'Add on:')) {
                                 $addon_pax = ($value->addon  != 'None') ? '+'.$value->addon : '';
                                 $addon[] = str_replace("Add on:","",$value->pax).''.$addon_pax;
                             }
@@ -202,10 +202,10 @@ class MasterController extends Controller
 
     public function getMasterList($id,$sell_id)
     {
-
         $role = 'user';
         $masterListCols = config('masterlist.' . $role . '_columns');
         $masterListStatus= config('masterlist.' . $role . '_status');
+        $business_id = request()->session()->get('user.business_id');
         $sells = MasterList::whereHas('transasction', function ($query) use($masterListStatus){
             $query->whereIn('status',$masterListStatus);
         })->with(['transaction_sell_lines','transaction_sell_lines.transactionSellLinesVariants']
@@ -232,10 +232,9 @@ class MasterController extends Controller
                 $query->where('location_id', request()->location);
             });
         }
-
-        $lunch = $sells->where('time_slot',AppConstant::LUNCH)->get();
-        $dinner = $sells->where('time_slot',AppConstant::DINNER)->get();
-        dd('aaa'.$lunch);
+        $sell = $sells->get();
+        $lunch = $sell->where('time_slot',AppConstant::LUNCH)->count();
+        $dinner = $sell->where('time_slot',AppConstant::DINNER)->count();
         if (request()->ajax()) {
             $sells = MasterList::where(['transaction_id'=>$id,'transaction_sell_lines_id'=>$sell_id])->with(['transaction_sell_lines' => function ($query) {
                 $query->with('transactionSellLinesVariants');

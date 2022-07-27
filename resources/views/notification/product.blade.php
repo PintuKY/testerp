@@ -29,14 +29,14 @@
                 </tr>
 
 
-                @foreach($transaction->sell_lines as $sell_line)
+                @foreach($sell_details as $sell_line)
                     @if($sell_line->product->id == $productId)
                         <tr>
                             <td>{{ $loop->iteration }}</td>
                             <td class="text-center">
-                                @if( $sell_line->product->type == 'variable')
-                                    {{ $sell_line->variations->product_variation->name ?? ''}}
-                                    - {{ $sell_line->variations->name ?? ''}}
+                                @if( $sell_line->product_type == 'variable')
+                                    {{ $sell_line->pax ?? ''}}
+                                    - {{ $sell_line->transaction_sell_lines_variants_name ?? ''}}
                                 @endif
 
 
@@ -60,7 +60,7 @@
 
                             <td>
                 <span class="display_currency"
-                      data-currency_symbol="true">{{  ($sell_line->transactionSellLinesVariants->isNotEmpty()) ? $sell_line->transactionSellLinesVariants[0]->value : '0'}}</span>
+                      data-currency_symbol="true">{{  ($sell_line->value) ? $sell_line->value : '0'}}</span>
                             </td>
                         </tr>
                     @endif
@@ -100,7 +100,7 @@
                                 </td>
                                 <td>
                         <span class="display_currency text-right"
-                              data-currency_symbol="true">{{  ($sell_line->transactionSellLinesVariants->isNotEmpty()) ? $sell_line->transactionSellLinesVariants[0]->value : '0' }}</span>
+                              data-currency_symbol="true">{{  ($sell_line->value) ? $sell_line->value : '0'}}</span>
                                 </td>
                             </tr>
                 @endforeach

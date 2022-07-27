@@ -1,4 +1,5 @@
 @php
+
     $common_settings = session()->get('business.common_settings');
     $multiplier = 1;
 @endphp
@@ -42,21 +43,18 @@
                    name="products[{{$product->variation_id}}][so_line_id]"
                    value="{{$so_line->id}}">
         @endif
-        @php
-            $product_name = $product->product_variation_name;
-           if(!empty($product->brand)){ $product_name .= ' ' . $product->brand ;}
-        @endphp
+
 
         @if( ($edit_price || $edit_discount) && empty($is_direct_sell) )
             <div title="@lang('lang_v1.pos_edit_product_price_help')">
 		<span class="text-link text-info cursor-pointer" data-toggle="modal"
               data-target="#row_edit_product_price_modal_{{$row_count}}">
-			{!! $product_name !!}
+			{!! $product->pax !!}
 			&nbsp;<i class="fa fa-info-circle"></i>
 		</span>
             </div>
         @else
-            {!! $product_name !!}
+            {!! $product->pax !!}
         @endif
         <input type="hidden" class="enable_sr_no" value="{{$product->enable_sr_no}}">
         <input type="hidden"

@@ -1372,7 +1372,77 @@ class SellController extends Controller
             ->with(['causer', 'subject'])
             ->latest()
             ->get();
-
+        $sell_details = TransactionSellLine::
+        join(
+            'products AS p',
+            'transaction_sell_lines.product_id',
+            '=',
+            'p.id'
+        )
+            ->join(
+                'variations AS variations',
+                'transaction_sell_lines.variation_id',
+                '=',
+                'variations.id'
+            )
+            ->join(
+                'product_variations AS pv',
+                'variations.product_variation_id',
+                '=',
+                'pv.id'
+            )
+            ->join(
+                'transaction_sell_lines_variants',
+                'transaction_sell_lines_variants.transaction_sell_lines_id',
+                '=',
+                'transaction_sell_lines.id'
+            )
+            ->leftjoin('units', 'units.id', '=', 'p.unit_id')
+            ->where('transaction_sell_lines.transaction_id', $id)
+            ->with(['so_line','lot_details'])
+            ->select(
+                \Illuminate\Support\Facades\DB::raw("IF(pv.is_dummy = 0, CONCAT(p.name, ' (', pv.name, ':',variations.name, ')'), p.name) AS product_name"),
+                'p.id as product_id',
+                'p.name as product_actual_name',
+                'p.type as product_type',
+                'pv.name as product_variation_name',
+                'pv.is_dummy as is_dummy',
+                'variations.name as variation_name',
+                'variations.sub_sku',
+                'p.barcode_type',
+                'variations.id as variation_id',
+                'units.short_name as unit',
+                'units.allow_decimal as unit_allow_decimal',
+                'transaction_sell_lines.tax_id as tax_id',
+                'transaction_sell_lines.item_tax as item_tax',
+                'transaction_sell_lines.unit_price as default_sell_price',
+                'transaction_sell_lines.unit_price_before_discount as unit_price_before_discount',
+                'transaction_sell_lines.unit_price_inc_tax as sell_price_inc_tax',
+                'transaction_sell_lines.id as transaction_sell_lines_id',
+                'transaction_sell_lines.id',
+                'transaction_sell_lines.quantity as quantity_ordered',
+                'transaction_sell_lines.total_item_value as total_item_value',
+                'transaction_sell_lines.sell_line_note as sell_line_note',
+                'transaction_sell_lines.parent_sell_line_id',
+                'transaction_sell_lines.lot_no_line_id',
+                'transaction_sell_lines.line_discount_type',
+                'transaction_sell_lines.line_discount_amount',
+                'transaction_sell_lines.res_service_staff_id',
+                'transaction_sell_lines.time_slot',
+                'transaction_sell_lines.start_date',
+                'transaction_sell_lines.delivery_date',
+                'transaction_sell_lines.delivery_time',
+                'transaction_sell_lines.unit_price_inc_tax',
+                'transaction_sell_lines.unit_price_inc_tax',
+                'transaction_sell_lines.res_line_order_status',
+                'units.id as unit_id',
+                'transaction_sell_lines.sub_unit_id',
+                'transaction_sell_lines_variants.value',
+                'transaction_sell_lines_variants.pax',
+                'transaction_sell_lines_variants.name as transaction_sell_lines_variants_name',
+            /*DB::raw('vld.qty_available + transaction_sell_lines.quantity AS qty_available')*/
+            )
+            ->get();
         $line_taxes = [];
         $product_id = [];
         $product_name = [];
@@ -1453,7 +1523,8 @@ class SellController extends Controller
                 'sales_orders',
                 'line_taxes',
                 'product_ids',
-                'product_names'
+                'product_names',
+                'sell_details'
             ));
     }
 
@@ -1627,10 +1698,12 @@ class SellController extends Controller
                 'units.id as unit_id',
                 'transaction_sell_lines.sub_unit_id',
                 'transaction_sell_lines_variants.value',
+                'transaction_sell_lines_variants.pax',
                 'transaction_sell_lines_variants.name as transaction_sell_lines_variants_name',
             /*DB::raw('vld.qty_available + transaction_sell_lines.quantity AS qty_available')*/
             )
             ->get();
+
         $transaction_sell_lines_id = [];
         $transaction_sell_lines_days = '';
         $time_slot = '';

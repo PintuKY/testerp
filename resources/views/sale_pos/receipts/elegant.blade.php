@@ -1,3 +1,5 @@
+
+
 <table style="width:100%;">
     <thead>
     <tr>
@@ -7,7 +9,6 @@
                     @if(!empty($receipt_details->invoice_no_prefix))
                         {!! $receipt_details->invoice_no_prefix !!}
                     @endif
-
                     {{$receipt_details->invoice_no}}
                 </small>
             </p>
@@ -18,6 +19,7 @@
     <tbody>
     <tr>
         <td class="text-center" style="line-height: 15px !important; padding-bottom: 10px !important">
+
             @if(!empty($receipt_details->header_text))
                 {!! $receipt_details->header_text !!}
             @endif
@@ -33,6 +35,7 @@
             @if(!empty($receipt_details->invoice_heading))
                 <h2 style="font-weight: bold; font-size: 35px !important; margin-top: 10px;">{!! $receipt_details->invoice_heading !!}</h2>
             @endif
+
         </td>
     </tr>
 
@@ -271,6 +274,7 @@
                     </div>
                 </div>
             </div>
+
             @if(!empty($receipt_details->shipping_custom_field_1_label) || !empty($receipt_details->shipping_custom_field_2_label))
                 <div class="row">
                     <div class="col-xs-6">
@@ -325,12 +329,15 @@
                     </div>
                 </div>
             @endif
+
             <div class="row">
                 @includeIf('sale_pos.receipts.partial.common_repair_invoice')
             </div>
+
             <div class="row  mt-5">
                 <div class="col-xs-12">
                     @foreach($receipt_details->product_id as $key => $productId)
+
                         <table class="table table-bordered table-no-top-cell-border table-slim mb-12">
                             <thead>
                             <tr style="background-color: #357ca5 !important; color: white !important; font-size: 20px !important"
@@ -345,6 +352,7 @@
                                         $p_width -= 10;
                                     @endphp
                                 @endif
+
                                 @if(!empty($receipt_details->item_discount_label))
                                     @php
                                         $p_width -= 10;
@@ -364,11 +372,14 @@
                                 </td>
                             </tr>
                             </thead>
+
                             <tbody>
                             @php
                                 $subtotal = 0;
                             @endphp
+
                             @foreach($receipt_details->lines as $line)
+
                                 @if($line['product_id'] == $productId)
                                     <tr>
                                         <td class="text-center">
@@ -379,7 +390,7 @@
                                                 <img src="{{$line['image']}}" alt="Image" width="50"
                                                      style="float: left; margin-right: 8px;">
                                             @endif
-                                            {{$line['product_variation']}} {{$line['variation']}}
+                                            {{$line['product_variation']}} - {{$line['variation']}}
 
                                             @if(!empty($line['product_custom_fields']))
                                                 , {{$line['product_custom_fields']}}
@@ -410,6 +421,7 @@
                                             $ {{ $line['tran_sell_var_value'] }}
                                         </td>
                                     </tr>
+
                                     @if(!empty($line['modifiers']))
                                         @foreach($line['modifiers'] as $modifier)
                                             <tr>
@@ -470,15 +482,17 @@
                                                 $total_item_value = $edit_product[$productId]['total_item_value'];
                                                 $total_quantity = $edit_product[$productId]['quantity']
                                             @endphp
+
                                             <b>@lang('sale.total'): </b>
                                             <span
-                                                class="price_totals total_prices price_totals">${{round($total_item_value * $total_quantity,2)}}</span>
+                                                class="price_totals total_prices price_totals">${{$total_item_value * $total_quantity}}</span>
                                         </div>
                                     </td>
                                 </tr>
                             </table>
 
                         </div>
+
                     @endforeach
                 </div>
             </div>

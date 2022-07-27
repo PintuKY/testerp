@@ -10,6 +10,7 @@ use App\Events\TransactionPaymentUpdated;
 use App\Models\Transaction;
 use App\Models\TransactionPayment;
 
+use App\Utils\AppConstant;
 use App\Utils\ModuleUtil;
 use App\Utils\TransactionUtil;
 
@@ -436,7 +437,9 @@ class SupplierTransactionPaymentController extends Controller
         if (!(auth()->user()->can('sell.payments') || auth()->user()->can('purchase.payments'))) {
             abort(403, 'Unauthorized action.');
         }
-
+        $final = AppConstant::FINAL;
+        $processing = AppConstant::PROCESSING;
+        $completed = AppConstant::COMPLETED;
         if (request()->ajax()) {
             $business_id = request()->session()->get('user.business_id');
 
@@ -461,8 +464,8 @@ class SupplierTransactionPaymentController extends Controller
                     );
             } elseif ($due_payment_type == 'sell') {
                 $query->select(
-                    DB::raw("SUM(IF(t.type = 'sell' AND t.status = 'final', final_total, 0)) as total_invoice"),
-                    DB::raw("SUM(IF(t.type = 'sell' AND t.status = 'final', (SELECT SUM(IF(is_return = 1,-1*amount,amount)) FROM transaction_payments WHERE transaction_payments.transaction_id=t.id), 0)) as total_paid"),
+                    DB::raw("SUM(IF(t.type = 'sell' AND (t.status=$final OR t.status=$processing OR  t.status=$completed), final_total, 0)) as total_invoice"),
+                    DB::raw("SUM(IF(t.type = 'sell' AND (t.status=$final OR t.status=$processing OR  t.status=$completed), (SELECT SUM(IF(is_return = 1,-1*amount,amount)) FROM transaction_payments WHERE transaction_payments.transaction_id=t.id), 0)) as total_paid"),
                     'contacts.name',
                     'contacts.supplier_business_name',
                     'contacts.id as contact_id'

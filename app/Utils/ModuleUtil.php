@@ -242,7 +242,7 @@ class ModuleUtil extends Util
     {
         $query = Transaction::where('business_id', $business_id)
                             ->where('type', 'sell')
-                            ->where('status', 'final');
+                            ->whereIn('status', [AppConstant::FINAL,AppConstant::COMPLETED,AppConstant::PROCESSING]);
 
         if (!empty($start_dt) && !empty($start_dt)) {
             $query->whereBetween('created_at', [$start_dt, $end_dt]);

@@ -22,6 +22,7 @@ use App\Models\TransactionSellLine;
 use App\Models\TransactionSellLinesPurchaseLines;
 use App\Models\Unit;
 use App\Models\User;
+use App\Utils\AppConstant;
 use App\Utils\BusinessUtil;
 use App\Utils\ModuleUtil;
 use App\Utils\ProductUtil;
@@ -187,6 +188,9 @@ class ReportController extends Controller
 
         //Return the details in ajax call
         if ($request->ajax()) {
+            $final = AppConstant::FINAL;
+            $processing = AppConstant::PROCESSING;
+            $completed = AppConstant::COMPLETED;
             $contacts = Contact::where('contacts.business_id', $business_id)
                 ->join('transactions AS t', 'contacts.id', '=', 't.contact_id')
                 ->active()
@@ -194,9 +198,9 @@ class ReportController extends Controller
                 ->select(
                     DB::raw("SUM(IF(t.type = 'purchase', final_total, 0)) as total_purchase"),
                     DB::raw("SUM(IF(t.type = 'purchase_return', final_total, 0)) as total_purchase_return"),
-                    DB::raw("SUM(IF(t.type = 'sell' AND t.status = 'final', final_total, 0)) as total_invoice"),
+                    DB::raw("SUM(IF(t.type = 'sell' AND (t.status=$final OR t.status=$processing OR  t.status=$completed), final_total, 0)) as total_invoice"),
                     DB::raw("SUM(IF(t.type = 'purchase', (SELECT SUM(amount) FROM transaction_payments WHERE transaction_payments.transaction_id=t.id), 0)) as purchase_paid"),
-                    DB::raw("SUM(IF(t.type = 'sell' AND t.status = 'final', (SELECT SUM(IF(is_return = 1,-1*amount,amount)) FROM transaction_payments WHERE transaction_payments.transaction_id=t.id), 0)) as invoice_received"),
+                    DB::raw("SUM(IF(t.type = 'sell' AND (t.status=$final OR t.status=$processing OR  t.status=$completed), (SELECT SUM(IF(is_return = 1,-1*amount,amount)) FROM transaction_payments WHERE transaction_payments.transaction_id=t.id), 0)) as invoice_received"),
                     DB::raw("SUM(IF(t.type = 'sell_return', (SELECT SUM(amount) FROM transaction_payments WHERE transaction_payments.transaction_id=t.id), 0)) as sell_return_paid"),
                     DB::raw("SUM(IF(t.type = 'purchase_return', (SELECT SUM(amount) FROM transaction_payments WHERE transaction_payments.transaction_id=t.id), 0)) as purchase_return_received"),
                     DB::raw("SUM(IF(t.type = 'sell_return', final_total, 0)) as total_sell_return"),
@@ -299,6 +303,9 @@ class ReportController extends Controller
     {
         //Return the details in ajax call
         if ($request->ajax()) {
+            $final = AppConstant::FINAL;
+            $processing = AppConstant::PROCESSING;
+            $completed = AppConstant::COMPLETED;
             $business_id = $request->session()->get('user.business_id');
             $product_id = $request->input('product_id');
             $query = Product::leftjoin('units as u', 'products.unit_id', '=', 'u.id')
@@ -338,18 +345,16 @@ class ReportController extends Controller
 
                         LEFT JOIN purchase_lines AS TPL ON transactions.id=TPL.transaction_id
 
-                        WHERE transactions.status='final' AND transactions.type='sell' $location_filter
+                        WHERE (transactions.status=$final OR transactions.status=$processing OR  transactions.status=$completed) AND transactions.type='sell' $location_filter
                         AND (TSL.variation_id=v.id OR TPL.variation_id=v.id)) as total_sold"),
                 DB::raw("(SELECT SUM(IF(transactions.type='sell_transfer', TSL.quantity, 0) ) FROM transactions
                         LEFT JOIN transaction_sell_lines AS TSL ON transactions.id=TSL.transaction_id
-                        WHERE transactions.status='final' AND transactions.type='sell_transfer' $location_filter
+                        WHERE (transactions.status=$final OR transactions.status=$processing OR  transactions.status=$completed) AND transactions.type='sell_transfer' $location_filter
                         AND (TSL.variation_id=v.id)) as total_transfered"),
                 DB::raw("(SELECT SUM(IF(transactions.type='stock_adjustment', SAL.quantity, 0) ) FROM transactions
                         LEFT JOIN stock_adjustment_lines AS SAL ON transactions.id=SAL.transaction_id
                         WHERE transactions.status='received' AND transactions.type='stock_adjustment' $location_filter
                         AND (SAL.variation_id=v.id)) as total_adjusted")
-                // DB::raw("(SELECT SUM(quantity) FROM transaction_sell_lines LEFT JOIN transactions ON transaction_sell_lines.transaction_id=transactions.id WHERE transactions.status='final' $location_filter AND
-                //     transaction_sell_lines.variation_id=v.id) as total_sold")
             )
                         ->groupBy('v.id')
                         ->get();
@@ -398,7 +403,9 @@ class ReportController extends Controller
                     );
                 if ($type == 'sell') {
                     $sells->where('transactions.type', 'sell')
-                    ->where('transactions.status', 'final')
+                    ->where('transactions.status', AppConstant::COMPLETED)
+                    ->orWhere('transactions.status', AppConstant::PROCESSING)
+                    ->orWhere('transactions.status', AppConstant::FINAL)
                     ->where( function($query){
                         $query->whereHas('sell_lines',function($q){
                             $q->whereNotNull('transaction_sell_lines.tax_id');
@@ -1341,7 +1348,9 @@ class ReportController extends Controller
             $query = Transaction::leftjoin('customer_groups AS CG', 'transactions.customer_group_id', '=', 'CG.id')
                         ->where('transactions.business_id', $business_id)
                         ->where('transactions.type', 'sell')
-                        ->where('transactions.status', 'final')
+                ->where('transactions.status', AppConstant::COMPLETED)
+                ->orWhere('transactions.status', AppConstant::PROCESSING)
+                ->orWhere('transactions.status', AppConstant::FINAL)
                         ->groupBy('transactions.customer_group_id')
                         ->select(DB::raw("SUM(final_total) as total_sell"), 'CG.name');
 
@@ -1528,7 +1537,9 @@ class ReportController extends Controller
                 ->leftjoin('units as u', 'p.unit_id', '=', 'u.id')
                 ->where('t.business_id', $business_id)
                 ->where('t.type', 'sell')
-                ->where('t.status', 'final')
+                ->where('t.status', AppConstant::COMPLETED)
+                ->orWhere('t.status', AppConstant::PROCESSING)
+                ->orWhere('t.status', AppConstant::FINAL)
                 ->select(
                     'p.name as product_name',
                     'p.type as product_type',
@@ -1705,7 +1716,9 @@ class ReportController extends Controller
                 ->leftjoin('units as u', 'p.unit_id', '=', 'u.id')
                 ->where('t.business_id', $business_id)
                 ->where('t.type', 'sell')
-                ->where('t.status', 'final')
+                ->where('t.status', AppConstant::COMPLETED)
+                ->orWhere('t.status', AppConstant::PROCESSING)
+                ->orWhere('t.status', AppConstant::FINAL)
                 ->select(
                     'p.name as product_name',
                     'p.type as product_type',
@@ -2222,7 +2235,9 @@ class ReportController extends Controller
             $query = ResTable::leftjoin('transactions AS T', 'T.res_table_id', '=', 'res_tables.id')
                         ->where('T.business_id', $business_id)
                         ->where('T.type', 'sell')
-                        ->where('T.status', 'final')
+                ->where('T.status', AppConstant::COMPLETED)
+                ->orWhere('T.status', AppConstant::PROCESSING)
+                ->orWhere('T.status', AppConstant::FINAL)
                         ->groupBy('res_tables.id')
                         ->select(DB::raw("SUM(final_total) as total_sell"), 'res_tables.name as table');
 
@@ -2311,7 +2326,9 @@ class ReportController extends Controller
                 ->leftjoin('units as u', 'p.unit_id', '=', 'u.id')
                 ->where('t.business_id', $business_id)
                 ->where('t.type', 'sell')
-                ->where('t.status', 'final')
+                ->where('t.status', AppConstant::COMPLETED)
+                ->orWhere('t.status', AppConstant::PROCESSING)
+                ->orWhere('t.status', AppConstant::FINAL)
                 ->select(
                     'p.name as product_name',
                     'p.type as product_type',
@@ -2429,7 +2446,9 @@ class ReportController extends Controller
                 ->leftjoin('brands as b', 'p.brand_id', '=', 'b.id')
                 ->where('t.business_id', $business_id)
                 ->where('t.type', 'sell')
-                ->where('t.status', 'final')
+                ->where('t.status', AppConstant::COMPLETED)
+                ->orWhere('t.status', AppConstant::PROCESSING)
+                ->orWhere('t.status', AppConstant::FINAL)
                 ->select(
                     'b.name as brand_name',
                     'cat.name as category_name',
@@ -2533,19 +2552,21 @@ class ReportController extends Controller
             if (!is_null($variation_id)) {
                 $query->where('variations.id', $variation_id);
             }
-
+            $final = AppConstant::FINAL;
+            $processing = AppConstant::PROCESSING;
+            $completed = AppConstant::COMPLETED;
             $stock_details = $query->select(
                 DB::raw("(SELECT SUM(COALESCE(TSL.quantity, 0)) FROM transactions
                         LEFT JOIN transaction_sell_lines AS TSL ON transactions.id=TSL.transaction_id
-                        WHERE transactions.status='final' AND transactions.type='sell' AND transactions.location_id=$location_id
+                        WHERE (transactions.status=$final OR transactions.status=$processing OR  transactions.status=$completed) AND transactions.type='sell' AND transactions.location_id=$location_id
                         AND TSL.variation_id=variations.id) as total_sold"),
                 DB::raw("(SELECT SUM(COALESCE(TSL.quantity_returned, 0)) FROM transactions
                         LEFT JOIN transaction_sell_lines AS TSL ON transactions.id=TSL.transaction_id
-                        WHERE transactions.status='final' AND transactions.type='sell' AND transactions.location_id=$location_id
+                        WHERE (transactions.status=$final OR transactions.status=$processing OR  transactions.status=$completed) AND transactions.type='sell' AND transactions.location_id=$location_id
                         AND TSL.variation_id=variations.id) as total_sell_return"),
                 DB::raw("(SELECT SUM(COALESCE(TSL.quantity,0)) FROM transactions
                         LEFT JOIN transaction_sell_lines AS TSL ON transactions.id=TSL.transaction_id
-                        WHERE transactions.status='final' AND transactions.type='sell_transfer' AND transactions.location_id=$location_id
+                        WHERE (transactions.status=$final OR transactions.status=$processing OR  transactions.status=$completed) AND transactions.type='sell_transfer' AND transactions.location_id=$location_id
                         AND TSL.variation_id=variations.id) as total_sell_transfered"),
                 DB::raw("(SELECT SUM(COALESCE(PL.quantity,0)) FROM transactions
                         LEFT JOIN purchase_lines AS PL ON transactions.id=PL.transaction_id
@@ -2577,7 +2598,7 @@ class ReportController extends Controller
                         AND PL.variation_id=variations.id) as total_manufactured"),
                 DB::raw("(SELECT SUM(COALESCE(TSL.quantity, 0)) FROM transactions
                         LEFT JOIN transaction_sell_lines AS TSL ON transactions.id=TSL.transaction_id
-                        WHERE transactions.status='final' AND transactions.type='production_sell' AND transactions.location_id=$location_id
+                        WHERE (transactions.status=$final OR transactions.status=$processing OR  transactions.status=$completed) AND transactions.type='production_sell' AND transactions.location_id=$location_id
                         AND TSL.variation_id=variations.id) as total_ingredients_used"),
                 DB::raw("SUM(vld.qty_available) as stock"),
                 'variations.sub_sku as sub_sku',
@@ -2683,7 +2704,9 @@ class ReportController extends Controller
                 )
                 ->where('t.business_id', $business_id)
                 ->where('t.type', 'sell')
-                ->where('t.status', 'final')
+            ->where('t.status', AppConstant::COMPLETED)
+            ->orWhere('t.status', AppConstant::PROCESSING)
+            ->orWhere('t.status', AppConstant::FINAL)
                 ->whereNotNull('transaction_sell_lines.res_service_staff_id');
 
 
@@ -2791,7 +2814,9 @@ class ReportController extends Controller
                 'PL.id'
             )
             ->where('sale.type', 'sell')
-            ->where('sale.status', 'final')
+            ->where('sale.status', AppConstant::COMPLETED)
+            ->orWhere('sale.status', AppConstant::PROCESSING)
+            ->orWhere('sale.status', AppConstant::FINAL)
             ->join('products as P', 'transaction_sell_lines.product_id', '=', 'P.id')
             ->where('sale.business_id', $business_id)
             ->where('transaction_sell_lines.children_type', '!=', 'combo');

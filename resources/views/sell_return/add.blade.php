@@ -91,48 +91,52 @@
 
                                     <th>{{ __('sale.subtotal') }}</th>
                                 </tr>
-                                @foreach($sell->sell_lines as $sell_line)
-                                    @if($sell_line->product->id == $productId)
-                                        <tr>
-                                            <td>{{ $loop->iteration }}</td>
-                                            <td>
-                                                @if( $sell_line->product->type == 'variable')
-                                                    {{ $sell_line->variations->product_variation->name ?? ''}}
-                                                    - {{ $sell_line->variations->name ?? ''}}
-                                                @endif
-
-
-                                                @if(!empty($sell_line->sell_line_note))
-                                                    <br> {{$sell_line->sell_line_note}}
-                                                @endif
-
-
-                                                @if(in_array('kitchen', $enabled_modules))
-                                                    <br><span
-                                                        class="label @if($sell_line->res_line_order_status == 'cooked' ) bg-red @elseif($sell_line->res_line_order_status == 'served') bg-green @else bg-light-blue @endif">@lang('restaurant.order_statuses.' . $sell_line->res_line_order_status) </span>
-                                                @endif
-                                            </td>
-                                            @if( session()->get('business.enable_lot_number') == 1)
-                                                <td>{{ $sell_line->lot_details->lot_number ?? '--' }}
-                                                    @if( session()->get('business.enable_product_expiry') == 1 && !empty($sell_line->lot_details->exp_date))
-                                                        ({{@format_date($sell_line->lot_details->exp_date)}})
-                                                    @endif
-                                                </td>
+                                @foreach($sell_details as $sell_line)
+                                    {{-- @foreach($sell->sell_lines as $sell_line)--}}
+                                    @if($sell_line->product_id == $productId){{--
+            @if($sell_line->product->id == $productId)--}}
+                                    <tr>
+                                        <td>{{ $loop->iteration }}</td>
+                                        <td>
+                                            {{--@if( $sell_line->product->type == 'variable')
+                                                {{ $sell_line->variations->product_variation->name ?? ''}}
+                                                - {{ $sell_line->variations->name ?? ''}}
+                                            @endif--}}
+                                            @if( $sell_line->product_type == 'variable')
+                                                {{ $sell_line->pax ?? ''}}
+                                                - {{ $sell_line->transaction_sell_lines_variants_name ?? ''}}
                                             @endif
 
-                                            <td>
-                <span class="display_currency"
-                      data-currency_symbol="true">{{  ($sell_line->transactionSellLinesVariants->isNotEmpty()) ? $sell_line->transactionSellLinesVariants[0]->value : '0'}}</span>
+                                            @if(!empty($sell_line->sell_line_note))
+                                                <br> {{$sell_line->sell_line_note}}
+                                            @endif
+
+
+                                            @if(in_array('kitchen', $enabled_modules))
+                                                <br><span
+                                                    class="label @if($sell_line->res_line_order_status == 'cooked' ) bg-red @elseif($sell_line->res_line_order_status == 'served') bg-green @else bg-light-blue @endif">@lang('restaurant.order_statuses.' . $sell_line->res_line_order_status) </span>
+                                            @endif
+                                        </td>
+                                        @if( session()->get('business.enable_lot_number') == 1)
+                                            <td>{{ $sell_line->lot_details->lot_number ?? '--' }}
+                                                @if( session()->get('business.enable_product_expiry') == 1 && !empty($sell_line->lot_details->exp_date))
+                                                    ({{@format_date($sell_line->lot_details->exp_date)}})
+                                                @endif
                                             </td>
-                                        </tr>
+                                        @endif
+
+                                        <td>
+                <span class="display_currency"
+                      data-currency_symbol="true">{{  ($sell_line->value) ? $sell_line->value : '0'}}</span>
+                                        </td>
+                                    </tr>
                                     @endif
                                     @if(!empty($sell_line->modifiers))
                                         @foreach($sell_line->modifiers as $modifier)
                                             <tr>
                                                 <td>&nbsp;</td>
                                                 <td>
-                                                    {{ $modifier->product->name }}
-                                                    - {{ $modifier->variations->name ?? ''}}
+                                                    {{ $modifier->product->name }} - {{ $modifier->variations->name ?? ''}}
                                                 </td>
                                                 @if( session()->get('business.enable_lot_number') == 1)
                                                     <td>&nbsp;</td>
@@ -151,8 +155,7 @@
                                                     &nbsp;
                                                 </td>
                                                 <td>
-                                                    <span class="display_currency"
-                                                          data-currency_symbol="true">{{ $modifier->item_tax }}</span>
+                                                    <span class="display_currency" data-currency_symbol="true">{{ $modifier->item_tax }}</span>
                                                     @if(!empty($taxes[$modifier->tax_id]))
                                                         ( {{ $taxes[$modifier->tax_id]}} )
                                                     @endif

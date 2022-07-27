@@ -24,7 +24,13 @@
                     {!! Form::label('unit_id', __('product.unit') . ':') !!}
                     {!! Form::select('unit_id', $units, null, ['class' => 'form-control select2', 'style' => 'width:100%', 'id' => 'supplier_product_list_filter_unit_id', 'placeholder' => __('lang_v1.all')]); !!}
                 </div>
-            </div>            
+            </div>   
+            <div class="col-md-3">
+                <div class="form-group">
+                    {!! Form::label('brand_id', 'Brands:') !!}
+                    {!! Form::select('brand_id', $brands, null, ['class' => 'form-control select2', 'style' => 'width:100%', 'id' => 'supplier_product_list_filter_brand_id', 'placeholder' => __('lang_v1.all')]); !!}
+                </div>
+            </div>             
             <div class="col-md-3">
                 <div class="form-group">
                     {!! Form::label('tax','Tax' . ':') !!}
@@ -82,6 +88,7 @@ $(document).ready(function () {
                d.category_id = $('#supplier_product_list_filter_category_id').val();
                d.tax = $('#supplier_product_list_filter_tax').val();
                d.unit_id = $('#supplier_product_list_filter_unit_id').val();
+               d.brand_id = $('#supplier_product_list_filter_brand_id').val();
                d = __datatable_ajax_callback(d);
            }
        },
@@ -95,12 +102,13 @@ $(document).ready(function () {
                     {data: 'purchase_price_inc_tax', name: 'purchase_price_inc_tax'},
                     {data: 'category', name: 'supplier_product_categories.name'},
                     {data: 'unit', name: 'unit', searchable: false},
+                    {data: 'brand', name: 'supplier_product_brands.name'},
                     {data: 'weight', name: 'weight', searchable: false},
                     {data: 'alert_quantity', name: 'alert_quantity', searchable: false},
                 ],
     });
 
-$(document).on('change', '#supplier_product_list_filter_category_id, #supplier_product_list_filter_tax,#supplier_product_list_filter_unit_id',
+$(document).on('change', '#supplier_product_list_filter_category_id, #supplier_product_list_filter_tax,#supplier_product_list_filter_unit_id,#supplier_product_list_filter_brand_id',
 function () {
     supplier_product_table.ajax.reload();
 });

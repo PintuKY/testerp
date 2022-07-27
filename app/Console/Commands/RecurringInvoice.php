@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Utils\AppConstant;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -56,7 +57,7 @@ class RecurringInvoice extends Command
             ini_set('memory_limit', '512M');
             $transactions = Transaction::where('is_recurring', 1)
                                 ->where('type', 'sell')
-                                ->where('status', 'final')
+                                ->whereIn('status', [AppConstant::FINAL,AppConstant::COMPLETED,AppConstant::PROCESSING])
                                 ->whereNull('recur_stopped_on')
                                 ->whereNotNull('recur_interval')
                                 ->whereNotNull('recur_interval_type')
@@ -135,7 +136,7 @@ class RecurringInvoice extends Command
                     $recurring_invoice = $this->transactionUtil->createRecurringInvoice($transaction, $save_as_draft);
 
                     //Update variation location details if status is final
-                    if ($recurring_invoice->status == 'final') {
+                    if ($recurring_invoice->status == AppConstant::FINAL || $recurring_invoice->status == AppConstant::PROCESSING || $recurring_invoice->status == AppConstant::COMPLETED ) {
 
 
                         $business = ['id' => $transaction->business_id,

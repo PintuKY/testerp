@@ -33,6 +33,7 @@ use App\Models\BusinessLocation;
 use App\Models\Category;
 use App\Models\Contact;
 use App\Models\CustomerGroup;
+use App\Models\MasterList;
 use App\Models\Media;
 use App\Models\Product;
 use App\Models\SellingPriceGroup;
@@ -41,6 +42,7 @@ use App\Models\Transaction;
 use App\Models\TransactionSellLine;
 use App\Models\TypesOfService;
 use App\Models\User;
+use App\Utils\AppConstant;
 use App\Utils\BusinessUtil;
 use App\Utils\CashRegisterUtil;
 use App\Utils\ContactUtil;
@@ -487,7 +489,8 @@ class SellPosController extends Controller
 
 
                 //Check for final and do some processing.
-                if ($input['status'] == 'final') {
+                //if ($input['status'] == 'final') {
+                if($input['status'] == AppConstant::FINAL || $input['status'] == AppConstant::COMPLETED || $input['status'] == AppConstant::PROCESSING){
                     //update product stock
                     foreach ($input['products'] as $product) {
 
@@ -564,7 +567,7 @@ class SellPosController extends Controller
                             $msg = trans("lang_v1.quotation_added");
                             $print_invoice = true;
                         }
-                    } elseif ($input['status'] == 'final') {
+                    } elseif ($input['status'] == AppConstant::FINAL || $input['status'] == AppConstant::COMPLETED || $input['status'] == AppConstant::PROCESSING) {
                         $print_invoice = true;
                     }
                 }
@@ -686,7 +689,6 @@ class SellPosController extends Controller
 
         $receipt_details = $this->transactionUtil->getReceiptDetails($transaction_id, $location_id, $invoice_layout, $business_details, $location_details, $receipt_printer_type);
 
-
         $unique_array = [];
         $edit_product = [];
         foreach($receipt_details->lines as $element) {
@@ -694,7 +696,7 @@ class SellPosController extends Controller
             $unique_array[$hash] = $element;
             $edit_product[$element['product_id']] = [
                 'quantity' => $element['quantity_uf'],
-                'total_item_value' =>  $element['total_item_value'],
+                'total_item_value' =>  $element['total_item_value_uf'],
             ];
         }
         $total_sell = array_values($unique_array);
@@ -843,7 +845,8 @@ class SellPosController extends Controller
                 if (!empty($sell_details[$key]->parent_sell_line_id)) {
                     unset($sell_details[$key]);
                 } else {
-                    if ($transaction->status != 'final') {
+                    if ($transaction->status != AppConstant::FINAL || $transaction->status != AppConstant::COMPLETED || $transaction->status != AppConstant::PROCESSING) {
+                    //if ($transaction->status != 'final') {
                         $actual_qty_avlbl = $value->qty_available - $value->quantity_ordered;
                         $sell_details[$key]->qty_available = $actual_qty_avlbl;
                         $value->qty_available = $actual_qty_avlbl;
@@ -917,7 +920,8 @@ class SellPosController extends Controller
                         $sell_details[$key]->qty_available =
                         $this->productUtil->calculateComboQuantity($location_id, $combo_variations);
 
-                        if ($transaction->status == 'final') {
+                        if($transaction->status == AppConstant::FINAL || $transaction->status == AppConstant::COMPLETED || $transaction->status == AppConstant::PROCESSING){
+                        //if ($transaction->status == 'final') {
                             $sell_details[$key]->qty_available = $sell_details[$key]->qty_available + $sell_details[$key]->quantity_ordered;
                         }
 
@@ -1182,6 +1186,11 @@ class SellPosController extends Controller
 
                 $deleted_lines = $this->transactionUtil->createOrUpdateSellLines($input,$transaction, $input['products'], $input['location_id'], /*$input['number_of_days'],$input['time_slot'],*/ $status_before,'');
 
+                if($transaction->status != ''){
+                    MasterList::where('transaction_id',$transaction->id)->whereDate('delivery_date', '>=', date('Y-m-d'))->update([
+                        'sell_status'=>$transaction->status
+                    ]);
+                }
                 //Update update lines
                 $is_credit_sale = isset($input['is_credit_sale']) && $input['is_credit_sale'] == 1 ? true : false;
                 $new_sales_order_ids = $transaction->sales_order_ids ?? [];
@@ -1281,7 +1290,8 @@ class SellPosController extends Controller
                     } else {
                         $receipt = '';
                     }
-                } elseif ($input['status'] == 'final') {
+                //} elseif ($input['status'] == 'final') {
+                } elseif($input['status'] == AppConstant::FINAL || $input['status'] == AppConstant::COMPLETED || $input['status'] == AppConstant::PROCESSING){
                     $msg = trans("sale.pos_sale_updated");
                     if (!$is_direct_sale && $can_print_invoice) {
                         $receipt = $this->receiptContent($business_id, $input['location_id'], $transaction->id, null, false, true, $invoice_layout_id);
@@ -1607,14 +1617,6 @@ class SellPosController extends Controller
                         ->where('transactions.type', 'sell')
                         ->where('is_direct_sale', 0);
 
-        if ($transaction_status == 'final') {
-            //Commented as credit sales not showing
-            // if (!empty($register->id)) {
-            //     $query->leftjoin('cash_register_transactions as crt', 'transactions.id', '=', 'crt.transaction_id')
-            //     ->where('crt.cash_register_id', $register->id);
-            // }
-        }
-
         if ($transaction_status == 'quotation') {
             $query->where('transactions.status', 'draft')
                 ->where('sub_status', 'quotation');
@@ -1680,6 +1682,7 @@ class SellPosController extends Controller
                     $output = ['success' => 1, 'receipt' => $receipt];
                 }
             } catch (\Exception $e) {
+                dd($e->getMessage());
                 \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
 
                 $output = ['success' => 0,
@@ -1860,20 +1863,23 @@ class SellPosController extends Controller
         $business_details = $this->businessUtil->getDetails($business->id);
         $pos_settings = empty($business->pos_settings) ? $this->businessUtil->defaultPosSettings() : json_decode($business->pos_settings, true);
 
-        if (!empty($transaction) && $transaction->status == 'final' && !empty($pos_settings['enable_payment_link'])) {
+        if (!empty($transaction) && !empty($pos_settings['enable_payment_link'])) {
+            if($transaction->status == AppConstant::FINAL || $transaction->status == AppConstant::COMPLETED || $transaction->status == AppConstant::PROCESSING) {
+                $title = $transaction->business->name . ' | ' . $transaction->invoice_no;
+                $paid_amount = $this->transactionUtil->getTotalPaid($transaction->id);
+                $total_payable = $transaction->final_total - $paid_amount;
 
-            $title = $transaction->business->name . ' | ' . $transaction->invoice_no;
-            $paid_amount = $this->transactionUtil->getTotalPaid($transaction->id);
-            $total_payable = $transaction->final_total - $paid_amount;
+                $total_payable_formatted = $this->transactionUtil->num_f($total_payable, true, $business_details);
+                $date_formatted = $this->transactionUtil->format_date($transaction->transaction_date, true, $business_details);
+                $total_amount = $this->transactionUtil->num_f($transaction->final_total, true, $business_details);
+                $total_paid = $this->transactionUtil->num_f($paid_amount, true, $business_details);
 
-            $total_payable_formatted = $this->transactionUtil->num_f($total_payable, true, $business_details);
-            $date_formatted = $this->transactionUtil->format_date($transaction->transaction_date, true, $business_details);
-            $total_amount = $this->transactionUtil->num_f($transaction->final_total, true, $business_details);
-            $total_paid = $this->transactionUtil->num_f($paid_amount, true, $business_details);
-
-            return view('sale_pos.partials.guest_payment_form')
+                return view('sale_pos.partials.guest_payment_form')
                     ->with(compact('transaction', 'title', 'pos_settings', 'total_payable', 'total_payable_formatted', 'date_formatted', 'total_amount', 'total_paid', 'business_details'));
-        } else {
+
+            }
+        }
+        else {
             die(__("messages.something_went_wrong"));
         }
     }
@@ -2006,7 +2012,9 @@ class SellPosController extends Controller
                 )
                 ->where('transactions.business_id', $business_id)
                 ->where('transactions.type', 'sell')
-                ->where('transactions.status', 'final')
+                ->where('transactions.status', AppConstant::FINAL)
+                ->orWhere('transactions.status', AppConstant::PROCESSING)
+                ->orWhere('transactions.status', AppConstant::COMPLETED)
                 ->where('transactions.is_recurring', 1)
                 ->select(
                     'transactions.id',
@@ -2257,7 +2265,8 @@ class SellPosController extends Controller
                 'contact_id' => $input['customer_id'],
                 'final_total' => $final_total,
                 'created_by' => $user_id,
-                'status' => 'final',
+                //'status' => 'final',
+                'status' => $input['status'],
                 'payment_status' => 'due',
                 'additional_notes' => '',
                 'transaction_date' => Carbon::now(),
@@ -2457,7 +2466,8 @@ class SellPosController extends Controller
             $data = [
                 'final_total' => $transaction->final_total,
                 'contact_id' => $transaction->contact_id,
-                'status' => 'final'
+                //'status' => 'final'
+                'status' => $transaction->status
             ];
             $is_credit_limit_exeeded = $this->transactionUtil->isCustomerCreditLimitExeeded($data, $id);
 
@@ -2477,11 +2487,11 @@ class SellPosController extends Controller
                 return redirect()->action('CashRegisterController@create');
             }
 
-            $invoice_no = $this->transactionUtil->getInvoiceNumber($business_id, 'final', $transaction->location_id);
+            $invoice_no = $this->transactionUtil->getInvoiceNumber($business_id, $transaction->status, $transaction->location_id);
 
             $transaction->invoice_no = $invoice_no;
             $transaction->transaction_date = Carbon::now();
-            $transaction->status = 'final';
+            $transaction->status = $transaction->status;
             $transaction->sub_status = null;
             $transaction->is_quotation = 0;
             $transaction->save();

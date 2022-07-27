@@ -57,4 +57,27 @@ return [
         3 => 'Both',
     ],
 
+    'user_status' => [
+        \App\Utils\AppConstant::FINAL,
+        \App\Utils\AppConstant::PROCESSING,
+        \App\Utils\AppConstant::COMPLETED,
+        \App\Utils\AppConstant::CANCELLED,
+        \App\Utils\AppConstant::PAYMENT_PENDING,
+        \App\Utils\AppConstant::REFUND,
+        \App\Utils\AppConstant::FAILED,
+    ],
+    'admin_status' => [
+        \App\Utils\AppConstant::FINAL,
+        \App\Utils\AppConstant::PROCESSING,
+        \App\Utils\AppConstant::COMPLETED,
+        \App\Utils\AppConstant::CANCELLED,
+        \App\Utils\AppConstant::PAYMENT_PENDING,
+        \App\Utils\AppConstant::REFUND,
+        \App\Utils\AppConstant::FAILED,
+    ],
+    'saif_status' => [
+        \App\Utils\AppConstant::FINAL,
+        \App\Utils\AppConstant::COMPLETED,
+    ],
+
 ];

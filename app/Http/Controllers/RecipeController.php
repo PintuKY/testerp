@@ -2,18 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Ingredient;
-use App\Models\Recipe;
-use App\Models\RecipeItem;
-use App\Models\SellingPriceGroup;
-use App\Models\TaxRate;
-use App\Utils\Util;
-use App\Models\Variation;
-use App\Models\VariationGroupPrice;
-use Carbon\Carbon;
 use DB;
 use Excel;
+use Carbon\Carbon;
+use App\Utils\Util;
+use App\Models\Recipe;
+use App\Models\TaxRate;
+use App\Models\Variation;
+use App\Models\Ingredient;
+use App\Models\RecipeItem;
 use Illuminate\Http\Request;
+use App\Models\SupplierProduct;
+use App\Models\SellingPriceGroup;
+use App\Models\VariationGroupPrice;
 use Illuminate\Support\Facades\Log;
 use Spatie\Permission\Models\Permission;
 use Yajra\DataTables\Facades\DataTables;
@@ -89,9 +90,9 @@ class RecipeController extends Controller
         if (!auth()->user()->can('product.create')) {
             abort(403, 'Unauthorized action.');
         }
-        $parent_ingredient = Ingredient::whereNull('ingredient_parent_id')->active()->pluck('name', 'id')->toArray();
+        // $parent_ingredient = Ingredient::whereNull('ingredient_parent_id')->active()->pluck('name', 'id')->toArray();
 
-        return view('recipe.create')->with(compact('parent_ingredient'));
+        return view('recipe.create');
     }
 
     /**
@@ -119,7 +120,7 @@ class RecipeController extends Controller
                     $spg = RecipeItem::create([
                         'recipe_id' => $menu->id,
                         'ingredient_id' => $key,
-                        'measure_type' => $item['measure_type'],
+                        // 'measure_type' => $item['measure_type'],
                         'quantity' => $item['quantity'],
                         'created_at' => Carbon::now(),
                         'updated_at' => Carbon::now()
@@ -167,16 +168,16 @@ class RecipeController extends Controller
         if (!auth()->user()->can('product.create')) {
             abort(403, 'Unauthorized action.');
         }
-        $menu = Recipe::with(['recipe_items', 'recipe_items.ingredient'])->where('id', $id)->first();
+        $menu = Recipe::with(['recipe_items','recipe_items.ingredient.unit'])->where('id', $id)->first();
         $ing_id = [];
         foreach ($menu->recipe_items as $item) {
             $ing_id[] = $item->ingredient_id;
         }
-        $selected_ingredient = Ingredient::whereIn('id', $ing_id)->get();
+        // $selected_ingredient = Ingredient::whereIn('id', $ing_id)->get();
 
-        $parent_ingredient = Ingredient::whereNull('ingredient_parent_id')->active()->pluck('name', 'id')->toArray();
+        // $parent_ingredient = Ingredient::whereNull('ingredient_parent_id')->active()->pluck('name', 'id')->toArray();
         return view('recipe.edit')
-            ->with(compact('menu', 'selected_ingredient', 'parent_ingredient'));
+            ->with(compact('menu'));
 
     }
 
@@ -234,7 +235,7 @@ class RecipeController extends Controller
                         RecipeItem::create([
                             'recipe_id' => $menu->id,
                             'ingredient_id' => $key,
-                            'measure_type' => $item['measure_type'],
+                            // 'measure_type' => $item['measure_type'],
                             'quantity' => $item['quantity'],
                             'created_at' => Carbon::now(),
                             'updated_at' => Carbon::now()
@@ -243,7 +244,7 @@ class RecipeController extends Controller
                 }else{
                     foreach ($input as $key => $item) {
                         RecipeItem::where(['recipe_id'=> $id, 'ingredient_id'=>$key])->update([
-                            'measure_type' => $item['measure_type'],
+                            // 'measure_type' => $item['measure_type'],
                             'quantity' => $item['quantity'],
                         ]);
                     }
@@ -254,7 +255,6 @@ class RecipeController extends Controller
                 'msg' => __("lang_v1.updated_success")
             ];
         } catch (\Exception $e) {
-            dd($e->getMessage());
             \Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
 
             $output = ['success' => false,
@@ -301,19 +301,20 @@ class RecipeController extends Controller
         if (request()->ajax()) {
             $search_term = request()->input('term', '');
             $search_fields = request()->get('search_fields', ['name']);
-
-            $query = Ingredient::whereNotNull('ingredient_parent_id')->active();
+            $query = SupplierProduct::where('deleted_at',null);
+            // Log::info($query);
+            // $query = Ingredient::whereNotNull('ingredient_parent_id')->active();
             //Include search
             if (!empty($search_term)) {
                 $query->where(function ($query) use ($search_term, $search_fields) {
                     if (in_array('name', $search_fields)) {
-                        $query->where('ingredients.name', 'like', '%' . $search_term . '%');
+                        $query->where('supplier_products.name', 'like', '%' . $search_term . '%');
                     }
                 });
             }
             $query->select(
-                'ingredients.id as product_id',
-                'ingredients.name',
+                'supplier_products.id as product_id',
+                'supplier_products.name',
             );
             $result = $query->get();
             return json_encode($result);
@@ -323,7 +324,7 @@ class RecipeController extends Controller
     public function getIngRow($id)
     {
         if ($id != '') {
-            $ingredient = Ingredient::where('id', $id)->first();
+            $ingredient = SupplierProduct::with('unit')->where('id', $id)->first();
             $output['html_content'] = view('recipe.product_row')
                 ->with(compact('ingredient'))
                 ->render();

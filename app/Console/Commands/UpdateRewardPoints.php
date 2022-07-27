@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Business;
 
 use App\Models\Transaction;
+use App\Utils\AppConstant;
 use App\Utils\NotificationUtil;
 
 use App\Utils\ProductUtil;
@@ -71,7 +72,7 @@ class UpdateRewardPoints extends Command
 
                 $transactions = Transaction::where('business_id', $business->id)
                                         ->where('type', 'sell')
-                                        ->where('status', 'final')
+                                        ->whereIn('status', [AppConstant::FINAL,AppConstant::COMPLETED,AppConstant::PROCESSING])
                                         ->whereDate('transaction_date', '<=', $transaction_date_to_be_expired->format('Y-m-d'))
                                         ->whereNotNull('rp_earned')
                                         ->with(['contact'])

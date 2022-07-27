@@ -43,6 +43,7 @@
             @empty
             @endforelse
         @empty
+            No records found
         @endforelse
 
 

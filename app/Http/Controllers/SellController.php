@@ -18,6 +18,7 @@ use App\Models\TransactionSellLinesDay;
 use App\Models\TypesOfService;
 use App\Models\User;
 use App\Models\VariationValueTemplate;
+use App\Utils\AppConstant;
 use App\Utils\BusinessUtil;
 use App\Utils\ContactUtil;
 use App\Utils\ModuleUtil;
@@ -433,7 +434,7 @@ class SellController extends Controller
                                 }
                             }
 
-                            $html .= '<li><a href="#" data-href="' . action('NotificationController@getTemplate', ["transaction_id" => $row->id, "template_for" => "new_sale"]) . '" class="btn-modal" data-container=".view_modal"><i class="fa fa-envelope" aria-hidden="true"></i>' . __("lang_v1.new_sale_notification") . '</a></li>';
+                            $html .= '<li><a href="#" data-href="' . action('NotificationController@getTemplate', ["transaction_id" => $row->id, "template_for" => "new_sale"]) . '" class="btn-modal" data-container=".view_modal"><i class="fa fa-envelope" aria-hidden="true"></i>' . __("lang_v1.sale_notification") . '</a></li>';
                         } else {
                             $html .= '<li><a href="#" data-href="' . action('SellController@viewMedia', ["model_id" => $row->id, "model_type" => "App\Models\Transaction", 'model_media_type' => 'shipping_document']) . '" class="btn-modal" data-container=".view_modal"><i class="fas fa-paperclip" aria-hidden="true"></i>' . __("lang_v1.shipping_documents") . '</a></li>';
                         }
@@ -481,13 +482,18 @@ class SellController extends Controller
                     }
                 )
                 ->editColumn(
+                    'sell_status',
+                    function ($row) {
+                        return $row->status;
+                    }
+                )
+                ->editColumn(
                     'types_of_service_name',
                     '<span class="service-type-label" data-orig-value="{{$types_of_service_name}}" data-status-name="{{$types_of_service_name}}">{{$types_of_service_name}}</span>'
                 )
                 ->addColumn('total_remaining', function ($row) {
                     $total_remaining = $row->final_total - $row->total_paid;
                     $total_remaining_html = '<span class="payment_due" data-orig-value="' . $total_remaining . '">' . $this->transactionUtil->num_f($total_remaining, true) . '</span>';
-
 
                     return $total_remaining_html;
                 })
@@ -497,7 +503,6 @@ class SellController extends Controller
                         $return_due = $row->amount_return - $row->return_paid;
                         $return_due_html .= '<a href="' . action("TransactionPaymentController@show", [$row->return_transaction_id]) . '" class="view_purchase_return_payment_modal"><span class="sell_return_due" data-orig-value="' . $return_due . '">' . $this->transactionUtil->num_f($return_due, true) . '</span></a>';
                     }
-
                     return $return_due_html;
                 })
                 ->editColumn('invoice_no', function ($row) use ($is_crm) {
@@ -1003,7 +1008,7 @@ class SellController extends Controller
                                 }
                             }
 
-                            $html .= '<li><a href="#" data-href="' . action('NotificationController@getTemplate', ["transaction_id" => $row->id, "template_for" => "new_sale"]) . '" class="btn-modal" data-container=".view_modal"><i class="fa fa-envelope" aria-hidden="true"></i>' . __("lang_v1.new_sale_notification") . '</a></li>';
+                            $html .= '<li><a href="#" data-href="' . action('NotificationController@getTemplate', ["transaction_id" => $row->id, "template_for" => "new_sale"]) . '" class="btn-modal" data-container=".view_modal"><i class="fa fa-envelope" aria-hidden="true"></i>' . __("lang_v1.sale_notification") . '</a></li>';
                         } else {
                             $html .= '<li><a href="#" data-href="' . action('SellController@viewMedia', ["model_id" => $row->id, "model_type" => "App\Models\Transaction", 'model_media_type' => 'shipping_document']) . '" class="btn-modal" data-container=".view_modal"><i class="fas fa-paperclip" aria-hidden="true"></i>' . __("lang_v1.shipping_documents") . '</a></li>';
                         }
@@ -1367,7 +1372,77 @@ class SellController extends Controller
             ->with(['causer', 'subject'])
             ->latest()
             ->get();
-
+        $sell_details = TransactionSellLine::
+        join(
+            'products AS p',
+            'transaction_sell_lines.product_id',
+            '=',
+            'p.id'
+        )
+            ->join(
+                'variations AS variations',
+                'transaction_sell_lines.variation_id',
+                '=',
+                'variations.id'
+            )
+            ->join(
+                'product_variations AS pv',
+                'variations.product_variation_id',
+                '=',
+                'pv.id'
+            )
+            ->join(
+                'transaction_sell_lines_variants',
+                'transaction_sell_lines_variants.transaction_sell_lines_id',
+                '=',
+                'transaction_sell_lines.id'
+            )
+            ->leftjoin('units', 'units.id', '=', 'p.unit_id')
+            ->where('transaction_sell_lines.transaction_id', $id)
+            ->with(['so_line','lot_details'])
+            ->select(
+                \Illuminate\Support\Facades\DB::raw("IF(pv.is_dummy = 0, CONCAT(p.name, ' (', pv.name, ':',variations.name, ')'), p.name) AS product_name"),
+                'p.id as product_id',
+                'p.name as product_actual_name',
+                'p.type as product_type',
+                'pv.name as product_variation_name',
+                'pv.is_dummy as is_dummy',
+                'variations.name as variation_name',
+                'variations.sub_sku',
+                'p.barcode_type',
+                'variations.id as variation_id',
+                'units.short_name as unit',
+                'units.allow_decimal as unit_allow_decimal',
+                'transaction_sell_lines.tax_id as tax_id',
+                'transaction_sell_lines.item_tax as item_tax',
+                'transaction_sell_lines.unit_price as default_sell_price',
+                'transaction_sell_lines.unit_price_before_discount as unit_price_before_discount',
+                'transaction_sell_lines.unit_price_inc_tax as sell_price_inc_tax',
+                'transaction_sell_lines.id as transaction_sell_lines_id',
+                'transaction_sell_lines.id',
+                'transaction_sell_lines.quantity as quantity_ordered',
+                'transaction_sell_lines.total_item_value as total_item_value',
+                'transaction_sell_lines.sell_line_note as sell_line_note',
+                'transaction_sell_lines.parent_sell_line_id',
+                'transaction_sell_lines.lot_no_line_id',
+                'transaction_sell_lines.line_discount_type',
+                'transaction_sell_lines.line_discount_amount',
+                'transaction_sell_lines.res_service_staff_id',
+                'transaction_sell_lines.time_slot',
+                'transaction_sell_lines.start_date',
+                'transaction_sell_lines.delivery_date',
+                'transaction_sell_lines.delivery_time',
+                'transaction_sell_lines.unit_price_inc_tax',
+                'transaction_sell_lines.unit_price_inc_tax',
+                'transaction_sell_lines.res_line_order_status',
+                'units.id as unit_id',
+                'transaction_sell_lines.sub_unit_id',
+                'transaction_sell_lines_variants.value',
+                'transaction_sell_lines_variants.pax',
+                'transaction_sell_lines_variants.name as transaction_sell_lines_variants_name',
+            /*DB::raw('vld.qty_available + transaction_sell_lines.quantity AS qty_available')*/
+            )
+            ->get();
         $line_taxes = [];
         $product_id = [];
         $product_name = [];
@@ -1448,7 +1523,8 @@ class SellController extends Controller
                 'sales_orders',
                 'line_taxes',
                 'product_ids',
-                'product_names'
+                'product_names',
+                'sell_details'
             ));
     }
 
@@ -1622,10 +1698,12 @@ class SellController extends Controller
                 'units.id as unit_id',
                 'transaction_sell_lines.sub_unit_id',
                 'transaction_sell_lines_variants.value',
+                'transaction_sell_lines_variants.pax',
                 'transaction_sell_lines_variants.name as transaction_sell_lines_variants_name',
             /*DB::raw('vld.qty_available + transaction_sell_lines.quantity AS qty_available')*/
             )
             ->get();
+
         $transaction_sell_lines_id = [];
         $transaction_sell_lines_days = '';
         $time_slot = '';
@@ -1653,7 +1731,7 @@ class SellController extends Controller
                 if (!empty($sell_details[$key]->parent_sell_line_id)) {
                     unset($sell_details[$key]);
                 } else {
-                    if ($transaction->status != 'final') {
+                    if ($transaction->status != AppConstant::FINAL || $transaction->status != AppConstant::COMPLETED || $transaction->status != AppConstant::PROCESSING ) {
                         $actual_qty_avlbl = $value->qty_available - $value->quantity_ordered;
                         $sell_details[$key]->qty_available = $actual_qty_avlbl;
                         $value->qty_available = $actual_qty_avlbl;
@@ -1729,7 +1807,7 @@ class SellController extends Controller
                         $sell_details[$key]->qty_available =
                             $this->productUtil->calculateComboQuantity($location_id, $combo_variations);
 
-                        if ($transaction->status == 'final') {
+                        if ($transaction->status == AppConstant::FINAL || $transaction->status == AppConstant::COMPLETED || $transaction->status == AppConstant::PROCESSING) {
                             $sell_details[$key]->qty_available = $sell_details[$key]->qty_available + $sell_details[$key]->quantity_ordered;
                         }
 

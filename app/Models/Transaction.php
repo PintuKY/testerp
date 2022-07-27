@@ -324,11 +324,6 @@ class Transaction extends Model
         return $due_date;
     }
 
-    public static function getSellStatuses()
-    {
-        return ['final' => __('sale.final'), 'draft' => __('sale.draft'), 'quotation' => __('lang_v1.quotation'), 'proforma' => __('lang_v1.proforma')];
-    }
-
     /**
      * Attributes to be logged for activity
      */
@@ -363,11 +358,13 @@ class Transaction extends Model
     public static function sell_statuses()
     {
         return [
-            'final' => __('sale.final'),
-            'draft' => __('sale.draft'),
-            'refund' => __('sale.refund'),
-            /*'quotation' => __('lang_v1.quotation'),
-            'proforma' => __('lang_v1.proforma')*/
+            '1' => __('sale.final'),
+            '2' => __('sale.processing'),
+            '3' => __('sale.completed'),
+            '4' => __('sale.cancelled'),
+            '5' => __('sale.payment_pending'),
+            '6' => __('sale.refund'),
+            '7' => __('sale.failed'),
         ];
     }
 

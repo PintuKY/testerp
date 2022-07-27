@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Utils\AppConstant;
 use Illuminate\Http\Request;
 use Excel;
 use App\Models\BusinessLocation;
@@ -331,7 +332,7 @@ class ImportSalesController extends Controller
     		$sale_data = [
     			'invoice_no' => $first_sell_line['invoice_no'],
     			'location_id' => $location_id,
-    			'status' => 'final',
+    			'status' => AppConstant::FINAL,
     			'contact_id' => $contact->id,
     			'final_total' => !empty($first_sell_line['order_total']) ? $first_sell_line['order_total'] :$order_total,
     			'transaction_date' => !empty($first_sell_line['date']) ? $first_sell_line['date'] : $now,

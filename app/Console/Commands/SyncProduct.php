@@ -3,12 +3,14 @@
 namespace App\Console\Commands;
 
 use App\Models\ApiSetting;
+use App\Models\BusinessLocation;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductVariation;
 use App\Models\Variation;
 use Exception;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Storage;
 
 class SyncProduct extends Command
 {
@@ -31,6 +33,8 @@ class SyncProduct extends Command
      *
      * @return int
      */
+    protected $productUtil;
+
     public function handle()
     {
         $business_location_id = $this->argument('business_location_id');
@@ -39,7 +43,7 @@ class SyncProduct extends Command
         } else {
             $apiSettings = ApiSetting::get();
             foreach ($apiSettings as $apiSetting) {
-                $this->syncProductDetails($apiSetting->id);
+                $this->syncProductDetails($apiSetting->business_locations_id);
             }
         }
         return true;
@@ -57,10 +61,20 @@ class SyncProduct extends Command
             try {
                 $productEndpoint = config("api.product_endpoint") . '?page=' . $i;
                 $products = getData(getConfiguration($bussiness_location_id), $productEndpoint);
+                $image_name = '';
                 if (count($products) <= 0) {
                     break;
                 }
                 foreach ($products as $product) {
+                    if (isset($product->images))
+                    {
+                        foreach ($product->images as $value) {
+                            $image_name = substr($value->src, strrpos($value->src, '/') + 1);
+                            $url = $value->src;
+                            $img = public_path('storage/img') . '\\'.time().'_'.$image_name;
+                            file_put_contents($img, file_get_contents($url));
+                        }
+                    }
                     $category_id = $this->getCategoryId($product->sku) ? $this->getCategoryId($product->sku) : 1;
                     $admin_id = 1;
                     if ($product->status === 'publish') {
@@ -71,8 +85,9 @@ class SyncProduct extends Command
                             ],
                             [
                                 'category_id' =>  $category_id,
-                                'product_id' =>  $product->id,
+                                'product_id' => $this->getContactId($bussiness_location_id).''.$product->id,
                                 'sub_category_id' => null,
+                                'image' => time().'_'.$image_name,
                                 'name' =>  $product->name,
                                 'business_id' =>  $bussiness_location_id,
                                 'product_description' => ($product->description) ? $product->description : $product->short_description,
@@ -135,5 +150,16 @@ class SyncProduct extends Command
     public function getCategoryId($categoryName)
     {
         return Category::where('name', $categoryName)->value('id');
+    }
+
+    /**
+     * getContactId
+     *
+     * @param  mixed $business_location_id
+     * @return void
+     */
+    public function getContactId($business_location_id)
+    {
+        return BusinessLocation::where('id', $business_location_id)->value('location_id');
     }
 }

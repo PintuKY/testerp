@@ -268,13 +268,13 @@ $(document).ready(function () {
                     selling_price = item.variation_group_price;
                 }
                 var business_name = $('#select_location_id').find(":selected").text()
-                string +=
-                    ' (Business Location: ' +
-                    business_name +
-                    ')' +
-                    '<br> Type: ' +
-                    item.type +
-                    '</li>';
+                // string +=
+                    // ' (Kitchen Location: ' +
+                    // business_name +
+                    // ')' +
+                    // '<br> Type: ' +
+                    // item.type 
+                    +'</li>';
                 return $(string).appendTo(ul);
             } else {
                 var string = '<div>' + item.name;
@@ -287,7 +287,7 @@ $(document).ready(function () {
                     selling_price = item.variation_group_price;
                 }
                 var business_name = $('#select_location_id').find(":selected").text()
-                string += ' (Business Location: ' + business_name + ')' + '<br> Type: ' + item.type;
+                // string += ' (Kitchen Location: ' + business_name + ')' + '<br> Type: ' + item.type;
                 if (item.enable_stock == 1) {
                     var qty_available = __currency_trans_from_en(item.qty_available, false, false, __currency_precision, true);
                     string += ' - ' + qty_available + item.unit;
@@ -407,10 +407,7 @@ $(document).ready(function () {
                 string +=
                     ' (Business Location: ' +
                     business_name +
-                    ')' +
-                    '<br> Type: ' +
-                    item.type +
-                    '</li>';
+                    ')' + '</li>';
                 return $(string).appendTo(ul);
             } else {
                 var string = '<div>' + item.name;

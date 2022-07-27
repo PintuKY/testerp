@@ -25,9 +25,18 @@ class ApiController extends Controller
                 ->addColumn(
                     'action',
                     '@can("")
-                    <button data-href="{{action(\'ApiController@index\')}}" class="btn btn-xs btn-info "> @lang("messages.sync")</button>
+                    <a href="{{route("sync.customers",[$business_locations_id])}}" class="btn btn-xs btn-info "> @lang("messages.sync_customer")</a>
                         &nbsp;
                     @endcan
+                    @can("")
+                    <a href="{{route("sync.products",[$business_locations_id])}}" class="btn btn-xs btn-info "> @lang("messages.sync_product")</a>
+                        &nbsp;
+                    @endcan
+                    @can("")
+                    <a href="{{route("sync.orders",[$business_locations_id])}}" class="btn btn-xs btn-info "> @lang("messages.sync_order")</a>
+                        &nbsp;
+                    @endcan
+
                     @can("api.update")
                     <button data-href="{{action(\'ApiController@edit\', [$id])}}" class="btn btn-xs btn-primary edit_api_button"><i class="glyphicon glyphicon-edit"></i> @lang("messages.edit")</button>
                         &nbsp;

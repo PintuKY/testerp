@@ -30,6 +30,11 @@ class Variation extends Model
         return $this->belongsTo(\App\Models\ProductVariation::class);
     }
 
+    public function variation_value()
+    {
+        return $this->hasOne(\App\Models\VariationValueTemplate::class, 'variation_value_id');
+    }
+
     public function product()
     {
         return $this->belongsTo(\App\Models\Product::class, 'product_id');

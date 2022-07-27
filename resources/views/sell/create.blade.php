@@ -779,13 +779,8 @@
             format: 'hh:mm a'
         });
         $(document).ready(function () {
-
-
-
-
-
             $('#status').change(function () {
-                if ($(this).val() == 'final') {
+                if ($(this).val() == '{{ App\Utils\AppConstant::FINAL }}' ||  $(this).val() == '{{ App\Utils\AppConstant::PROCESSING }}' || $(this).val() == '{{ App\Utils\AppConstant::COMPLETED }}') {
                     $('#payment_rows_div').removeClass('hide');
                 } else {
                     $('#payment_rows_div').addClass('hide');

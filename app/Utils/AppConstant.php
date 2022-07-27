@@ -28,6 +28,13 @@ class AppConstant
     const YESTERDAY = 'yesterday';
     const CUSTOMER = 'customer';
     const MAIN_PRICE = 'Main Price';
+    const FINAL = '1';
+    const PROCESSING = '2';
+    const COMPLETED = '3';
+    const CANCELLED = '4';
+    const PAYMENT_PENDING = '5';
+    const REFUND = '6';
+    const FAILED = '7';
 
 }
 

@@ -696,7 +696,7 @@ dd($response);
             $transaction->save();
         }
 
-        if ($transaction->payment_status != 'paid' && $transaction->status == 'final') {
+        if ($transaction->payment_status != 'paid' && ($transaction->status == AppConstant::FINAL || $transaction->status == AppConstant::COMPLETED || $transaction->status == AppConstant::PROCESSING)) {
             return route('invoice_payment', ['token' => $transaction->invoice_token]);
         } else {
             return '';
@@ -1299,13 +1299,16 @@ dd($response);
      */
     public function getContactDue($contact_id, $business_id = null)
     {
+        $final = AppConstant::FINAL;
+        $processing = AppConstant::PROCESSING;
+        $completed = AppConstant::COMPLETED;
         $query = Contact::where('contacts.id', $contact_id)
                     ->join('transactions AS t', 'contacts.id', '=', 't.contact_id')
                     ->whereIn('t.type', ['sell', 'opening_balance', 'purchase'])
                     ->select(
-                        DB::raw("SUM(IF(t.status = 'final' AND t.type = 'sell', final_total, 0)) as total_invoice"),
+                        DB::raw("SUM(IF((t.status=$final OR t.status=$processing OR  t.status=$completed) AND t.type = 'sell', final_total, 0)) as total_invoice"),
                         DB::raw("SUM(IF(t.type = 'purchase', final_total, 0)) as total_purchase"),
-                        DB::raw("SUM(IF(t.status = 'final' AND t.type = 'sell', (SELECT SUM(IF(is_return = 1,-1*amount,amount)) FROM transaction_payments WHERE transaction_payments.transaction_id=t.id), 0)) as total_paid"),
+                        DB::raw("SUM(IF((t.status=$final OR t.status=$processing OR  t.status=$completed) AND t.type = 'sell', (SELECT SUM(IF(is_return = 1,-1*amount,amount)) FROM transaction_payments WHERE transaction_payments.transaction_id=t.id), 0)) as total_paid"),
                         DB::raw("SUM(IF(t.type = 'purchase', (SELECT SUM(amount) FROM transaction_payments WHERE transaction_payments.transaction_id=t.id), 0)) as purchase_paid"),
                         DB::raw("SUM(IF(t.type = 'opening_balance', final_total, 0)) as opening_balance"),
                         DB::raw("SUM(IF(t.type = 'opening_balance', (SELECT SUM(amount) FROM transaction_payments WHERE transaction_payments.transaction_id=t.id), 0)) as opening_balance_paid")

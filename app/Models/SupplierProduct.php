@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\TaxRate;
+use App\Models\SupplierProductBrand;
 use App\Models\SupplierProductCategory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -25,6 +26,10 @@ class SupplierProduct extends Model {
     public function unit()
     {
         return $this->belongsTo(SupplierProductUnit::class);
+    }
+    public function brand()
+    {
+        return $this->belongsTo(SupplierProductBrand::class);
     }
     public function product_tax()
     {

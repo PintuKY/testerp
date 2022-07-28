@@ -363,7 +363,7 @@ $multiplier = 1;
                                     </thead>
                                     <tbody>
                                     @foreach($sell_details as $sell_line)
-                                        @if($sell_line->product_id == $productId)
+                                            @if($sell_line->product_id == $productId)
                                             @php
 
                                                 $allow_decimal = true;
@@ -1111,7 +1111,7 @@ $multiplier = 1;
         $('.master_list_compensate_add_modals').on('shown.bs.modal', function () {
             $('.master_list_compensate_add_modals').find('#transaction_ids').val('{{$transaction->id}}');
         });
-var master = '{{$sell_ids}}';
+        var master = '{{$sell_ids}}';
         var sell_id = master.split(',');
         var transaction_id = $('#transaction_id').val();
         $.each(sell_id, function( index, value ) {

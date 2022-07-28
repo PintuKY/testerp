@@ -71,6 +71,10 @@
             </li>
             <li><a href="{{route('supplier-product-categories.index')}}"><i class="fa fas fa-list"></i> <span>Categories</span></a>
             </li>
+            <li><a href="{{route('supplier-product-brands.index')}}"><i class="fa fas fa-list"></i> <span>Brands</span></a>
+            </li>
+            <li><a href="{{route('recipe.index')}}"><i class="fa fas fa-circle"></i> <span>Recipe</span></a>
+            </li>
         </ul>
     </li>
     <li class="treeview" id="tour_step6">
@@ -120,7 +124,7 @@
             </li>
         </ul>
     </li>
-    <li class="treeview">
+    {{-- <li class="treeview">
         <a href="#">
             <i class="fa fas fa-truck"></i> <span>Kitchen</span>
             <span class="pull-right-container">
@@ -130,10 +134,9 @@
         <ul class="treeview-menu">
             <li><a href="{{route('ingredients.index')}}"><i class="fa fas fa-circle"></i> <span>Ingredient</span></a>
             </li>
-            <li><a href="{{route('recipe.index')}}"><i class="fa fas fa-circle"></i> <span>Recipe</span></a>
-            </li>
+            
         </ul>
-    </li>
+    </li> --}}
     <li class="treeview" id="tour_step6">
         <a href="#">
             <i class="fa fas fa-truck"></i> <span>Drivers</span>

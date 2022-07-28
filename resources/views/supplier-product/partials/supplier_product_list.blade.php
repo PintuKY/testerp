@@ -10,6 +10,7 @@
             <th>Purchase Price inc tax</th>
             <th>Category</th>
             <th>Unit</th>
+            <th>Brand</th>
             <th>Weight</th>
             <th>Alert Quantity</th>
         </tr>

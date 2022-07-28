@@ -416,7 +416,10 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     // supplier product unit
     Route::resource('supplier-product-units', 'SupplierProductUnitController');
     Route::resource('supplier-product-categories', 'SupplierProductCategoryController');
-
+    
+    // supplier product brands
+    Route::resource('supplier-product-brands', 'SupplierProductBrandController');
+    
     // supplier purchases modules
     Route::post('/supplier-purchases/update-status', 'SupplierPurchaseController@updateStatus');
     Route::get('/supplier-purchases/get_products', 'SupplierPurchaseController@getProducts');

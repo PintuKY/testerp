@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\SupplierProduct;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -23,7 +24,7 @@ class RecipeItem extends Model
 
     public function ingredient()
     {
-        return $this->hasOne(Ingredient::class, 'id', 'ingredient_id');
+        return $this->hasOne(SupplierProduct::class, 'id', 'ingredient_id');
     }
 
 }

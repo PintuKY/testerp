@@ -54,6 +54,12 @@ class SupplierProductController extends Controller
                 '=',
                 'supplier_products.unit_id'
             )
+            ->leftjoin(
+                'supplier_product_brands',
+                'supplier_product_brands.id',
+                '=',
+                'supplier_products.brand_id'
+            )
             ->select(
                 'supplier_products.id as id',
                 'supplier_products.name as name',
@@ -63,6 +69,7 @@ class SupplierProductController extends Controller
                 'supplier_products.purchase_price_inc_tax as purchase_price_inc_tax',
                 'supplier_product_categories.name as category',
                 'supplier_product_units.name as unit',
+                'supplier_product_brands.name as brand',
                 'supplier_products.alert_quantity as alert_quantity',
                 'tax_rates.name as tax',
             )->where('supplier_products.deleted_at','=',null);
@@ -78,6 +85,10 @@ class SupplierProductController extends Controller
             $tax = request()->get('tax', null);
             if (!empty($tax)) {
                 $supplier_products->where('supplier_products.tax', $tax);
+            }
+            $brand_id = request()->get('brand_id', null);
+            if (!empty($brand_id)) {
+                $supplier_products->where('supplier_products.brand_id', $brand_id);
             }
             
             return Datatables::of($supplier_products)
@@ -110,11 +121,13 @@ class SupplierProductController extends Controller
         }
         $categories  = DB::table('supplier_product_categories')->where('business_id',$business_id)->pluck('name','id');
         $units       = DB::table('supplier_product_units')->where('business_id',$business_id)->pluck('name','id');
-        $tax_dropdown = TaxRate::forBusinessDropdown($business_id, true, true);
+        $brands      = DB::table('supplier_product_brands')->where('business_id',$business_id)->pluck('name','id');
+
+        $tax_dropdown   = TaxRate::forBusinessDropdown($business_id, true, true);
         $taxes          = $tax_dropdown['tax_rates'];
         $tax_attributes = $tax_dropdown['attributes'];
 
-     return view('supplier-product.index',compact('categories','taxes','units'));
+     return view('supplier-product.index',compact('categories','taxes','units','brands'));
     }
 
     public function show($supplier_product_id)
@@ -131,23 +144,26 @@ class SupplierProductController extends Controller
        $business_id  =  request()->session()->get('user.business_id');
        $units        = DB::table('supplier_product_units')->where('business_id',$business_id)->pluck('name','id');
        $categories   = DB::table('supplier_product_categories')->where('business_id',$business_id)->pluck('name','id');
+       $brands       = DB::table('supplier_product_brands')->where('business_id',$business_id)->pluck('name','id');
        $tax_dropdown = TaxRate::forBusinessDropdown($business_id, true, true);
        $taxes          = $tax_dropdown['tax_rates'];
        $tax_attributes = $tax_dropdown['attributes'];
        $default_profit_percent = request()->session()->get('business.default_profit_percent');;
 
-       return view('supplier-product.create',compact('units','categories','taxes','tax_attributes','default_profit_percent'));
+       return view('supplier-product.create',compact('units','categories','brands','taxes','tax_attributes','default_profit_percent'));
     }
     public function edit($supplier_product_id)
     {
         $business_id =  request()->session()->get('user.business_id');
         $units       = DB::table('supplier_product_units')->where('business_id',$business_id)->pluck('name','id');
         $categories  = DB::table('supplier_product_categories')->where('business_id',$business_id)->pluck('name','id');
+        $brands      = DB::table('supplier_product_brands')->where('business_id',$business_id)->pluck('name','id');
+
         $supplier_product = SupplierProduct::find($supplier_product_id);
         $tax_dropdown = TaxRate::forBusinessDropdown($business_id, true, true);
         $taxes          = $tax_dropdown['tax_rates'];
         $tax_attributes = $tax_dropdown['attributes'];
-      return view('supplier-product.edit',compact('supplier_product','units','categories','taxes','tax_attributes'));
+      return view('supplier-product.edit',compact('supplier_product','units','categories','brands','taxes','tax_attributes'));
 
     }
     public function store(Request $request) {
@@ -162,6 +178,7 @@ class SupplierProductController extends Controller
             'tax'                    => 'sometimes',
             'weight'                 => 'sometimes',
             'alert_quantity'         => 'sometimes',
+            'brand_id'               => 'sometimes',
         ]);
         try {
             $data['business_id'] =  $request->session()->get('user.business_id');
@@ -201,6 +218,7 @@ class SupplierProductController extends Controller
             'tax'                    => 'sometimes',
             'weight'                 => 'sometimes',
             'alert_quantity'         => 'sometimes',
+            'brand_id'               => 'sometimes',
         ]);
         try {
             DB::beginTransaction();

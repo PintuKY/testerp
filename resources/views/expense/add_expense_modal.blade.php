@@ -7,17 +7,17 @@
         </div>
         <div class="modal-body">
             <div class="row">
-                @if(count($business_locations) == 1)
+                @if(count($kitchen_locations) == 1)
                     @php 
-                        $default_location = current(array_keys($business_locations->toArray())) 
+                        $default_location = current(array_keys($kitchen_locations->toArray())) 
                     @endphp
                 @else
                     @php $default_location = request()->input('location_id'); @endphp
                 @endif
                 <div class="col-sm-6">
                     <div class="form-group">
-                        {!! Form::label('expense_location_id', __('purchase.business_location').':*') !!}
-                        {!! Form::select('location_id', $business_locations, $default_location, ['class' => 'form-control select2', 'placeholder' => __('messages.please_select'), 'required', 'id' => 'expense_location_id'], $bl_attributes); !!}
+                        {!! Form::label('expense_location_id', __('kitchen.kitchen_location').':*') !!}
+                        {!! Form::select('location_id', $kitchen_locations, $default_location, ['class' => 'form-control select2', 'placeholder' => __('messages.please_select'), 'required', 'id' => 'expense_location_id']); !!}
                     </div>
                 </div>
                 <div class="col-sm-6">

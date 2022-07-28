@@ -2,22 +2,24 @@
 
 namespace App\Utils;
 
-use App\Events\SupplierTransactionPaymentAdded;
-use App\Events\SupplierTransactionPaymentDeleted;
-use App\Models\Business;
-use App\Models\BusinessLocation;
-use App\Models\Currency;
+use DB;
+use Carbon\Carbon;
 use App\Models\Product;
-use App\Models\ReferenceCount;
+use App\Models\TaxRate;
+use App\Models\Business;
+use App\Models\Currency;
 use App\Models\Supplier;
-use App\Models\SupplierPurchaseLine;
+use App\Models\Variation;
+use App\Utils\AppConstant;
+use App\Models\ReferenceCount;
+use App\Models\BusinessLocation;
 use App\Models\SupplierTransaction;
+use App\Models\SupplierPurchaseLine;
 use App\Models\SupplierTransactionPayments;
 use App\Models\SupplierTransactionSellLine;
+use App\Events\SupplierTransactionPaymentAdded;
+use App\Events\SupplierTransactionPaymentDeleted;
 use App\Models\SupplierTransactionSellLinesPurchaseLines;
-use App\Models\Variation;
-use Carbon\Carbon;
-use DB;
 
 class SupplierTransactionUtil extends Util
 {
@@ -550,7 +552,6 @@ class SupplierTransactionUtil extends Util
         $payments_formatted = [];
         $edit_ids = [0];
         $account_transactions = [];
-
         if (!is_object($supplier_transaction)) {
             $supplier_transaction = SupplierTransaction::findOrFail($supplier_transaction);
         }
@@ -630,12 +631,11 @@ class SupplierTransactionUtil extends Util
                     //create account transaction
                     $payment_data['transaction_type'] = $supplier_transaction->type;
                     $account_transactions[$c] = $payment_data;
-
+                    
                     $c++;
                 }
             }
         }
-
         //Delete the payment lines removed.
         if (!empty($edit_ids)) {
             $deleted_transaction_payments = $supplier_transaction->paymentLines()->whereNotIn('id', $edit_ids)->get();
@@ -647,7 +647,6 @@ class SupplierTransactionUtil extends Util
                 event(new SupplierTransactionPaymentDeleted($deleted_transaction_payment));
             }
         }
-
         if (!empty($payments_formatted)) {
             $supplier_transaction->paymentLines()->saveMany($payments_formatted);
 
@@ -1188,5 +1187,141 @@ class SupplierTransactionUtil extends Util
                             ->select('p.id as product_id', 'p.name as product_name', 'v.id as variation_id', 'v.name as variation_name', 'Spl.quantity as quantity', 'Spl.exp_date', 'Spl.lot_number')
                             ->get();
         return $products;
+    }
+    public function createExpense($request, $business_id, $user_id, $format_data = true)
+    {
+        $transaction_data = $request->only(['ref_no', 'transaction_date',
+            'location_id', 'final_total', 'expense_for', 'additional_notes',
+            'expense_category_id', 'tax_id', 'contact_id']);
+
+        $transaction_data['business_id'] = $business_id;
+        $transaction_data['created_by'] = $user_id;
+        $transaction_data['type'] = !empty($request->input('is_refund')) && $request->input('is_refund') == 1 ? 'expense_refund' : 'expense';
+        $transaction_data['status'] = AppConstant::FINAL;
+        $transaction_data['payment_status'] = 'due';
+        $transaction_data['final_total'] = $format_data ? $this->num_uf(
+            $transaction_data['final_total']
+        ) : $transaction_data['final_total'];
+        if ($request->has('transaction_date')) {
+            $transaction_data['transaction_date'] = $format_data ? $this->uf_date($transaction_data['transaction_date'], true) : $transaction_data['transaction_date'];
+        } else {
+            $transaction_data['transaction_date'] = Carbon::now();
+        }
+
+        if ($request->has('expense_sub_category_id')) {
+            $transaction_data['expense_sub_category_id'] = $request->input('expense_sub_category_id');
+        }
+
+        $transaction_data['total_before_tax'] = $transaction_data['final_total'];
+        if (!empty($transaction_data['tax_id'])) {
+            $tax_details = TaxRate::find($transaction_data['tax_id']);
+            $transaction_data['total_before_tax'] = $this->calc_percentage_base($transaction_data['final_total'], $tax_details->amount);
+            $transaction_data['tax_amount'] = $transaction_data['final_total'] - $transaction_data['total_before_tax'];
+        }
+
+        if ($request->has('is_recurring')) {
+            $transaction_data['is_recurring'] = 1;
+            $transaction_data['recur_interval'] = !empty($request->input('recur_interval')) ? $request->input('recur_interval') : 1;
+            $transaction_data['recur_interval_type'] = $request->input('recur_interval_type');
+            $transaction_data['recur_repetitions'] = $request->input('recur_repetitions');
+            $transaction_data['subscription_repeat_on'] = $request->input('recur_interval_type') == 'months' && !empty($request->input('subscription_repeat_on')) ? $request->input('subscription_repeat_on') : null;
+        }
+
+        //Update reference count
+        $ref_count = $this->setAndGetReferenceCount('expense', $business_id);
+        //Generate reference number
+        if (empty($transaction_data['ref_no'])) {
+            $transaction_data['ref_no'] = $this->generateReferenceNumber('expense', $ref_count, $business_id);
+        }
+
+        //upload document
+        $document_name = $this->uploadFile($request, 'document', 'documents');
+        if (!empty($document_name)) {
+            $transaction_data['document'] = $document_name;
+        }
+
+        $transaction = SupplierTransaction::create($transaction_data);
+
+        $payments = !empty($request->input('payment')) ? $request->input('payment') : [];
+        //add expense payment
+        $this->createOrUpdateSupplierPaymentLines($transaction, $payments, $business_id);
+
+        //update payment status
+        $this->updatePaymentStatus($transaction->id, $transaction->final_total);
+
+        return $transaction;
+    }
+    public function updateExpense($request, $id, $business_id, $format_data = true)
+    {
+        $transaction_data = [];
+        $transaction = SupplierTransaction::where('business_id', $business_id)
+            ->findOrFail($id);
+
+        if ($request->has('ref_no')) {
+            $transaction_data['ref_no'] = $request->input('ref_no');
+        }
+        if ($request->has('expense_for')) {
+            $transaction_data['expense_for'] = $request->input('expense_for');
+        }
+        if ($request->has('contact_id')) {
+            $transaction_data['contact_id'] = $request->input('contact_id');
+        }
+        if ($request->has('transaction_date')) {
+            $transaction_data['transaction_date'] = $format_data ? $this->uf_date($request->input('transaction_date'), true) : $request->input('transaction_date');
+        }
+        if ($request->has('location_id')) {
+            $transaction_data['location_id'] = $request->input('location_id');
+        }
+        if ($request->has('additional_notes')) {
+            $transaction_data['additional_notes'] = $request->input('additional_notes');
+        }
+
+        if ($request->has('expense_sub_category_id')) {
+            $transaction_data['expense_sub_category_id'] = $request->input('expense_sub_category_id');
+        }
+
+        if ($request->has('expense_category_id')) {
+            $transaction_data['expense_category_id'] = $request->input('expense_category_id');
+        }
+        $final_total = $request->has('final_total') ? $request->input('final_total') : $transaction->final_total;
+        if ($request->has('final_total')) {
+            $transaction_data['final_total'] = $format_data ? $this->num_uf(
+                $final_total
+            ) : $final_total;
+            $final_total = $transaction_data['final_total'];
+        }
+
+        $transaction_data['total_before_tax'] = $transaction_data['final_total'];
+        $tax_id = !empty($request->input('tax_id')) ? $request->input('tax_id') : $transaction->tax_id;
+        if (!empty($tax_id)) {
+            $transaction_data['tax_id'] = $tax_id;
+            $tax_details = TaxRate::find($tax_id);
+            $transaction_data['total_before_tax'] = $this->calc_percentage_base($final_total, $tax_details->amount);
+            $transaction_data['tax_amount'] = $final_total - $transaction_data['total_before_tax'];
+        } else {
+            $transaction_data['tax_id'] = null;
+            $transaction_data['tax_amount'] = 0;
+
+        }
+
+        //upload document
+        $document_name = $this->uploadFile($request, 'document', 'documents');
+        if (!empty($document_name)) {
+            $transaction_data['document'] = $document_name;
+        }
+
+        $transaction_data['is_recurring'] = $request->has('is_recurring') ? 1 : 0;
+        $transaction_data['recur_interval'] = !empty($request->input('recur_interval')) ? $request->input('recur_interval') : 0;
+        $transaction_data['recur_interval_type'] = !empty($request->input('recur_interval_type')) ? $request->input('recur_interval_type') : $transaction->recur_interval_type;
+        $transaction_data['recur_repetitions'] = !empty($request->input('recur_repetitions')) ? $request->input('recur_repetitions') : $transaction->recur_repetitions;
+        $transaction_data['subscription_repeat_on'] = !empty($request->input('subscription_repeat_on')) ? $request->input('subscription_repeat_on') : $transaction->subscription_repeat_on;
+
+        $transaction->update($transaction_data);
+        $transaction->save();
+
+        //update payment status
+        $this->updatePaymentStatus($transaction->id, $transaction->final_total);
+
+        return $transaction;
     }
 }

@@ -24,6 +24,10 @@ class SupplierTransaction extends Model
     {
         return $this->hasMany(SupplierTransactionSellLine::class);
     }
+    public function recurring_parent()
+    {
+        return $this->hasOne(SupplierTransaction::class, 'id', 'recur_parent_id');
+    }
 
     public function product()
     {

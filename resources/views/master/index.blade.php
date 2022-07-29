@@ -12,12 +12,20 @@
 
 <!-- Main content -->
 <section class="content no-print">
+
     @component('components.filters', ['title' => __('report.filters')])
+        <div class="col-md-4">
+            <div class="form-group">
+                {!! Form::label('master_list_filter_kitchen_id',  __('purchase.kitchen_location') . ':') !!}
+
+                {!! Form::select('master_list_filter_kitchen_id', $kitchen_locations, null, ['class' => 'form-control select2', 'style' => 'width:100%', 'placeholder' => __('lang_v1.all') ]); !!}
+            </div>
+        </div>
         <div class="col-md-4">
             <div class="form-group">
                 {!! Form::label('master_list_filter_location_id',  __('purchase.business_location') . ':') !!}
 
-                {!! Form::select('master_list_filter_location_id', $business_locations, null, ['class' => 'form-control select2', 'style' => 'width:100%', 'placeholder' => __('lang_v1.all') ]); !!}
+                {!! Form::select('master_list_filter_location_id', [], null, ['class' => 'form-control select2', 'style' => 'width:100%', 'placeholder' => __('lang_v1.all') ]); !!}
             </div>
         </div>
         <div class="col-md-4">
@@ -52,9 +60,34 @@
 <script src="{{ asset('js/payment.js?v=' . $asset_v) }}"></script>
 <script>
     $(document).ready(function(){
-        var lunch = "{{$lunch}}";
-        var dinner = "{{$dinner}}";
+
+        $('#master_list_filter_kitchen_id').on('change', function () {
+            var idkitchen = this.value;
+            $("#master_list_filter_location_id").html('');
+            $.ajax({
+                url: "{{url('master/fetch-business-location')}}",
+                type: "POST",
+                data: {
+                    kitchen_id: idkitchen,
+                    _token: '{{csrf_token()}}'
+                },
+                dataType: 'json',
+                success: function (result) {
+                    $('#master_list_filter_location_id').html('<option value="">All</option>');
+                    $.each(result.business_location, function (key, value) {
+                        $("#master_list_filter_location_id").append('<option value="' + value
+                            .id + '">' + value.name + '</option>');
+                    });
+                }
+            });
+        });
+        var lunch = "{{$lunchTotal}}";
+        var dinner = "{{$dinnerTotal}}";
+        var addon_html = "{!! $addon_html !!}";
+        $('.pax').html();
         $('.pax').html('Lunch:'+lunch+'<br/> Dinner:'+dinner);
+        $('.addon').html();
+        $('.addon').html(addon_html);
         $('#master_list_filter_date_range').daterangepicker(
             dateRangeSettings,
             function (start, end) {
@@ -92,14 +125,62 @@
                             var location = $('#master_list_filter_location_id').val();
                             d.location = location;
                         }
+                        if($('#master_list_filter_kitchen_id').val()) {
+                            var kitchen = $('#master_list_filter_kitchen_id').val();
+                            d.kitchen = kitchen;
+                        }
                     }
                 },
                 columns: masterListCols,
-
             });
 
-        $(document).on('change', '#master_list_filter_location_id, #master_list_type',  function() {
+        $(document).on('change', '#master_list_filter_location_id, #master_list_type, #master_list_filter_kitchen_id',  function() {
             master_table.ajax.reload();
+            $.ajax({
+                method: 'get',
+                url: '/master/total',
+                dataType: 'json',
+                data: {
+                    start_date: function () {
+                        if($('#master_list_filter_date_range').val()) {
+                            var start = $('#master_list_filter_date_range').data('daterangepicker').startDate.format('YYYY-MM-DD');
+
+                            return start;
+                        }
+                    },
+                    end_date: function () {
+                        if($('#master_list_filter_date_range').val()) {
+                            var end = $('#master_list_filter_date_range').data('daterangepicker').endDate.format('YYYY-MM-DD');
+                            return end;
+                        }
+                    },
+                    type: function () {
+                        if($('#master_list_type').val()) {
+                            var type = $('#master_list_type').val();
+                            return type;
+                        }
+                    },
+                    location: function () {
+                        if($('#master_list_filter_location_id').val()) {
+                            var location = $('#master_list_filter_location_id').val();
+                            return location;
+                        }
+                    },
+                    kitchen: function () {
+                        if($('#master_list_filter_kitchen_id').val()) {
+                            var kitchen = $('#master_list_filter_kitchen_id').val();
+                            return kitchen;
+                        }
+                    },
+                },
+                success: function (result) {
+                    $('.pax').html();
+                    $('.addon').html();
+                    $('.addon').html(result.addon_html);
+                    $('.pax').html('Lunch:'+result.lunch+'<br/> Dinner:'+result.dinner);
+                    console.log(result);
+                },
+            });
         });
     })
 

@@ -13,6 +13,8 @@ class AppConstant
     const LUNCH_END = '01:30:00';
     const LUNCH = '1';
     const DINNER = '2';
+    const BOTH = '3';
+    const NOT_APPLICABLE = "4";
     const DELIVERED_LUNCH_STATUS_TIME = '14';
     const DELIVERED_DINNER_STATUS_TIME = '20';
     const TINGKAT = 'tingkat';

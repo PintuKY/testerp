@@ -78,7 +78,7 @@
                 <div class="form-group">
 
                   <select class="form-control select2" id="delivery_days" name="delivery_days">
-                    <option value="0" selected>Not Applicable</option>
+                    <option value="4" selected>Not Applicable</option>
                     @foreach(noOfDays() as $key => $deliveryDays)
                       <option value="{{$key}}" {{ $product->delivery_days == $key ? 'selected' : ''}} >{{ $deliveryDays }}</option>
                     @endforeach

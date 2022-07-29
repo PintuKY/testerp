@@ -56,8 +56,8 @@
         var lunch = "{{$lunchTotal}}";
         var dinner = "{{$dinnerTotal}}";
         var addon_html = "{!! $addon_html !!}";
-        $('.meal_type').html();
-        $('.meal_type').html('Lunch:'+lunch+'<br/> Dinner:'+dinner);
+        $('.pax').html();
+        $('.pax').html('Lunch:'+lunch+'<br/> Dinner:'+dinner);
         $('.addon').html();
         $('.addon').html(addon_html);
         $('#master_list_filter_date_range').daterangepicker(
@@ -136,10 +136,10 @@
                     },
                 },
                 success: function (result) {
-                    $('.meal_type').html();
+                    $('.pax').html();
                     $('.addon').html();
                     $('.addon').html(result.addon_html);
-                    $('.meal_type').html('Lunch:'+result.lunch+'<br/> Dinner:'+result.dinner);
+                    $('.pax').html('Lunch:'+result.lunch+'<br/> Dinner:'+result.dinner);
                     console.log(result);
                 },
             });

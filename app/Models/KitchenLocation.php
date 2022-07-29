@@ -12,12 +12,11 @@ class KitchenLocation extends Model
     protected $table = 'kitchens_locations';
     protected $guarded = ['id'];
 
-    // public static function forDropdown($business_locations_id)
-    // {
-    //     $dropdown = KitchenLocation::where('business_locations_id', $business_locations_id)
-    //                             ->pluck('name', 'id');
+     public static function forDropdown()
+     {
+         $dropdown = KitchenLocation::pluck('name', 'id');
 
-    //     return $dropdown;
-    // }
+         return $dropdown;
+     }
 
 }

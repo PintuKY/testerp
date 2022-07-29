@@ -46,7 +46,6 @@ class MasterController extends Controller
      */
     public function index()
     {
-
         $role = 'user';
         $masterListCols = config('masterlist.' . $role . '_columns');
         $masterListStatus= config('masterlist.' . $role . '_status');
@@ -78,6 +77,80 @@ class MasterController extends Controller
             });
         }
         $sell = $sells->get();
+
+        $addonTotal = 0;
+        $addon_name= [];
+        $lunchTotal = 0;
+        $dinnerTotal = 0;
+        foreach($sell as $row){
+            if (isset($row->transaction_sell_lines->transactionSellLinesVariants)) {
+                foreach ($row->transaction_sell_lines->transactionSellLinesVariants as $value) {
+                    if (!empty(request()->type)) {
+                        if(request()->type == AppConstant::LUNCH){
+                            if (str_contains($value->pax, 'Serving Pax')) {
+                                $paxs = preg_replace('/[^0-9]/', '', $value->name);
+                                $lunchTotal += $paxs;
+                            }
+                        }
+                        if(request()->type == AppConstant::DINNER){
+                            if (str_contains($value->pax, 'Serving Pax')) {
+                                $paxd = preg_replace('/[^0-9]/', '', $value->name);
+                                $dinnerTotal += $paxd;
+                            }
+                        }
+                    }else{
+                        if($row->time_slot == AppConstant::LUNCH){
+                            if (str_contains($value->pax, 'Serving Pax')) {
+                                $paxs = preg_replace('/[^0-9]/', '', $value->name);
+                                $lunchTotal += $paxs;
+                            }
+                        }
+                        if($row->time_slot == AppConstant::DINNER){
+                            if (str_contains($value->pax, 'Serving Pax')) {
+                                $paxs = preg_replace('/[^0-9]/', '', $value->name);
+                                $dinnerTotal += $paxs;
+                            }
+                        }
+                    }
+
+                    if (str_contains($value->pax, 'Add on:')) {
+                        //$addon = preg_replace('/[^0-9]/', '', $value->name);
+                        $addon_pax = ($value->addon  != 'None') ? '+'.$value->addon : '';
+                        $arr = explode("+", $addon_pax, 2);
+                        $first = $arr[0];
+                        $addon_name[] = str_replace("Add on:","",$value->pax).''.$first;
+                        //$addonTotal += $addon;
+                    }
+                }
+            }
+        }
+        $addon_namess= [];
+        $addon_names = array_unique($addon_name);
+        foreach($addon_names as $name){
+            $addonTotal = 0;
+            foreach($sell as $row){
+                if (isset($row->transaction_sell_lines->transactionSellLinesVariants)) {
+                    foreach ($row->transaction_sell_lines->transactionSellLinesVariants as $value) {
+                        if (str_contains($value->pax, $name)) {
+                            $addon = preg_replace('/[^0-9]/', '', $value->name);
+                            $addon_pax = ($value->addon  != 'None') ? '+'.$value->addon : '';
+                            $arr = explode("+", $addon_pax, 2);
+                            $first = $arr[0];
+                            $addonTotal += (int)$addon;
+                        }
+                    }
+
+                }
+            }
+            $addon_namess[$name][] = $addonTotal;
+        }
+
+        $addon_html = '';
+        foreach ($addon_namess as $key=>$addon){
+            $addon_html .= '<p>'.$key.':'.$addon[0].'</p>';
+        }
+        Log::info('lunchTotal=='.$lunchTotal);
+        Log::info('dinnerTotal=='.$dinnerTotal);
         $lunch = $sell->where('time_slot',AppConstant::LUNCH)->count();
         $dinner = $sell->where('time_slot',AppConstant::DINNER)->count();
         if (request()->ajax()) {
@@ -124,6 +197,9 @@ class MasterController extends Controller
                 ->addColumn('cancel_reason', function ($row) {
                     return getReasonName($row->cancel_reason);
                 })
+                ->addColumn('lunch', function ($row) use ($lunchTotal){
+                    return $lunchTotal;
+                })
                 ->addColumn('type', function ($row) {
                     if($row->transaction_sell_lines){
                         if($row->transaction_sell_lines_id == $row->transaction_sell_lines->id){
@@ -162,7 +238,20 @@ class MasterController extends Controller
                         }
                     }
                     return implode(',', $addon);
-                })
+                })/*
+                ->addColumn('totalAddon', function ($row) {
+                    $addon = '';
+                    $addonTotal = 0;
+                    if (isset($row->transaction_sell_lines->transactionSellLinesVariants)) {
+                        foreach ($row->transaction_sell_lines->transactionSellLinesVariants as $value) {
+                            if (str_contains($value->pax, 'Add on:')) {
+                                $addon = preg_replace('/[^0-9]/', '', $value->name);
+                                $addonTotal += (int)$addon;
+                            }
+                        }
+                    }
+                    return $addonTotal;
+                })*/
                 ->editColumn('date', function ($row) {
                     if($row->time_slot == AppConstant::STATUS_INACTIVE){
                         $date = $row->start_date;
@@ -194,9 +283,129 @@ class MasterController extends Controller
                 })
                 ->make(true);
         }
+        //dd($lunchTotal);
         $business_locations = BusinessLocation::forDropdown($business_id);
         $type = config('masterlist.product_type');
-        return view('master.index', compact('masterListCols', 'business_locations', 'type','lunch','dinner'));
+        return view('master.index', compact('masterListCols', 'business_locations', 'type','lunch','dinner','addon_html','lunchTotal','dinnerTotal'));
+
+    }
+
+    public function totalIndex()
+    {
+        $role = 'user';
+        $data = [];
+        $masterListCols = config('masterlist.' . $role . '_columns');
+        $masterListStatus= config('masterlist.' . $role . '_status');
+        $business_id = request()->session()->get('user.business_id');
+        $sells = MasterList::whereHas('transasction', function ($query) use($masterListStatus){
+            $query->whereIn('status',$masterListStatus);
+        })->with(['transaction_sell_lines','transaction_sell_lines.transactionSellLinesVariants']
+        );
+
+        /*$business_id = BusinessLocation::with(['kitchenLocation' => function ($q) {
+            $q->select('name as kitchen_name', 'id');
+        }]);*/
+
+        if (!empty(request()->start_date) && !empty(request()->end_date)) {
+            $start = request()->start_date;
+            $end = request()->end_date;
+            $sells->whereDate('master_list.delivery_date', '>=', $start)
+                ->whereDate('master_list.delivery_date', '<=', $end);
+        }
+
+        if (!empty(request()->type)) {
+            $type = request()->type;
+            $sells->where('master_list.time_slot', '=', $type);
+        }
+
+        if (!empty(request()->location)) {
+            $sells->whereHas('transasction', function ($query) {
+                $query->where('location_id', request()->location);
+            });
+        }
+        $sell = $sells->get();
+
+        $addonTotal = 0;
+        $addon_name= [];
+        $lunchTotal = 0;
+        $dinnerTotal = 0;
+        foreach($sell as $row){
+            if (isset($row->transaction_sell_lines->transactionSellLinesVariants)) {
+                foreach ($row->transaction_sell_lines->transactionSellLinesVariants as $value) {
+                    if (!empty(request()->type)) {
+                        if(request()->type == AppConstant::LUNCH){
+                            if (str_contains($value->pax, 'Serving Pax')) {
+                                $paxs = preg_replace('/[^0-9]/', '', $value->name);
+                                $lunchTotal += $paxs;
+                            }
+                        }
+                        if(request()->type == AppConstant::DINNER){
+                            if (str_contains($value->pax, 'Serving Pax')) {
+                                $paxd = preg_replace('/[^0-9]/', '', $value->name);
+                                $dinnerTotal += $paxd;
+                            }
+                        }
+                    }else{
+                        if($row->time_slot == AppConstant::LUNCH){
+                            if (str_contains($value->pax, 'Serving Pax')) {
+                                $paxs = preg_replace('/[^0-9]/', '', $value->name);
+                                $lunchTotal += $paxs;
+                            }
+                        }
+                        if($row->time_slot == AppConstant::DINNER){
+                            if (str_contains($value->pax, 'Serving Pax')) {
+                                $paxs = preg_replace('/[^0-9]/', '', $value->name);
+                                $dinnerTotal += $paxs;
+                            }
+                        }
+                    }
+
+                    if (str_contains($value->pax, 'Add on:')) {
+                        //$addon = preg_replace('/[^0-9]/', '', $value->name);
+                        $addon_pax = ($value->addon  != 'None') ? '+'.$value->addon : '';
+                        $arr = explode("+", $addon_pax, 2);
+                        $first = $arr[0];
+                        $addon_name[] = str_replace("Add on:","",$value->pax).''.$first;
+                        //$addonTotal += $addon;
+                    }
+                }
+            }
+        }
+        $addon_namess= [];
+        $addon_names = array_unique($addon_name);
+        foreach($addon_names as $name){
+            $addonTotal = 0;
+            foreach($sell as $row){
+                if (isset($row->transaction_sell_lines->transactionSellLinesVariants)) {
+                    foreach ($row->transaction_sell_lines->transactionSellLinesVariants as $value) {
+                        if (str_contains($value->pax, $name)) {
+                            $addon = preg_replace('/[^0-9]/', '', $value->name);
+                            $addon_pax = ($value->addon  != 'None') ? '+'.$value->addon : '';
+                            $arr = explode("+", $addon_pax, 2);
+                            $first = $arr[0];
+                            $addonTotal += (int)$addon;
+                        }
+                    }
+
+                }
+            }
+            $addon_namess[$name][] = $addonTotal;
+        }
+
+        $addon_html = '';
+        foreach ($addon_namess as $key=>$addon){
+            $addon_html .= '<p>'.$key.':'.$addon[0].'</p>';
+        }
+        Log::info('lunchTotal=='.$lunchTotal);
+        Log::info('dinnerTotal=='.$dinnerTotal);
+        $data['lunch'] = $lunchTotal;
+        $data['dinner'] = $dinnerTotal;
+        $data['addon_html'] = $addon_html;
+        return $data;
+        //dd($lunchTotal);
+        /*$business_locations = BusinessLocation::forDropdown($business_id);
+        $type = config('masterlist.product_type');
+        return view('master.index', compact('masterListCols', 'business_locations', 'type','lunch','dinner','addon_html','lunchTotal','dinnerTotal'));*/
 
     }
 

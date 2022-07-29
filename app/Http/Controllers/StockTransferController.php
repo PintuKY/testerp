@@ -20,6 +20,7 @@ use App\Models\BusinessLocation;
 use App\Models\SupplierTransaction;
 use Illuminate\Support\Facades\Log;
 use App\Models\SupplierPurchaseLine;
+use App\Utils\SupplierTransactionUtil;
 use Spatie\Activitylog\Models\Activity;
 use App\Models\TransactionSellLinesPurchaseLines;
 use App\Models\SupplierTransactionSellLinesPurchaseLines;
@@ -33,6 +34,7 @@ class StockTransferController extends Controller
      */
     protected $productUtil;
     protected $transactionUtil;
+    protected $supplierTransactionUtil;
     protected $moduleUtil;
 
     /**
@@ -41,10 +43,11 @@ class StockTransferController extends Controller
      * @param ProductUtils $product
      * @return void
      */
-    public function __construct(ProductUtil $productUtil, TransactionUtil $transactionUtil, ModuleUtil $moduleUtil)
+    public function __construct(ProductUtil $productUtil, TransactionUtil $transactionUtil,SupplierTransactionUtil $supplierTransactionUtil, ModuleUtil $moduleUtil)
     {
         $this->productUtil = $productUtil;
         $this->transactionUtil = $transactionUtil;
+        $this->supplierTransactionUtil = $supplierTransactionUtil;
         $this->moduleUtil = $moduleUtil;
         $this->status_colors = [
             'in_transit' => 'bg-yellow',
@@ -317,7 +320,7 @@ class StockTransferController extends Controller
                             'accounting_method' => $request->session()->get('business.accounting_method'),
                             'location_id' => $sell_transfer->location_id
                         ];
-                $this->transactionUtil->mapSupplierProductPurchaseSell($business, $sell_transfer->sell_lines, 'purchase');
+                $this->supplierTransactionUtil->mapPurchaseSell($business, $sell_transfer->sell_lines, 'purchase');
             }
 
             $this->transactionUtil->activityLog($sell_transfer, 'added');
@@ -759,7 +762,7 @@ class StockTransferController extends Controller
                             'accounting_method' => $request->session()->get('business.accounting_method'),
                             'location_id' => $sell_transfer->location_id
                         ];
-                $this->transactionUtil->mapSupplierProductPurchaseSell($business, $sell_transfer->sell_lines, 'purchase');
+                $this->supplierTransactionUtil->mapPurchaseSell($business, $sell_transfer->sell_lines, 'purchase');
             }
 
             $this->transactionUtil->activityLog($sell_transfer, 'edited', $sell_transfer_before);

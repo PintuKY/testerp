@@ -19,6 +19,7 @@ use App\Models\KitchenLocation;
 use App\Models\BusinessLocation;
 use App\Models\SupplierTransaction;
 use Illuminate\Support\Facades\Log;
+use App\Utils\SupplierTransactionUtil;
 use Spatie\Activitylog\Models\Activity;
 use App\Exceptions\PurchaseSellMismatch;
 use App\Models\SupplierProductLocationDetail;
@@ -32,6 +33,7 @@ class StockAdjustmentController extends Controller
     protected $productUtil;
     protected $transactionUtil;
     protected $moduleUtil;
+    protected $supplierTransactionUtil;
 
     /**
      * Constructor
@@ -39,7 +41,7 @@ class StockAdjustmentController extends Controller
      * @param ProductUtils $product
      * @return void
      */
-    public function __construct(ProductUtil $productUtil, TransactionUtil $transactionUtil, ModuleUtil $moduleUtil)
+    public function __construct(ProductUtil $productUtil, TransactionUtil $transactionUtil,SupplierTransactionUtil $supplierTransactionUtil, ModuleUtil $moduleUtil)
     {
         $this->productUtil = $productUtil;
         $this->transactionUtil = $transactionUtil;
@@ -224,7 +226,7 @@ class StockAdjustmentController extends Controller
                 'accounting_method' => $request->session()->get('business.accounting_method'),
                 'location_id' => $input_data['location_id']
                 ];
-                $this->transactionUtil->mapSupplierProductPurchaseSell($business, $stock_adjustment->stock_adjustment_lines, 'stock_adjustment');
+                $this->supplierTransactionUtil->mapPurchaseSell($business, $stock_adjustment->stock_adjustment_lines, 'stock_adjustment');
                 $this->transactionUtil->activityLog($stock_adjustment, 'added', null, [], false);
             }
 

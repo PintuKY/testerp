@@ -14,6 +14,7 @@ use App\Utils\AppConstant;
 use App\Models\ReferenceCount;
 use App\Models\BusinessLocation;
 use App\Models\SupplierTransaction;
+use Illuminate\Support\Facades\Log;
 use App\Models\SupplierPurchaseLine;
 use App\Models\SupplierTransactionPayments;
 use App\Models\SupplierTransactionSellLine;
@@ -824,10 +825,8 @@ class SupplierTransactionUtil extends Util
                 )
                 ->orderBy('supplier_transaction_sell_lines_purchase_lines.id', 'desc')
                 ->select(['SL.product_id AS sell_product_id',
-                        'SL.variation_id AS sell_variation_id',
                         'SL.id AS sell_line_id',
                         'SAL.product_id AS adjust_product_id',
-                        'SAL.variation_id AS adjust_variation_id',
                         'SAL.id AS adjust_line_id',
                         'supplier_transaction_sell_lines_purchase_lines.quantity',
                         'supplier_transaction_sell_lines_purchase_lines.purchase_line_id', 'supplier_transaction_sell_lines_purchase_lines.id as tslpl_id'])
@@ -839,7 +838,6 @@ class SupplierTransactionUtil extends Util
                         $sell_lines[] = (object)['id' => $row->sell_line_id,
                                 'quantity' => $row->quantity,
                                 'product_id' => $row->sell_product_id,
-                                'variation_id' => $row->sell_variation_id,
                             ];
                         SupplierPurchaseLine::where('id', $row->purchase_line_id)
                             ->decrement('quantity_sold', $row->quantity);
@@ -848,7 +846,6 @@ class SupplierTransactionUtil extends Util
                             (object)['id' => $row->adjust_line_id,
                                 'quantity' => $row->quantity,
                                 'product_id' => $row->adjust_product_id,
-                                'variation_id' => $row->adjust_variation_id,
                             ];
                         SupplierPurchaseLine::where('id', $row->purchase_line_id)
                             ->decrement('quantity_adjusted', $row->quantity);
@@ -861,7 +858,6 @@ class SupplierTransactionUtil extends Util
                         $sell_lines[] = (object)['id' => $row->sell_line_id,
                                 'quantity' => $extra_sold,
                                 'product_id' => $row->sell_product_id,
-                                'variation_id' => $row->sell_variation_id,
                             ];
                         SupplierPurchaseLine::where('id', $row->purchase_line_id)
                             ->decrement('quantity_sold', $extra_sold);
@@ -870,7 +866,6 @@ class SupplierTransactionUtil extends Util
                             (object)['id' => $row->adjust_line_id,
                                 'quantity' => $extra_sold,
                                 'product_id' => $row->adjust_product_id,
-                                'variation_id' => $row->adjust_variation_id,
                             ];
 
                         SupplierPurchaseLine::where('id', $row->purchase_line_id)
@@ -917,6 +912,7 @@ class SupplierTransactionUtil extends Util
      *
      * @return object
      */
+
     public function mapPurchaseSell($business, $transaction_lines, $mapping_type = 'purchase', $check_expiry = true, $purchase_line_id = null)
     {
         if (empty($transaction_lines)) {
@@ -927,7 +923,7 @@ class SupplierTransactionUtil extends Util
             $business['pos_settings'] = json_decode($business['pos_settings'], true);
         }
         $allow_overselling = !empty($business['pos_settings']['allow_overselling']) ?
-                            true : false;
+            true : false;
 
         //Set flag to check for expired items during SELLING only.
         $stop_selling_expired = false;
@@ -942,12 +938,12 @@ class SupplierTransactionUtil extends Util
         $qty_selling = null;
         foreach ($transaction_lines as $line) {
             //Check if stock is not enabled then no need to assign purchase & sell
-            $product = Product::find($line->product_id);
-            if ($product->enable_stock != 1) {
-                continue;
-            }
+            $product = SupplierProduct::find($line->product_id);
+            // if ($product->enable_stock != 1) {
+            //     continue;
+            // }
 
-            $qty_sum_query = $this->get_pl_quantity_sum_string('PL');
+            $qty_sum_query = $this->get_pl_quantity_sum_string('SPL');
 
             //Get purchase lines, only for products with enable stock.
             $query = SupplierTransaction::join('supplier_purchase_lines AS SPL', 'supplier_transactions.id', '=', 'SPL.supplier_transactions_id')
@@ -957,14 +953,14 @@ class SupplierTransactionUtil extends Util
                     'opening_stock', 'production_purchase'])
                 ->where('supplier_transactions.status', 'received')
                 ->whereRaw("( $qty_sum_query ) < SPL.quantity")
-                ->where('SPL.product_id', $line->product_id)
-                ->where('SPL.variation_id', $line->variation_id);
+                ->where('SPL.product_id', $line->product_id);
+
 
             //If product expiry is enabled then check for on expiry conditions
             if ($stop_selling_expired && empty($purchase_line_id)) {
                 $stop_before = request()->session()->get('business')['stop_selling_before'];
                 $expiry_date = Carbon::today()->addDays($stop_before)->toDateString();
-                $query->where( function($q) use($expiry_date) {
+                $query->where(function ($q) use ($expiry_date) {
                     $q->whereNull('SPL.exp_date')
                         ->orWhereRaw('SPL.exp_date > ?', [$expiry_date]);
                 });
@@ -995,7 +991,7 @@ class SupplierTransactionUtil extends Util
                 'SPL.quantity_returned as quantity_returned',
                 'SPL.mfg_quantity_used as mfg_quantity_used',
                 'supplier_transactions.invoice_no'
-                    )->get();
+            )->get();
 
             $purchase_sell_map = [];
 
@@ -1012,7 +1008,6 @@ class SupplierTransactionUtil extends Util
                     $qty_selling = $qty_selling - $row->quantity_available;
                     $qty_allocated = $row->quantity_available;
                 }
-
                 //Check for sell mapping or stock adjsutment mapping
                 if ($mapping_type == 'stock_adjustment') {
                     //Mapping of stock adjustment
@@ -1033,11 +1028,11 @@ class SupplierTransactionUtil extends Util
                     //Mapping of purchase
                     if ($qty_allocated != 0) {
                         $purchase_sell_map[] = ['sell_line_id' => $line->id,
-                                'purchase_line_id' => $row->purchase_lines_id,
-                                'quantity' => $qty_allocated,
-                                'created_at' =>  Carbon::now(),
-                                'updated_at' => Carbon::now()
-                            ];
+                            'purchase_line_id' => $row->purchase_lines_id,
+                            'quantity' => $qty_allocated,
+                            'created_at' => Carbon::now(),
+                            'updated_at' => Carbon::now()
+                        ];
 
                         //Update purchase line
                         SupplierPurchaseLine::where('id', $row->purchase_lines_id)
@@ -1047,11 +1042,11 @@ class SupplierTransactionUtil extends Util
                     //Mapping of purchase
                     if ($qty_allocated != 0) {
                         $purchase_sell_map[] = ['sell_line_id' => $line->id,
-                                'purchase_line_id' => $row->purchase_lines_id,
-                                'quantity' => $qty_allocated,
-                                'created_at' => Carbon::now(),
-                                'updated_at' => Carbon::now()
-                            ];
+                            'purchase_line_id' => $row->purchase_lines_id,
+                            'quantity' => $qty_allocated,
+                            'created_at' => Carbon::now(),
+                            'updated_at' => Carbon::now()
+                        ];
 
                         //Update purchase line
                         SupplierPurchaseLine::where('id', $row->purchase_lines_id)
@@ -1064,14 +1059,10 @@ class SupplierTransactionUtil extends Util
                 }
             }
 
-            if (! ($qty_selling == 0 || is_null($qty_selling))) {
+            if (!($qty_selling == 0 || is_null($qty_selling))) {
                 //If overselling not allowed through exception else create mapping with blank purchase_line_id
                 if (!$allow_overselling) {
-                    $variation = Variation::find($line->variation_id);
                     $mismatch_name = $product->name;
-                    if (!empty($variation->sub_sku)) {
-                        $mismatch_name .= ' ' . 'SKU: ' . $variation->sub_sku;
-                    }
                     if (!empty($qty_selling)) {
                         $mismatch_name .= ' ' . 'Quantity: ' . abs($qty_selling);
                     }
@@ -1104,11 +1095,11 @@ class SupplierTransactionUtil extends Util
                 } else {
                     //Mapping with no purchase line
                     $purchase_sell_map[] = ['sell_line_id' => $line->id,
-                            'purchase_line_id' => 0,
-                            'quantity' => $qty_selling,
-                            'created_at' => Carbon::now(),
-                            'updated_at' => Carbon::now()
-                        ];
+                        'purchase_line_id' => 0,
+                        'quantity' => $qty_selling,
+                        'created_at' => Carbon::now(),
+                        'updated_at' => Carbon::now()
+                    ];
                 }
             }
 

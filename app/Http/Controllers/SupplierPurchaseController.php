@@ -676,6 +676,7 @@ class SupplierPurchaseController extends Controller
         $orderStatuses = $this->productUtil->orderStatuses();
 
         $business_locations = BusinessLocation::forDropdown($business_id);
+        $kitchen_locations  = KitchenLocation::pluck('name','id');
 
         $default_purchase_status = null;
         if (request()->session()->get('business.enable_purchase_status') != 1) {
@@ -718,6 +719,7 @@ class SupplierPurchaseController extends Controller
                 'purchase',
                 'orderStatuses',
                 'business_locations',
+                'kitchen_locations',
                 'business',
                 'currency_details',
                 'default_purchase_status',
@@ -742,8 +744,6 @@ class SupplierPurchaseController extends Controller
         }
 
         try {
-            // $transaction = SupplierTransaction::findOrFail($id);
-
             //Validate document size
             $request->validate([
                 'document' => 'file|max:'. (config('constants.document_size_limit') / 1000)
@@ -896,13 +896,13 @@ class SupplierPurchaseController extends Controller
                                 ->first();
 
                 //Check if lot numbers from the purchase is selected in sale
-                if (request()->session()->get('business.enable_lot_number') == 1 && $this->supplierTransactionUtil->isLotUsed($transaction)) {
-                    $output = [
-                        'success' => false,
-                        'msg' => __('lang_v1.lot_numbers_are_used_in_sale')
-                    ];
-                    return $output;
-                }
+                // if (request()->session()->get('business.enable_lot_number') == 1 && $this->supplierTransactionUtil->isLotUsed($transaction)) {
+                //     $output = [
+                //         'success' => false,
+                //         'msg' => __('lang_v1.lot_numbers_are_used_in_sale')
+                //     ];
+                //     return $output;
+                // }
 
                 $delete_purchase_lines = $transaction->supplierPurchaseLines;
                 DB::beginTransaction();
@@ -912,16 +912,20 @@ class SupplierPurchaseController extends Controller
                     'ref_no' => $transaction->ref_no
                 ];
                 $this->supplierTransactionUtil->activityLog($transaction, 'purchase_deleted', $log_properities);
-
                 $transaction_status = $transaction->status;
                 if ($transaction_status != 'received') {
                     $transaction->delete();
                 } else {
                     //Delete purchase lines first
+                    //Delete purchase lines first
                     $delete_purchase_line_ids = [];
                     foreach ($delete_purchase_lines as $purchase_line) {
                         $delete_purchase_line_ids[] = $purchase_line->id;
-
+                        $this->productUtil->decreaseSupplierProductQuantity(
+                            $purchase_line->product_id,
+                            $transaction->location_id,
+                            $purchase_line->quantity
+                        );
                     }
                     SupplierPurchaseLine::where('supplier_transactions_id', $transaction->id)
                                 ->whereIn('id', $delete_purchase_line_ids)
@@ -930,7 +934,6 @@ class SupplierPurchaseController extends Controller
                     //Update mapping of purchase & Sell.
                     $this->supplierTransactionUtil->adjustMappingSupplierPurchaseSellAfterEditingSupplierPurchase($transaction_status, $transaction, $delete_purchase_lines);
                 }
-
                 //Delete Transaction
                 $transaction->delete();
 
@@ -1102,12 +1105,11 @@ class SupplierPurchaseController extends Controller
             $before_status = $transaction->status;
             $update_data['status'] = $request->input('status');
             DB::beginTransaction();
-
             //update transaction
             $transaction->update($update_data);
             $currency_details = $this->supplierTransactionUtil->purchaseCurrencyDetails($business_id);
             foreach ($transaction->supplierPurchaseLines as $purchase_line) {
-                $this->productUtil->updateProductStock($before_status, $transaction, $purchase_line->product_id, $purchase_line->variation_id, $purchase_line->quantity, $purchase_line->quantity, $currency_details);
+                $this->productUtil->updateSupplierProductStock($before_status, $transaction, $purchase_line->product_id, $purchase_line->variation_id, $purchase_line->quantity, $purchase_line->quantity, $currency_details);
             }
 
             //Update mapping of purchase & Sell.
@@ -1116,6 +1118,7 @@ class SupplierPurchaseController extends Controller
             //Adjust stock over selling if found
             $this->productUtil->adjustSupplierProductStockOverSelling($transaction);
             DB::commit();
+
             $output = ['success' => 1,
                             'msg' => __('purchase.purchase_update_success')
                         ];
@@ -1129,5 +1132,31 @@ class SupplierPurchaseController extends Controller
         }
 
         return $output;
+    }
+    public function checkRefNumber(Request $request)
+    {
+        $business_id = $request->session()->get('user.business_id');
+        $supplier_id  = $request->input('supplier_id');
+        $ref_no       = $request->input('ref_no');
+        $purchase_id  = $request->input('purchase_id');
+
+        $count = 0;
+        if (!empty($contact_id) && !empty($ref_no)) {
+            //check in transactions table
+            $query = SupplierTransaction::where('business_id', $business_id)
+                            ->where('ref_no', $ref_no)
+                            ->where('supplier_id', $supplier_id);
+            if (!empty($purchase_id)) {
+                $query->where('id', '!=', $purchase_id);
+            }
+            $count = $query->count();
+        }
+        if ($count == 0) {
+            echo "true";
+            exit;
+        } else {
+            echo "false";
+            exit;
+        }
     }
 }

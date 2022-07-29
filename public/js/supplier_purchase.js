@@ -726,7 +726,7 @@ $(document).ready(function() {
         __write_number(cp_element, unit_cost);
         cp_element.change();
     });
-    // toggle_search();
+    toggle_search();
 });
 
 //End for product type Variable
@@ -1051,10 +1051,11 @@ $(document).on('click', 'button#submit_purchase_form', function(e) {
         rules: {
             ref_no: {
                 remote: {
-                    url: '/purchases/check_ref_number',
+                    url: '/supplier-purchases/check_ref_number',
                     type: 'post',
                     data: {
                         ref_no: function() {
+                            console.log('test123')
                             return $('#ref_no').val();
                         },
                         supplier_id: function() {
@@ -1108,17 +1109,17 @@ $(document).on('click', 'button#submit_purchase_form', function(e) {
     }
 });
 
-// function toggle_search() {
-//     if ($('#location_id').val()) {
-//         $('#search_product').removeAttr('disabled');
-//         $('#search_product').focus();
-//     } else {
-//         $('#search_product').attr('disabled', true);
-//     }
-// }
+function toggle_search() {
+    if ($('#location_id').val()) {
+        $('#search_product').removeAttr('disabled');
+        $('#search_product').focus();
+    } else {
+        $('#search_product').attr('disabled', true);
+    }
+}
 
 $(document).on('change', '#location_id', function() {
-    // toggle_search();
+    toggle_search();
     $('#purchase_entry_table tbody').html('');
     update_table_total();
     update_grand_total();

@@ -401,7 +401,7 @@ class ProductUtil extends Util
 
         return true;
     }
-    public function updateSupplierProductQuantity($location_id, $product_id, $new_quantity, $old_quantity = 0, $number_format = null, $uf_data = true)
+    public function updateSupplierProductQuantity($location_id, $product_id, $new_quantity, $old_quantity = 0, $number_format = null, $uf_data = false)
     {
         if ($uf_data) {
             $qty_difference = $this->num_uf($new_quantity, $number_format) - $this->num_uf($old_quantity, $number_format);
@@ -1345,7 +1345,7 @@ class ProductUtil extends Util
                 $updated_purchase_line_ids[] = $supplier_purchase_line->id;
                 $old_qty = $supplier_purchase_line->quantity;
                 
-                $this->updateSupplierProductStock($before_status, $supplier_transaction, $data['product_id'], $data['variation_id'], $new_quantity, $supplier_purchase_line->quantity, $currency_details);
+                $this->updateSupplierProductStock($before_status, $supplier_transaction, $data['product_id'], $new_quantity, $supplier_purchase_line->quantity, $currency_details);
             } else {
                 //create newly added supplier purchase lines
                 $supplier_purchase_line = new SupplierPurchaseLine();
@@ -1482,7 +1482,7 @@ class ProductUtil extends Util
         //Update quantity for existing products
         if ($status_before == 'received' && $transaction->status == 'received') {
             //if status received update existing quantity
-            $this->updateSupplierProductQuantity($transaction->location_id, $product_id, $new_quantity_f, $old_qty, $currency_details);
+            $this->updateSupplierProductQuantity($transaction->location_id, $product_id, $new_quantity_f, $old_qty, $currency_details,false);
         } elseif ($status_before == 'received' && $transaction->status != 'received') {
             //decrease quantity only if status changed from received to not received
             $this->decreaseSupplierProductQuantity(

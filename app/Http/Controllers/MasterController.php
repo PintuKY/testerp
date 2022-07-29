@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exports\MasterListExport;
 use App\Models\Business;
 use App\Models\BusinessLocation;
+use App\Models\KitchenLocation;
 use App\Models\MasterList;
 use App\Models\Product;
 use App\Models\Transaction;
@@ -89,26 +90,26 @@ class MasterController extends Controller
                         if(request()->type == AppConstant::LUNCH){
                             if (str_contains($value->pax, 'Serving Pax')) {
                                 $paxs = preg_replace('/[^0-9]/', '', $value->name);
-                                $lunchTotal += $paxs;
+                                $lunchTotal += (int)$paxs;
                             }
                         }
                         if(request()->type == AppConstant::DINNER){
                             if (str_contains($value->pax, 'Serving Pax')) {
                                 $paxd = preg_replace('/[^0-9]/', '', $value->name);
-                                $dinnerTotal += $paxd;
+                                $dinnerTotal += (int)$paxd;
                             }
                         }
                     }else{
                         if($row->time_slot == AppConstant::LUNCH){
                             if (str_contains($value->pax, 'Serving Pax')) {
                                 $paxs = preg_replace('/[^0-9]/', '', $value->name);
-                                $lunchTotal += $paxs;
+                                $lunchTotal += (int)$paxs;
                             }
                         }
                         if($row->time_slot == AppConstant::DINNER){
                             if (str_contains($value->pax, 'Serving Pax')) {
                                 $paxs = preg_replace('/[^0-9]/', '', $value->name);
-                                $dinnerTotal += $paxs;
+                                $dinnerTotal += (int)$paxs;
                             }
                         }
                     }
@@ -119,7 +120,7 @@ class MasterController extends Controller
                         $arr = explode("+", $addon_pax, 2);
                         $first = $arr[0];
                         $addon_name[] = str_replace("Add on:","",$value->pax).''.$first;
-                        //$addonTotal += $addon;
+                        //$addonTotal += (int)$addon;
                     }
                 }
             }
@@ -149,8 +150,6 @@ class MasterController extends Controller
         foreach ($addon_namess as $key=>$addon){
             $addon_html .= '<p>'.$key.':'.$addon[0].'</p>';
         }
-        Log::info('lunchTotal=='.$lunchTotal);
-        Log::info('dinnerTotal=='.$dinnerTotal);
         $lunch = $sell->where('time_slot',AppConstant::LUNCH)->count();
         $dinner = $sell->where('time_slot',AppConstant::DINNER)->count();
         if (request()->ajax()) {
@@ -238,20 +237,7 @@ class MasterController extends Controller
                         }
                     }
                     return implode(',', $addon);
-                })/*
-                ->addColumn('totalAddon', function ($row) {
-                    $addon = '';
-                    $addonTotal = 0;
-                    if (isset($row->transaction_sell_lines->transactionSellLinesVariants)) {
-                        foreach ($row->transaction_sell_lines->transactionSellLinesVariants as $value) {
-                            if (str_contains($value->pax, 'Add on:')) {
-                                $addon = preg_replace('/[^0-9]/', '', $value->name);
-                                $addonTotal += (int)$addon;
-                            }
-                        }
-                    }
-                    return $addonTotal;
-                })*/
+                })
                 ->editColumn('date', function ($row) {
                     if($row->time_slot == AppConstant::STATUS_INACTIVE){
                         $date = $row->start_date;
@@ -285,8 +271,9 @@ class MasterController extends Controller
         }
         //dd($lunchTotal);
         $business_locations = BusinessLocation::forDropdown($business_id);
+        $kitchen_locations = KitchenLocation::forDropdown();
         $type = config('masterlist.product_type');
-        return view('master.index', compact('masterListCols', 'business_locations', 'type','lunch','dinner','addon_html','lunchTotal','dinnerTotal'));
+        return view('master.index', compact('masterListCols', 'business_locations', 'type','lunch','dinner','addon_html','lunchTotal','dinnerTotal','kitchen_locations'));
 
     }
 
@@ -336,26 +323,26 @@ class MasterController extends Controller
                         if(request()->type == AppConstant::LUNCH){
                             if (str_contains($value->pax, 'Serving Pax')) {
                                 $paxs = preg_replace('/[^0-9]/', '', $value->name);
-                                $lunchTotal += $paxs;
+                                $lunchTotal += (int)$paxs;
                             }
                         }
                         if(request()->type == AppConstant::DINNER){
                             if (str_contains($value->pax, 'Serving Pax')) {
                                 $paxd = preg_replace('/[^0-9]/', '', $value->name);
-                                $dinnerTotal += $paxd;
+                                $dinnerTotal += (int)$paxd;
                             }
                         }
                     }else{
                         if($row->time_slot == AppConstant::LUNCH){
                             if (str_contains($value->pax, 'Serving Pax')) {
                                 $paxs = preg_replace('/[^0-9]/', '', $value->name);
-                                $lunchTotal += $paxs;
+                                $lunchTotal += (int)$paxs;
                             }
                         }
                         if($row->time_slot == AppConstant::DINNER){
                             if (str_contains($value->pax, 'Serving Pax')) {
                                 $paxs = preg_replace('/[^0-9]/', '', $value->name);
-                                $dinnerTotal += $paxs;
+                                $dinnerTotal += (int)$paxs;
                             }
                         }
                     }
@@ -366,7 +353,7 @@ class MasterController extends Controller
                         $arr = explode("+", $addon_pax, 2);
                         $first = $arr[0];
                         $addon_name[] = str_replace("Add on:","",$value->pax).''.$first;
-                        //$addonTotal += $addon;
+                        //$addonTotal += (int)$addon;
                     }
                 }
             }
@@ -396,17 +383,10 @@ class MasterController extends Controller
         foreach ($addon_namess as $key=>$addon){
             $addon_html .= '<p>'.$key.':'.$addon[0].'</p>';
         }
-        Log::info('lunchTotal=='.$lunchTotal);
-        Log::info('dinnerTotal=='.$dinnerTotal);
         $data['lunch'] = $lunchTotal;
         $data['dinner'] = $dinnerTotal;
         $data['addon_html'] = $addon_html;
         return $data;
-        //dd($lunchTotal);
-        /*$business_locations = BusinessLocation::forDropdown($business_id);
-        $type = config('masterlist.product_type');
-        return view('master.index', compact('masterListCols', 'business_locations', 'type','lunch','dinner','addon_html','lunchTotal','dinnerTotal'));*/
-
     }
 
     public function getMasterList($id,$sell_id)

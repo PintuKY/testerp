@@ -406,7 +406,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/suppliers/ledger', 'SupplierController@getLedger');
     Route::get('/supplier/payments/{supplier_id}', 'SupplierController@getSupplierPayments')->name('supplier.payments');
 
-    // supplier product 
+    // supplier product
     Route::get('supplier-products/list', 'SupplierProductController@getProducts');
     Route::resource('supplier-products', 'SupplierProductController');
 
@@ -459,6 +459,7 @@ Route::middleware(['EcomApi'])->prefix('api/ecom')->group(function () {
     Route::get('variations', 'ProductController@getVariationsApi');
     Route::post('orders', 'SellPosController@placeOrdersApi');
 });
+Route::get('master/total', 'MasterController@totalIndex');
 Route::resource('master', 'MasterController');
 
 //common route

@@ -12,6 +12,7 @@
 
 <!-- Main content -->
 <section class="content no-print">
+
     @component('components.filters', ['title' => __('report.filters')])
         <div class="col-md-4">
             <div class="form-group">
@@ -52,9 +53,13 @@
 <script src="{{ asset('js/payment.js?v=' . $asset_v) }}"></script>
 <script>
     $(document).ready(function(){
-        var lunch = "{{$lunch}}";
-        var dinner = "{{$dinner}}";
+        var lunch = "{{$lunchTotal}}";
+        var dinner = "{{$dinnerTotal}}";
+        var addon_html = "{!! $addon_html !!}";
+        $('.pax').html();
         $('.pax').html('Lunch:'+lunch+'<br/> Dinner:'+dinner);
+        $('.addon').html();
+        $('.addon').html(addon_html);
         $('#master_list_filter_date_range').daterangepicker(
             dateRangeSettings,
             function (start, end) {
@@ -95,11 +100,49 @@
                     }
                 },
                 columns: masterListCols,
-
             });
 
         $(document).on('change', '#master_list_filter_location_id, #master_list_type',  function() {
             master_table.ajax.reload();
+            $.ajax({
+                method: 'get',
+                url: '/master/total',
+                dataType: 'json',
+                data: {
+                    start_date: function () {
+                        if($('#master_list_filter_date_range').val()) {
+                            var start = $('#master_list_filter_date_range').data('daterangepicker').startDate.format('YYYY-MM-DD');
+
+                            return start;
+                        }
+                    },
+                    end_date: function () {
+                        if($('#master_list_filter_date_range').val()) {
+                            var end = $('#master_list_filter_date_range').data('daterangepicker').endDate.format('YYYY-MM-DD');
+                            return end;
+                        }
+                    },
+                    type: function () {
+                        if($('#master_list_type').val()) {
+                            var type = $('#master_list_type').val();
+                            return type;
+                        }
+                    },
+                    location: function () {
+                        if($('#master_list_filter_location_id').val()) {
+                            var location = $('#master_list_filter_location_id').val();
+                            return location;
+                        }
+                    },
+                },
+                success: function (result) {
+                    $('.pax').html();
+                    $('.addon').html();
+                    $('.addon').html(result.addon_html);
+                    $('.pax').html('Lunch:'+result.lunch+'<br/> Dinner:'+result.dinner);
+                    console.log(result);
+                },
+            });
         });
     })
 

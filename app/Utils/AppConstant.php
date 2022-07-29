@@ -8,7 +8,6 @@ class AppConstant
     const STATUS_ACTIVE = '1';
     const STATUS_INACTIVE = '0';
     const STATUS_CANCEL = '2';
-    const STATUS_DELIVERED = '3';
     const LUNCH_START = '09:30:00';
     const LUNCH_END = '01:30:00';
     const LUNCH = '1';
@@ -18,6 +17,8 @@ class AppConstant
     const DELIVERED_LUNCH_STATUS_TIME = '14';
     const DELIVERED_DINNER_STATUS_TIME = '20';
     const TINGKAT = 'tingkat';
+    const BENTO= 'bento';
+    const BUFFET= 'buffet';
     const COMPENSATE_YES = '1';
     const COMPENSATE_NO = '0';
     const HALF_DAY_YES = '1';
@@ -37,6 +38,7 @@ class AppConstant
     const PAYMENT_PENDING = '5';
     const REFUND = '6';
     const FAILED = '7';
+    const STATUS_DELIVERED = '8';
 
 }
 

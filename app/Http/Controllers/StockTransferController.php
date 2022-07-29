@@ -7,6 +7,7 @@ use App\Models\BusinessLocation;
 use App\Models\PurchaseLine;
 use App\Models\Transaction;
 use App\Models\TransactionSellLinesPurchaseLines;
+use App\Utils\AppConstant;
 use App\Utils\ModuleUtil;
 
 use App\Utils\ProductUtil;
@@ -751,7 +752,7 @@ class StockTransferController extends Controller
 
             //Sell Product from first location
             if (!empty($sell_lines)) {
-                $this->transactionUtil->createOrUpdateSellLines($sell_transfer, $sell_lines, $sell_transfer->location_id, false, 'draft', [], false);
+                $this->transactionUtil->createOrUpdateSellLines($sell_transfer, $sell_lines, $sell_transfer->location_id, false, AppConstant::PAYMENT_PENDING, [], false);
             }
 
             //Purchase product in second location

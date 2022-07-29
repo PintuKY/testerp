@@ -47,7 +47,9 @@ class UpdateStatusDeliveredTingkat extends Command
             $current_time = Carbon::parse(now())->format('H');
 
             if ($current_time == AppConstant::DELIVERED_LUNCH_STATUS_TIME) {
-                $master_list = MasterList::where(['status' => AppConstant::STATUS_ACTIVE, 'time_slot' => AppConstant::LUNCH])->whereDate('delivery_date', '=', date('Y-m-d'))->get();
+                $master_list = MasterList::whereHas('transaction_sell_lines', function ($query){
+                    $query->whereDate('unit_name',AppConstant::TINGKAT);
+                })->whereIn('status',[AppConstant::FINAL,AppConstant::COMPLETED,AppConstant::PROCESSING])->where(['time_slot' => AppConstant::LUNCH])->whereDate('delivery_date', '=', date('Y-m-d'))->get();
                 foreach ($master_list as $delivered) {
                     Log::info('delivered=>'.$delivered->id);
                     MasterList::where('id', $delivered->id)->update([
@@ -56,7 +58,9 @@ class UpdateStatusDeliveredTingkat extends Command
                 }
             }
             if ($current_time == AppConstant::DELIVERED_DINNER_STATUS_TIME) {
-                $master_list = MasterList::where(['status' => AppConstant::STATUS_ACTIVE, 'time_slot' => AppConstant::DINNER])->whereDate('delivery_date', '=', date('Y-m-d'))->get();
+                $master_list = MasterList::whereHas('transaction_sell_lines', function ($query){
+                    $query->whereDate('unit_name',AppConstant::TINGKAT);
+                })->whereIn('status',[AppConstant::FINAL,AppConstant::COMPLETED,AppConstant::PROCESSING])->where(['time_slot' => AppConstant::DINNER])->whereDate('delivery_date', '=', date('Y-m-d'))->get();
                 foreach ($master_list as $delivered) {
                     Log::info('delivered=>'.$delivered->id);
                     MasterList::where('id', $delivered->id)->update([

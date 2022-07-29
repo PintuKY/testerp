@@ -82,9 +82,9 @@ class CashRegisterUtil extends Util
         //If draft -> final then add all
         //If final -> draft then refund all
         //If final -> final then update payments
-        if ($status_before == 'draft' && $transaction->status == 'final') {
+        if ($status_before == AppConstant::PAYMENT_PENDING && $transaction->status == 'final') {
             $this->addSellPayments($transaction, $payments);
-        } elseif ($status_before == 'final' && $transaction->status == 'draft') {
+        } elseif ($status_before == 'final' && $transaction->status == AppConstant::PAYMENT_PENDING) {
             $this->refundSell($transaction);
         } elseif ($status_before == 'final' && $transaction->status == 'final') {
             $prev_payments = CashRegisterTransaction::where('transaction_id', $transaction->id)

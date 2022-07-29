@@ -1849,7 +1849,7 @@ class SellController extends Controller
         $invoice_schemes = [];
         $default_invoice_schemes = null;
 
-        if ($transaction->status == 'draft') {
+        if ($transaction->status == AppConstant::PAYMENT_PENDING) {
             $invoice_schemes = InvoiceScheme::forDropdown($business_id);
             $default_invoice_schemes = InvoiceScheme::getDefault($business_id);
         }
@@ -1949,7 +1949,8 @@ class SellController extends Controller
         $sales_representative = User::forDropdown($business_id, false, false, true);
 
 
-        return view('sale_pos.draft')
+        //return view('sale_pos.draft')
+        return view('sell.index')
             ->with(compact('business_locations', 'customers', 'sales_representative'));
     }
 
@@ -2002,7 +2003,7 @@ class SellController extends Controller
                 })
                 ->where('transactions.business_id', $business_id)
                 ->where('transactions.type', 'sell')
-                ->where('transactions.status', 'draft')
+                ->where('transactions.status', AppConstant::PAYMENT_PENDING)
                 ->select(
                     'transactions.id',
                     'transaction_date',
@@ -2218,14 +2219,14 @@ class SellController extends Controller
                     $duplicate_transaction_data[$key] = $value;
                 }
             }
-            $duplicate_transaction_data['status'] = 'draft';
+            $duplicate_transaction_data['status'] = AppConstant::PAYMENT_PENDING;
             $duplicate_transaction_data['payment_status'] = null;
             $duplicate_transaction_data['transaction_date'] = Carbon::now();
             $duplicate_transaction_data['created_by'] = $user_id;
             $duplicate_transaction_data['invoice_token'] = null;
 
             DB::beginTransaction();
-            $duplicate_transaction_data['invoice_no'] = $this->transactionUtil->getInvoiceNumber($business_id, 'draft', $duplicate_transaction_data['location_id']);
+            $duplicate_transaction_data['invoice_no'] = $this->transactionUtil->getInvoiceNumber($business_id, AppConstant::PAYMENT_PENDING, $duplicate_transaction_data['location_id']);
 
             //Create duplicate transaction
             $duplicate_transaction = Transaction::create($duplicate_transaction_data);

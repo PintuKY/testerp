@@ -402,6 +402,7 @@ class Transaction extends Model
                                 ->whereIn('id', $this->sales_order_ids)
                                 ->get();
         }
+
         return $sales_orders;
     }
 

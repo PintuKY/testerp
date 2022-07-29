@@ -2465,7 +2465,7 @@ class TransactionUtil extends Util
 
         $is_warranty_enabled = !empty($business_details->common_settings['enable_product_warranty']) ? true : false;
         $line = $lines[0];
-        foreach ($line->transactionSellLinesVariants as  $var_value) {
+        foreach ($line->transactionSellLinesVariants as $var_value) {
             Log::info($var_value->value);
             $product = $line->product;
             $variation = $line->variations;
@@ -2487,7 +2487,7 @@ class TransactionUtil extends Util
                 'name' => $line->product_name,
                 'product_id' => $line->product_id,
                 'variation' => (empty($var_value->name) || $var_value->name == 'DUMMY') ? '' : $var_value->name,
-                'product_variation' => ($var_value->pax)? $var_value->pax : 'DUMMY',
+                'product_variation' => ($var_value->pax) ? $var_value->pax : 'DUMMY',
                 //Field for 2nd column
                 'quantity' => $this->num_f($line->quantity, false, $business_details, true),
                 'quantity_uf' => $line->quantity,
@@ -5406,9 +5406,8 @@ class TransactionUtil extends Util
             );
 
         /*if ($sale_type == 'sell') {
-            $sells->where('transactions.status', 'final');
+            $sells->whereIn('transactions.status', [AppConstant::FINAL, AppConstant::COMPLETED, AppConstant::PROCESSING]);
         }*/
-
         return $sells;
     }
 

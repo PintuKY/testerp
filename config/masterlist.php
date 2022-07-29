@@ -51,10 +51,10 @@ return [
     ],
 
     'product_type' => [
-        0 => 'Not Applicable',
+        4 => 'Not Applicable',
         1 => 'Lunch',
         2 => 'Dinner',
-        3 => 'Both',
+        3 => 'Both(Lunch & Dinner)',
     ],
 
     'user_status' => [

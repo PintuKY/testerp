@@ -1049,7 +1049,7 @@ class TransactionUtil extends Util
                     'delivery_time' => null,
                     'delivery_date' => Carbon::parse($sell_day->start_date)->format('Y-m-d'),
                     'start_date' => $sell_day->start_date,
-                    'time_slot' => AppConstant::STATUS_OTHER,
+                    'time_slot' => AppConstant::NOT_APPLICABLE,
                     'created_by' => Carbon::now(),
                     'created_at' => Carbon::now(),
                 ]

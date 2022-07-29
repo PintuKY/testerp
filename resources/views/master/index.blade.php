@@ -25,7 +25,7 @@
             <div class="form-group">
                 {!! Form::label('master_list_filter_location_id',  __('purchase.business_location') . ':') !!}
 
-                {!! Form::select('master_list_filter_location_id', $business_locations, null, ['class' => 'form-control select2', 'style' => 'width:100%', 'placeholder' => __('lang_v1.all') ]); !!}
+                {!! Form::select('master_list_filter_location_id', [], null, ['class' => 'form-control select2', 'style' => 'width:100%', 'placeholder' => __('lang_v1.all') ]); !!}
             </div>
         </div>
         <div class="col-md-4">
@@ -60,6 +60,27 @@
 <script src="{{ asset('js/payment.js?v=' . $asset_v) }}"></script>
 <script>
     $(document).ready(function(){
+
+        $('#master_list_filter_kitchen_id').on('change', function () {
+            var idkitchen = this.value;
+            $("#master_list_filter_location_id").html('');
+            $.ajax({
+                url: "{{url('master/fetch-business-location')}}",
+                type: "POST",
+                data: {
+                    kitchen_id: idkitchen,
+                    _token: '{{csrf_token()}}'
+                },
+                dataType: 'json',
+                success: function (result) {
+                    $('#master_list_filter_location_id').html('<option value="">All</option>');
+                    $.each(result.business_location, function (key, value) {
+                        $("#master_list_filter_location_id").append('<option value="' + value
+                            .id + '">' + value.name + '</option>');
+                    });
+                }
+            });
+        });
         var lunch = "{{$lunchTotal}}";
         var dinner = "{{$dinnerTotal}}";
         var addon_html = "{!! $addon_html !!}";
@@ -104,12 +125,16 @@
                             var location = $('#master_list_filter_location_id').val();
                             d.location = location;
                         }
+                        if($('#master_list_filter_kitchen_id').val()) {
+                            var kitchen = $('#master_list_filter_kitchen_id').val();
+                            d.kitchen = kitchen;
+                        }
                     }
                 },
                 columns: masterListCols,
             });
 
-        $(document).on('change', '#master_list_filter_location_id, #master_list_type',  function() {
+        $(document).on('change', '#master_list_filter_location_id, #master_list_type, #master_list_filter_kitchen_id',  function() {
             master_table.ajax.reload();
             $.ajax({
                 method: 'get',
@@ -139,6 +164,12 @@
                         if($('#master_list_filter_location_id').val()) {
                             var location = $('#master_list_filter_location_id').val();
                             return location;
+                        }
+                    },
+                    kitchen: function () {
+                        if($('#master_list_filter_kitchen_id').val()) {
+                            var kitchen = $('#master_list_filter_kitchen_id').val();
+                            return kitchen;
                         }
                     },
                 },

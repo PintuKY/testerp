@@ -459,6 +459,7 @@ Route::middleware(['EcomApi'])->prefix('api/ecom')->group(function () {
     Route::get('variations', 'ProductController@getVariationsApi');
     Route::post('orders', 'SellPosController@placeOrdersApi');
 });
+Route::post('master/fetch-business-location', 'MasterController@fetchBusinessLocation');
 Route::get('master/total', 'MasterController@totalIndex');
 Route::resource('master', 'MasterController');
 

@@ -51,7 +51,7 @@ class MasterController extends Controller
         $masterListCols = config('masterlist.' . $role . '_columns');
         $masterListStatus = config('masterlist.' . $role . '_status');
         $business_id = request()->session()->get('user.business_id');
-        $sells = MasterList::whereHas('transasction', function ($query) use ($masterListStatus) {
+        $sells = MasterList::whereIn('status',[AppConstant::FINAL,AppConstant::COMPLETED,AppConstant::PROCESSING])->whereHas('transasction', function ($query) use ($masterListStatus) {
             $query->whereIn('status', $masterListStatus);
         })->with(['transaction_sell_lines', 'transaction_sell_lines.transactionSellLinesVariants']
         );
@@ -173,7 +173,7 @@ class MasterController extends Controller
         $lunch = $sell->where('time_slot', AppConstant::LUNCH)->count();
         $dinner = $sell->where('time_slot', AppConstant::DINNER)->count();
         if (request()->ajax()) {
-            $sells = MasterList::whereHas('transasction', function ($query) use ($masterListStatus) {
+            $sells = MasterList::whereIn('status',[AppConstant::FINAL,AppConstant::COMPLETED,AppConstant::PROCESSING])->whereHas('transasction', function ($query) use ($masterListStatus) {
                 $query->whereIn('status', $masterListStatus);
             })->with(['transaction_sell_lines', 'transaction_sell_lines.transactionSellLinesVariants']
             );
@@ -323,7 +323,7 @@ class MasterController extends Controller
         $masterListCols = config('masterlist.' . $role . '_columns');
         $masterListStatus = config('masterlist.' . $role . '_status');
         $business_id = request()->session()->get('user.business_id');
-        $sells = MasterList::whereHas('transasction', function ($query) use ($masterListStatus) {
+        $sells = MasterList::whereIn('status',[AppConstant::FINAL,AppConstant::COMPLETED,AppConstant::PROCESSING])->whereHas('transasction', function ($query) use ($masterListStatus) {
             $query->whereIn('status', $masterListStatus);
         })->with(['transaction_sell_lines', 'transaction_sell_lines.transactionSellLinesVariants']
         );
@@ -476,7 +476,7 @@ class MasterController extends Controller
         $masterListCols = config('masterlist.' . $role . '_columns');
         $masterListStatus = config('masterlist.' . $role . '_status');
         $business_id = request()->session()->get('user.business_id');
-        $sells = MasterList::whereHas('transasction', function ($query) use ($masterListStatus) {
+        $sells = MasterList::whereIn('status',[AppConstant::FINAL,AppConstant::COMPLETED,AppConstant::PROCESSING])->whereHas('transasction', function ($query) use ($masterListStatus) {
             $query->whereIn('status', $masterListStatus);
         })->with(['transaction_sell_lines', 'transaction_sell_lines.transactionSellLinesVariants']
         );
@@ -506,7 +506,7 @@ class MasterController extends Controller
         $lunch = $sell->where('time_slot', AppConstant::LUNCH)->count();
         $dinner = $sell->where('time_slot', AppConstant::DINNER)->count();
         if (request()->ajax()) {
-            $sells = MasterList::where(['transaction_id' => $id, 'transaction_sell_lines_id' => $sell_id])->with(['transaction_sell_lines' => function ($query) {
+            $sells = MasterList::whereIn('status',[AppConstant::FINAL,AppConstant::COMPLETED,AppConstant::PROCESSING])->where(['transaction_id' => $id, 'transaction_sell_lines_id' => $sell_id])->with(['transaction_sell_lines' => function ($query) {
                 $query->with('transactionSellLinesVariants');
             }, 'transasction']);
 
@@ -642,11 +642,11 @@ class MasterController extends Controller
             abort(403, 'Unauthorized action.');
         }
         try {
-            $total_cansel_sell = MasterList::where(['transaction_id' => $request->transaction_id, 'is_compensate' => AppConstant::COMPENSATE_NO/*, 'status' => AppConstant::STATUS_CANCEL*/])->whereNotNull('cancel_reason')->count();
+            $total_cansel_sell = MasterList::where(['transaction_id' => $request->transaction_id, 'is_compensate' => AppConstant::COMPENSATE_NO, 'status' => AppConstant::CANCELLED])->whereNotNull('cancel_reason')->count();
             $total_compensate = MasterList::where(['transaction_id' => $request->transaction_id, 'is_compensate' => AppConstant::COMPENSATE_YES])->count();
             $compensates = $total_cansel_sell - $total_compensate;
             if ($compensates > 0) {
-                $compensate = MasterList::where(['transaction_id' => $request->transaction_id, 'is_compensate' => AppConstant::COMPENSATE_NO])->whereNotNull('cancel_reason')->first();
+                $compensate = MasterList::where(['transaction_id' => $request->transaction_id, 'is_compensate' => AppConstant::COMPENSATE_NO,'status' => AppConstant::CANCELLED])->whereNotNull('cancel_reason')->first();
                 $add_compensate = $compensate->replicate();
                 $add_compensate->time_slot = $request->time_slot;
                 $add_compensate->is_compensate = AppConstant::COMPENSATE_YES;
@@ -704,7 +704,7 @@ class MasterController extends Controller
      */
     public function edit($id)
     {
-        $current_time = Carbon::parse(now())->format('H:i');
+        /*$current_time = Carbon::parse(now())->format('H:i');
 
         if ($current_time == AppConstant::DELIVERED_LUNCH_STATUS_TIME) {
             $master_list = MasterList::where(['status' => AppConstant::STATUS_ACTIVE, 'time_slot' => AppConstant::LUNCH])->whereDate('delivery_date', '=', date('Y-m-d'))->get();
@@ -721,7 +721,7 @@ class MasterController extends Controller
                     'status' => AppConstant::STATUS_DELIVERED
                 ]);
             }
-        }
+        }*/
         $master_list = MasterList::findOrFail($id);
 
         $transaction = Transaction::findOrFail($master_list->transaction_id);

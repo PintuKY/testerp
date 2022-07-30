@@ -542,7 +542,7 @@ class TransactionUtil extends Util
             $combo_delete_lines = TransactionSellLine::whereIn('parent_sell_line_id', $deleted_lines)->where('children_type', 'combo')->select('id')->get()->toArray();
             $deleted_lines = array_merge($deleted_lines, $combo_delete_lines);
 
-            $adjust_qty = $status_before == 'draft' ? false : true;
+            $adjust_qty = $status_before == AppConstant::PAYMENT_PENDING ? false : true;
 
             $this->deleteSellLines($deleted_lines, $location_id, $adjust_qty);
         }
@@ -1132,7 +1132,7 @@ class TransactionUtil extends Util
         $old_qty = $sell_line->quantity;
         $edit_ids[] = $product['transaction_sell_lines_id'];
         //Adjust quanity
-        if ($status_before != 'draft') {
+        if ($status_before != AppConstant::PAYMENT_PENDING) {
             $new_qty = $this->num_uf($productLine['quantity']) * $multiplier;
             $difference = $sell_line->quantity - $new_qty;
             $this->adjustQuantity($location_id, $product['product_id'], $variationId, $difference);
@@ -1187,7 +1187,7 @@ class TransactionUtil extends Util
                 $edit_ids[] = $combo_line['transaction_sell_lines_id'];
             }
 
-            $adjust_stock = ($status_before != 'draft');
+            $adjust_stock = ($status_before != AppConstant::PAYMENT_PENDING);
             $this->updateEditedSellLineCombo($product['combo'], $location_id, $adjust_stock);
         }
 
@@ -1277,7 +1277,7 @@ class TransactionUtil extends Util
         }
 
         //If status is draft don't add payment
-        if ($transaction->status == 'draft') {
+        if ($transaction->status == AppConstant::PAYMENT_PENDING) {
             return true;
         }
         $c = 0;
@@ -1715,9 +1715,9 @@ class TransactionUtil extends Util
             $output['parent_invoice_no'] = Transaction::find($transaction->return_parent_id)->invoice_no;
             $output['parent_invoice_no_prefix'] = $il->invoice_no_prefix;
 
-        } elseif ($transaction->status == 'draft' && $transaction->sub_status == 'proforma' && !empty($il->common_settings['proforma_heading'])) {
+        } elseif ($transaction->status == AppConstant::PAYMENT_PENDING && $transaction->sub_status == 'proforma' && !empty($il->common_settings['proforma_heading'])) {
             $output['invoice_heading'] = $il->common_settings['proforma_heading'];
-        } elseif ($transaction->status == 'draft' && $transaction->is_quotation == 1) {
+        } elseif ($transaction->status == AppConstant::PAYMENT_PENDING && $transaction->is_quotation == 1) {
             $output['invoice_heading'] = $il->quotation_heading;
             $output['invoice_no_prefix'] = $il->quotation_no_prefix;
         } elseif ($transaction_type == 'sales_order') {
@@ -2465,7 +2465,7 @@ class TransactionUtil extends Util
 
         $is_warranty_enabled = !empty($business_details->common_settings['enable_product_warranty']) ? true : false;
         $line = $lines[0];
-        foreach ($line->transactionSellLinesVariants as  $var_value) {
+        foreach ($line->transactionSellLinesVariants as $var_value) {
             Log::info($var_value->value);
             $product = $line->product;
             $variation = $line->variations;
@@ -2487,7 +2487,7 @@ class TransactionUtil extends Util
                 'name' => $line->product_name,
                 'product_id' => $line->product_id,
                 'variation' => (empty($var_value->name) || $var_value->name == 'DUMMY') ? '' : $var_value->name,
-                'product_variation' => ($var_value->pax)? $var_value->pax : 'DUMMY',
+                'product_variation' => ($var_value->pax) ? $var_value->pax : 'DUMMY',
                 //Field for 2nd column
                 'quantity' => $this->num_f($line->quantity, false, $business_details, true),
                 'quantity_uf' => $line->quantity,
@@ -2804,9 +2804,9 @@ class TransactionUtil extends Util
             $scheme->save();
 
             return $invoice_no;
-        } else if ($status == 'draft') {
-            $ref_count = $this->setAndGetReferenceCount('draft', $business_id);
-            $invoice_no = $this->generateReferenceNumber('draft', $ref_count, $business_id);
+        } else if ($status == AppConstant::PAYMENT_PENDING) {
+            $ref_count = $this->setAndGetReferenceCount(AppConstant::PAYMENT_PENDING, $business_id);
+            $invoice_no = $this->generateReferenceNumber(AppConstant::PAYMENT_PENDING, $ref_count, $business_id);
             return $invoice_no;
         } else if ($sale_type == 'sales_order') {
             $ref_count = $this->setAndGetReferenceCount('sales_order', $business_id);
@@ -4507,7 +4507,7 @@ class TransactionUtil extends Util
     )
     {
         //If draft ignore credit limit check
-        if ($input['status'] == 'draft' || (isset($input['type']) && $input['type'] == 'sales_order')) {
+        if ($input['status'] == AppConstant::PAYMENT_PENDING || (isset($input['type']) && $input['type'] == 'sales_order')) {
             return false;
         }
 
@@ -4751,7 +4751,7 @@ class TransactionUtil extends Util
         unset($data['created_at']);
         unset($data['updated_at']);
         if ($is_draft) {
-            $data['status'] = 'draft';
+            $data['status'] = AppConstant::PAYMENT_PENDING;
         }
         $data['payment_status'] = 'due';
         $data['recur_parent_id'] = $transaction->id;
@@ -5252,7 +5252,7 @@ class TransactionUtil extends Util
             $this->activityLog($transaction, $log_type, null, $log_properities);
 
             //If status is draft direct delete transaction
-            if ($transaction->status == 'draft') {
+            if ($transaction->status == AppConstant::PAYMENT_PENDING) {
 
                 foreach ($transaction->sell_lines as $sell_line) {
                     $this->updateSalesOrderLine($sell_line->so_line_id, 0, $sell_line->quantity);
@@ -5406,9 +5406,8 @@ class TransactionUtil extends Util
             );
 
         /*if ($sale_type == 'sell') {
-            $sells->where('transactions.status', 'final');
+            $sells->whereIn('transactions.status', [AppConstant::FINAL, AppConstant::COMPLETED, AppConstant::PROCESSING]);
         }*/
-
         return $sells;
     }
 
@@ -5631,7 +5630,7 @@ class TransactionUtil extends Util
 
         $query = Transaction::where('transactions.contact_id', $contact_id)
             ->where('transactions.business_id', $business_id)
-            ->where('status', '!=', 'draft')
+            ->where('status', '!=', AppConstant::PAYMENT_PENDING)
             ->whereIn('type', $transaction_type_keys);
 
         if (!empty($start) && !empty($end)) {

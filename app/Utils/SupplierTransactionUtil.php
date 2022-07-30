@@ -377,7 +377,7 @@ class SupplierTransactionUtil extends Util
 
         $query = SupplierTransaction::where('supplier_transactions.supplier_id', $supplier_id)
                         ->where('supplier_transactions.business_id', $business_id)
-                        ->where('status', '!=', 'draft')
+                        ->where('status', '!=', AppConstant::PAYMENT_PENDING)
                         ->whereIn('type', $transaction_type_keys);
 
         if (!empty($start)  && !empty($end)) {
@@ -556,7 +556,7 @@ class SupplierTransactionUtil extends Util
         }
 
         //If status is draft don't add payment
-        if ($supplier_transaction->status == 'draft') {
+        if ($supplier_transaction->status == AppConstant::PAYMENT_PENDING) {
             return true;
         }
         $c = 0;
@@ -904,7 +904,7 @@ class SupplierTransactionUtil extends Util
             $this->mapPurchaseSell($business, $stock_adjustment_lines, 'stock_adjustment');
         }
     }
-    
+
     /**
      * Add a mapping between purchase & sell lines.
      * NOTE: Don't use request variable here, request variable don't exist while adding

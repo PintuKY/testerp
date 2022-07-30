@@ -319,11 +319,11 @@ class SellPosController extends Controller
             $input['is_quotation'] = 0;
             //status is send as quotation from Add sales screen.
             if ($input['status'] == 'quotation') {
-                $input['status'] = 'draft';
+                $input['status'] = AppConstant::PAYMENT_PENDING;
                 $input['is_quotation'] = 1;
                 $input['sub_status'] = 'quotation';
             } else if ($input['status'] == 'proforma') {
-                $input['status'] = 'draft';
+                $input['status'] = AppConstant::PAYMENT_PENDING;
                 $input['sub_status'] = 'proforma';
             }
 
@@ -560,7 +560,7 @@ class SellPosController extends Controller
                 $invoice_layout_id = $request->input('invoice_layout_id');
                 $print_invoice = false;
                 if (!$is_direct_sale) {
-                    if ($input['status'] == 'draft') {
+                    if ($input['status'] == AppConstant::PAYMENT_PENDING) {
                         $msg = trans("sale.draft_added");
 
                         if ($input['is_quotation'] == 1) {
@@ -615,7 +615,7 @@ class SellPosController extends Controller
         if (!$is_direct_sale) {
             return $output;
         } else {
-            if ($input['status'] == 'draft') {
+            if ($input['status'] == AppConstant::PAYMENT_PENDING) {
                 if (isset($input['is_quotation']) && $input['is_quotation'] == 1) {
                     return redirect()
                         ->action('SellController@getQuotations')
@@ -998,7 +998,7 @@ class SellPosController extends Controller
         $invoice_schemes = [];
         $default_invoice_schemes = null;
 
-        if ($transaction->status == 'draft') {
+        if ($transaction->status == AppConstant::PAYMENT_PENDING) {
             $invoice_schemes = InvoiceScheme::forDropdown($business_id);
             $default_invoice_schemes = InvoiceScheme::getDefault($business_id);
         }
@@ -1033,11 +1033,11 @@ class SellPosController extends Controller
             //status is send as quotation from edit sales screen.
             $input['is_quotation'] = 0;
             if ($input['status'] == 'quotation') {
-                $input['status'] = 'draft';
+                $input['status'] = AppConstant::PAYMENT_PENDING;
                 $input['is_quotation'] = 1;
                 $input['sub_status'] = 'quotation';
             } else if ($input['status'] == 'proforma') {
-                $input['status'] = 'draft';
+                $input['status'] = AppConstant::PAYMENT_PENDING;
                 $input['sub_status'] = 'proforma';
                 $input['is_quotation'] = 0;
             } else {
@@ -1117,7 +1117,7 @@ class SellPosController extends Controller
                     $input['sale_note'] = !empty($input['additional_notes']) ? $input['additional_notes'] : null;
                 }
 
-                if ($status_before == 'draft' && !empty($request->input('invoice_scheme_id'))) {
+                if ($status_before == AppConstant::PAYMENT_PENDING && !empty($request->input('invoice_scheme_id'))) {
                     $input['invoice_scheme_id'] = $request->input('invoice_scheme_id');
                 }
 
@@ -1188,7 +1188,7 @@ class SellPosController extends Controller
 
                 if($transaction->status != ''){
                     MasterList::where('transaction_id',$transaction->id)->whereDate('delivery_date', '>=', date('Y-m-d'))->update([
-                        'sell_status'=>$transaction->status
+                        'status'=>$transaction->status
                     ]);
                 }
                 //Update update lines
@@ -1281,9 +1281,9 @@ class SellPosController extends Controller
                 $can_print_invoice = auth()->user()->can("print_invoice");
                 $invoice_layout_id = $request->input('invoice_layout_id');
 
-                if ($input['status'] == 'draft' && $input['is_quotation'] == 0) {
+                if ($input['status'] == AppConstant::PAYMENT_PENDING && $input['is_quotation'] == 0) {
                     $msg = trans("sale.draft_added");
-                } elseif ($input['status'] == 'draft' && $input['is_quotation'] == 1) {
+                } elseif ($input['status'] == AppConstant::PAYMENT_PENDING && $input['is_quotation'] == 1) {
                     $msg = trans("lang_v1.quotation_updated");
                     if (!$is_direct_sale && $can_print_invoice) {
                         $receipt = $this->receiptContent($business_id, $input['location_id'], $transaction->id, null, false, true, $invoice_layout_id);
@@ -1322,7 +1322,7 @@ class SellPosController extends Controller
         if (!$is_direct_sale) {
             return $output;
         } else {
-            if ($input['status'] == 'draft') {
+            if ($input['status'] == AppConstant::PAYMENT_PENDING) {
                 if (isset($input['is_quotation']) && $input['is_quotation'] == 1) {
                     return redirect()
                         ->action('SellController@getQuotations')
@@ -1618,10 +1618,10 @@ class SellPosController extends Controller
                         ->where('is_direct_sale', 0);
 
         if ($transaction_status == 'quotation') {
-            $query->where('transactions.status', 'draft')
+            $query->where('transactions.status', AppConstant::PAYMENT_PENDING)
                 ->where('sub_status', 'quotation');
-        } elseif ($transaction_status == 'draft') {
-            $query->where('transactions.status', 'draft')
+        } elseif ($transaction_status == AppConstant::PAYMENT_PENDING) {
+            $query->where('transactions.status', AppConstant::PAYMENT_PENDING)
                 ->whereNull('sub_status');
         } else {
             $query->where('transactions.status', $transaction_status);
@@ -2457,7 +2457,7 @@ class SellPosController extends Controller
                             'sell_lines.variations',
                             'contact'])
                             ->where('business_id', $business_id)
-                            ->where('status', 'draft')
+                            ->where('status', AppConstant::PAYMENT_PENDING)
                             ->findOrFail($id);
 
             $transaction_before = $transaction->replicate();
@@ -2606,7 +2606,7 @@ class SellPosController extends Controller
             $business_id = request()->session()->get('user.business_id');
 
             $transaction = Transaction::where('business_id', $business_id)
-                            ->where('status', 'draft')
+                            ->where('status', AppConstant::PAYMENT_PENDING)
                             ->findOrFail($id);
 
             $transaction_before = $transaction->replicate();

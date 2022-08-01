@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exports\MasterListExport;
 use App\Models\Business;
 use App\Models\BusinessLocation;
+use App\Models\KitchenLocation;
 use App\Models\MasterList;
 use App\Models\Product;
 use App\Models\Transaction;
@@ -31,7 +32,7 @@ class MasterController extends Controller
      * @param Util $commonUtil
      * @return void
      */
-    public function __construct(TransactionUtil $transactionUtil,BusinessUtil $businessUtil, ModuleUtil $moduleUtil,ProductUtil $productUtil)
+    public function __construct(TransactionUtil $transactionUtil, BusinessUtil $businessUtil, ModuleUtil $moduleUtil, ProductUtil $productUtil)
     {
         $this->businessUtil = $businessUtil;
         $this->moduleUtil = $moduleUtil;
@@ -46,14 +47,13 @@ class MasterController extends Controller
      */
     public function index()
     {
-
         $role = 'user';
         $masterListCols = config('masterlist.' . $role . '_columns');
-        $masterListStatus= config('masterlist.' . $role . '_status');
+        $masterListStatus = config('masterlist.' . $role . '_status');
         $business_id = request()->session()->get('user.business_id');
-        $sells = MasterList::whereHas('transasction', function ($query) use($masterListStatus){
-            $query->whereIn('status',$masterListStatus);
-        })->with(['transaction_sell_lines','transaction_sell_lines.transactionSellLinesVariants']
+        $sells = MasterList::whereIn('status',[AppConstant::FINAL,AppConstant::COMPLETED,AppConstant::PROCESSING])->whereHas('transasction', function ($query) use ($masterListStatus) {
+            $query->whereIn('status', $masterListStatus);
+        })->with(['transaction_sell_lines', 'transaction_sell_lines.transactionSellLinesVariants']
         );
 
         /*$business_id = BusinessLocation::with(['kitchenLocation' => function ($q) {
@@ -69,7 +69,11 @@ class MasterController extends Controller
 
         if (!empty(request()->type)) {
             $type = request()->type;
-            $sells->where('master_list.time_slot', '=', $type);
+            if ($type == AppConstant::BOTH) {
+                $sells->whereIn('master_list.time_slot', [AppConstant::LUNCH, AppConstant::DINNER]);
+            }  else {
+                $sells->where('master_list.time_slot', '=', $type);
+            }
         }
 
         if (!empty(request()->location)) {
@@ -78,12 +82,100 @@ class MasterController extends Controller
             });
         }
         $sell = $sells->get();
-        $lunch = $sell->where('time_slot',AppConstant::LUNCH)->count();
-        $dinner = $sell->where('time_slot',AppConstant::DINNER)->count();
+
+        $addonTotal = 0;
+        $addon_name = [];
+        $lunchTotal = 0;
+        $dinnerTotal = 0;
+        foreach ($sell as $row) {
+            if (isset($row->transaction_sell_lines->transactionSellLinesVariants)) {
+                foreach ($row->transaction_sell_lines->transactionSellLinesVariants as $value) {
+                    if (!empty(request()->type)) {
+                        if (request()->type == AppConstant::LUNCH) {
+                            if (str_contains($value->pax, 'Serving Pax')) {
+                                $paxs = preg_replace('/[^0-9]/', '', $value->name);
+                                $lunchTotal += (int)$paxs;
+                            }
+                        }
+                        if (request()->type == AppConstant::DINNER) {
+                            if (str_contains($value->pax, 'Serving Pax')) {
+                                $paxd = preg_replace('/[^0-9]/', '', $value->name);
+                                $dinnerTotal += (int)$paxd;
+                            }
+                        }
+                        if (request()->type == AppConstant::BOTH) {
+                            if ($row->time_slot == AppConstant::LUNCH) {
+                                if (str_contains($value->pax, 'Serving Pax')) {
+                                    $paxs = preg_replace('/[^0-9]/', '', $value->name);
+                                    $lunchTotal += (int)$paxs;
+                                }
+                            }
+                            if ($row->time_slot == AppConstant::DINNER) {
+                                if (str_contains($value->pax, 'Serving Pax')) {
+                                    $paxd = preg_replace('/[^0-9]/', '', $value->name);
+                                    $dinnerTotal += (int)$paxd;
+                                }
+                            }
+
+
+                        }
+                    } else {
+                        if ($row->time_slot == AppConstant::LUNCH) {
+                            if (str_contains($value->pax, 'Serving Pax')) {
+                                $paxs = preg_replace('/[^0-9]/', '', $value->name);
+                                $lunchTotal += (int)$paxs;
+                            }
+                        }
+                        if ($row->time_slot == AppConstant::DINNER) {
+                            if (str_contains($value->pax, 'Serving Pax')) {
+                                $paxs = preg_replace('/[^0-9]/', '', $value->name);
+                                $dinnerTotal += (int)$paxs;
+                            }
+                        }
+                    }
+
+                    if (str_contains($value->pax, 'Add on:')) {
+                        //$addon = preg_replace('/[^0-9]/', '', $value->name);
+                        $addon_pax = ($value->addon != 'None') ? '+' . $value->addon : '';
+                        $arr = explode("+", $addon_pax, 2);
+                        $first = $arr[0];
+                        $addon_name[] = str_replace("Add on:", "", $value->pax) . '' . $first;
+                        //$addonTotal += (int)$addon;
+                    }
+                }
+            }
+        }
+        $addon_namess = [];
+        $addon_names = array_unique($addon_name);
+        foreach ($addon_names as $name) {
+            $addonTotal = 0;
+            foreach ($sell as $row) {
+                if (isset($row->transaction_sell_lines->transactionSellLinesVariants)) {
+                    foreach ($row->transaction_sell_lines->transactionSellLinesVariants as $value) {
+                        if (str_contains($value->pax, $name)) {
+                            $addon = preg_replace('/[^0-9]/', '', $value->name);
+                            $addon_pax = ($value->addon != 'None') ? '+' . $value->addon : '';
+                            $arr = explode("+", $addon_pax, 2);
+                            $first = $arr[0];
+                            $addonTotal += (int)$addon;
+                        }
+                    }
+
+                }
+            }
+            $addon_namess[$name][] = $addonTotal;
+        }
+
+        $addon_html = '';
+        foreach ($addon_namess as $key => $addon) {
+            $addon_html .= '<p>' . $key . ':' . $addon[0] . '</p>';
+        }
+        $lunch = $sell->where('time_slot', AppConstant::LUNCH)->count();
+        $dinner = $sell->where('time_slot', AppConstant::DINNER)->count();
         if (request()->ajax()) {
-            $sells = MasterList::whereHas('transasction', function ($query) use($masterListStatus){
-                $query->whereIn('status',$masterListStatus);
-            })->with(['transaction_sell_lines','transaction_sell_lines.transactionSellLinesVariants']
+            $sells = MasterList::whereIn('status',[AppConstant::FINAL,AppConstant::COMPLETED,AppConstant::PROCESSING])->whereHas('transasction', function ($query) use ($masterListStatus) {
+                $query->whereIn('status', $masterListStatus);
+            })->with(['transaction_sell_lines', 'transaction_sell_lines.transactionSellLinesVariants']
             );
 
             /*$business_id = BusinessLocation::with(['kitchenLocation' => function ($q) {
@@ -99,12 +191,31 @@ class MasterController extends Controller
 
             if (!empty(request()->type)) {
                 $type = request()->type;
-                $sells->where('master_list.time_slot', '=', $type);
+                if ($type == AppConstant::BOTH) {
+                    $sells->whereIn('master_list.time_slot', [AppConstant::LUNCH, AppConstant::DINNER]);
+                } else {
+                    $sells->where('master_list.time_slot', '=', $type);
+                }
             }
 
-            if (!empty(request()->location)) {
+            if (!empty(request()->kitchen)) {
+                $business_location = BusinessLocation::where('kitchen_location_id', request()->kitchen)->pluck('id')->toArray();
+                $business_value = implode(',', $business_location);
+                $sells->whereHas('transasction', function ($query) use ($business_value) {
+                    $query->whereIn('location_id', [$business_value]);
+                });
+            }
+            if (!empty(request()->kitchen) && !empty(request()->location)) {
                 $sells->whereHas('transasction', function ($query) {
                     $query->where('location_id', request()->location);
+                });
+            }
+
+            if (!empty(request()->kitchen) && empty(request()->location)) {
+                $business_location = BusinessLocation::where('kitchen_location_id', request()->kitchen)->pluck('id')->toArray();
+                $business_value = implode(',', $business_location);
+                $sells->whereHas('transasction', function ($query) use ($business_value) {
+                    $query->whereIn('location_id', [$business_value]);
                 });
             }
             return Datatables::of($sells)
@@ -124,10 +235,13 @@ class MasterController extends Controller
                 ->addColumn('cancel_reason', function ($row) {
                     return getReasonName($row->cancel_reason);
                 })
+                ->addColumn('lunch', function ($row) use ($lunchTotal) {
+                    return $lunchTotal;
+                })
                 ->addColumn('type', function ($row) {
-                    if($row->transaction_sell_lines){
-                        if($row->transaction_sell_lines_id == $row->transaction_sell_lines->id){
-                            $type = $row->transaction_sell_lines->product_name. '('.$row->transaction_sell_lines->unit_name.')';
+                    if ($row->transaction_sell_lines) {
+                        if ($row->transaction_sell_lines_id == $row->transaction_sell_lines->id) {
+                            $type = $row->transaction_sell_lines->product_name . '(' . $row->transaction_sell_lines->unit_name . ')';
                         }
                     }
                     return $type;
@@ -156,17 +270,17 @@ class MasterController extends Controller
                     if (isset($row->transaction_sell_lines->transactionSellLinesVariants)) {
                         foreach ($row->transaction_sell_lines->transactionSellLinesVariants as $value) {
                             if (str_contains($value->pax, 'Add on:')) {
-                                $addon_pax = ($value->addon  != 'None') ? '+'.$value->addon : '';
-                                $addon[] = str_replace("Add on:","",$value->pax).''.$addon_pax;
+                                $addon_pax = ($value->addon != 'None') ? '+' . $value->addon : '';
+                                $addon[] = str_replace("Add on:", "", $value->pax) . '' . $addon_pax;
                             }
                         }
                     }
                     return implode(',', $addon);
                 })
                 ->editColumn('date', function ($row) {
-                    if($row->time_slot == AppConstant::STATUS_INACTIVE){
+                    if ($row->time_slot == AppConstant::STATUS_INACTIVE) {
                         $date = $row->start_date;
-                    }else{
+                    } else {
                         $date = $row->delivery_date;
                     }
                     return $date;
@@ -194,21 +308,177 @@ class MasterController extends Controller
                 })
                 ->make(true);
         }
+        //dd($lunchTotal);
         $business_locations = BusinessLocation::forDropdown($business_id);
+        $kitchen_locations = KitchenLocation::forDropdown();
         $type = config('masterlist.product_type');
-        return view('master.index', compact('masterListCols', 'business_locations', 'type','lunch','dinner'));
+        return view('master.index', compact('masterListCols', 'business_locations', 'type', 'lunch', 'dinner', 'addon_html', 'lunchTotal', 'dinnerTotal', 'kitchen_locations'));
 
     }
 
-    public function getMasterList($id,$sell_id)
+    public function totalIndex()
+    {
+        $role = 'user';
+        $data = [];
+        $masterListCols = config('masterlist.' . $role . '_columns');
+        $masterListStatus = config('masterlist.' . $role . '_status');
+        $business_id = request()->session()->get('user.business_id');
+        $sells = MasterList::whereIn('status',[AppConstant::FINAL,AppConstant::COMPLETED,AppConstant::PROCESSING])->whereHas('transasction', function ($query) use ($masterListStatus) {
+            $query->whereIn('status', $masterListStatus);
+        })->with(['transaction_sell_lines', 'transaction_sell_lines.transactionSellLinesVariants']
+        );
+
+        /*$business_id = BusinessLocation::with(['kitchenLocation' => function ($q) {
+            $q->select('name as kitchen_name', 'id');
+        }]);*/
+
+        if (!empty(request()->start_date) && !empty(request()->end_date)) {
+            $start = request()->start_date;
+            $end = request()->end_date;
+            $sells->whereDate('master_list.delivery_date', '>=', $start)
+                ->whereDate('master_list.delivery_date', '<=', $end);
+        }
+        if (!empty(request()->type)) {
+
+            $type = request()->type;
+            if ($type == AppConstant::BOTH) {
+                $sells->whereIn('master_list.time_slot', [AppConstant::LUNCH, AppConstant::DINNER]);
+            }  else {
+                $sells->where('master_list.time_slot', '=', $type);
+            }
+        }
+
+        if (!empty(request()->kitchen)) {
+            $business_location = BusinessLocation::where('kitchen_location_id', request()->kitchen)->pluck('id')->toArray();
+            $business_value = implode(',', $business_location);
+            $sells->whereHas('transasction', function ($query) use ($business_value) {
+                $query->whereIn('location_id', [$business_value]);
+            });
+        }
+        if (!empty(request()->kitchen) && !empty(request()->location)) {
+            $sells->whereHas('transasction', function ($query) {
+                $query->where('location_id', request()->location);
+            });
+        }
+
+        if (!empty(request()->kitchen) && empty(request()->location)) {
+            $business_location = BusinessLocation::where('kitchen_location_id', request()->kitchen)->pluck('id')->toArray();
+            $business_value = implode(',', $business_location);
+            $sells->whereHas('transasction', function ($query) use ($business_value) {
+                $query->whereIn('location_id', [$business_value]);
+            });
+        }
+
+        $sell = $sells->get();
+
+        $addonTotal = 0;
+        $addon_name = [];
+        $lunchTotal = 0;
+        $dinnerTotal = 0;
+        foreach ($sell as $row) {
+            if (isset($row->transaction_sell_lines->transactionSellLinesVariants)) {
+                foreach ($row->transaction_sell_lines->transactionSellLinesVariants as $value) {
+                    if (!empty(request()->type)) {
+                        if (request()->type == AppConstant::LUNCH) {
+                            if (str_contains($value->pax, 'Serving Pax')) {
+                                $paxs = preg_replace('/[^0-9]/', '', $value->name);
+                                $lunchTotal += (int)$paxs;
+                            }
+                        }
+                        if (request()->type == AppConstant::DINNER) {
+                            if (str_contains($value->pax, 'Serving Pax')) {
+                                $paxd = preg_replace('/[^0-9]/', '', $value->name);
+                                $dinnerTotal += (int)$paxd;
+                            }
+                        }
+                        if (request()->type == AppConstant::BOTH) {
+                            if ($row->time_slot == AppConstant::LUNCH) {
+                                if (str_contains($value->pax, 'Serving Pax')) {
+                                    $paxs = preg_replace('/[^0-9]/', '', $value->name);
+                                    $lunchTotal += (int)$paxs;
+                                }
+                            }
+                            if ($row->time_slot == AppConstant::DINNER) {
+                                if (str_contains($value->pax, 'Serving Pax')) {
+                                    $paxd = preg_replace('/[^0-9]/', '', $value->name);
+                                    $dinnerTotal += (int)$paxd;
+                                }
+                            }
+
+
+                        }
+                    } else {
+                        if ($row->time_slot == AppConstant::LUNCH) {
+                            if (str_contains($value->pax, 'Serving Pax')) {
+                                $paxs = preg_replace('/[^0-9]/', '', $value->name);
+                                $lunchTotal += (int)$paxs;
+                            }
+                        }
+                        if ($row->time_slot == AppConstant::DINNER) {
+                            if (str_contains($value->pax, 'Serving Pax')) {
+                                $paxs = preg_replace('/[^0-9]/', '', $value->name);
+                                $dinnerTotal += (int)$paxs;
+                            }
+                        }
+                    }
+
+                    if (str_contains($value->pax, 'Add on:')) {
+                        //$addon = preg_replace('/[^0-9]/', '', $value->name);
+                        $addon_pax = ($value->addon != 'None') ? '+' . $value->addon : '';
+                        $arr = explode("+", $addon_pax, 2);
+                        $first = $arr[0];
+                        $addon_name[] = str_replace("Add on:", "", $value->pax) . '' . $first;
+                        //$addonTotal += (int)$addon;
+                    }
+                }
+            }
+        }
+        $addon_namess = [];
+        $addon_names = array_unique($addon_name);
+        foreach ($addon_names as $name) {
+            $addonTotal = 0;
+            foreach ($sell as $row) {
+                if (isset($row->transaction_sell_lines->transactionSellLinesVariants)) {
+                    foreach ($row->transaction_sell_lines->transactionSellLinesVariants as $value) {
+                        if (str_contains($value->pax, $name)) {
+                            $addon = preg_replace('/[^0-9]/', '', $value->name);
+                            $addon_pax = ($value->addon != 'None') ? '+' . $value->addon : '';
+                            $arr = explode("+", $addon_pax, 2);
+                            $first = $arr[0];
+                            $addonTotal += (int)$addon;
+                        }
+                    }
+
+                }
+            }
+            $addon_namess[$name][] = $addonTotal;
+        }
+
+        $addon_html = '';
+        foreach ($addon_namess as $key => $addon) {
+            $addon_html .= '<p>' . $key . ':' . $addon[0] . '</p>';
+        }
+        $data['lunch'] = $lunchTotal;
+        $data['dinner'] = $dinnerTotal;
+        $data['addon_html'] = $addon_html;
+        return $data;
+    }
+
+    public function fetchBusinessLocation(Request $request)
+    {
+        $data['business_location'] = BusinessLocation::where("kitchen_location_id", $request->kitchen_id)->get(["name", "id"]);
+        return response()->json($data);
+    }
+
+    public function getMasterList($id, $sell_id)
     {
         $role = 'user';
         $masterListCols = config('masterlist.' . $role . '_columns');
-        $masterListStatus= config('masterlist.' . $role . '_status');
+        $masterListStatus = config('masterlist.' . $role . '_status');
         $business_id = request()->session()->get('user.business_id');
-        $sells = MasterList::whereHas('transasction', function ($query) use($masterListStatus){
-            $query->whereIn('status',$masterListStatus);
-        })->with(['transaction_sell_lines','transaction_sell_lines.transactionSellLinesVariants']
+        $sells = MasterList::whereIn('status',[AppConstant::FINAL,AppConstant::COMPLETED,AppConstant::PROCESSING])->whereHas('transasction', function ($query) use ($masterListStatus) {
+            $query->whereIn('status', $masterListStatus);
+        })->with(['transaction_sell_lines', 'transaction_sell_lines.transactionSellLinesVariants']
         );
 
         /*$business_id = BusinessLocation::with(['kitchenLocation' => function ($q) {
@@ -233,10 +503,10 @@ class MasterController extends Controller
             });
         }
         $sell = $sells->get();
-        $lunch = $sell->where('time_slot',AppConstant::LUNCH)->count();
-        $dinner = $sell->where('time_slot',AppConstant::DINNER)->count();
+        $lunch = $sell->where('time_slot', AppConstant::LUNCH)->count();
+        $dinner = $sell->where('time_slot', AppConstant::DINNER)->count();
         if (request()->ajax()) {
-            $sells = MasterList::where(['transaction_id'=>$id,'transaction_sell_lines_id'=>$sell_id])->with(['transaction_sell_lines' => function ($query) {
+            $sells = MasterList::whereIn('status',[AppConstant::FINAL,AppConstant::COMPLETED,AppConstant::PROCESSING])->where(['transaction_id' => $id, 'transaction_sell_lines_id' => $sell_id])->with(['transaction_sell_lines' => function ($query) {
                 $query->with('transactionSellLinesVariants');
             }, 'transasction']);
 
@@ -263,9 +533,9 @@ class MasterController extends Controller
                     return getReasonName($row->cancel_reason);
                 })
                 ->addColumn('type', function ($row) {
-                    if($row->transaction_sell_lines){
-                        if($row->transaction_sell_lines_id == $row->transaction_sell_lines->id){
-                            $type = $row->transaction_sell_lines->product_name. '('.$row->transaction_sell_lines->unit_name.')';
+                    if ($row->transaction_sell_lines) {
+                        if ($row->transaction_sell_lines_id == $row->transaction_sell_lines->id) {
+                            $type = $row->transaction_sell_lines->product_name . '(' . $row->transaction_sell_lines->unit_name . ')';
                         }
                     }
                     return $type;
@@ -288,7 +558,7 @@ class MasterController extends Controller
                             }
                         }
                     }
-                    return implode(',',$pax);
+                    return implode(',', $pax);
                 })
                 ->addColumn('addon', function ($row) {
                     $addon = [];
@@ -304,10 +574,10 @@ class MasterController extends Controller
                     return $row->transaction_sell_lines->transactionSellLinesVariants[0]->addon;
                 })
                 ->addColumn('date', function ($row) {
-                    if($row->time_slot == AppConstant::STATUS_INACTIVE){
+                    if ($row->time_slot == AppConstant::STATUS_INACTIVE) {
                         $date = $row->start_date;
-                    }else{
-                        $date = $row->delivery_date. ' ' . $row->delivery_time;
+                    } else {
+                        $date = $row->delivery_date . ' ' . $row->delivery_time;
                     }
                     return $date;
                 })
@@ -372,11 +642,11 @@ class MasterController extends Controller
             abort(403, 'Unauthorized action.');
         }
         try {
-            $total_cansel_sell = MasterList::where(['transaction_id' => $request->transaction_id, 'is_compensate' => AppConstant::COMPENSATE_NO/*, 'status' => AppConstant::STATUS_CANCEL*/])->whereNotNull('cancel_reason')->count();
+            $total_cansel_sell = MasterList::where(['transaction_id' => $request->transaction_id, 'is_compensate' => AppConstant::COMPENSATE_NO, 'status' => AppConstant::CANCELLED])->whereNotNull('cancel_reason')->count();
             $total_compensate = MasterList::where(['transaction_id' => $request->transaction_id, 'is_compensate' => AppConstant::COMPENSATE_YES])->count();
             $compensates = $total_cansel_sell - $total_compensate;
             if ($compensates > 0) {
-                $compensate = MasterList::where(['transaction_id' => $request->transaction_id, 'is_compensate' => AppConstant::COMPENSATE_NO])->whereNotNull('cancel_reason')->first();
+                $compensate = MasterList::where(['transaction_id' => $request->transaction_id, 'is_compensate' => AppConstant::COMPENSATE_NO,'status' => AppConstant::CANCELLED])->whereNotNull('cancel_reason')->first();
                 $add_compensate = $compensate->replicate();
                 $add_compensate->time_slot = $request->time_slot;
                 $add_compensate->is_compensate = AppConstant::COMPENSATE_YES;
@@ -391,7 +661,7 @@ class MasterController extends Controller
                 TransactionActivity::insert([
                     'type' => TransactionActivityTypes()['Auto'],
                     'transaction_id' => $request->transaction_id,
-                    'comment' => 'compensate added for '. $compensate->delivery_date ,
+                    'comment' => 'compensate added for ' . $compensate->delivery_date,
                     'created_at' => Carbon::now()->toDateTimeString(),
                     'updated_at' => Carbon::now()->toDateTimeString()
                 ]);
@@ -434,7 +704,7 @@ class MasterController extends Controller
      */
     public function edit($id)
     {
-        $current_time = Carbon::parse(now())->format('H:i');
+        /*$current_time = Carbon::parse(now())->format('H:i');
 
         if ($current_time == AppConstant::DELIVERED_LUNCH_STATUS_TIME) {
             $master_list = MasterList::where(['status' => AppConstant::STATUS_ACTIVE, 'time_slot' => AppConstant::LUNCH])->whereDate('delivery_date', '=', date('Y-m-d'))->get();
@@ -451,7 +721,7 @@ class MasterController extends Controller
                     'status' => AppConstant::STATUS_DELIVERED
                 ]);
             }
-        }
+        }*/
         $master_list = MasterList::findOrFail($id);
 
         $transaction = Transaction::findOrFail($master_list->transaction_id);
@@ -629,7 +899,7 @@ class MasterController extends Controller
                         }
                         $sell_details[$key]->qty_available =
                             $this->productUtil->calculateComboQuantity($location_id, $combo_variations);
-                        if($transaction->status == AppConstant::FINAL || $transaction->status == AppConstant::COMPLETED || $transaction->status == AppConstant::PROCESSING){
+                        if ($transaction->status == AppConstant::FINAL || $transaction->status == AppConstant::COMPLETED || $transaction->status == AppConstant::PROCESSING) {
                             $sell_details[$key]->qty_available = $sell_details[$key]->qty_available + $sell_details[$key]->quantity_ordered;
                         }
 
@@ -641,14 +911,14 @@ class MasterController extends Controller
         $product_ids = array_unique($product_id);
         $product_count = count($product_ids);
         $product_names = array_unique($product_name);
-        $tran_sell_days = TransactionSellLinesDay::where('transaction_sell_lines_id',$master_list->transaction_sell_lines_id)->pluck('day')->toArray();
+        $tran_sell_days = TransactionSellLinesDay::where('transaction_sell_lines_id', $master_list->transaction_sell_lines_id)->pluck('day')->toArray();
         $days = [];
-        foreach($tran_sell_days as $day){
+        foreach ($tran_sell_days as $day) {
             $days[] = getDayNameByDayNumber($day);
         }
         $transaction_sell_lines_days_val = implode(',', $days);
         return view('master.edit')
-            ->with(compact('master_list','transaction','sell_line','product_ids','product_count','edit_product','product_names','sell_details','transaction_sell_lines_days_val'));
+            ->with(compact('master_list', 'transaction', 'sell_line', 'product_ids', 'product_count', 'edit_product', 'product_names', 'sell_details', 'transaction_sell_lines_days_val'));
     }
 
 

@@ -407,6 +407,9 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/supplier/payments/{supplier_id}', 'SupplierController@getSupplierPayments')->name('supplier.payments');
 
     // supplier product 
+    Route::get('/supplier-products/quick_add', 'SupplierProductController@quickAdd');
+    Route::get('/supplier-products/stock-history/{id}', 'SupplierProductController@productStockHistory');
+    Route::post('/supplier-products/save_quick_product', 'SupplierProductController@saveQuickProduct');
     Route::get('supplier-products/list', 'SupplierProductController@getProducts');
     Route::resource('supplier-products', 'SupplierProductController');
 
@@ -422,7 +425,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/supplier-purchases/get_products', 'SupplierPurchaseController@getProducts');
     Route::get('/suppliers-purchases/get_suppliers', 'SupplierPurchaseController@getSuppliers');
     Route::post('/supplier-purchases/get_purchase_entry_row', 'SupplierPurchaseController@getPurchaseEntryRow');
-    // Route::post('/supplier-purchases/check_ref_number', 'SupplierPurchaseController@checkRefNumber');
+    Route::post('/supplier-purchases/check_ref_number', 'SupplierPurchaseController@checkRefNumber');
     Route::resource('/supplier-purchases', 'SupplierPurchaseController');
     Route::post('/import-supplier-purchase-products', 'SupplierPurchaseController@importPurchaseProducts');
 
@@ -459,6 +462,8 @@ Route::middleware(['EcomApi'])->prefix('api/ecom')->group(function () {
     Route::get('variations', 'ProductController@getVariationsApi');
     Route::post('orders', 'SellPosController@placeOrdersApi');
 });
+Route::post('master/fetch-business-location', 'MasterController@fetchBusinessLocation');
+Route::get('master/total', 'MasterController@totalIndex');
 Route::resource('master', 'MasterController');
 
 //common route

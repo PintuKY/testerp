@@ -2,22 +2,26 @@
 
 namespace App\Utils;
 
-use App\Events\SupplierTransactionPaymentAdded;
-use App\Events\SupplierTransactionPaymentDeleted;
-use App\Models\Business;
-use App\Models\BusinessLocation;
-use App\Models\Currency;
+use DB;
+use Carbon\Carbon;
 use App\Models\Product;
-use App\Models\ReferenceCount;
+use App\Models\TaxRate;
+use App\Models\Business;
+use App\Models\Currency;
 use App\Models\Supplier;
-use App\Models\SupplierPurchaseLine;
+use App\Models\Variation;
+use App\Utils\AppConstant;
+use App\Models\ReferenceCount;
+use App\Models\SupplierProduct;
+use App\Models\BusinessLocation;
 use App\Models\SupplierTransaction;
+use Illuminate\Support\Facades\Log;
+use App\Models\SupplierPurchaseLine;
 use App\Models\SupplierTransactionPayments;
 use App\Models\SupplierTransactionSellLine;
+use App\Events\SupplierTransactionPaymentAdded;
+use App\Events\SupplierTransactionPaymentDeleted;
 use App\Models\SupplierTransactionSellLinesPurchaseLines;
-use App\Models\Variation;
-use Carbon\Carbon;
-use DB;
 
 class SupplierTransactionUtil extends Util
 {
@@ -377,7 +381,7 @@ class SupplierTransactionUtil extends Util
 
         $query = SupplierTransaction::where('supplier_transactions.supplier_id', $supplier_id)
                         ->where('supplier_transactions.business_id', $business_id)
-                        ->where('status', '!=', 'draft')
+                        ->where('status', '!=', AppConstant::PAYMENT_PENDING)
                         ->whereIn('type', $transaction_type_keys);
 
         if (!empty($start)  && !empty($end)) {
@@ -550,13 +554,12 @@ class SupplierTransactionUtil extends Util
         $payments_formatted = [];
         $edit_ids = [0];
         $account_transactions = [];
-
         if (!is_object($supplier_transaction)) {
             $supplier_transaction = SupplierTransaction::findOrFail($supplier_transaction);
         }
 
         //If status is draft don't add payment
-        if ($supplier_transaction->status == 'draft') {
+        if ($supplier_transaction->status == AppConstant::PAYMENT_PENDING) {
             return true;
         }
         $c = 0;
@@ -630,12 +633,11 @@ class SupplierTransactionUtil extends Util
                     //create account transaction
                     $payment_data['transaction_type'] = $supplier_transaction->type;
                     $account_transactions[$c] = $payment_data;
-
+                    
                     $c++;
                 }
             }
         }
-
         //Delete the payment lines removed.
         if (!empty($edit_ids)) {
             $deleted_transaction_payments = $supplier_transaction->paymentLines()->whereNotIn('id', $edit_ids)->get();
@@ -647,7 +649,6 @@ class SupplierTransactionUtil extends Util
                 event(new SupplierTransactionPaymentDeleted($deleted_transaction_payment));
             }
         }
-
         if (!empty($payments_formatted)) {
             $supplier_transaction->paymentLines()->saveMany($payments_formatted);
 
@@ -825,10 +826,8 @@ class SupplierTransactionUtil extends Util
                 )
                 ->orderBy('supplier_transaction_sell_lines_purchase_lines.id', 'desc')
                 ->select(['SL.product_id AS sell_product_id',
-                        'SL.variation_id AS sell_variation_id',
                         'SL.id AS sell_line_id',
                         'SAL.product_id AS adjust_product_id',
-                        'SAL.variation_id AS adjust_variation_id',
                         'SAL.id AS adjust_line_id',
                         'supplier_transaction_sell_lines_purchase_lines.quantity',
                         'supplier_transaction_sell_lines_purchase_lines.purchase_line_id', 'supplier_transaction_sell_lines_purchase_lines.id as tslpl_id'])
@@ -840,7 +839,6 @@ class SupplierTransactionUtil extends Util
                         $sell_lines[] = (object)['id' => $row->sell_line_id,
                                 'quantity' => $row->quantity,
                                 'product_id' => $row->sell_product_id,
-                                'variation_id' => $row->sell_variation_id,
                             ];
                         SupplierPurchaseLine::where('id', $row->purchase_line_id)
                             ->decrement('quantity_sold', $row->quantity);
@@ -849,7 +847,6 @@ class SupplierTransactionUtil extends Util
                             (object)['id' => $row->adjust_line_id,
                                 'quantity' => $row->quantity,
                                 'product_id' => $row->adjust_product_id,
-                                'variation_id' => $row->adjust_variation_id,
                             ];
                         SupplierPurchaseLine::where('id', $row->purchase_line_id)
                             ->decrement('quantity_adjusted', $row->quantity);
@@ -862,7 +859,6 @@ class SupplierTransactionUtil extends Util
                         $sell_lines[] = (object)['id' => $row->sell_line_id,
                                 'quantity' => $extra_sold,
                                 'product_id' => $row->sell_product_id,
-                                'variation_id' => $row->sell_variation_id,
                             ];
                         SupplierPurchaseLine::where('id', $row->purchase_line_id)
                             ->decrement('quantity_sold', $extra_sold);
@@ -871,7 +867,6 @@ class SupplierTransactionUtil extends Util
                             (object)['id' => $row->adjust_line_id,
                                 'quantity' => $extra_sold,
                                 'product_id' => $row->adjust_product_id,
-                                'variation_id' => $row->adjust_variation_id,
                             ];
 
                         SupplierPurchaseLine::where('id', $row->purchase_line_id)
@@ -904,7 +899,7 @@ class SupplierTransactionUtil extends Util
             $this->mapPurchaseSell($business, $stock_adjustment_lines, 'stock_adjustment');
         }
     }
-    
+
     /**
      * Add a mapping between purchase & sell lines.
      * NOTE: Don't use request variable here, request variable don't exist while adding
@@ -918,6 +913,7 @@ class SupplierTransactionUtil extends Util
      *
      * @return object
      */
+
     public function mapPurchaseSell($business, $transaction_lines, $mapping_type = 'purchase', $check_expiry = true, $purchase_line_id = null)
     {
         if (empty($transaction_lines)) {
@@ -928,7 +924,7 @@ class SupplierTransactionUtil extends Util
             $business['pos_settings'] = json_decode($business['pos_settings'], true);
         }
         $allow_overselling = !empty($business['pos_settings']['allow_overselling']) ?
-                            true : false;
+            true : false;
 
         //Set flag to check for expired items during SELLING only.
         $stop_selling_expired = false;
@@ -943,12 +939,12 @@ class SupplierTransactionUtil extends Util
         $qty_selling = null;
         foreach ($transaction_lines as $line) {
             //Check if stock is not enabled then no need to assign purchase & sell
-            $product = Product::find($line->product_id);
-            if ($product->enable_stock != 1) {
-                continue;
-            }
+            $product = SupplierProduct::find($line->product_id);
+            // if ($product->enable_stock != 1) {
+            //     continue;
+            // }
 
-            $qty_sum_query = $this->get_pl_quantity_sum_string('PL');
+            $qty_sum_query = $this->get_pl_quantity_sum_string('SPL');
 
             //Get purchase lines, only for products with enable stock.
             $query = SupplierTransaction::join('supplier_purchase_lines AS SPL', 'supplier_transactions.id', '=', 'SPL.supplier_transactions_id')
@@ -958,14 +954,14 @@ class SupplierTransactionUtil extends Util
                     'opening_stock', 'production_purchase'])
                 ->where('supplier_transactions.status', 'received')
                 ->whereRaw("( $qty_sum_query ) < SPL.quantity")
-                ->where('SPL.product_id', $line->product_id)
-                ->where('SPL.variation_id', $line->variation_id);
+                ->where('SPL.product_id', $line->product_id);
+
 
             //If product expiry is enabled then check for on expiry conditions
             if ($stop_selling_expired && empty($purchase_line_id)) {
                 $stop_before = request()->session()->get('business')['stop_selling_before'];
                 $expiry_date = Carbon::today()->addDays($stop_before)->toDateString();
-                $query->where( function($q) use($expiry_date) {
+                $query->where(function ($q) use ($expiry_date) {
                     $q->whereNull('SPL.exp_date')
                         ->orWhereRaw('SPL.exp_date > ?', [$expiry_date]);
                 });
@@ -996,7 +992,7 @@ class SupplierTransactionUtil extends Util
                 'SPL.quantity_returned as quantity_returned',
                 'SPL.mfg_quantity_used as mfg_quantity_used',
                 'supplier_transactions.invoice_no'
-                    )->get();
+            )->get();
 
             $purchase_sell_map = [];
 
@@ -1013,7 +1009,6 @@ class SupplierTransactionUtil extends Util
                     $qty_selling = $qty_selling - $row->quantity_available;
                     $qty_allocated = $row->quantity_available;
                 }
-
                 //Check for sell mapping or stock adjsutment mapping
                 if ($mapping_type == 'stock_adjustment') {
                     //Mapping of stock adjustment
@@ -1034,11 +1029,11 @@ class SupplierTransactionUtil extends Util
                     //Mapping of purchase
                     if ($qty_allocated != 0) {
                         $purchase_sell_map[] = ['sell_line_id' => $line->id,
-                                'purchase_line_id' => $row->purchase_lines_id,
-                                'quantity' => $qty_allocated,
-                                'created_at' =>  Carbon::now(),
-                                'updated_at' => Carbon::now()
-                            ];
+                            'purchase_line_id' => $row->purchase_lines_id,
+                            'quantity' => $qty_allocated,
+                            'created_at' => Carbon::now(),
+                            'updated_at' => Carbon::now()
+                        ];
 
                         //Update purchase line
                         SupplierPurchaseLine::where('id', $row->purchase_lines_id)
@@ -1048,11 +1043,11 @@ class SupplierTransactionUtil extends Util
                     //Mapping of purchase
                     if ($qty_allocated != 0) {
                         $purchase_sell_map[] = ['sell_line_id' => $line->id,
-                                'purchase_line_id' => $row->purchase_lines_id,
-                                'quantity' => $qty_allocated,
-                                'created_at' => Carbon::now(),
-                                'updated_at' => Carbon::now()
-                            ];
+                            'purchase_line_id' => $row->purchase_lines_id,
+                            'quantity' => $qty_allocated,
+                            'created_at' => Carbon::now(),
+                            'updated_at' => Carbon::now()
+                        ];
 
                         //Update purchase line
                         SupplierPurchaseLine::where('id', $row->purchase_lines_id)
@@ -1065,14 +1060,10 @@ class SupplierTransactionUtil extends Util
                 }
             }
 
-            if (! ($qty_selling == 0 || is_null($qty_selling))) {
+            if (!($qty_selling == 0 || is_null($qty_selling))) {
                 //If overselling not allowed through exception else create mapping with blank purchase_line_id
                 if (!$allow_overselling) {
-                    $variation = Variation::find($line->variation_id);
                     $mismatch_name = $product->name;
-                    if (!empty($variation->sub_sku)) {
-                        $mismatch_name .= ' ' . 'SKU: ' . $variation->sub_sku;
-                    }
                     if (!empty($qty_selling)) {
                         $mismatch_name .= ' ' . 'Quantity: ' . abs($qty_selling);
                     }
@@ -1105,11 +1096,11 @@ class SupplierTransactionUtil extends Util
                 } else {
                     //Mapping with no purchase line
                     $purchase_sell_map[] = ['sell_line_id' => $line->id,
-                            'purchase_line_id' => 0,
-                            'quantity' => $qty_selling,
-                            'created_at' => Carbon::now(),
-                            'updated_at' => Carbon::now()
-                        ];
+                        'purchase_line_id' => 0,
+                        'quantity' => $qty_selling,
+                        'created_at' => Carbon::now(),
+                        'updated_at' => Carbon::now()
+                    ];
                 }
             }
 
@@ -1188,5 +1179,141 @@ class SupplierTransactionUtil extends Util
                             ->select('p.id as product_id', 'p.name as product_name', 'v.id as variation_id', 'v.name as variation_name', 'Spl.quantity as quantity', 'Spl.exp_date', 'Spl.lot_number')
                             ->get();
         return $products;
+    }
+    public function createExpense($request, $business_id, $user_id, $format_data = true)
+    {
+        $transaction_data = $request->only(['ref_no', 'transaction_date',
+            'location_id', 'final_total', 'expense_for', 'additional_notes',
+            'expense_category_id', 'tax_id', 'contact_id']);
+
+        $transaction_data['business_id'] = $business_id;
+        $transaction_data['created_by'] = $user_id;
+        $transaction_data['type'] = !empty($request->input('is_refund')) && $request->input('is_refund') == 1 ? 'expense_refund' : 'expense';
+        $transaction_data['status'] = AppConstant::FINAL;
+        $transaction_data['payment_status'] = 'due';
+        $transaction_data['final_total'] = $format_data ? $this->num_uf(
+            $transaction_data['final_total']
+        ) : $transaction_data['final_total'];
+        if ($request->has('transaction_date')) {
+            $transaction_data['transaction_date'] = $format_data ? $this->uf_date($transaction_data['transaction_date'], true) : $transaction_data['transaction_date'];
+        } else {
+            $transaction_data['transaction_date'] = Carbon::now();
+        }
+
+        if ($request->has('expense_sub_category_id')) {
+            $transaction_data['expense_sub_category_id'] = $request->input('expense_sub_category_id');
+        }
+
+        $transaction_data['total_before_tax'] = $transaction_data['final_total'];
+        if (!empty($transaction_data['tax_id'])) {
+            $tax_details = TaxRate::find($transaction_data['tax_id']);
+            $transaction_data['total_before_tax'] = $this->calc_percentage_base($transaction_data['final_total'], $tax_details->amount);
+            $transaction_data['tax_amount'] = $transaction_data['final_total'] - $transaction_data['total_before_tax'];
+        }
+
+        if ($request->has('is_recurring')) {
+            $transaction_data['is_recurring'] = 1;
+            $transaction_data['recur_interval'] = !empty($request->input('recur_interval')) ? $request->input('recur_interval') : 1;
+            $transaction_data['recur_interval_type'] = $request->input('recur_interval_type');
+            $transaction_data['recur_repetitions'] = $request->input('recur_repetitions');
+            $transaction_data['subscription_repeat_on'] = $request->input('recur_interval_type') == 'months' && !empty($request->input('subscription_repeat_on')) ? $request->input('subscription_repeat_on') : null;
+        }
+
+        //Update reference count
+        $ref_count = $this->setAndGetReferenceCount('expense', $business_id);
+        //Generate reference number
+        if (empty($transaction_data['ref_no'])) {
+            $transaction_data['ref_no'] = $this->generateReferenceNumber('expense', $ref_count, $business_id);
+        }
+
+        //upload document
+        $document_name = $this->uploadFile($request, 'document', 'documents');
+        if (!empty($document_name)) {
+            $transaction_data['document'] = $document_name;
+        }
+
+        $transaction = SupplierTransaction::create($transaction_data);
+
+        $payments = !empty($request->input('payment')) ? $request->input('payment') : [];
+        //add expense payment
+        $this->createOrUpdateSupplierPaymentLines($transaction, $payments, $business_id);
+
+        //update payment status
+        $this->updatePaymentStatus($transaction->id, $transaction->final_total);
+
+        return $transaction;
+    }
+    public function updateExpense($request, $id, $business_id, $format_data = true)
+    {
+        $transaction_data = [];
+        $transaction = SupplierTransaction::where('business_id', $business_id)
+            ->findOrFail($id);
+
+        if ($request->has('ref_no')) {
+            $transaction_data['ref_no'] = $request->input('ref_no');
+        }
+        if ($request->has('expense_for')) {
+            $transaction_data['expense_for'] = $request->input('expense_for');
+        }
+        if ($request->has('contact_id')) {
+            $transaction_data['contact_id'] = $request->input('contact_id');
+        }
+        if ($request->has('transaction_date')) {
+            $transaction_data['transaction_date'] = $format_data ? $this->uf_date($request->input('transaction_date'), true) : $request->input('transaction_date');
+        }
+        if ($request->has('location_id')) {
+            $transaction_data['location_id'] = $request->input('location_id');
+        }
+        if ($request->has('additional_notes')) {
+            $transaction_data['additional_notes'] = $request->input('additional_notes');
+        }
+
+        if ($request->has('expense_sub_category_id')) {
+            $transaction_data['expense_sub_category_id'] = $request->input('expense_sub_category_id');
+        }
+
+        if ($request->has('expense_category_id')) {
+            $transaction_data['expense_category_id'] = $request->input('expense_category_id');
+        }
+        $final_total = $request->has('final_total') ? $request->input('final_total') : $transaction->final_total;
+        if ($request->has('final_total')) {
+            $transaction_data['final_total'] = $format_data ? $this->num_uf(
+                $final_total
+            ) : $final_total;
+            $final_total = $transaction_data['final_total'];
+        }
+
+        $transaction_data['total_before_tax'] = $transaction_data['final_total'];
+        $tax_id = !empty($request->input('tax_id')) ? $request->input('tax_id') : $transaction->tax_id;
+        if (!empty($tax_id)) {
+            $transaction_data['tax_id'] = $tax_id;
+            $tax_details = TaxRate::find($tax_id);
+            $transaction_data['total_before_tax'] = $this->calc_percentage_base($final_total, $tax_details->amount);
+            $transaction_data['tax_amount'] = $final_total - $transaction_data['total_before_tax'];
+        } else {
+            $transaction_data['tax_id'] = null;
+            $transaction_data['tax_amount'] = 0;
+
+        }
+
+        //upload document
+        $document_name = $this->uploadFile($request, 'document', 'documents');
+        if (!empty($document_name)) {
+            $transaction_data['document'] = $document_name;
+        }
+
+        $transaction_data['is_recurring'] = $request->has('is_recurring') ? 1 : 0;
+        $transaction_data['recur_interval'] = !empty($request->input('recur_interval')) ? $request->input('recur_interval') : 0;
+        $transaction_data['recur_interval_type'] = !empty($request->input('recur_interval_type')) ? $request->input('recur_interval_type') : $transaction->recur_interval_type;
+        $transaction_data['recur_repetitions'] = !empty($request->input('recur_repetitions')) ? $request->input('recur_repetitions') : $transaction->recur_repetitions;
+        $transaction_data['subscription_repeat_on'] = !empty($request->input('subscription_repeat_on')) ? $request->input('subscription_repeat_on') : $transaction->subscription_repeat_on;
+
+        $transaction->update($transaction_data);
+        $transaction->save();
+
+        //update payment status
+        $this->updatePaymentStatus($transaction->id, $transaction->final_total);
+
+        return $transaction;
     }
 }

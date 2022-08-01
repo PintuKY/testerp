@@ -44,8 +44,9 @@ class UpdateStatusDeliveredOther extends Command
             ini_set('memory_limit', '512M');
 
             DB::beginTransaction();
-
-            $master_list = MasterList::where(['status' => AppConstant::STATUS_OTHER])->whereDate('start_date', '>', Carbon::now()->subHours(2)->format('Y-m-d H:i:s'))->get();
+            $master_list = MasterList::whereHas('transaction_sell_lines', function ($query){
+                $query->where('unit_name','!=',AppConstant::TINGKAT);
+            })->whereIn('status',[AppConstant::FINAL,AppConstant::COMPLETED,AppConstant::PROCESSING])->whereDate('start_date', '>', Carbon::now()->subHours(2)->format('Y-m-d H:i:s'))->get();
             if($master_list){
                 foreach ($master_list as $delivered) {
                     Log::info('delivered=>' . $delivered->id);

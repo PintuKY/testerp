@@ -3,7 +3,7 @@
 @php
     if (!empty($status) && $status == 'quotation') {
         $title = __('lang_v1.add_quotation');
-    } else if (!empty($status) && $status == 'draft') {
+    } else if (!empty($status) && $status == AppConstant::PAYMENT_PENDING) {
         $title = __('lang_v1.add_draft');
     } else {
         $title = __('sale.add_sale');
@@ -677,7 +677,7 @@
                 $payment_body_id = '';
             }
         @endphp
-        @if((empty($status) || (!in_array($status, ['quotation', 'draft'])) || $is_enabled_download_pdf) && $sale_type != 'sales_order')
+        @if((empty($status) || (!in_array($status, ['quotation', AppConstant::PAYMENT_PENDING])) || $is_enabled_download_pdf) && $sale_type != 'sales_order')
             @can('sell.payments')
                 @component('components.widget', ['class' => 'box-solid', 'id' => $payment_body_id, 'title' => __('purchase.add_payment')])
                     @if($is_enabled_download_pdf)
@@ -708,7 +708,7 @@
                             </div>
                         </div>
                     @endif
-                    @if(empty($status) || !in_array($status, ['quotation', 'draft']))
+                    @if(empty($status) || !in_array($status, ['quotation', AppConstant::PAYMENT_PENDING]))
                         <div class="payment_row" @if($is_enabled_download_pdf) id="payment_rows_div" @endif>
                             <div class="row">
                                 <div class="col-md-12 mb-12">

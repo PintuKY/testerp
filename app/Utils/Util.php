@@ -2,24 +2,25 @@
 
 namespace App\Utils;
 
-use App\Models\Business;
-use App\Models\BusinessLocation;
-use App\Models\Contact;
-use App\Models\Product;
-use App\Models\ReferenceCount;
-use App\Models\Transaction;
-use App\Models\TransactionSellLine;
+use DB;
+use Config;
 use App\Models\Unit;
 use App\Models\User;
-use App\Models\VariationLocationDetails;
-use DB;
-use GuzzleHttp\Client;
-use Illuminate\Support\Facades\Hash;
-use Spatie\Permission\Models\Role;
-use Illuminate\Support\Facades\Auth;
 use App\Models\System;
-use Config;
+use GuzzleHttp\Client;
+use App\Models\Contact;
+use App\Models\Product;
+use App\Models\Business;
+use App\Models\Transaction;
+use App\Models\ReferenceCount;
 use Illuminate\Support\Carbon;
+use App\Models\BusinessLocation;
+use Spatie\Permission\Models\Role;
+use App\Models\TransactionSellLine;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use App\Models\VariationLocationDetails;
 
 class Util
 {
@@ -1347,7 +1348,7 @@ dd($response);
                 $link = '';
                 if ($notification->type ==
                     \App\Notifications\RecurringInvoiceNotification::class) {
-                    $msg = !empty($data['invoice_status']) && $data['invoice_status'] == 'draft' ?
+                    $msg = !empty($data['invoice_status']) && $data['invoice_status'] == AppConstant::PAYMENT_PENDING ?
                         __(
                             'lang_v1.recurring_invoice_error_message',
                             ['product_name' => $data['out_of_stock_product'], 'subscription_no' => !empty($data['subscription_no']) ? $data['subscription_no'] : '']
@@ -1356,7 +1357,7 @@ dd($response);
                             'lang_v1.recurring_invoice_message',
                             ['invoice_no' => !empty($data['invoice_no']) ? $data['invoice_no'] : '', 'subscription_no' => !empty($data['subscription_no']) ? $data['subscription_no'] : '']
                         );
-                    $icon_class = !empty($data['invoice_status']) && $data['invoice_status'] == 'draft' ? "fas fa-exclamation-triangle bg-yellow" : "fas fa-recycle bg-green";
+                    $icon_class = !empty($data['invoice_status']) && $data['invoice_status'] == AppConstant::PAYMENT_PENDING ? "fas fa-exclamation-triangle bg-yellow" : "fas fa-recycle bg-green";
                     $link = action('SellPosController@listSubscriptions');
                 } else if ($notification->type ==
                     \App\Notifications\RecurringExpenseNotification::class) {

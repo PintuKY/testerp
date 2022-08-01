@@ -80,6 +80,7 @@ class SyncOrder extends Command
                 $orderEndpoint = (config('api.is_order_first_time_sync') == true) ? config("api.order_endpoint") . '?page=' . $i . '&orderby=date&order=desc' : config("api.order_endpoint") . '?page=' . $i . '&orderby=date&order=desc&after=' . now()->subDays(config("api.api_setting_90_days_to_sync_order"));
 
                 $orders = getData(getConfiguration($bussiness_location_id), $orderEndpoint);
+
                 if (count($orders) <= 0) {
                     break;
                 }
@@ -89,7 +90,7 @@ class SyncOrder extends Command
                     if (Transaction::where('web_order_id', $order->id)->exists()) {
                         $transection = Transaction::where('web_order_id', $order->id)->first();
                         Transaction::where('web_order_id', $order->id)->update([
-                            'status' =>  $order->status,
+                            'status' => getOrderStatusNumber($order->status),
                         ]);
                         $this->transactionUtil->activityLog(Transaction::where('web_order_id', $order->id)->first() , 'edited' , $transection);
                     } else {
@@ -158,14 +159,25 @@ class SyncOrder extends Command
 
                                     if ($meta->key != 'Delivery Days' && $meta->key != 'Time Slot' && $meta->key != 'Start Date' && $meta->key != 'Delivery Time' && $meta->key != 'Delivery Date') {
                                         if (gettype($meta->value) === 'string' || gettype($meta->value) === 'integer' ) {
+                                            $name = '';
+                                            $value = '';
+                                            if ($meta->key === 'Serving Pax') {
+                                                $value_string = $this->separateStringPrice($meta->value , '(');
+                                                $name = isset(explode("-", $value_string)[0]) ? explode("-", $value_string)[0] : '';
+                                                $value = isset(explode("-", $value_string)[1]) ? explode("-", $value_string)[1] : '';
+                                            } else if ($meta->key === 'Residential Delivery Type') {
+                                                $value_string = $this->separateStringPrice($meta->value , '(');
+                                                $name = isset(explode("-", $value_string)[0]) ? explode("-", $value_string)[0] : '';
+                                                $value = isset(explode("-", $value_string)[1]) ? explode("-", $value_string)[1] : '';
+                                            }
+
                                             TransactionSellLinesVariant::create(
                                                 [
                                                     'transaction_sell_lines_id' => $transactionSellLine->id,
-                                                    /*'name' => $meta->key,
-                                                    'value' => $meta->value,*/
                                                     'pax' => $meta->key,
                                                     'addon' => $meta->value,
-
+                                                    'name' => $name,
+                                                    'value' => $value,
                                                 ]
                                             );
                                         }
@@ -181,10 +193,12 @@ class SyncOrder extends Command
                                 $is_refund = 1;
                                 $this->createTransactionPayment($order, $bussiness_location_id, $transection, $is_refund, $refund);
                             }
-                            MasterList::where('transaction_id', $transection->id)->where('delivery_date' > $transection->date_created)->update([
-                                'status' => 0,
+                            $transection_date = ($transection->date_modified) ? $transection->date_modified : '0000-00-00';
+                            MasterList::where('transaction_id', $transection->id)->whereDate('delivery_date', '>' ,$transection_date)->update([
+                                'status' => 2,
                                 'additional_notes' => 'reason',
                             ]);
+
                         } else {
                             $days = 1;
                             if (str_contains($lineItem->sku, 'tingkat')) {
@@ -193,9 +207,9 @@ class SyncOrder extends Command
                             }
 
                             if (!MasterList::where('transaction_id', $transection->id)->exists()) {
-                                if ($order->status == 'completed' || $order->status == 'processing') {
+                                // if ($order->status == 'completed' || $order->status == 'processing') {
                                     $this->createMasterList($transection, $days);
-                                }
+                                // }
                             } else {
                                 MasterList::where('transaction_id', $transection->id)->update([
                                     'shipping_address_line_1' => $transection->shipping_address_line_1 ?? 'shipping_address_line_1',
@@ -206,7 +220,7 @@ class SyncOrder extends Command
                                     'shipping_zip_code' => $transection->shipping_zip_code ?? 'shipping_zip_code',
                                     'additional_notes' => $transection->additional_notes ?? 'additional_notes',
                                     'hpnumber' => 'hpnumber',
-                                    'status' => 1,
+                                    'status' => $this->getMasterListStatus($transection),
                                     'additional_notes' => 'additional_notes',
                                 ]);
                             }
@@ -221,6 +235,24 @@ class SyncOrder extends Command
             $i++;
 
         }
+        return 'Order completed';
+    }
+
+    /**
+     * separateStringPrice
+     *
+     * @param  mixed $string
+     * @param  mixed $delimiter
+     * @return void
+     */
+    public function separateStringPrice ($string , $delimiter)
+    {
+        $stringpos = strrpos($string, $delimiter, -1);
+        $name = substr($string,0,$stringpos);
+        $search = array($name, '(','+', ')', '$');
+        $replace = array('', '', '', '', '');
+        $value = str_replace($search, $replace, $string);
+        return $name.'-'.$value;
     }
 
     /**
@@ -253,9 +285,10 @@ class SyncOrder extends Command
             $transaction = Transaction::create([
                 'web_order_id' => $order->id,
                 'business_id' => 1,
-                'business_location_id' => $bussiness_location_id,
-                'status' =>  $order->status,
-                'payment_status' => null,
+                'location_id' => $bussiness_location_id,
+                'status' => getOrderStatusNumber($order->status),
+                'type' => 'sell',
+                'payment_status' => $this->getPaymentStatus($order),
                 'contact_id' => $customerId,
                 'billing_address_line_1' => optional($order->billing)->address_1,
                 'billing_address_line_2' => optional($order->billing)->address_2,
@@ -304,6 +337,20 @@ class SyncOrder extends Command
         }
     }
 
+    /**
+     * getPaymentStatus
+     *
+     * @param  mixed $order
+     * @return void
+     */
+    public function getPaymentStatus($order)
+    {
+        if ($order->status === 'completed' || $order->status === 'processing') {
+            return 'paid';
+        } else {
+            return 'due';
+        }
+    }
 
     /**
      * createTransactionSellLine
@@ -344,7 +391,7 @@ class SyncOrder extends Command
                     'quantity_returned' => 0,
                     'unit_price_before_discount' => $lineItem->subtotal,
                     'unit_price' => $lineItem->price,
-                    'delivery_date'    =>  !filled($delivery_date) ? null :Carbon::parse($delivery_date)->format('Y-m-d'),
+                    'delivery_date' =>  !filled($delivery_date) ? null : Carbon::parse($delivery_date)->format('Y-m-d'),
                     'delivery_time' => !filled($delivery_time) ? null : Carbon::parse($delivery_time)->format('h:i:s'),
                 ]
             );
@@ -369,7 +416,7 @@ class SyncOrder extends Command
     {
         try {
             if ($refund != null && $is_refund == 1) {
-                $amount = $refund->amount;
+                $amount = $refund->total;
                 $reason = $refund->reason;
             } else {
                 $amount = $order->total;
@@ -645,16 +692,54 @@ class SyncOrder extends Command
                 'shipping_zip_code' => $transaction->shipping_zip_code ?? 'shipping_zip_code',
                 'additional_notes' => $transaction->additional_notes ?? 'additional_notes',
                 'delivery_note' => 'delivery_note',
-                'delivery_date'    =>  Carbon::parse($delivery_date)->format('Y-m-d'),
+                'delivery_date' => Carbon::parse($delivery_date)->format('Y-m-d'),
                 'delivery_time' => Carbon::parse($delivery_time)->format('h:i:s'),
                 'shipping_phone' => 'shipping_phone',
-                'status' => 1,
+                'status' => $this->getMasterListStatus($transaction),
                 'staff_notes' => ($transaction->staff_note) ? $transaction->staff_note : 'staff_note',
                 'created_by' => 1,
                 'time_slot' => $timeSlot,
             ]
         );
         return true;
+    }
+
+
+    /**
+     * getMasterListStatus
+     *
+     * @param  mixed $transaction
+     * @return void
+     */
+    public function getMasterListStatus($transaction)
+    {
+        $status = 0;
+        switch ($transaction->status) {
+            case ('refunded'):
+                $status = 2;
+                break;
+            case ('completed'):
+                $status = 1;
+                break;
+            case ('final'):
+                $status = 1;
+                break;
+            case ('processing'):
+                $status = 1;
+                break;
+            case ('cancelled'):
+                $status = 2;
+                break;
+            case ('failed'):
+                $status = 2;
+                break;
+            case ('payment_pending'):
+                $status = 2;
+                break;
+            default:
+                $status = 0;
+        }
+        return $status;
     }
 
 

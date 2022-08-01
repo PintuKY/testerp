@@ -4,14 +4,13 @@ namespace App\Http\Controllers;
 
 use DB;
 
-use Datatables;
+use App\Models\PurchaseLine;
+use App\Models\Transaction;
+use App\Models\TransactionSellLinesPurchaseLines;
 use App\Utils\AppConstant;
-use Carbon\Carbon;
 use App\Utils\ModuleUtil;
 use App\Utils\ProductUtil;
 
-use App\Models\Transaction;
-use App\Models\PurchaseLine;
 use Illuminate\Http\Request;
 
 use App\Utils\TransactionUtil;
@@ -23,7 +22,6 @@ use Illuminate\Support\Facades\Log;
 use App\Models\SupplierPurchaseLine;
 use App\Utils\SupplierTransactionUtil;
 use Spatie\Activitylog\Models\Activity;
-use App\Models\TransactionSellLinesPurchaseLines;
 use App\Models\SupplierTransactionSellLinesPurchaseLines;
 
 class StockTransferController extends Controller

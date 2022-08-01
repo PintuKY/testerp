@@ -1348,7 +1348,7 @@ dd($response);
                 $link = '';
                 if ($notification->type ==
                     \App\Notifications\RecurringInvoiceNotification::class) {
-                    $msg = !empty($data['invoice_status']) && $data['invoice_status'] == 'draft' ?
+                    $msg = !empty($data['invoice_status']) && $data['invoice_status'] == AppConstant::PAYMENT_PENDING ?
                         __(
                             'lang_v1.recurring_invoice_error_message',
                             ['product_name' => $data['out_of_stock_product'], 'subscription_no' => !empty($data['subscription_no']) ? $data['subscription_no'] : '']
@@ -1357,7 +1357,7 @@ dd($response);
                             'lang_v1.recurring_invoice_message',
                             ['invoice_no' => !empty($data['invoice_no']) ? $data['invoice_no'] : '', 'subscription_no' => !empty($data['subscription_no']) ? $data['subscription_no'] : '']
                         );
-                    $icon_class = !empty($data['invoice_status']) && $data['invoice_status'] == 'draft' ? "fas fa-exclamation-triangle bg-yellow" : "fas fa-recycle bg-green";
+                    $icon_class = !empty($data['invoice_status']) && $data['invoice_status'] == AppConstant::PAYMENT_PENDING ? "fas fa-exclamation-triangle bg-yellow" : "fas fa-recycle bg-green";
                     $link = action('SellPosController@listSubscriptions');
                 } else if ($notification->type ==
                     \App\Notifications\RecurringExpenseNotification::class) {

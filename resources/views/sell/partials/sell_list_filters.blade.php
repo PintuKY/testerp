@@ -59,14 +59,23 @@
     </div>
 @endif
 @endif
-@if(!empty($shipping_statuses))
+@if(!empty($order_statuses))
     <div class="col-md-3">
         <div class="form-group">
-            {!! Form::label('shipping_status', __('lang_v1.shipping_status') . ':') !!}
-            {!! Form::select('shipping_status', $shipping_statuses, null, ['class' => 'form-control select2', 'style' => 'width:100%', 'placeholder' => __('lang_v1.all')]); !!}
+            {!! Form::label('order_status', __('lang_v1.order_status') . ':') !!}
+            {!! Form::select('order_status', $order_statuses, null, ['class' => 'form-control select2', 'style' => 'width:100%', 'placeholder' => __('lang_v1.all')]); !!}
         </div>
     </div>
 @endif
+{{--@if(!empty($order_statuses))
+    <div class="col-md-3">
+        <div class="form-group">
+            {!! Form::label('order_status', __('lang_v1.order_status') . ':') !!}
+            {!! Form::select('order_status', $order_statuses, null, ['class' => 'form-control select2', 'style' => 'width:100%', 'placeholder' => __('lang_v1.all')]); !!}
+        </div>
+    </div>
+@endif--}}
+
 @if(empty($only) || in_array('only_subscriptions', $only))
 <div class="col-md-3">
     <div class="form-group">

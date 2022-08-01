@@ -8,13 +8,13 @@
 				<span class="input-group-addon">
 					<i class="fa fa-user"></i>
 				</span>
-				<input type="hidden" id="default_customer_id" 
+				<input type="hidden" id="default_customer_id"
 				value="{{ $transaction->contact->id }}" >
-				<input type="hidden" id="default_customer_name" 
+				<input type="hidden" id="default_customer_name"
 				value="{{ $transaction->contact->name }}" >
-				<input type="hidden" id="default_customer_balance" 
+				<input type="hidden" id="default_customer_balance"
 				value="{{$transaction->contact->balance}}" >
-				{!! Form::select('contact_id', 
+				{!! Form::select('contact_id',
 					[], null, ['class' => 'form-control mousetrap', 'id' => 'customer_id', 'placeholder' => 'Enter Customer name / phone', 'required', 'style' => 'width: 100%;']); !!}
 				<span class="input-group-btn">
 					<button type="button" class="btn btn-default bg-white btn-flat add_new_customer" data-name=""  @if(!auth()->user()->can('customer.create')) disabled @endif><i class="fa fa-plus-circle text-primary fa-lg"></i></button>
@@ -36,7 +36,7 @@
 
 					<!-- Show button for weighing scale modal -->
 					@if(isset($pos_settings['enable_weighing_scale']) && $pos_settings['enable_weighing_scale'] == 1)
-						<button type="button" class="btn btn-default bg-white btn-flat" id="weighing_scale_btn" data-toggle="modal" data-target="#weighing_scale_modal" 
+						<button type="button" class="btn btn-default bg-white btn-flat" id="weighing_scale_btn" data-toggle="modal" data-target="#weighing_scale_modal"
 						title="@lang('lang_v1.weighing_scale')"><i class="fa fa-digital-tachograph text-primary fa-lg"></i></button>
 					@endif
 
@@ -50,21 +50,21 @@
 	@if(!empty($pos_settings['show_invoice_layout']))
 	<div class="col-md-4">
 		<div class="form-group">
-		{!! Form::select('invoice_layout_id', 
+		{!! Form::select('invoice_layout_id',
 					$invoice_layouts, $transaction->location->invoice_layout_id, ['class' => 'form-control select2', 'placeholder' => __('lang_v1.select_invoice_layout'), 'id' => 'invoice_layout_id']); !!}
 		</div>
 	</div>
 	@endif
 	<input type="hidden" name="pay_term_number" id="pay_term_number" value="{{$transaction->pay_term_number}}">
 	<input type="hidden" name="pay_term_type" id="pay_term_type" value="{{$transaction->pay_term_type}}">
-	
+
 	@if(!empty($commission_agent))
 		@php
 			$is_commission_agent_required = !empty($pos_settings['is_commission_agent_required']);
 		@endphp
 		<div class="col-sm-4">
 			<div class="form-group">
-			{!! Form::select('commission_agent', 
+			{!! Form::select('commission_agent',
 						$commission_agent, $transaction->commission_agent, ['class' => 'form-control select2', 'placeholder' => __('lang_v1.commission_agent'), 'id' => 'commission_agent', 'required' => $is_commission_agent_required]); !!}
 			</div>
 		</div>
@@ -104,7 +104,7 @@
 					{!! Form::text('price_group_text', $transaction->price_group->name, ['class' => 'form-control', 'readonly']); !!}
 					<span class="input-group-addon">
 					@show_tooltip(__('lang_v1.price_group_help_text'))
-				</span> 
+				</span>
 				</div>
 			</div>
 		</div>
@@ -122,7 +122,7 @@
 					{!! Form::hidden('types_of_service_id', $transaction->types_of_service_id, ['id' => 'types_of_service_id']) !!}
 					<span class="input-group-addon">
 						@show_tooltip(__('lang_v1.types_of_service_help'))
-					</span> 
+					</span>
 				</div>
 				<small><p class="help-block @if(empty($transaction->selling_price_group_id)) hide @endif" id="price_group_text">@lang('lang_v1.price_group'): <span>@if(!empty($transaction->selling_price_group_id)){{$transaction->price_group->name}}@endif</span></p></small>
 			</div>
@@ -133,7 +133,7 @@
 			@endif
 		</div>
 	@endif
-	@if($transaction->status == 'draft' && !empty($pos_settings['show_invoice_scheme']))
+	@if($transaction->status == AppConstant::PAYMENT_PENDING && !empty($pos_settings['show_invoice_scheme']))
 		<div class="col-sm-3">
 			<div class="form-group">
 				{!! Form::select('invoice_scheme_id', $invoice_schemes, $default_invoice_schemes->id, ['class' => 'form-control', 'placeholder' => __('lang_v1.select_invoice_scheme')]); !!}
@@ -142,7 +142,7 @@
 	@endif
 	<!-- Call restaurant module if defined -->
     @if(in_array('tables' ,$enabled_modules) || in_array('service_staff' ,$enabled_modules))
-    	<span id="restaurant_module_span" 
+    	<span id="restaurant_module_span"
     		data-transaction_id="{{$transaction->id}}">
       		<div class="col-md-3"></div>
     	</span>
@@ -168,7 +168,7 @@
 		<input type="hidden" name="sell_price_tax" id="sell_price_tax" value="{{$business_details->sell_price_tax}}">
 
 		<!-- Keeps count of product rows -->
-		<input type="hidden" id="product_row_count" 
+		<input type="hidden" id="product_row_count"
 			value="{{count($sell_details)}}">
 		@php
 			$hide_tax = '';
@@ -179,7 +179,7 @@
 		<table class="table table-condensed table-bordered table-striped table-responsive" id="pos_table">
 			<thead>
 				<tr>
-					<th class="tex-center @if(!empty($pos_settings['inline_service_staff'])) col-md-3 @else col-md-4 @endif">	
+					<th class="tex-center @if(!empty($pos_settings['inline_service_staff'])) col-md-3 @else col-md-4 @endif">
 						@lang('sale.product') @show_tooltip(__('lang_v1.tooltip_sell_product_column'))
 					</th>
 					<th class="text-center col-md-3">
@@ -202,10 +202,10 @@
 			<tbody>
 				@foreach($sell_details as $sell_line)
 
-				@include('sale_pos.product_row', 
-					['product' => $sell_line, 
-					'row_count' => $loop->index, 
-					'tax_dropdown' => $taxes, 
+				@include('sale_pos.product_row',
+					['product' => $sell_line,
+					'row_count' => $loop->index,
+					'tax_dropdown' => $taxes,
 					'sub_units' => !empty($sell_line->unit_details) ? $sell_line->unit_details : [],
 					'action' => 'edit'
 				])

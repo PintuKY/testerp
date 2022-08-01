@@ -2,39 +2,40 @@
 
 namespace App\Http\Controllers;
 
+use DB;
+use Datatables;
+use Carbon\Carbon;
+use App\Models\Unit;
+
+use App\Models\User;
 use App\Models\Brands;
-use App\Models\BusinessLocation;
-use App\Models\CashRegister;
-use App\Models\Category;
 
-use App\Charts\CommonChart;
 use App\Models\Contact;
-
-use App\Models\CustomerGroup;
-use App\Models\ExpenseCategory;
 use App\Models\Product;
+use App\Models\TaxRate;
+use App\Models\Category;
+use App\Models\Supplier;
+use App\Models\Variation;
+use App\Utils\ModuleUtil;
+use App\Utils\AppConstant;
+use App\Utils\ProductUtil;
+use App\Charts\CommonChart;
+use App\Models\Transaction;
+use App\Utils\BusinessUtil;
+use App\Models\CashRegister;
 use App\Models\PurchaseLine;
 use App\Restaurant\ResTable;
+use Illuminate\Http\Request;
+use App\Models\CustomerGroup;
+use App\Utils\TransactionUtil;
+use App\Models\ExpenseCategory;
+use App\Models\BusinessLocation;
 use App\Models\SellingPriceGroup;
-use App\Models\Transaction;
 use App\Models\TransactionPayment;
 use App\Models\TransactionSellLine;
-use App\Models\TransactionSellLinesPurchaseLines;
-use App\Models\Unit;
-use App\Models\User;
-use App\Utils\AppConstant;
-use App\Utils\BusinessUtil;
-use App\Utils\ModuleUtil;
-use App\Utils\ProductUtil;
-use App\Utils\TransactionUtil;
-use App\Models\Variation;
-use App\Models\VariationLocationDetails;
-use Datatables;
-use DB;
-use Illuminate\Http\Request;
-use App\Models\TaxRate;
 use Spatie\Activitylog\Models\Activity;
-use Carbon\Carbon;
+use App\Models\VariationLocationDetails;
+use App\Models\TransactionSellLinesPurchaseLines;
 
 class ReportController extends Controller
 {
@@ -174,11 +175,11 @@ class ReportController extends Controller
     }
 
     /**
-     * Shows report for Supplier
+     * Shows report for Customers
      *
      * @return \Illuminate\Http\Response
      */
-    public function getCustomerSuppliers(Request $request)
+    public function getCustomers(Request $request)
     {
         if (!auth()->user()->can('contacts_report.view')) {
             abort(403, 'Unauthorized action.');
@@ -221,9 +222,9 @@ class ReportController extends Controller
                 $contacts->where('contacts.customer_group_id', $request->input('customer_group_id'));
             }
 
-            if (!empty($request->input('contact_type'))) {
-                $contacts->whereIn('contacts.type', [$request->input('contact_type'), 'both']);
-            }
+            // if (!empty($request->input('contact_type'))) {
+            //     $contacts->whereIn('contacts.type', [$request->input('contact_type'), 'both']);
+            // }
 
             return datatables()::of($contacts)
                 ->editColumn('name', function ($row) {
@@ -292,6 +293,120 @@ class ReportController extends Controller
 
         return view('report.contact')
         ->with(compact('customer_group', 'types'));
+    }
+
+       /**
+     * Shows report for Customers
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function getSuppliers(Request $request)
+    {
+        if (!auth()->user()->can('contacts_report.view')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $business_id = $request->session()->get('user.business_id');
+
+        //Return the details in ajax call
+        if ($request->ajax()) {
+            $final = AppConstant::FINAL;
+            $processing = AppConstant::PROCESSING;
+            $completed = AppConstant::COMPLETED;
+            $contacts = Supplier::where('supplier.business_id', $business_id)
+                ->join('supplier_transactions AS st', 'supplier.id', '=', 'st.supplier_id')
+                ->groupBy('supplier.id')
+                ->select(
+                    DB::raw("SUM(IF(st.type = 'purchase', final_total, 0)) as total_purchase"),
+                    DB::raw("SUM(IF(st.type = 'purchase_return', final_total, 0)) as total_purchase_return"),
+                    DB::raw("SUM(IF(st.type = 'sell' AND (st.status=$final OR st.status=$processing OR  st.status=$completed), final_total, 0)) as total_invoice"),
+                    DB::raw("SUM(IF(st.type = 'purchase', (SELECT SUM(amount) FROM supplier_transaction_payments WHERE supplier_transaction_payments.supplier_transaction_id=st.id), 0)) as purchase_paid"),
+                    DB::raw("SUM(IF(st.type = 'sell' AND (st.status=$final OR st.status=$processing OR  st.status=$completed), (SELECT SUM(IF(is_return = 1,-1*amount,amount)) FROM transaction_payments WHERE transaction_payments.transaction_id=st.id), 0)) as invoice_received"),
+                    DB::raw("SUM(IF(st.type = 'sell_return', (SELECT SUM(amount) FROM supplier_transaction_payments WHERE supplier_transaction_payments.supplier_transaction_id=st.id), 0)) as sell_return_paid"),
+                    DB::raw("SUM(IF(st.type = 'purchase_return', (SELECT SUM(amount) FROM supplier_transaction_payments WHERE supplier_transaction_payments.supplier_transaction_id=st.id), 0)) as purchase_return_received"),
+                    DB::raw("SUM(IF(st.type = 'sell_return', final_total, 0)) as total_sell_return"),
+                    DB::raw("SUM(IF(st.type = 'opening_balance', final_total, 0)) as opening_balance"),
+                    DB::raw("SUM(IF(st.type = 'opening_balance', (SELECT SUM(IF(is_return = 1,-1*amount,amount)) FROM supplier_transaction_payments WHERE supplier_transaction_payments.supplier_transaction_id=st.id), 0)) as opening_balance_paid"),
+                    'supplier.supplier_business_name',
+                    'supplier.name',
+                    'supplier.id',
+                );
+            $permitted_locations = auth()->user()->permitted_locations();
+
+            if ($permitted_locations != 'all') {
+                $contacts->whereIn('st.location_id', $permitted_locations);
+            }
+
+            // if (!empty($request->input('customer_group_id'))) {
+            //     $contacts->where('suppliers.customer_group_id', $request->input('customer_group_id'));
+            // }
+
+            // if (!empty($request->input('contact_type'))) {
+            //     $contacts->whereIn('contacts.type', [$request->input('contact_type'), 'both']);
+            // }
+
+            return datatables()::of($contacts)
+                ->editColumn('name', function ($row) {
+                    $name = $row->name;
+                    if (!empty($row->supplier_business_name)) {
+                        $name .= ', ' . $row->supplier_business_name;
+                    }
+                    return '<a href="' . action('SupplierController@show', [$row->id]) . '" target="_blank" class="no-print">' .
+                            $name .
+                        '</a>';
+                })
+                ->editColumn(
+                    'total_purchase',
+                    '<span class="total_purchase" data-orig-value="{{$total_purchase}}">@format_currency($total_purchase)</span>'
+                )
+                ->editColumn(
+                    'total_purchase_return',
+                    '<span class="total_purchase_return" data-orig-value="{{$total_purchase_return}}">@format_currency($total_purchase_return)</span>'
+                )
+                ->editColumn(
+                    'total_sell_return',
+                    '<span class="total_sell_return" data-orig-value="{{$total_sell_return}}">@format_currency($total_sell_return)</span>'
+                )
+                ->editColumn(
+                    'total_invoice',
+                    '<span class="total_invoice" data-orig-value="{{$total_invoice}}">@format_currency($total_invoice)</span>'
+                )
+
+                ->addColumn('due', function ($row) {
+                    $due = ($row->total_invoice - $row->invoice_received - $row->total_sell_return + $row->sell_return_paid) - ($row->total_purchase - $row->total_purchase_return + $row->purchase_return_received - $row->purchase_paid);
+
+                    if ($row->contact_type == 'supplier') {
+                        $due -= $row->opening_balance - $row->opening_balance_paid;
+                    } else {
+                        $due += $row->opening_balance - $row->opening_balance_paid;
+                    }
+
+                    $due_formatted = $this->transactionUtil->num_f($due, true);
+
+                    return '<span class="total_due" data-orig-value="' . $due . '">' . $due_formatted .'</span>';
+                })
+                ->addColumn(
+                    'opening_balance_due',
+                    '<span class="opening_balance_due" data-orig-value="{{$opening_balance - $opening_balance_paid}}">@format_currency($opening_balance - $opening_balance_paid)</span>'
+                )
+                ->removeColumn('supplier_business_name')
+                ->removeColumn('invoice_received')
+                ->removeColumn('purchase_paid')
+                ->removeColumn('id')
+                ->filterColumn('name', function ($query, $keyword) {
+                    $query->where( function($q) use ($keyword){
+                        $q->where('suppliers.name', 'like', "%{$keyword}%");
+                    });
+                })
+                ->rawColumns(['total_purchase', 'total_invoice', 'due', 'name', 'total_purchase_return', 'total_sell_return', 'opening_balance_due'])
+                ->make(true);
+        }
+
+        $customer_group = CustomerGroup::forDropdown($business_id, false, true);
+       
+
+        return view('report.supplier')
+        ->with(compact('customer_group'));
     }
 
     /**

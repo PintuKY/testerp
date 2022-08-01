@@ -262,7 +262,15 @@ class PurchaseReturnController extends Controller
                 $purchase_line->save();
                 $return_total += $purchase_line->purchase_price_inc_tax * $purchase_line->quantity_returned;
 
-
+                  //Decrease quantity in variation location details
+                  if ($old_return_qty != $purchase_line->quantity_returned) {
+                    $this->productUtil->decreaseSupplierProductQuantity(
+                        $purchase_line->product_id,
+                        $purchase->location_id,
+                        $purchase_line->quantity_returned,
+                        $old_return_qty
+                    );
+                }
             }
             $return_total_inc_tax = $return_total + $request->input('tax_amount');
 
@@ -324,7 +332,6 @@ class PurchaseReturnController extends Controller
 
         return redirect('purchase-return')->with('status', $output);
     }
-
     /**
      * Display the specified resource.
      *
@@ -407,7 +414,7 @@ class PurchaseReturnController extends Controller
                     $delete_purchase_line_ids = [];
                     foreach ($delete_purchase_lines as $purchase_line) {
                         $delete_purchase_line_ids[] = $purchase_line->id;
-                        //$this->productUtil->updateProductQuantity($purchase_return->location_id, $purchase_line->product_id, $purchase_line->variation_id, $purchase_line->quantity_returned, 0, null, false);
+                        $this->productUtil->updateSupplierProductQuantity($purchase_return->location_id, $purchase_line->product_id, $purchase_line->variation_id, $purchase_line->quantity_returned, 0, null, false);
                     }
                     SupplierPurchaseLine::where('supplier_transactions_id', $purchase_return->id)
                                 ->whereIn('id', $delete_purchase_line_ids)

@@ -5,7 +5,7 @@
 
 <!-- Content Header (Page header) -->
 <section class="content-header">
-    <h1>{{ __('report.customer')}} {{ __('report.reports')}}</h1>
+    <h1>{{ __('report.supplier')}} {{ __('report.reports')}}</h1>
 </section>
 
 <!-- Main content -->
@@ -13,16 +13,6 @@
 
     <div class="row">
         <div class="col-md-12">
-            @component('components.filters', ['title' => __('report.filters')])
-
-                <div class="col-md-3">
-                    <div class="form-group">
-                        {!! Form::label('cg_customer_group_id', __( 'lang_v1.customer_group_name' ) . ':') !!}
-                        {!! Form::select('cnt_customer_group_id', $customer_group, null, ['class' => 'form-control select2', 'style' => 'width:100%', 'id' => 'cnt_customer_group_id']); !!}
-                    </div>
-                </div>
-
-             @endcomponent
         </div>
     </div>
 
@@ -30,7 +20,7 @@
         <div class="col-md-12">
             @component('components.widget', ['class' => 'box-primary'])
             <div class="table-responsive">
-                <table class="table table-bordered table-striped" id="customer_report_tbl">
+                <table class="table table-bordered table-striped" id="supplier_report_tbl">
                     <thead>
                         <tr>
                             <th>@lang('report.contact')</th>

@@ -27,7 +27,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Account;
-use App\Models\Brands;
 use App\Models\Business;
 use App\Models\BusinessLocation;
 use App\Models\Category;
@@ -214,8 +213,8 @@ class SellPosController extends Controller
 
         //If brands, category are enabled then send else false.
         $categories = (request()->session()->get('business.enable_category') == 1) ? Category::catAndSubCategories($business_id) : false;
-        $brands = (request()->session()->get('business.enable_brand') == 1) ? Brands::forDropdown($business_id)
-                    ->prepend(__('lang_v1.all_brands'), 'all') : false;
+        /*$brands = (request()->session()->get('business.enable_brand') == 1) ? Brands::forDropdown($business_id)
+                    ->prepend(__('lang_v1.all_brands'), 'all') : false;*/
 
         $change_return = $this->dummyPaymentLine;
 
@@ -271,7 +270,6 @@ class SellPosController extends Controller
                 'shortcuts',
                 'commission_agent',
                 'categories',
-                'brands',
                 'pos_settings',
                 'change_return',
                 'types',
@@ -952,8 +950,8 @@ class SellPosController extends Controller
 
         //If brands, category are enabled then send else false.
         $categories = (request()->session()->get('business.enable_category') == 1) ? Category::catAndSubCategories($business_id) : false;
-        $brands = (request()->session()->get('business.enable_brand') == 1) ? Brands::forDropdown($business_id)
-                    ->prepend(__('lang_v1.all_brands'), 'all') : false;
+       /* $brands = (request()->session()->get('business.enable_brand') == 1) ? Brands::forDropdown($business_id)
+                    ->prepend(__('lang_v1.all_brands'), 'all') : false;*/
 
         $change_return = $this->dummyPaymentLine;
 
@@ -1010,7 +1008,7 @@ class SellPosController extends Controller
         $customer_due = $customer_due != 0 ? $this->transactionUtil->num_f($customer_due, true) : '';
 
         return view('sale_pos.edit')
-            ->with(compact('business_details', 'taxes', 'payment_types', 'walk_in_customer', 'sell_details', 'transaction', 'payment_lines', 'location_printer_type', 'shortcuts', 'commission_agent', 'categories', 'pos_settings', 'change_return', 'types', 'customer_groups', 'brands', 'accounts', 'waiters', 'redeem_details', 'edit_price', 'edit_discount', 'shipping_statuses', 'sub_type', 'pos_module_data', 'invoice_schemes', 'default_invoice_schemes', 'invoice_layouts', 'featured_products', 'customer_due'));
+            ->with(compact('business_details', 'taxes', 'payment_types', 'walk_in_customer', 'sell_details', 'transaction', 'payment_lines', 'location_printer_type', 'shortcuts', 'commission_agent', 'categories', 'pos_settings', 'change_return', 'types', 'customer_groups', 'accounts', 'waiters', 'redeem_details', 'edit_price', 'edit_discount', 'shipping_statuses', 'sub_type', 'pos_module_data', 'invoice_schemes', 'default_invoice_schemes', 'invoice_layouts', 'featured_products', 'customer_due'));
     }
 
     /**

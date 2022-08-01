@@ -86,6 +86,7 @@ class SellController extends Controller
         }
 
         $business_id = request()->session()->get('user.business_id');
+
         $is_woocommerce = $this->moduleUtil->isModuleInstalled('Woocommerce');
         $is_crm = $this->moduleUtil->isModuleInstalled('Crm');
         $is_tables_enabled = $this->transactionUtil->isModuleEnabled('tables');
@@ -100,6 +101,7 @@ class SellController extends Controller
             $sale_type = !empty(request()->input('sale_type')) ? request()->input('sale_type') : 'sell';
 
             $sells = $this->transactionUtil->getListSells($business_id, $sale_type);
+
 
             $permitted_locations = auth()->user()->permitted_locations();
             if ($permitted_locations != 'all') {
@@ -357,8 +359,11 @@ class SellController extends Controller
                         }
                         if (!$only_shipments) {
                             if ($row->is_direct_sale == 0) {
-                                if (auth()->user()->can("sell.update")) {
+                                /*if (auth()->user()->can("sell.update")) {
                                     $html .= '<li><a target="_blank" href="' . action('SellPosController@edit', [$row->id]) . '"><i class="fas fa-edit"></i> ' . __("messages.edit") . '</a></li>';
+                                }*/
+                                if (auth()->user()->can("sell.update")) {
+                                    $html .= '<li><a target="_blank" href="' . action('SellController@edit', [$row->id]) . '"><i class="fas fa-edit"></i> ' . __("messages.edit") . '</a></li>';
                                 }
                             } elseif ($row->type == 'sales_order') {
                                 if (auth()->user()->can("so.update")) {
@@ -552,7 +557,8 @@ class SellController extends Controller
                     $count = count($methods);
                     $payment_method = '';
                     if ($count == 1) {
-                        $payment_method = $payment_types[$methods[0]];
+                        //$payment_method = $payment_types[$methods[0]];
+                        $payment_method = $methods[0];
                     } elseif ($count > 1) {
                         $payment_method = __('lang_v1.checkout_multi_pay');
                     }

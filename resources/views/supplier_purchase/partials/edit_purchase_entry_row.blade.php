@@ -17,14 +17,14 @@
                 <th>@lang( 'lang_v1.unit_cost_before_discount' )</th>
                 <th>@lang( 'lang_v1.discount_percent' )</th>
                 <th>@lang( 'purchase.unit_cost_before_tax' )</th>
-                <th class="{{$hide_tax}}">@lang( 'purchase.subtotal_before_tax' )</th>
-                <th class="{{$hide_tax}}">@lang( 'purchase.product_tax' )</th>
-                <th class="{{$hide_tax}}">@lang( 'purchase.net_cost' )</th>
+                <th>@lang( 'purchase.subtotal_before_tax' )</th>
+                <th>@lang( 'purchase.product_tax' )</th>
+                <th>@lang( 'purchase.net_cost' )</th>
                 <th>@lang( 'purchase.line_total' )</th>
-                <th class="@if(!session('business.enable_editing_product_from_purchase') || !empty($is_purchase_order)) hide @endif">
+                {{-- <th class="@if(!session('business.enable_editing_product_from_purchase') || !empty($is_purchase_order)) hide @endif">
                     @lang( 'lang_v1.profit_margin' )
-                </th>
-                @if(empty($is_purchase_order))
+                </th> --}}
+                {{-- @if(empty($is_purchase_order))
                     <th>@lang( 'purchase.unit_selling_price') <small>(@lang('product.inc_of_tax'))</small></th>
                     @if(session('business.enable_lot_number'))
                         <th>
@@ -34,7 +34,7 @@
                     @if(session('business.enable_product_expiry'))
                         <th>@lang('product.mfg_date') / @lang('product.exp_date')</th>
                     @endif
-                @endif
+                @endif --}}
                 <th>
                     <i class="fa fa-trash" aria-hidden="true"></i>
                 </th>
@@ -45,19 +45,18 @@
     @foreach($purchase->supplierPurchaseLines as $purchase_line)
         <tr @if(!empty($purchase_line->purchase_order_line) && !empty($common_settings['enable_purchase_order'])) data-purchase_order_id="{{$purchase_line->purchase_order_line->supplier_transactions_id}}" @endif>
             <td><span class="sr_number"></span></td>
-            {{-- <td>
-                {{ $purchase_line->product->name }} ({{$purchase_line->variations->sub_sku}})
-                @if( $purchase_line->product->type == 'variable') 
-                    <br/>(<b>{{ $purchase_line->variations->product_variation->name}}</b> : {{ $purchase_line->variations->name}})
-                @endif
-            </td> --}}
+            {{--Start::name --}}
+            <td>
+                {{ $purchase_line->product->name }} ({{$purchase_line->product->sku}})
+            </td>
+            {{--End::name --}}
 
+            {{--Start::Quantity --}}
             <td>
                 @if(!empty($purchase_line->purchase_order_line_id) && !empty($common_settings['enable_purchase_order']))
                     {!! Form::hidden('purchases[' . $loop->index . '][purchase_order_line_id]', $purchase_line->purchase_order_line_id ); !!}
                 @endif
                 {!! Form::hidden('purchases[' . $loop->index . '][product_id]', $purchase_line->product_id ); !!}
-                {{-- {!! Form::hidden('purchases[' . $loop->index . '][variation_id]', $purchase_line->variation_id ); !!} --}}
                 {!! Form::hidden('purchases[' . $loop->index . '][purchase_line_id]',
                 $purchase_line->id); !!}
 
@@ -106,23 +105,37 @@
 
                 <input type="hidden" class="base_unit_selling_price" value="{{$purchase_line->product->purchase_price_inc_tax}}">
             </td>
+            {{--End::Quantity --}}
+
+            {{--Start::Purchase price without discount --}}
             <td>
                 {!! Form::text('purchases[' . $loop->index . '][pp_without_discount]', number_format($purchase_line->pp_without_discount/$purchase->exchange_rate, $currency_precision, $currency_details->decimal_separator, $currency_details->thousand_separator), ['class' => 'form-control input-sm purchase_unit_cost_without_discount input_number', 'required']); !!}
             </td>
+            {{--End::Purchase price without discount --}}
+
+            {{--Start::Discount Percent --}}
             <td>
                 {!! Form::text('purchases[' . $loop->index . '][discount_percent]', number_format($purchase_line->discount_percent, $currency_precision, $currency_details->decimal_separator, $currency_details->thousand_separator), ['class' => 'form-control input-sm inline_discounts input_number', 'required']); !!} <b>%</b>
             </td>
+            {{--End::Discount Percent --}}
+
+            {{--Start::Unit price Before tax --}}
             <td>
                 {!! Form::text('purchases[' . $loop->index . '][purchase_price]', number_format($purchase_line->purchase_price/$purchase->exchange_rate, $currency_precision, $currency_details->decimal_separator, $currency_details->thousand_separator), ['class' => 'form-control input-sm purchase_unit_cost input_number', 'required']); !!}
             </td>
-            <td class="{{$hide_tax}}">
+            {{--End::Unit price Before tax --}}
+
+            {{--Start::Sub total Before tax --}}
+            <td>
                 <span class="row_subtotal_before_tax">
                     {{number_format($purchase_line->quantity * $purchase_line->purchase_price/$purchase->exchange_rate, $currency_precision, $currency_details->decimal_separator, $currency_details->thousand_separator)}}
                 </span>
                 <input type="hidden" class="row_subtotal_before_tax_hidden" value="{{number_format($purchase_line->quantity * $purchase_line->purchase_price/$purchase->exchange_rate, $currency_precision, $currency_details->decimal_separator, $currency_details->thousand_separator)}}">
             </td>
+            {{--End::Sub total Before tax --}}
 
-            <td class="{{$hide_tax}}">
+            {{--Start::Tax rate--}}
+            <td >
                 <div class="input-group">
                     <select name="purchases[{{ $loop->index }}][purchase_line_tax_id]" class="form-control input-sm purchase_line_tax_id" placeholder="'Please Select'">
                         <option value="" data-tax_amount="0" @if( empty( $purchase_line->tax_id ) )
@@ -137,17 +150,25 @@
                     {!! Form::hidden('purchases[' . $loop->index . '][item_tax]', number_format($purchase_line->item_tax/$purchase->exchange_rate, $currency_precision, $currency_details->decimal_separator, $currency_details->thousand_separator), ['class' => 'purchase_product_unit_tax']); !!}
                 </div>
             </td>
-            <td class="{{$hide_tax}}">
+            {{--End::Tax rate--}}
+
+            {{--Start::Net Cost--}}
+            <td>
                 {!! Form::text('purchases[' . $loop->index . '][purchase_price_inc_tax]', number_format($purchase_line->purchase_price_inc_tax/$purchase->exchange_rate, $currency_precision, $currency_details->decimal_separator, $currency_details->thousand_separator), ['class' => 'form-control input-sm purchase_unit_cost_after_tax input_number', 'required']); !!}
             </td>
+            {{--End::Net Cost--}}
+
+            {{--Start::Line Cost--}}
             <td>
                 <span class="row_subtotal_after_tax">
                 {{number_format($purchase_line->purchase_price_inc_tax * $purchase_line->quantity/$purchase->exchange_rate, $currency_precision, $currency_details->decimal_separator, $currency_details->thousand_separator)}}
                 </span>
                 <input type="hidden" class="row_subtotal_after_tax_hidden" value="{{number_format($purchase_line->purchase_price_inc_tax * $purchase_line->quantity/$purchase->exchange_rate, $currency_precision, $currency_details->decimal_separator, $currency_details->thousand_separator)}}">
             </td>
+            {{--End::Line Cost--}}
 
-            <td class="@if(!session('business.enable_editing_product_from_purchase') || !empty($is_purchase_order)) hide @endif">
+
+            {{-- <td class="@if(!session('business.enable_editing_product_from_purchase') || !empty($is_purchase_order)) hide @endif">
                 @php
                     $pp = $purchase_line->purchase_price_inc_tax;
                     $sp = $purchase_line->product->purchase_price_inc_tax;
@@ -164,8 +185,8 @@
                 {!! Form::text('purchases[' . $loop->index . '][profit_percent]', 
                 number_format($profit_percent, $currency_precision, $currency_details->decimal_separator, $currency_details->thousand_separator), 
                 ['class' => 'form-control input-sm input_number profit_percent', 'required']); !!}
-            </td>
-            @if(empty($is_purchase_order))
+            </td> --}}
+            {{-- @if(empty($is_purchase_order))
             <td>
                 @if(session('business.enable_editing_product_from_purchase'))
                     {!! Form::text('purchases[' . $loop->index . '][default_sell_price]', number_format($sp, $currency_precision, $currency_details->decimal_separator, $currency_details->thousand_separator), ['class' => 'form-control input-sm input_number default_sell_price', 'required']); !!}
@@ -173,14 +194,14 @@
                     {{number_format($sp, $currency_precision, $currency_details->decimal_separator, $currency_details->thousand_separator)}}
                 @endif
 
-            </td>
-            @if(session('business.enable_lot_number'))
+            </td> --}}
+            {{-- @if(session('business.enable_lot_number'))
                 <td>
                     {!! Form::text('purchases[' . $loop->index . '][lot_number]', $purchase_line->lot_number, ['class' => 'form-control input-sm']); !!}
                 </td>
-            @endif
+            @endif --}}
 
-            @if(session('business.enable_product_expiry'))
+            {{-- @if(session('business.enable_product_expiry'))
                 <td style="text-align: left;">
                     @php
                         $expiry_period_type = !empty($purchase_line->product->expiry_period_type) ? $purchase_line->product->expiry_period_type : 'month';
@@ -229,8 +250,8 @@
                     </div>
                     @endif
                 </td>
-            @endif
-            @endif
+            @endif --}}
+            {{-- @endif --}}
             <td><i class="fa fa-times remove_purchase_entry_row text-danger" title="Remove" style="cursor:pointer;"></i></td>
         </tr>
         <?php $row_count = $loop->index + 1 ; ?>

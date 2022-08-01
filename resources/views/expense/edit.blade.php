@@ -16,8 +16,8 @@
       <div class="row">
         <div class="col-sm-4">
           <div class="form-group">
-            {!! Form::label('location_id', __('purchase.business_location').':*') !!}
-            {!! Form::select('location_id', $business_locations, $expense->location_id, ['class' => 'form-control select2', 'placeholder' => __('messages.please_select'), 'required']); !!}
+            {!! Form::label('location_id', __('kitchen.kitchen_location').':*') !!}
+            {!! Form::select('location_id', $kitchen_locations, $expense->location_id, ['class' => 'form-control select2', 'placeholder' => __('messages.please_select'), 'required']); !!}
           </div>
         </div>
         <div class="col-sm-4">

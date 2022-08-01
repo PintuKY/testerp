@@ -16,8 +16,8 @@
                 @if(auth()->user()->can('all_expense.access'))
                     <div class="col-md-3">
                         <div class="form-group">
-                            {!! Form::label('location_id',  __('purchase.business_location') . ':') !!}
-                            {!! Form::select('location_id', $business_locations, null, ['class' => 'form-control select2', 'style' => 'width:100%']); !!}
+                            {!! Form::label('location_id',  __('kitchen.kitchen_location') . ':') !!}
+                            {!! Form::select('location_id', $kitchen_locations, null, ['class' => 'form-control select2', 'placeholder' => __('messages.please_select'),'style' => 'width:100%']); !!}
                         </div>
                     </div>
 

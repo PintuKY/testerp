@@ -19,6 +19,11 @@ class SupplierPurchaseLine extends Model
         return $this->belongsTo(SupplierProduct::class, 'product_id');
     }
 
+    public function getQuantityRemainingAttribute()
+    {
+        return (float)($this->quantity - $this->quantity_used);
+    }
+
 
     public function subUnit()
     {

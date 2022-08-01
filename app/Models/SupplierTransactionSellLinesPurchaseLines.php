@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class SupplierTransactionSellLinesPurchaseLines extends Model
 {
-    use HasFactory;use SoftDeletes;
+    use HasFactory;
 
     /**
      * The attributes that aren't mass assignable.

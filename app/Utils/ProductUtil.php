@@ -1491,6 +1491,7 @@ class ProductUtil extends Util
                 $old_quantity
             );
         } elseif ($status_before != 'received' && $transaction->status == 'received') {
+            Log::info('test');
             $this->updateSupplierProductQuantity($transaction->location_id, $product_id, $new_quantity_f, 0, $currency_details);
         }
     }

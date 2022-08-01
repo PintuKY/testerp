@@ -573,15 +573,15 @@ class StockTransferController extends Controller
                     // $product->unit_details = $this->productUtil->getSubUnits($business_id, $product->unit_id);
                     
                     //Get lot number dropdown if enabled
-                    $lot_numbers = [];
-                    if (request()->session()->get('business.enable_lot_number') == 1 || request()->session()->get('business.enable_product_expiry') == 1) {
-                        $lot_number_obj = $this->transactionUtil->getDetailsFromSupplierProduct($sell_line->variation_id, $business_id, $sell_transfer->location_id, true);
-                        foreach ($lot_number_obj as $lot_number) {
-                            $lot_number->qty_formated = $this->productUtil->num_f($lot_number->qty_available);
-                            $lot_numbers[] = $lot_number;
-                        }
-                    }
-                    $product->lot_numbers = $lot_numbers;
+                    // $lot_numbers = [];
+                    // if (request()->session()->get('business.enable_lot_number') == 1 || request()->session()->get('business.enable_product_expiry') == 1) {
+                    //     $lot_number_obj = $this->productUtil->getDetailsFromSupplierProduct($sell_line->variation_id, $business_id, $sell_transfer->location_id, true);
+                    //     foreach ($lot_number_obj as $lot_number) {
+                    //         $lot_number->qty_formated = $this->productUtil->num_f($lot_number->qty_available);
+                    //         $lot_numbers[] = $lot_number;
+                    //     }
+                    // }
+                    // $product->lot_numbers = $lot_numbers;
                     
                     $products[] = $product;
                 }
@@ -751,6 +751,21 @@ class StockTransferController extends Controller
                         if (!empty($product['base_unit_multiplier'])) {
                             $decrease_qty = $decrease_qty * $product['base_unit_multiplier'];
                         }
+                        $this->productUtil->decreaseSupplierProductQuantity(
+                            $product['product_id'],
+                            $sell_transfer->location_id,
+                            $decrease_qty
+                        );
+
+                        $this->productUtil->updateSupplierProductQuantity(
+                            $purchase_transfer->location_id,
+                            $product['product_id'],
+                            $decrease_qty,
+                            0,
+                            null,
+                            false
+                        );
+
                     // }
                 }
 
@@ -816,6 +831,24 @@ class StockTransferController extends Controller
 
             DB::beginTransaction();
             if ($status == 'completed' && $sell_transfer->status != 'completed' ) {
+                foreach ($sell_transfer->sell_lines as $sell_line) {
+                    // if ($sell_line->product->enable_stock) {
+                        $this->productUtil->decreaseSupplierProductQuantity(
+                            $sell_line->product_id,
+                            $sell_transfer->location_id,
+                            $sell_line->quantity
+                        );
+
+                        $this->productUtil->updateSupplierProductQuantity(
+                            $purchase_transfer->location_id,
+                            $sell_line->product_id,
+                            $sell_line->quantity,
+                            0,
+                            null,
+                            false
+                        );
+                    // }
+                }
                 //Adjust stock over selling if found
                 $this->productUtil->adjustSupplierProductStockOverSelling($purchase_transfer);
 

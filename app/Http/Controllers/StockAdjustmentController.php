@@ -45,6 +45,7 @@ class StockAdjustmentController extends Controller
     {
         $this->productUtil = $productUtil;
         $this->transactionUtil = $transactionUtil;
+        $this->supplierTransactionUtil = $supplierTransactionUtil;
         $this->moduleUtil = $moduleUtil;
     }
 

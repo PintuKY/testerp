@@ -1109,7 +1109,7 @@ class SupplierPurchaseController extends Controller
             $transaction->update($update_data);
             $currency_details = $this->supplierTransactionUtil->purchaseCurrencyDetails($business_id);
             foreach ($transaction->supplierPurchaseLines as $purchase_line) {
-                $this->productUtil->updateSupplierProductStock($before_status, $transaction, $purchase_line->product_id, $purchase_line->variation_id, $purchase_line->quantity, $purchase_line->quantity, $currency_details);
+                $this->productUtil->updateSupplierProductStock($before_status, $transaction, $purchase_line->product_id, $purchase_line->quantity, $purchase_line->quantity, $currency_details);
             }
 
             //Update mapping of purchase & Sell.

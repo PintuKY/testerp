@@ -171,9 +171,10 @@ $multiplier = 1;
                         </div>
                     </div>
                     @php
-                        if($transaction->status == 'draft' && $transaction->is_quotation == 1){
+                    $draft = \App\Utils\AppConstant::PAYMENT_PENDING;
+                        if($transaction->status == $draft && $transaction->is_quotation == 1){
                             $status = 'quotation';
-                        } else if ($transaction->status == 'draft' && $transaction->sub_status == 'proforma') {
+                        } else if ($transaction->status == $draft && $transaction->sub_status == 'proforma') {
                             $status = 'proforma';
                         } else {
                             $status = $transaction->status;

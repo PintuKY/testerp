@@ -553,6 +553,38 @@ if (!function_exists('getApiSettingData')) {
         return ApiSetting::get();
     }
 }
+// for getting order status in number
+if (!function_exists('getOrderStatusNumber')) {
+    function getOrderStatusNumber($status)
+    {
+        switch ($status) {
+            case ('refunded'):
+                $status = '6';
+                break;
+            case ('completed'):
+                $status = '3';
+                break;
+            case ('final'):
+                $status = '1';
+                break;
+            case ('processing'):
+                $status = '2';
+                break;
+            case ('cancelled'):
+                $status = '4';
+                break;
+            case ('failed'):
+                $status = '7';
+                break;
+            case ('payment_pending'):
+                $status = '5';
+                break;
+            default:
+                $status = '';
+        }
+        return $status;
+    }
+}
 
 
 

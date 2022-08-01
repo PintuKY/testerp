@@ -95,8 +95,8 @@ class SellController extends Controller
         if (request()->ajax()) {
             $payment_types = $this->transactionUtil->payment_types(null, true, $business_id);
             $with = [];
-            $shipping_statuses = $this->transactionUtil->shipping_statuses();
-
+            $shipping_statuses = $this->transactionUtil->shipping_statuses();$order_statuses = Transaction::sell_statuses();
+            $order_statuses = Transaction::sell_statuses();
             $sale_type = !empty(request()->input('sale_type')) ? request()->input('sale_type') : 'sell';
 
             $sells = $this->transactionUtil->getListSells($business_id, $sale_type);
@@ -127,7 +127,9 @@ class SellController extends Controller
                     }
                 });
             }
-
+            if(!empty(request()->input('order_status'))){
+                $sells->where('transactions.status',request()->input('order_status'));
+            }
             $only_shipments = request()->only_shipments == 'true' ? true : false;
             if ($only_shipments) {
                 $sells->whereNotNull('transactions.shipping_status');
@@ -640,7 +642,7 @@ class SellController extends Controller
             $service_staffs = $this->productUtil->serviceStaffDropdown($business_id);
         }
 
-        $shipping_statuses = $this->transactionUtil->shipping_statuses();
+        $shipping_statuses = $this->transactionUtil->shipping_statuses();$order_statuses = Transaction::sell_statuses();
 
         $sources = $this->transactionUtil->getSources($business_id);
         if ($is_woocommerce) {
@@ -648,7 +650,7 @@ class SellController extends Controller
         }
 
         return view('sell.index')
-            ->with(compact('business_locations', 'customers', 'is_woocommerce', 'sales_representative', 'is_cmsn_agent_enabled', 'commission_agents', 'service_staffs', 'is_tables_enabled', 'is_service_staff_enabled', 'is_types_service_enabled', 'shipping_statuses', 'sources'));
+            ->with(compact('business_locations', 'customers', 'is_woocommerce', 'sales_representative', 'is_cmsn_agent_enabled', 'commission_agents', 'service_staffs', 'is_tables_enabled', 'is_service_staff_enabled', 'is_types_service_enabled', 'shipping_statuses','order_statuses', 'sources'));
     }
 
 
@@ -670,7 +672,7 @@ class SellController extends Controller
         if (request()->ajax()) {
             $payment_types = $this->transactionUtil->payment_types(null, true, $business_id);
             $with = [];
-            $shipping_statuses = $this->transactionUtil->shipping_statuses();
+            $shipping_statuses = $this->transactionUtil->shipping_statuses();$order_statuses = Transaction::sell_statuses();
 
             $sale_type = !empty(request()->input('sale_type')) ? request()->input('sale_type') : 'sell';
 
@@ -1175,7 +1177,7 @@ class SellController extends Controller
             $service_staffs = $this->productUtil->serviceStaffDropdown($business_id);
         }
 
-        $shipping_statuses = $this->transactionUtil->shipping_statuses();
+        $shipping_statuses = $this->transactionUtil->shipping_statuses();$order_statuses = Transaction::sell_statuses();
 
         $sources = $this->transactionUtil->getSources($business_id);
         if ($is_woocommerce) {
@@ -1183,7 +1185,7 @@ class SellController extends Controller
         }
 
         return view('sell.master')
-            ->with(compact('business_locations', 'customers', 'is_woocommerce', 'sales_representative', 'is_cmsn_agent_enabled', 'commission_agents', 'service_staffs', 'is_tables_enabled', 'is_service_staff_enabled', 'is_types_service_enabled', 'shipping_statuses', 'sources'));
+            ->with(compact('business_locations', 'customers', 'is_woocommerce', 'sales_representative', 'is_cmsn_agent_enabled', 'commission_agents', 'service_staffs', 'is_tables_enabled', 'is_service_staff_enabled', 'is_types_service_enabled', 'shipping_statuses','order_statuses', 'sources'));
     }
 
 
@@ -1266,7 +1268,7 @@ class SellController extends Controller
             $default_invoice_schemes = InvoiceScheme::where('business_id', $business_id)
                 ->findorfail($default_location->invoice_scheme_id);
         }
-        $shipping_statuses = $this->transactionUtil->shipping_statuses();
+        $shipping_statuses = $this->transactionUtil->shipping_statuses();$order_statuses = Transaction::sell_statuses();
 
         //Types of service
         $types_of_service = [];
@@ -1322,6 +1324,7 @@ class SellController extends Controller
                 'types_of_service',
                 'accounts',
                 'shipping_statuses',
+                'order_statuses',
                 'status',
                 'sale_type',
                 'statuses',
@@ -1492,7 +1495,7 @@ class SellController extends Controller
 
         $business_details = $this->businessUtil->getDetails($business_id);
         $pos_settings = empty($business_details->pos_settings) ? $this->businessUtil->defaultPosSettings() : json_decode($business_details->pos_settings, true);
-        $shipping_statuses = $this->transactionUtil->shipping_statuses();
+        $shipping_statuses = $this->transactionUtil->shipping_statuses();$order_statuses = Transaction::sell_statuses();
         $shipping_status_colors = $this->shipping_status_colors;
         $common_settings = session()->get('business.common_settings');
         $is_warranty_enabled = !empty($common_settings['enable_product_warranty']) ? true : false;
@@ -1515,6 +1518,7 @@ class SellController extends Controller
                 'order_taxes',
                 'pos_settings',
                 'shipping_statuses',
+                'order_statuses',
                 'shipping_status_colors',
                 'is_warranty_enabled',
                 'activities',
@@ -1849,7 +1853,7 @@ class SellController extends Controller
         $invoice_schemes = [];
         $default_invoice_schemes = null;
 
-        if ($transaction->status == 'draft') {
+        if ($transaction->status == AppConstant::PAYMENT_PENDING) {
             $invoice_schemes = InvoiceScheme::forDropdown($business_id);
             $default_invoice_schemes = InvoiceScheme::getDefault($business_id);
         }
@@ -1871,7 +1875,7 @@ class SellController extends Controller
             $accounts = Account::forDropdown($business_id, true, false);
         }
 
-        $shipping_statuses = $this->transactionUtil->shipping_statuses();
+        $shipping_statuses = $this->transactionUtil->shipping_statuses();$order_statuses = Transaction::sell_statuses();
 
         $common_settings = session()->get('business.common_settings');
         $is_warranty_enabled = !empty($common_settings['enable_product_warranty']) ? true : false;
@@ -1926,7 +1930,7 @@ class SellController extends Controller
         $sell_ids = implode(',', $tra_sell_lines_array);
 
         return view('sell.edit')
-            ->with(compact('tra_sell_lines', 'sell_ids', 'masterListCols', 'master_list', 'edit_product', 'business_details', 'default_datetime', 'default_time', 'default_date',/*'number_of_days','transaction_sell_lines_id',*/ 'time_slot', 'taxes', 'sell_details', 'transaction', 'commission_agent', 'types', 'customer_groups', 'pos_settings', 'waiters', 'invoice_schemes', 'default_invoice_schemes', 'redeem_details', 'edit_discount', 'edit_price', 'shipping_statuses', 'statuses', 'sales_orders', 'payment_types', 'accounts', 'payment_lines', 'change_return', 'is_order_request_enabled', 'customer_due', 'transaction_sell_lines_days', 'transaction_sell_lines_id', 'product_ids', 'product_names', 'product_count', 'total_compensate'));
+            ->with(compact('tra_sell_lines', 'sell_ids', 'masterListCols', 'master_list', 'edit_product', 'business_details', 'default_datetime', 'default_time', 'default_date',/*'number_of_days','transaction_sell_lines_id',*/ 'time_slot', 'taxes', 'sell_details', 'transaction', 'commission_agent', 'types', 'customer_groups', 'pos_settings', 'waiters', 'invoice_schemes', 'default_invoice_schemes', 'redeem_details', 'edit_discount', 'edit_price', 'shipping_statuses','order_statuses', 'statuses', 'sales_orders', 'payment_types', 'accounts', 'payment_lines', 'change_return', 'is_order_request_enabled', 'customer_due', 'transaction_sell_lines_days', 'transaction_sell_lines_id', 'product_ids', 'product_names', 'product_count', 'total_compensate'));
     }
 
 
@@ -1949,7 +1953,8 @@ class SellController extends Controller
         $sales_representative = User::forDropdown($business_id, false, false, true);
 
 
-        return view('sale_pos.draft')
+        //return view('sale_pos.draft')
+        return view('sell.index')
             ->with(compact('business_locations', 'customers', 'sales_representative'));
     }
 
@@ -2002,7 +2007,7 @@ class SellController extends Controller
                 })
                 ->where('transactions.business_id', $business_id)
                 ->where('transactions.type', 'sell')
-                ->where('transactions.status', 'draft')
+                ->where('transactions.status', AppConstant::PAYMENT_PENDING)
                 ->select(
                     'transactions.id',
                     'transaction_date',
@@ -2218,14 +2223,14 @@ class SellController extends Controller
                     $duplicate_transaction_data[$key] = $value;
                 }
             }
-            $duplicate_transaction_data['status'] = 'draft';
+            $duplicate_transaction_data['status'] = AppConstant::PAYMENT_PENDING;
             $duplicate_transaction_data['payment_status'] = null;
             $duplicate_transaction_data['transaction_date'] = Carbon::now();
             $duplicate_transaction_data['created_by'] = $user_id;
             $duplicate_transaction_data['invoice_token'] = null;
 
             DB::beginTransaction();
-            $duplicate_transaction_data['invoice_no'] = $this->transactionUtil->getInvoiceNumber($business_id, 'draft', $duplicate_transaction_data['location_id']);
+            $duplicate_transaction_data['invoice_no'] = $this->transactionUtil->getInvoiceNumber($business_id, AppConstant::PAYMENT_PENDING, $duplicate_transaction_data['location_id']);
 
             //Create duplicate transaction
             $duplicate_transaction = Transaction::create($duplicate_transaction_data);
@@ -2290,7 +2295,7 @@ class SellController extends Controller
         $transaction = Transaction::where('business_id', $business_id)
             ->with(['media', 'media.uploaded_by_user'])
             ->findorfail($id);
-        $shipping_statuses = $this->transactionUtil->shipping_statuses();
+        $shipping_statuses = $this->transactionUtil->shipping_statuses();$order_statuses = Transaction::sell_statuses();
 
         $activities = Activity::forSubject($transaction)
             ->with(['causer', 'subject'])
@@ -2299,7 +2304,7 @@ class SellController extends Controller
             ->get();
 
         return view('sell.partials.edit_shipping')
-            ->with(compact('transaction', 'shipping_statuses', 'activities'));
+            ->with(compact('transaction', 'shipping_statuses','order_statuses', 'activities'));
     }
 
     /**
@@ -2361,7 +2366,7 @@ class SellController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $shipping_statuses = $this->transactionUtil->shipping_statuses();
+        $shipping_statuses = $this->transactionUtil->shipping_statuses();$order_statuses = Transaction::sell_statuses();
 
         $business_id = request()->session()->get('user.business_id');
 
@@ -2378,7 +2383,7 @@ class SellController extends Controller
             $service_staffs = $this->productUtil->serviceStaffDropdown($business_id);
         }
 
-        return view('sell.shipments')->with(compact('shipping_statuses'))
+        return view('sell.shipments')->with(compact('shipping_statuses','order_statuses'))
             ->with(compact('business_locations', 'customers', 'sales_representative', 'is_service_staff_enabled', 'service_staffs'));
     }
 

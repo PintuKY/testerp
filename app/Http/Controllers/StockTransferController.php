@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use DB;
 
 use Datatables;
+use App\Utils\AppConstant;
 use Carbon\Carbon;
 use App\Utils\ModuleUtil;
 use App\Utils\ProductUtil;
@@ -727,7 +728,7 @@ class StockTransferController extends Controller
 
             //Sell Product from first location
             if (!empty($sell_lines)) {
-                $this->transactionUtil->createOrUpdateSupplierProductSellLines($sell_transfer, $sell_lines, $sell_transfer->location_id, false, 'draft', [], false);
+                $this->transactionUtil->createOrUpdateSupplierProductSellLines($sell_transfer, $sell_lines, $sell_transfer->location_id, false, AppConstant::PAYMENT_PENDING, [], false);
             }
 
             //Purchase product in second location

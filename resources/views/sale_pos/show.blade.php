@@ -22,7 +22,7 @@
                 <div class="@if(!empty($export_custom_fields)) col-sm-3 @else col-sm-4 @endif">
                     <b>@if($sell->type == 'sales_order') {{ __('restaurant.order_no') }} @else {{ __('sale.invoice_no') }} @endif:</b> #{{ $sell->invoice_no }}<br>
                     <b>{{ __('sale.status') }}:</b>
-                    @if($sell->status == 'draft' && $sell->is_quotation == 1)
+                    @if($sell->status == AppConstant::PAYMENT_PENDING && $sell->is_quotation == 1)
                         {{ __('lang_v1.quotation') }}
                     @else
                         {{ $statuses[$sell->status] ?? __('sale.' . $sell->status) }}

@@ -814,6 +814,7 @@ return [
     'delivered' => 'Delivered',
     'shipping_address' => 'Shipping Address',
     'shipping_status' => 'Shipping Status',
+    'order_status' => 'Order Status',
     'delivered_to' => 'Delivered To',
     'edit_shipping' => 'Edit Shipping',
     'shipments' => 'Master List',

@@ -2573,7 +2573,9 @@ $(window).on("load", function () {
         }
     });
     $('.price_total').html('');
+    $('.price_totals').html('');
     $('.price_total').html('$' + priceTotal);
+    $('.price_totals').html('$' + priceTotal);
     /*  $('.price_totals').html('$' + priceTotals);*/
     $('#total').val(priceTotal);
     var quantity = $('.pos_quantity').val();

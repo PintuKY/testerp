@@ -424,12 +424,12 @@ $multiplier = 1;
 
                                         @endphp
                                         @if($sell_line->product->type == 'single')
-
+<?php //dd($sell_line); ?>
                                             <tr class="product_row" data-row_index="{{ $loop->index}}"
                                                 data-productId="{{$productId}}">
                                                 <input type="{{$subtotal_type}}"
                                                        class="form-control pos_line_totals pos_line_total_{{$productId}} @if(!empty($pos_settings['is_pos_subtotal_editable'])) input_number @endif"
-                                                       value="{{'$'.@num_format((float)$sell_line->default_sell_price)}}">
+                                                       value="{{'$'.@num_format($sell_line->unit_price_inc_tax)}}">
                                                 <input type="hidden" name="product_type"
                                                        id="product_type_{{$productId}}" value="single">
                                                 <td>{{$product_names[$key]}}</td>
@@ -597,7 +597,7 @@ $multiplier = 1;
                                                             <input type="text"
                                                                    name="product[{{$productId}}][unit_price]"
                                                                    class="form-control product_pos_unit_price  product_pos_unit_prices_{{$productId}} input_number mousetrap"
-                                                                   value="{{@num_format($edit_product[$productId]['total_item_value'])}}"
+                                                                   value="{{($edit_product[$productId]['total_item_value']) ? @num_format($edit_product[$productId]['total_item_value']) : @num_format($edit_product[$productId]['default_sell_price'])}}"
                                                                    @if(!empty($pos_settings['enable_msp'])) data-rule-min-value="{{@num_format($edit_product[$productId]['total_item_value'])}}"
                                                                    data-msg-min-value="{{__('lang_v1.minimum_selling_price_error_msg', ['price' => @num_format($edit_product[$productId]['total_item_value'])])}}" @endif>
                                                         </div>
@@ -627,7 +627,7 @@ $multiplier = 1;
                                                         $total_quantity = $edit_product[$productId]['quantity']
                                                     @endphp
                                                     <span
-                                                        class="price_totals_{{$productId}} total_prices">${{round($total_item_value * $total_quantity,2)}}</span>
+                                                        class="price_totals price_totals_{{$productId}} total_prices">${{round($total_item_value * $total_quantity,2)}}</span>
                                                 </div>
                                             </td>
                                         </tr>

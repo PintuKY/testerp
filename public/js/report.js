@@ -17,15 +17,64 @@ $(document).ready(function() {
     }
 
     //contact report
-    supplier_report_tbl = $('#supplier_report_tbl').DataTable({
+    customer_report_tbl = $('#customer_report_tbl').DataTable({
         processing: true,
         serverSide: true,
         ajax: {
-            url: '/reports/customer-supplier',
+            url: '/reports/customers',
             data: function(d) {
                 d.customer_group_id = $('#cnt_customer_group_id').val();
                 d.contact_type = $('#contact_type').val();
             }
+        },
+        columnDefs: [
+            { targets: [5], orderable: false, searchable: false },
+            { targets: [1, 2, 3, 4], searchable: false },
+        ],
+        columns: [
+            { data: 'name', name: 'name' },
+            { data: 'total_purchase', name: 'total_purchase' },
+            { data: 'total_purchase_return', name: 'total_purchase_return' },
+            { data: 'total_invoice', name: 'total_invoice' },
+            { data: 'total_sell_return', name: 'total_sell_return' },
+            { data: 'opening_balance_due', name: 'opening_balance_due' },
+            { data: 'due', name: 'due' },
+        ],
+        fnDrawCallback: function(oSettings) {
+            var total_purchase = sum_table_col($('#customer_report_tbl'), 'total_purchase');
+            $('#footer_total_purchase').text(total_purchase);
+
+            var total_purchase_return = sum_table_col(
+                $('#customer_report_tbl'),
+                'total_purchase_return'
+            );
+            $('#footer_total_purchase_return').text(total_purchase_return);
+
+            var total_sell = sum_table_col($('#customer_report_tbl'), 'total_invoice');
+            $('#footer_total_sell').text(total_sell);
+
+            var total_sell_return = sum_table_col($('#customer_report_tbl'), 'total_sell_return');
+            $('#footer_total_sell_return').text(total_sell_return);
+
+            var total_opening_bal_due = sum_table_col(
+                $('#customer_report_tbl'),
+                'opening_balance_due'
+            );
+            $('#footer_total_opening_bal_due').text(total_opening_bal_due);
+
+            var total_due = sum_table_col($('#customer_report_tbl'), 'total_due');
+            $('#footer_total_due').text(total_due);
+
+            __currency_convert_recursively($('#customer_report_tbl'));
+        },
+    });
+
+      //supplier report
+      supplier_report_tbl = $('#supplier_report_tbl').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: '/reports/suppliers',
         },
         columnDefs: [
             { targets: [5], orderable: false, searchable: false },
@@ -68,9 +117,9 @@ $(document).ready(function() {
             __currency_convert_recursively($('#supplier_report_tbl'));
         },
     });
-    if($('#supplier_report_tbl').length != 0){
-        $('#cnt_customer_group_id, #contact_type').change(function() {
-            supplier_report_tbl.ajax.reload();
+    if($('#customer_report_tbl').length != 0){
+        $('#cnt_customer_group_id').change(function() {
+            customer_report_tbl.ajax.reload();
         });
     }
 

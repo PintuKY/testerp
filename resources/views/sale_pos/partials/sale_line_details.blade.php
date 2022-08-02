@@ -20,6 +20,7 @@
         </tr>
 
         @foreach($sell_details as $sell_line)
+            @foreach($sell_line->transactionSellLinesVariants as $varients)
        {{-- @foreach($sell->sell_lines as $sell_line)--}}
             @if($sell_line->product_id == $productId){{--
             @if($sell_line->product->id == $productId)--}}
@@ -30,9 +31,10 @@
                             {{ $sell_line->variations->product_variation->name ?? ''}}
                             - {{ $sell_line->variations->name ?? ''}}
                         @endif--}}
-                        @if( $sell_line->product_type == 'variable')
-                            {{ $sell_line->pax ?? ''}}
-                            - {{ $sell_line->transaction_sell_lines_variants_name ?? ''}}
+
+                        @if( $sell_line->product->type  == 'variable')
+                            {{ $varients->pax ?? ''}}
+                            - {{ $varients->name ?? ''}}
                         @endif
 
                         @if(!empty($sell_line->sell_line_note))
@@ -55,7 +57,7 @@
 
                     <td>
                 <span class="display_currency"
-                      data-currency_symbol="true">{{  ($sell_line->value) ? $sell_line->value : '0'}}</span>
+                      data-currency_symbol="true">{{  ($varients->value) ? $varients->value : '0'}}</span>
                     </td>
                 </tr>
             @endif
@@ -94,11 +96,12 @@
                         </td>
                         <td>
                         <span class="display_currency"
-                              data-currency_symbol="true">{{  ($sell_line->transactionSellLinesVariants->isNotEmpty()) ? $sell_line->transactionSellLinesVariants[0]->value : '0' }}</span>
+                              data-currency_symbol="true">{{  ($varients->value)?$varients->value:'0' }}</span>
                         </td>
                     </tr>
                 @endforeach
             @endif
+        @endforeach
         @endforeach
     </table>
     <table class="table table-condensed table-bordered table-striped pos_table_{{$productId}}">

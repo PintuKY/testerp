@@ -15,6 +15,7 @@ use App\Models\Transaction;
 use App\Models\TransactionActivity;
 use App\Models\TransactionSellLine;
 use App\Models\TransactionSellLinesDay;
+use App\Models\TransactionSellLinesVariants;
 use App\Models\TypesOfService;
 use App\Models\User;
 use App\Models\VariationValueTemplate;
@@ -96,7 +97,8 @@ class SellController extends Controller
         if (request()->ajax()) {
             $payment_types = $this->transactionUtil->payment_types(null, true, $business_id);
             $with = [];
-            $shipping_statuses = $this->transactionUtil->shipping_statuses();$order_statuses = Transaction::sell_statuses();
+            $shipping_statuses = $this->transactionUtil->shipping_statuses();
+            $order_statuses = Transaction::sell_statuses();
             $order_statuses = Transaction::sell_statuses();
             $sale_type = !empty(request()->input('sale_type')) ? request()->input('sale_type') : 'sell';
 
@@ -129,8 +131,8 @@ class SellController extends Controller
                     }
                 });
             }
-            if(!empty(request()->input('order_status'))){
-                $sells->where('transactions.status',request()->input('order_status'));
+            if (!empty(request()->input('order_status'))) {
+                $sells->where('transactions.status', request()->input('order_status'));
             }
             $only_shipments = request()->only_shipments == 'true' ? true : false;
             if ($only_shipments) {
@@ -584,19 +586,19 @@ class SellController extends Controller
                 ->addColumn(
                     'shipping_details',
                     function ($row) {
-                        $value =  $row->shipping_address_line_1.', <br>'.
-                            $row->shipping_address_line_2 .', <br>';
+                        $value = $row->shipping_address_line_1 . ', <br>' .
+                            $row->shipping_address_line_2 . ', <br>';
                         if (!empty($row->contact->shipping_city)) {
-                            $value .= $row->contact->shipping_city.', <br>';
+                            $value .= $row->contact->shipping_city . ', <br>';
                         }
                         if (!empty($row->contact->shipping_state)) {
-                            $value .= $row->contact->shipping_state.', <br>';
+                            $value .= $row->contact->shipping_state . ', <br>';
                         }
                         if (!empty($row->contact->shipping_country)) {
-                            $value .= $row->contact->shipping_country.', <br>';
+                            $value .= $row->contact->shipping_country . ', <br>';
                         }
                         if (!empty($row->contact->shipping_zipcode)) {
-                            $value .= $row->contact->shipping_zipcode.', <br>';
+                            $value .= $row->contact->shipping_zipcode . ', <br>';
                         }
                         if (!empty($row->shipping_custom_field_1)) {
                             $value .= $row->shipping_custom_field_1;
@@ -648,7 +650,8 @@ class SellController extends Controller
             $service_staffs = $this->productUtil->serviceStaffDropdown($business_id);
         }
 
-        $shipping_statuses = $this->transactionUtil->shipping_statuses();$order_statuses = Transaction::sell_statuses();
+        $shipping_statuses = $this->transactionUtil->shipping_statuses();
+        $order_statuses = Transaction::sell_statuses();
 
         $sources = $this->transactionUtil->getSources($business_id);
         if ($is_woocommerce) {
@@ -656,7 +659,7 @@ class SellController extends Controller
         }
 
         return view('sell.index')
-            ->with(compact('business_locations', 'customers', 'is_woocommerce', 'sales_representative', 'is_cmsn_agent_enabled', 'commission_agents', 'service_staffs', 'is_tables_enabled', 'is_service_staff_enabled', 'is_types_service_enabled', 'shipping_statuses','order_statuses', 'sources'));
+            ->with(compact('business_locations', 'customers', 'is_woocommerce', 'sales_representative', 'is_cmsn_agent_enabled', 'commission_agents', 'service_staffs', 'is_tables_enabled', 'is_service_staff_enabled', 'is_types_service_enabled', 'shipping_statuses', 'order_statuses', 'sources'));
     }
 
 
@@ -678,7 +681,8 @@ class SellController extends Controller
         if (request()->ajax()) {
             $payment_types = $this->transactionUtil->payment_types(null, true, $business_id);
             $with = [];
-            $shipping_statuses = $this->transactionUtil->shipping_statuses();$order_statuses = Transaction::sell_statuses();
+            $shipping_statuses = $this->transactionUtil->shipping_statuses();
+            $order_statuses = Transaction::sell_statuses();
 
             $sale_type = !empty(request()->input('sale_type')) ? request()->input('sale_type') : 'sell';
 
@@ -1183,7 +1187,8 @@ class SellController extends Controller
             $service_staffs = $this->productUtil->serviceStaffDropdown($business_id);
         }
 
-        $shipping_statuses = $this->transactionUtil->shipping_statuses();$order_statuses = Transaction::sell_statuses();
+        $shipping_statuses = $this->transactionUtil->shipping_statuses();
+        $order_statuses = Transaction::sell_statuses();
 
         $sources = $this->transactionUtil->getSources($business_id);
         if ($is_woocommerce) {
@@ -1191,7 +1196,7 @@ class SellController extends Controller
         }
 
         return view('sell.master')
-            ->with(compact('business_locations', 'customers', 'is_woocommerce', 'sales_representative', 'is_cmsn_agent_enabled', 'commission_agents', 'service_staffs', 'is_tables_enabled', 'is_service_staff_enabled', 'is_types_service_enabled', 'shipping_statuses','order_statuses', 'sources'));
+            ->with(compact('business_locations', 'customers', 'is_woocommerce', 'sales_representative', 'is_cmsn_agent_enabled', 'commission_agents', 'service_staffs', 'is_tables_enabled', 'is_service_staff_enabled', 'is_types_service_enabled', 'shipping_statuses', 'order_statuses', 'sources'));
     }
 
 
@@ -1274,7 +1279,8 @@ class SellController extends Controller
             $default_invoice_schemes = InvoiceScheme::where('business_id', $business_id)
                 ->findorfail($default_location->invoice_scheme_id);
         }
-        $shipping_statuses = $this->transactionUtil->shipping_statuses();$order_statuses = Transaction::sell_statuses();
+        $shipping_statuses = $this->transactionUtil->shipping_statuses();
+        $order_statuses = Transaction::sell_statuses();
 
         //Types of service
         $types_of_service = [];
@@ -1381,77 +1387,8 @@ class SellController extends Controller
             ->with(['causer', 'subject'])
             ->latest()
             ->get();
-        $sell_details = TransactionSellLine::
-        join(
-            'products AS p',
-            'transaction_sell_lines.product_id',
-            '=',
-            'p.id'
-        )
-            ->join(
-                'variations AS variations',
-                'transaction_sell_lines.variation_id',
-                '=',
-                'variations.id'
-            )
-            ->join(
-                'product_variations AS pv',
-                'variations.product_variation_id',
-                '=',
-                'pv.id'
-            )
-            ->join(
-                'transaction_sell_lines_variants',
-                'transaction_sell_lines_variants.transaction_sell_lines_id',
-                '=',
-                'transaction_sell_lines.id'
-            )
-            ->leftjoin('units', 'units.id', '=', 'p.unit_id')
-            ->where('transaction_sell_lines.transaction_id', $id)
-            ->with(['so_line','lot_details'])
-            ->select(
-                \Illuminate\Support\Facades\DB::raw("IF(pv.is_dummy = 0, CONCAT(p.name, ' (', pv.name, ':',variations.name, ')'), p.name) AS product_name"),
-                'p.id as product_id',
-                'p.name as product_actual_name',
-                'p.type as product_type',
-                'pv.name as product_variation_name',
-                'pv.is_dummy as is_dummy',
-                'variations.name as variation_name',
-                'variations.sub_sku',
-                'p.barcode_type',
-                'variations.id as variation_id',
-                'units.short_name as unit',
-                'units.allow_decimal as unit_allow_decimal',
-                'transaction_sell_lines.tax_id as tax_id',
-                'transaction_sell_lines.item_tax as item_tax',
-                'transaction_sell_lines.unit_price as default_sell_price',
-                'transaction_sell_lines.unit_price_before_discount as unit_price_before_discount',
-                'transaction_sell_lines.unit_price_inc_tax as sell_price_inc_tax',
-                'transaction_sell_lines.id as transaction_sell_lines_id',
-                'transaction_sell_lines.id',
-                'transaction_sell_lines.quantity as quantity_ordered',
-                'transaction_sell_lines.total_item_value as total_item_value',
-                'transaction_sell_lines.sell_line_note as sell_line_note',
-                'transaction_sell_lines.parent_sell_line_id',
-                'transaction_sell_lines.lot_no_line_id',
-                'transaction_sell_lines.line_discount_type',
-                'transaction_sell_lines.line_discount_amount',
-                'transaction_sell_lines.res_service_staff_id',
-                'transaction_sell_lines.time_slot',
-                'transaction_sell_lines.start_date',
-                'transaction_sell_lines.delivery_date',
-                'transaction_sell_lines.delivery_time',
-                'transaction_sell_lines.unit_price_inc_tax',
-                'transaction_sell_lines.unit_price_inc_tax',
-                'transaction_sell_lines.res_line_order_status',
-                'units.id as unit_id',
-                'transaction_sell_lines.sub_unit_id',
-                'transaction_sell_lines_variants.value',
-                'transaction_sell_lines_variants.pax',
-                'transaction_sell_lines_variants.name as transaction_sell_lines_variants_name',
-            /*DB::raw('vld.qty_available + transaction_sell_lines.quantity AS qty_available')*/
-            )
-            ->get();
+        $sell_details = TransactionSellLine::with(['sub_unit','product','so_line','transactionSellLinesVariants'])->where('transaction_id',$sell->id)->get();
+
         $line_taxes = [];
         $product_id = [];
         $product_name = [];
@@ -1467,9 +1404,9 @@ class SellController extends Controller
                 'unit_value' => $value->unit_value,
                 'quantity' => $value->quantity,
                 'total_item_value' => $value->total_item_value,
-                'unit' => $value->unit,
+                'unit' => $value->unit_name,
                 'unit_id' => $value->unit_id,
-                'default_sell_price' => $value->default_sell_price,
+                'default_sell_price' => $value->unit_price,
                 'unit_price_before_discount' => $value->unit_price_before_discount,
             ];
 
@@ -1501,7 +1438,8 @@ class SellController extends Controller
 
         $business_details = $this->businessUtil->getDetails($business_id);
         $pos_settings = empty($business_details->pos_settings) ? $this->businessUtil->defaultPosSettings() : json_decode($business_details->pos_settings, true);
-        $shipping_statuses = $this->transactionUtil->shipping_statuses();$order_statuses = Transaction::sell_statuses();
+        $shipping_statuses = $this->transactionUtil->shipping_statuses();
+        $order_statuses = Transaction::sell_statuses();
         $shipping_status_colors = $this->shipping_status_colors;
         $common_settings = session()->get('business.common_settings');
         $is_warranty_enabled = !empty($common_settings['enable_product_warranty']) ? true : false;
@@ -1621,7 +1559,7 @@ class SellController extends Controller
         $taxes = TaxRate::forBusinessDropdown($business_id, true, true);
 
         $transaction = Transaction::where('business_id', $business_id)
-            ->with(['price_group', 'types_of_service', 'media', 'media.uploaded_by_user', 'transaction_activity'])
+            ->with(['price_group', 'types_of_service', 'media', 'media.uploaded_by_user', 'transaction_activity', 'sell_lines'])
             ->whereIn('type', ['sell', 'sales_order'])
             ->findorfail($id);
         $total_compensate = MasterList::where(['transaction_id' => $transaction->id])->whereNotNull('cancel_reason')->count();
@@ -1633,86 +1571,10 @@ class SellController extends Controller
 
         $location_id = $transaction->location_id;
         $location_printer_type = BusinessLocation::find($location_id)->receipt_printer_type;
-        $sell_details = TransactionSellLine::
-        join(
-            'products AS p',
-            'transaction_sell_lines.product_id',
-            '=',
-            'p.id'
-        )
-            ->join(
-                'variations AS variations',
-                'transaction_sell_lines.variation_id',
-                '=',
-                'variations.id'
-            )
-            ->join(
-                'product_variations AS pv',
-                'variations.product_variation_id',
-                '=',
-                'pv.id'
-            )
-            ->join(
-                'transaction_sell_lines_variants',
-                'transaction_sell_lines_variants.transaction_sell_lines_id',
-                '=',
-                'transaction_sell_lines.id'
-            )
-            /*->join(
-                'transaction_sell_lines_days',
-                'transaction_sell_lines_days.transaction_sell_lines_id',
-                '=',
-                'transaction_sell_lines.id'
-            )*/
-            /*->leftjoin('variation_location_details AS vld', function ($join) use ($location_id) {
-                $join->on('variations.id', '=', 'vld.variation_id')
-                    ->where('vld.location_id', '=', $location_id);
-            })*/
-            ->leftjoin('units', 'units.id', '=', 'p.unit_id')
-            ->where('transaction_sell_lines.transaction_id', $id)
-            ->with(['so_line'])
-            ->select(
-                \Illuminate\Support\Facades\DB::raw("IF(pv.is_dummy = 0, CONCAT(p.name, ' (', pv.name, ':',variations.name, ')'), p.name) AS product_name"),
-                'p.id as product_id',
-                'p.name as product_actual_name',
-                'p.type as product_type',
-                'pv.name as product_variation_name',
-                'pv.is_dummy as is_dummy',
-                'variations.name as variation_name',
-                'variations.sub_sku',
-                'p.barcode_type',
-                'variations.id as variation_id',
-                'units.short_name as unit',
-                'units.allow_decimal as unit_allow_decimal',
-                'transaction_sell_lines.tax_id as tax_id',
-                'transaction_sell_lines.item_tax as item_tax',
-                'transaction_sell_lines.unit_price as default_sell_price',
-                'transaction_sell_lines.unit_price_before_discount as unit_price_before_discount',
-                'transaction_sell_lines.unit_price_inc_tax as sell_price_inc_tax',
-                'transaction_sell_lines.id as transaction_sell_lines_id',
-                'transaction_sell_lines.id',
-                'transaction_sell_lines.quantity as quantity_ordered',
-                'transaction_sell_lines.total_item_value as total_item_value',
-                'transaction_sell_lines.sell_line_note as sell_line_note',
-                'transaction_sell_lines.parent_sell_line_id',
-                'transaction_sell_lines.lot_no_line_id',
-                'transaction_sell_lines.line_discount_type',
-                'transaction_sell_lines.line_discount_amount',
-                'transaction_sell_lines.res_service_staff_id',
-                'transaction_sell_lines.time_slot',
-                'transaction_sell_lines.start_date',
-                'transaction_sell_lines.delivery_date',
-                'transaction_sell_lines.delivery_time',
-                'transaction_sell_lines.unit_price_inc_tax',
-                'transaction_sell_lines.unit_price_inc_tax',
-                'units.id as unit_id',
-                'transaction_sell_lines.sub_unit_id',
-                'transaction_sell_lines_variants.value',
-                'transaction_sell_lines_variants.pax',
-                'transaction_sell_lines_variants.name as transaction_sell_lines_variants_name',
-            /*DB::raw('vld.qty_available + transaction_sell_lines.quantity AS qty_available')*/
-            )
-            ->get();
+
+        $sell_details = TransactionSellLine::with(['sub_unit','product','so_line','transactionSellLinesVariants'])->where('transaction_id',$id)->get();
+
+
 
         $transaction_sell_lines_id = [];
         $transaction_sell_lines_days = '';
@@ -1729,38 +1591,41 @@ class SellController extends Controller
                     'delivery_date' => $value->delivery_date,
                     'delivery_time' => $value->delivery_time,
                     'unit_value' => $value->unit_value,
-                    'quantity' => $value->quantity_ordered,
+                    'quantity' => $value->quantity,
                     'total_item_value' => $value->total_item_value,
-                    'unit' => $value->unit,
+                    'unit' => $value->unit_name,
                     'unit_id' => $value->unit_id,
-                    'default_sell_price' => $value->default_sell_price,
+                    'default_sell_price' => $value->unit_price,
                     'unit_price_before_discount' => $value->unit_price_before_discount,
                 ];
-                $product_name[] = $value->product_actual_name;
+                $product_name[] = $value->product_name;
                 //If modifier or combo sell line then unset
                 if (!empty($sell_details[$key]->parent_sell_line_id)) {
                     unset($sell_details[$key]);
                 } else {
-                    if ($transaction->status != AppConstant::FINAL || $transaction->status != AppConstant::COMPLETED || $transaction->status != AppConstant::PROCESSING ) {
-                        $actual_qty_avlbl = $value->qty_available - $value->quantity_ordered;
+
+                    if ($transaction->status != AppConstant::FINAL || $transaction->status != AppConstant::COMPLETED || $transaction->status != AppConstant::PROCESSING) {
+                        $actual_qty_avlbl = $value->qty_available - $value->quantity;
                         $sell_details[$key]->qty_available = $actual_qty_avlbl;
                         $value->qty_available = $actual_qty_avlbl;
                     }
+
+
                     //$number_of_days = $value->number_of_days;
                     $time_slot = $value->time_slot;
-
-                    $transaction_sell_lines_days = TransactionSellLinesDay::where('transaction_sell_lines_id', $value->transaction_sell_lines_id)->get();
+                    $transaction_sell_lines_days = TransactionSellLinesDay::where('transaction_sell_lines_id', $value->id)->get();
                     foreach ($transaction_sell_lines_days as $days) {
                         $transaction_sell_lines_id[$value->product_id][] = $days->day;
                     }
                     $sell_details[$key]->formatted_qty_available = $this->productUtil->num_f($value->qty_available, false, null, true);
                     $lot_numbers = [];
+
                     if (request()->session()->get('business.enable_lot_number') == 1) {
                         $lot_number_obj = $this->transactionUtil->getLotNumbersFromVariation($value->variation_id, $business_id, $location_id);
                         foreach ($lot_number_obj as $lot_number) {
                             //If lot number is selected added ordered quantity to lot quantity available
                             if ($value->lot_no_line_id == $lot_number->purchase_line_id) {
-                                $lot_number->qty_available += $value->quantity_ordered;
+                                $lot_number->qty_available += $value->quantity;
                             }
 
                             $lot_number->qty_formated = $this->transactionUtil->num_f($lot_number->qty_available);
@@ -1770,10 +1635,9 @@ class SellController extends Controller
                     $sell_details[$key]->lot_numbers = $lot_numbers;
 
                     if (!empty($value->sub_unit_id)) {
-                        $value = $this->productUtil->changeSellLineUnit($business_id, $value);
-                        $sell_details[$key] = $value;
+                        $values = $this->productUtil->changeSellLineUnit($business_id, $value);
+                       $sell_details[$key] = $values;
                     }
-
                     if ($this->transactionUtil->isModuleEnabled('modifiers')) {
                         //Add modifier details to sel line details
                         $sell_line_modifiers = TransactionSellLine::where('parent_sell_line_id', $sell_details[$key]->transaction_sell_lines_id)
@@ -1810,7 +1674,7 @@ class SellController extends Controller
                         foreach ($sell_line_combos as $combo_line) {
                             $combo_variations[] = [
                                 'variation_id' => $combo_line['variation_id'],
-                                'quantity' => $combo_line['quantity'] / $sell_details[$key]->quantity_ordered,
+                                'quantity' => $combo_line['quantity'] / $sell_details[$key]->quantity,
                                 'unit_id' => null
                             ];
                         }
@@ -1818,7 +1682,7 @@ class SellController extends Controller
                             $this->productUtil->calculateComboQuantity($location_id, $combo_variations);
 
                         if ($transaction->status == AppConstant::FINAL || $transaction->status == AppConstant::COMPLETED || $transaction->status == AppConstant::PROCESSING) {
-                            $sell_details[$key]->qty_available = $sell_details[$key]->qty_available + $sell_details[$key]->quantity_ordered;
+                            $sell_details[$key]->qty_available = $sell_details[$key]->qty_available + $sell_details[$key]->quantity;
                         }
 
                         $sell_details[$key]->formatted_qty_available = $this->productUtil->num_f($sell_details[$key]->qty_available, false, null, true);
@@ -1827,6 +1691,7 @@ class SellController extends Controller
             }
         }
         $product_ids = array_unique($product_id);
+
         $product_count = count($product_ids);
         $product_names = array_unique($product_name);
         $commsn_agnt_setting = $business_details->sales_cmsn_agnt;
@@ -1881,7 +1746,8 @@ class SellController extends Controller
             $accounts = Account::forDropdown($business_id, true, false);
         }
 
-        $shipping_statuses = $this->transactionUtil->shipping_statuses();$order_statuses = Transaction::sell_statuses();
+        $shipping_statuses = $this->transactionUtil->shipping_statuses();
+        $order_statuses = Transaction::sell_statuses();
 
         $common_settings = session()->get('business.common_settings');
         $is_warranty_enabled = !empty($common_settings['enable_product_warranty']) ? true : false;
@@ -1934,9 +1800,8 @@ class SellController extends Controller
         $tra_sell_lines = TransactionSellLine::with('product')->where(['transaction_id' => $id])->groupBy('product_id')->get();
         $tra_sell_lines_array = TransactionSellLine::with('product')->where(['transaction_id' => $id])->groupBy('product_id')->pluck('id')->toArray();
         $sell_ids = implode(',', $tra_sell_lines_array);
-
         return view('sell.edit')
-            ->with(compact('tra_sell_lines', 'sell_ids', 'masterListCols', 'master_list', 'edit_product', 'business_details', 'default_datetime', 'default_time', 'default_date',/*'number_of_days','transaction_sell_lines_id',*/ 'time_slot', 'taxes', 'sell_details', 'transaction', 'commission_agent', 'types', 'customer_groups', 'pos_settings', 'waiters', 'invoice_schemes', 'default_invoice_schemes', 'redeem_details', 'edit_discount', 'edit_price', 'shipping_statuses','order_statuses', 'statuses', 'sales_orders', 'payment_types', 'accounts', 'payment_lines', 'change_return', 'is_order_request_enabled', 'customer_due', 'transaction_sell_lines_days', 'transaction_sell_lines_id', 'product_ids', 'product_names', 'product_count', 'total_compensate'));
+            ->with(compact('tra_sell_lines', 'sell_ids', 'masterListCols', 'master_list', 'edit_product', 'business_details', 'default_datetime', 'default_time', 'default_date',/*'number_of_days','transaction_sell_lines_id',*/ 'time_slot', 'taxes', 'sell_details', 'transaction', 'commission_agent', 'types', 'customer_groups', 'pos_settings', 'waiters', 'invoice_schemes', 'default_invoice_schemes', 'redeem_details', 'edit_discount', 'edit_price', 'shipping_statuses', 'order_statuses', 'statuses', 'sales_orders', 'payment_types', 'accounts', 'payment_lines', 'change_return', 'is_order_request_enabled', 'customer_due', 'transaction_sell_lines_days', 'transaction_sell_lines_id', 'product_ids', 'product_names', 'product_count', 'total_compensate'));
     }
 
 
@@ -2301,7 +2166,8 @@ class SellController extends Controller
         $transaction = Transaction::where('business_id', $business_id)
             ->with(['media', 'media.uploaded_by_user'])
             ->findorfail($id);
-        $shipping_statuses = $this->transactionUtil->shipping_statuses();$order_statuses = Transaction::sell_statuses();
+        $shipping_statuses = $this->transactionUtil->shipping_statuses();
+        $order_statuses = Transaction::sell_statuses();
 
         $activities = Activity::forSubject($transaction)
             ->with(['causer', 'subject'])
@@ -2310,7 +2176,7 @@ class SellController extends Controller
             ->get();
 
         return view('sell.partials.edit_shipping')
-            ->with(compact('transaction', 'shipping_statuses','order_statuses', 'activities'));
+            ->with(compact('transaction', 'shipping_statuses', 'order_statuses', 'activities'));
     }
 
     /**
@@ -2372,7 +2238,8 @@ class SellController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $shipping_statuses = $this->transactionUtil->shipping_statuses();$order_statuses = Transaction::sell_statuses();
+        $shipping_statuses = $this->transactionUtil->shipping_statuses();
+        $order_statuses = Transaction::sell_statuses();
 
         $business_id = request()->session()->get('user.business_id');
 
@@ -2389,7 +2256,7 @@ class SellController extends Controller
             $service_staffs = $this->productUtil->serviceStaffDropdown($business_id);
         }
 
-        return view('sell.shipments')->with(compact('shipping_statuses','order_statuses'))
+        return view('sell.shipments')->with(compact('shipping_statuses', 'order_statuses'))
             ->with(compact('business_locations', 'customers', 'sales_representative', 'is_service_staff_enabled', 'service_staffs'));
     }
 

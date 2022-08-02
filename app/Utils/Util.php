@@ -2,24 +2,25 @@
 
 namespace App\Utils;
 
-use App\Models\Business;
-use App\Models\BusinessLocation;
-use App\Models\Contact;
-use App\Models\Product;
-use App\Models\ReferenceCount;
-use App\Models\Transaction;
-use App\Models\TransactionSellLine;
+use DB;
+use Config;
 use App\Models\Unit;
 use App\Models\User;
-use App\Models\VariationLocationDetails;
-use DB;
-use GuzzleHttp\Client;
-use Illuminate\Support\Facades\Hash;
-use Spatie\Permission\Models\Role;
-use Illuminate\Support\Facades\Auth;
 use App\Models\System;
-use Config;
+use GuzzleHttp\Client;
+use App\Models\Contact;
+use App\Models\Product;
+use App\Models\Business;
+use App\Models\Transaction;
+use App\Models\ReferenceCount;
 use Illuminate\Support\Carbon;
+use App\Models\BusinessLocation;
+use Spatie\Permission\Models\Role;
+use App\Models\TransactionSellLine;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use App\Models\VariationLocationDetails;
 
 class Util
 {
@@ -585,6 +586,7 @@ dd($response);
     */
     public function getSubUnits($business_id, $unit_id, $return_main_unit_if_empty = false, $product_id = null)
     {
+
         $unit = Unit::where('business_id', $business_id)
                     ->with(['sub_units'])
                     ->findOrFail($unit_id);

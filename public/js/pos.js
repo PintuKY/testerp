@@ -268,13 +268,13 @@ $(document).ready(function () {
                     selling_price = item.variation_group_price;
                 }
                 var business_name = $('#select_location_id').find(":selected").text()
-                string +=
-                    ' (Business Location: ' +
-                    business_name +
-                    ')' +
-                    '<br> Type: ' +
-                    item.type +
-                    '</li>';
+                // string +=
+                    // ' (Kitchen Location: ' +
+                    // business_name +
+                    // ')' +
+                    // '<br> Type: ' +
+                    // item.type
+                    +'</li>';
                 return $(string).appendTo(ul);
             } else {
                 var string = '<div>' + item.name;
@@ -287,7 +287,7 @@ $(document).ready(function () {
                     selling_price = item.variation_group_price;
                 }
                 var business_name = $('#select_location_id').find(":selected").text()
-                string += ' (Business Location: ' + business_name + ')' + '<br> Type: ' + item.type;
+                // string += ' (Kitchen Location: ' + business_name + ')' + '<br> Type: ' + item.type;
                 if (item.enable_stock == 1) {
                     var qty_available = __currency_trans_from_en(item.qty_available, false, false, __currency_precision, true);
                     string += ' - ' + qty_available + item.unit;
@@ -407,10 +407,7 @@ $(document).ready(function () {
                 string +=
                     ' (Business Location: ' +
                     business_name +
-                    ')' +
-                    '<br> Type: ' +
-                    item.type +
-                    '</li>';
+                    ')' + '</li>';
                 return $(string).appendTo(ul);
             } else {
                 var string = '<div>' + item.name;
@@ -2553,24 +2550,31 @@ $(document).on('change', '.product_row .product_pos_unit_price', function (e) {
 $(window).on("load", function () {
     let priceTotal = 0;
     let priceTotals = 0;
+
     $('.product_row').each(function () {
         var product_id = $(this).attr('data-productId');
-        let posLineTotal = parseFloat($(this).find('.pos_line_total_'+product_id).val());
-        let posLineTotals = parseFloat($(this).find('.pos_line_totals').val().replace('$', ''));
-        let productVariationValue = parseFloat($(this).find('.product_variation_value').val());
-        let sum = posLineTotal + productVariationValue;
-        let sums = posLineTotals;
-        $(this).find('.pos_line_total_'+product_id).val(sum);
-        $(this).find('.pos_line_total_text_'+product_id).html(sum);
+        var type = $('#product_type_'+product_id).val();
+        let posLineTotal = $(this).find('.pos_line_total_'+product_id).val();
 
-        $(this).find('.pos_line_totals_'+product_id).val(sums);
-        $(this).find('.pos_line_total_texts_'+product_id).html(sums);
-
-        priceTotal += sum
-        priceTotals += sums
+        if(type == 'single'){
+            priceTotal += posLineTotal.replace('$', '');
+            priceTotals += posLineTotal.replace('$', '');
+        }else{
+            let posLineTotals = parseFloat($(this).find('.pos_line_totals').val().replace('$', ''));
+            let productVariationValue = parseFloat($(this).find('.product_variation_value').val());
+            let sum = posLineTotal + productVariationValue;
+            let sums = posLineTotals;
+            /*$(this).find('.pos_line_total_'+product_id).val(sum);
+            $(this).find('.pos_line_total_text_'+product_id).html(sum);
+            $(this).find('.pos_line_totals_'+product_id).val(sums);
+            $(this).find('.pos_line_total_texts_'+product_id).html(sums);*/
+            priceTotal += sum
+            priceTotals += sums
+        }
     });
-    $('.price_total').html('$' + priceTotal);/*
-    $('.price_totals').html('$' + priceTotals);*/
+    $('.price_total').html('');
+    $('.price_total').html('$' + priceTotal);
+    /*  $('.price_totals').html('$' + priceTotals);*/
     $('#total').val(priceTotal);
     var quantity = $('.pos_quantity').val();
     var total_value = (priceTotals * parseInt(quantity));

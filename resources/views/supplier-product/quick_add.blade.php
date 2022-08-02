@@ -1,7 +1,5 @@
-@extends('layouts.app')
-@section('title', __('product.add_new_product'))
-
-@section('content')
+<div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
 
 <section class="content-header">
     <h1>Supplier Product</h1>
@@ -18,7 +16,7 @@
       </ul>
   </div>
 @endif
-    {{Form::open(['url'=>'/supplier-products', 'method'=>'post','id'=>'supplier-product_form','files' => true ])}}
+    {{Form::open(['url'=>action('SupplierProductController@saveQuickProduct'), 'method'=>'post','id'=>'quick_add_supplier_product_form','files' => true ])}}
     @component('components.widget', ['class' => 'box-primary'])
         <div class="row">
             <div class="col-12 col-md-6">
@@ -40,36 +38,15 @@
             <div class="col-12 col-md-6 ">
               <div class="form-group d-block">
                  {{ Form::label('unit', __('product.unit') . ':') }} 
-                 <div class="input-group">
                   {{ Form::select('unit_id', $units, null, ['placeholder' => __('messages.please_select'), 'class' => 'form-control select2', 'style' => 'width:100%','id'=>'unit_id']); }}
-                  <span class="input-group-btn">                   
-                    <button type="button" @if(!auth()->user()->can('unit.create')) disabled @endif class="btn btn-default bg-white btn-flat btn-modal" data-href="{{route('supplier-product-units.create',['quick_add' => true])}}" title="@lang('unit.add_unit')" data-container=".add_unit_modal"><i class="fa fa-plus-circle text-primary fa-lg"></i></button>
-                  </span>
-              </div>
               </div>
             </div>
             <div class="col-12 col-md-6 ">
               <div class="form-group d-block">
                  {{ Form::label('category', __('product.category') . ':') }}
-                  <div class="input-group">
-                    {{ Form::select('category_id', $categories, null, ['placeholder' => __('messages.please_select'), 'class' => 'form-control select2', 'style' => 'width:100%','id'=>'category_id']); }}
-                    <span class="input-group-btn">                   
-                      <button type="button" @if(!auth()->user()->can('unit.create')) disabled @endif class="btn btn-default bg-white btn-flat btn-modal" data-href="{{route('supplier-product-categories.create',['quick_add' => true])}}" title="@lang('category.add_category')" data-container=".add_category_modal"><i class="fa fa-plus-circle text-primary fa-lg"></i></button>
-                    </span>
-                  </div>
+                 {{ Form::select('category_id', $categories, null, ['placeholder' => __('messages.please_select'), 'class' => 'form-control select2', 'style' => 'width:100%','id'=>'category_id']); }}
                 </div>
               </div>
-              <div class="col-12 col-md-6 ">
-                <div class="form-group d-block">
-                   {{ Form::label('brand', 'Brand' . ':') }}
-                    <div class="input-group">
-                      {{ Form::select('brand_id', $brands, null, ['placeholder' => __('messages.please_select'), 'class' => 'form-control select2', 'style' => 'width:100%','id'=>'brand_id']); }}
-                      <span class="input-group-btn">                   
-                        <button type="button" @if(!auth()->user()->can('unit.create')) disabled @endif class="btn btn-default bg-white btn-flat btn-modal" data-href="{{route('supplier-product-brands.create',['quick_add' => true])}}" title="Add Brands" data-container=".add_brand_modal"><i class="fa fa-plus-circle text-primary fa-lg"></i></button>
-                      </span>
-                    </div>
-                  </div>
-                </div>
               <div class="col-12 col-md-6 ">
                 <div class="form-group d-block">
                    {{ Form::label('weight','Weight' . ':') }}
@@ -124,21 +101,17 @@
               <button type="submit" value="submit" class="btn btn-primary float-right submit_supplier_product_form">@lang('messages.save')</button>
             </div>
           </div>
-    @endcomponent
+        </div>
     {{Form::close()}}
 </section>
 
   <div class="modal fade add_unit_modal" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel"></div>
   <div class="modal fade add_category_modal" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel"></div>
-  <div class="modal fade add_brand_modal" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel"></div>
   <div class="modal fade supplier_modal" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel">
 	@include('supplier.create', ['quick_add' => true])
 </div>
-@endsection
 
-@section('javascript')
-<script src="{{ asset('js/supplier_purchase.js?v=' . $asset_v) }}"></script>
-<script src="{{ asset('js/supplier.js?v=' . $asset_v) }}"></script>
+
 <script>
 $(document).ready(function() {
    //Start For product type single
@@ -194,39 +167,59 @@ $(document).ready(function() {
     });
     });
 </script>
-<script>
-  //Quick add brand
-$(document).on('submit', 'form#quick_add_brand_form', function(e) {
-    e.preventDefault();
-    var form = $(this);
-    var data = form.serialize();
-
-    $.ajax({
-        method: 'POST',
-        url: $(this).attr('action'),
-        dataType: 'json',
-        data: data,
-        beforeSend: function(xhr) {
-            __disable_submit_button(form.find('button[type="submit"]'));
+<script type="text/javascript">
+    $(document).ready(function(){
+      $("form#quick_add_supplier_product_form").validate({
+        rules: {
+            sku: {
+                remote: {
+                    url: "/products/check_product_sku",
+                    type: "post",
+                    data: {
+                        sku: function() {
+                            return $( "#sku" ).val();
+                        },
+                        product_id: function() {
+                            if($('#product_id').length > 0 ){
+                                return $('#product_id').val();
+                            } else {
+                                return '';
+                            }
+                        },
+                    }
+                }
+            },
         },
-        success: function(result) {
-            if (result.success == true) {
-                var newOption = new Option(result.data.name, result.data.id, true, true);
-                // Append it to the select
-                $('#brand_id')
-                    .append(newOption)
-                    .trigger('change');
-                $('div.add_brand_modal').modal('hide');
-                toastr.success(result.msg);
-            } else {
-                toastr.error(result.msg);
+        messages: {
+            sku: {
+                remote: LANG.sku_already_exists
             }
         },
+        submitHandler: function (form) {
+            console.log('onsubmit')
+          var form = $("form#quick_add_supplier_product_form");
+          var url = form.attr('action');
+          form.find('button[type="submit"]').attr('disabled', true);
+          $.ajax({
+              method: "POST",
+              url: url,
+              dataType: 'json',
+              data: $(form).serialize(),
+              success: function(data){
+                  $('.quick_add_product_modal').modal('hide');
+                  if( data.success){
+                      toastr.success(data.msg);
+                      if (typeof get_purchase_entry_row !== 'undefined') {
+                          get_purchase_entry_row( data.product.id, 0 );
+                      }
+                    //   $(document).trigger({type: "quickProductAdded", 'product': data.product, 'variation': data.variation });
+                  } else {
+                      toastr.error(data.msg);
+                  }
+              }
+          });
+          return false;
+        }
+      });
     });
-});
-</script>
-@stop
-
-
-
-
+  </script>

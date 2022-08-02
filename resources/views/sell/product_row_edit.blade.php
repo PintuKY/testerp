@@ -1,5 +1,4 @@
 @php
-
     $common_settings = session()->get('business.common_settings');
     $multiplier = 1;
 @endphp
@@ -11,31 +10,31 @@
         @endphp
     @endif
 @endforeach
-@if(empty($product->quantity_ordered))
+@if(empty($product->quantity))
     @php
-        $product->quantity_ordered = 1;
+        $product->quantity = 1;
     @endphp
 @endif
 
 @php
     $allow_decimal = true;
-    if($product->unit_allow_decimal != 1) {
+    if($product->sub_unit && $product->sub_unit->allow_decimal != 1) {
         $allow_decimal = false;
     }
 @endphp
 
-@if(!empty($product->transaction_sell_lines_id))
-    <input type="hidden" name="products[{{$product->variation_id}}][transaction_sell_lines_id]" class="form-control"
-           value="{{$product->transaction_sell_lines_id}}">
+@if(!empty($varients->id))
+    <input type="hidden" name="products[{{$varients->id}}][transaction_sell_lines_id]" class="form-control"
+           value="{{$varients->id}}">
 @endif
-<input type="hidden" name="products[{{$product->variation_id}}][product_id]" class="form-control product_id"
+<input type="hidden" name="products[{{$varients->id}}][product_id]" class="form-control product_id"
        value="{{$product->product_id}}">
 
 <input type="hidden" class="form-control product_variation_value input_number mousetrap input_quantity" readonly
-       value="{{$product->value}}" name="products[{{$product->variation_id}}][variation_value]">
+       value="{{($varients->value) ? $varients->value : 'None'}}" name="products[{{$product->variation_id}}][variation_value]">
 
 
-<tr class="product_row" data-row_index="{{$row_count}}"
+<tr class="product_row" data-row_index="{{$row_count}}" data-productId="{{$product->product_id}}"
     @if(!empty($so_line)) data-so_id="{{$so_line->transaction_id}}" @endif>
     <td>
         @if(!empty($so_line))
@@ -49,12 +48,12 @@
             <div title="@lang('lang_v1.pos_edit_product_price_help')">
 		<span class="text-link text-info cursor-pointer" data-toggle="modal"
               data-target="#row_edit_product_price_modal_{{$row_count}}">
-			{!! $product->pax !!}
+			{!! $varients->pax !!}
 			&nbsp;<i class="fa fa-info-circle"></i>
 		</span>
             </div>
         @else
-            {!! $product->pax !!}
+            {!! $varients->pax !!}
         @endif
         <input type="hidden" class="enable_sr_no" value="{{$product->enable_sr_no}}">
         <input type="hidden"
@@ -70,7 +69,7 @@
 
             $tax_id = $product->tax_id;
             $item_tax = !empty($product->item_tax) ? $product->item_tax : 0;
-            $unit_price_inc_tax = $product->sell_price_inc_tax;
+            $unit_price_inc_tax = $product->unit_price_inc_tax;
 
             if(!empty($so_line)) {
                 $tax_id = $so_line->tax_id;
@@ -79,7 +78,7 @@
 
             if($hide_tax == 'hide'){
                 $tax_id = null;
-                $unit_price_inc_tax = $product->default_sell_price;
+                $unit_price_inc_tax = $product->unit_price;
             }
 
             $discount_type = !empty($product->line_discount_type) ? $product->line_discount_type : 'fixed';
@@ -133,7 +132,7 @@
 
             if(!empty($action) && $action == 'edit') {
                 if(!empty($so_line)) {
-                    $qty_available = $so_line->quantity - $so_line->so_quantity_invoiced + $product->quantity_ordered;
+                    $qty_available = $so_line->quantity - $so_line->so_quantity_invoiced + $product->quantity;
                     $max_quantity = $qty_available;
                     $formatted_max_quantity = number_format($qty_available, config('constants.currency_precision', 2), session('currency')['decimal_separator'], session('currency')['thousand_separator']);
                 }
@@ -160,7 +159,7 @@
             @endphp
             @if(!empty($product->lot_numbers) && empty($is_sales_order))
                 <select class="form-control lot_number input-sm" name="products[{{$row_count}}][lot_no_line_id]"
-                        @if(!empty($product->transaction_sell_lines_id)) disabled @endif>
+                        @if(!empty($varients->id)) disabled @endif>
                     <option value="">@lang('lang_v1.lot_n_expiry')</option>
                     @foreach($product->lot_numbers as $lot_number)
                         @php
@@ -226,7 +225,7 @@
         <input type="hidden" class="base_unit_multiplier"
                name="products[{{$product->variation_id}}][base_unit_multiplier]" value="{{$multiplier}}">
 
-        <input type="hidden" class="hidden_base_unit_sell_price" value="{{$product->default_sell_price / $multiplier}}">
+        <input type="hidden" class="hidden_base_unit_sell_price" value="{{$product->unit_price / $multiplier}}">
 
         {{-- Hidden fields for combo products --}}
         @if($product->product_type == 'combo'&& !empty($product->combo_products))
@@ -235,7 +234,7 @@
 
                 @if(isset($action) && $action == 'edit')
                     @php
-                        $combo_product['qty_required'] = $combo_product['quantity'] / $product->quantity_ordered;
+                        $combo_product['qty_required'] = $combo_product['quantity'] / $product->quantity;
 
                         $qty_total = $combo_product['quantity'];
                     @endphp
@@ -282,7 +281,7 @@
             </td>
         @endif
         @php
-            $pos_unit_price = !empty($product->unit_price_before_discount) ? $product->unit_price_before_discount : $product->default_sell_price;
+            $pos_unit_price = !empty($product->unit_price_before_discount) ? $product->unit_price_before_discount : $product->unit_price;
 
             if(!empty($so_line)) {
                 $pos_unit_price = $so_line->unit_price_before_discount;
@@ -323,7 +322,7 @@
                data-msg-min-value="{{__('lang_v1.minimum_selling_price_error_msg', ['price' => @num_format($unit_price_inc_tax)])}}" @endif>
     </td>
     <td>
-       {{$product->transaction_sell_lines_variants_name}}
+       {{$varients->name}}
     </td>
 
     <td class="text-center">
@@ -333,16 +332,16 @@
         @endphp
         <input type="{{$subtotal_type}}"
                class="form-control pos_line_totals pos_line_total_{{$pid}} @if(!empty($pos_settings['is_pos_subtotal_editable'])) input_number @endif"
-               value="{{'$'.@num_format($product->value)}}">
+               value="{{'$'.@num_format((float)$varients->value)}}">
         <input type="{{$subtotal_type}}"
                class="form-control pos_line_total pos_line_total_{{$pid}} @if(!empty($pos_settings['is_pos_subtotal_editable'])) input_number @endif"
-               value="{{'$'.@num_format($product->value)}}">
+               value="{{'$'.@num_format((float)$varients->value)}}">
         <span
             class="hide display_currency pos_line_total_text  pos_line_total_text_{{$pid}} @if(!empty($pos_settings['is_pos_subtotal_editable'])) hide @endif"
-            data-currency_symbol="true">{{'$'.@num_format($product->value)}}</span>
+            data-currency_symbol="true">{{'$'.@num_format((float)$varients->value)}}</span>
         <span
             class="display_currency pos_line_total_texts  pos_line_total_text_{{$pid}} @if(!empty($pos_settings['is_pos_subtotal_editable'])) hide @endif"
-            data-currency_symbol="true">{{'$'.@num_format($product->value)}}</span>
+            data-currency_symbol="true">{{'$'.@num_format((float)$varients->value)}}</span>
     </td>
     {{-- <td class="text-center v-center">
         <i class="fa fa-times text-danger pos_remove_row cursor-pointer" aria-hidden="true"></i>

@@ -320,7 +320,6 @@ class TransactionUtil extends Util
         $master_list_less_id = '';
         $tra_day = [];
         $tra_sell_days = TransactionSellLine::with('product', 'sell_lines_days')->where(['transaction_id' => $transaction->id])->groupBy('product_id')->get();
-
         foreach ($products as $variationId => $product) {
             //$transaction_sell_lines_id[] = $product['transaction_sell_lines_id'];
             $product_delivery_date = $input['product'][$product['product_id']];
@@ -336,7 +335,7 @@ class TransactionUtil extends Util
             }
 
             if (array_key_exists('variation_value_id', $product)) {
-                $variation_value_id[] = $product['variation_value_id'];
+                $variation_value_id[$product['product_id']][] = $product['variation_value_id'];
             }
             $multiplier = 1;
             $product_data = Product::with('unit')->where('id', $product['product_id'])->first();
@@ -351,6 +350,7 @@ class TransactionUtil extends Util
 
             //Check if transaction_sell_lines_id is set, used when editing.
             if (!empty($product['transaction_sell_lines_id'])) {
+
                 $edit_id_temp = $this->editSellLine($product, $input['product'], $variationId, $location_id, $status_before, $multiplier, $uf_data);
                 $edit_ids = array_merge($edit_ids, $edit_id_temp);
 
@@ -386,6 +386,7 @@ class TransactionUtil extends Util
                     }
                 }
             } else {
+
                 $products_modified_combo[] = $product;
 
                 //calculate unit price and unit price before discount
@@ -395,7 +396,6 @@ class TransactionUtil extends Util
                 if (!empty($product_delivery_date['line_discount_type']) && $product_delivery_date['line_discount_amount']) {
                     $discount_amount = $uf_data ? $this->num_uf($product_delivery_date['line_discount_amount']) : $product_delivery_date['line_discount_amount'];
                     if ($product_delivery_date['line_discount_type'] == 'fixed') {
-
                         //Note: Consider multiplier for fixed discount amount
                         $unit_price = $unit_price_before_discount - ($discount_amount / $multiplier);
                     } elseif ($product_delivery_date['line_discount_type'] == 'percentage') {
@@ -425,7 +425,7 @@ class TransactionUtil extends Util
                     $start_date = Carbon::parse($product_delivery_date['start_date'])->format('Y-m-d H:i');
                     $time_slot = $product_delivery_date['time_slot'];
                 }
-                $line = [
+                $line[$product['product_id']] = [
                     'product_name' => $product_data->name,
                     'product_id' => $product['product_id'],
                     'unit_name' => $product_data->unit->short_name,
@@ -454,17 +454,16 @@ class TransactionUtil extends Util
                     'delivery_time' => $delivery_time,
                 ];
                 foreach ($extra_line_parameters as $key => $value) {
-                    $line[$key] = isset($product[$value]) ? $product[$value] : '';
+                    $line[$product['product_id']][$key] = isset($product[$value]) ? $product[$value] : '';
                 }
 
                 if (!empty($product['lot_no_line_id'])) {
-                    $line['lot_no_line_id'] = $product['lot_no_line_id'];
+                    $line[$product['product_id']]['lot_no_line_id'] = $product['lot_no_line_id'];
                 }
 
                 //Check if restaurant module is enabled then add more data related to that.
                 if ($this->isModuleEnabled('modifiers')) {
                     $sell_line_modifiers = [];
-
                     if (!empty($product['modifier'])) {
                         foreach ($product['modifier'] as $key => $value) {
                             if (!empty($product['modifier_price'][$key])) {
@@ -488,10 +487,17 @@ class TransactionUtil extends Util
                 /*$tra_sell_line = TransactionSellLine::where(['transaction_id'=>$transaction->id,'product_id'=>$product['product_id']])->first();
 
                 if($tra_sell_line == null){*/
-                $lines_formatted[] = new TransactionSellLine($line);
+                //$lines_formatted[] = new TransactionSellLine($line);
 
                 //Update purchase order line quantity received
-                $this->updateSalesOrderLine($line['so_line_id'], $line['quantity'], 0);
+                //$this->updateSalesOrderLine($line['so_line_id'], $line['quantity'], 0);
+            }
+        }
+
+        if (!empty($line)) {
+            foreach ($line as $line_data) {
+                $lines_formatted[] = new TransactionSellLine($line_data);
+                $this->updateSalesOrderLine($line_data['so_line_id'], $line_data['quantity'], 0);
             }
         }
         foreach ($tra_sell_days as $sell_days) {
@@ -548,48 +554,54 @@ class TransactionUtil extends Util
         }
         $combo_lines = [];
         if (!empty($lines_formatted)) {
-
             $sell_line_data = $transaction->sell_lines()->saveMany($lines_formatted);
 
             $sell_line_data_ids = !empty($sell_line_data) ? array_column($sell_line_data, "id") : [];
+
             $data = [];
             $days = [];
             // Add transaction sell lines variants data
-            $sell_line_ids = 0;
+
             $variation_id = [];
             foreach ($lines_formatted as $line_data) {
                 $variation_id[] = [
                     'variation_id' => $line_data->variation_id,
                     'product_id' => $line_data->product_id];
             }
+            $total = 0;
+            foreach ($variation_value_id as $key => $ids) {
+                foreach ($ids as $id) {
+                    $variation_value_data = Variation::where('id', $id)->first();
+                    $variation_value_data_id[$total][] = $variation_value_data->variation_value_id;
+                    $variation_value[$total][] = $variation_value_data->default_sell_price;
+                }
+                $total++;
+            }
+            foreach ($variation_value_data_id as $keys => $datas) {
 
-            foreach ($variation_value_id as $id) {
-                $variation_value_data = Variation::where('id', $id)->first();
-                $variation_value_data_id[] = $variation_value_data->variation_value_id;
-                $variation_value[] = $variation_value_data->default_sell_price;
+                foreach ($datas as $key => $data) {
+                    $variation_value_datas = VariationValueTemplate::with('variationTemplate')->where('id', $data)->first();
+                    $variation_value_key = $this->num_uf($variation_value[$keys][$key]);
+
+                    TransactionSellLinesVariants::insert(
+                        [
+                            'transaction_sell_lines_id' => $sell_line_data_ids[$keys],
+                            //'transaction_sell_lines_id' => $id,
+                            'variation_templates_id' => $variation_value_datas->variation_template_id,
+                            'variation_value_templates_id' => $variation_value_datas->id,
+                            'pax' => $variation_value_datas->variationTemplate->name,
+                            'addon' => $variation_value_datas->name . '(+ $' . $variation_value_key . ')',
+                            'name' => $variation_value_datas->name,
+                            //'value' => $variation_value_datas->value,
+                            'value' => $variation_value[$keys][$key],
+                            'created_at' => Carbon::now(),
+                            'updated_at' => Carbon::now(),
+                        ]
+                    );
+                }
             }
 
-            foreach ($variation_value_data_id as $key => $data) {
-                $variation_value_datas = VariationValueTemplate::with('variationTemplate')->where('id', $data)->first();
-                $variation_value_key = $this->num_uf($variation_value[$key]);
 
-                TransactionSellLinesVariants::insert(
-                    [
-                        //'transaction_sell_lines_id' => $sell_line_data_ids[$sell_line_ids],
-                        'transaction_sell_lines_id' => $sell_line_data_ids[0],
-                        'variation_templates_id' => $variation_value_datas->variation_template_id,
-                        'variation_value_templates_id' => $variation_value_datas->id,
-                        'pax' => $variation_value_datas->variationTemplate->name,
-                        'addon' => $variation_value_datas->name . '(+ $' . $variation_value_key . ')',
-                        'name' => $variation_value_datas->name,
-                        //'value' => $variation_value_datas->value,
-                        'value' => $variation_value[$key],
-                        'created_at' => Carbon::now(),
-                        'updated_at' => Carbon::now(),
-                    ]
-                );
-                $sell_line_ids++;
-            }
             $tra_sell_days = TransactionSellLine::with('product')->where(['transaction_id' => $transaction->id])->groupBy('product_id')->get();
             //master list add
             foreach ($tra_sell_days as $sell_day) {
@@ -1128,7 +1140,6 @@ class TransactionUtil extends Util
         //Get the old order quantity
         $sell_line = TransactionSellLine::with(['product'])
             ->find($product['transaction_sell_lines_id']);
-
         $old_qty = $sell_line->quantity;
         $edit_ids[] = $product['transaction_sell_lines_id'];
         //Adjust quanity
@@ -5318,7 +5329,7 @@ class TransactionUtil extends Util
     public function getListSells($business_id, $sale_type = 'sell')
     {
         $sells = Transaction::leftJoin('contacts', 'transactions.contact_id', '=', 'contacts.id')
-             ->leftJoin('transaction_payments as tp', 'transactions.id', '=', 'tp.transaction_id')
+            ->leftJoin('transaction_payments as tp', 'transactions.id', '=', 'tp.transaction_id')
             ->leftJoin('transaction_sell_lines as tsl', function ($join) {
                 $join->on('transactions.id', '=', 'tsl.transaction_id')
                     ->whereNull('tsl.parent_sell_line_id');

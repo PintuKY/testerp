@@ -39,6 +39,7 @@ use App\Models\SellingPriceGroup;
 use App\Models\TaxRate;
 use App\Models\Transaction;
 use App\Models\TransactionSellLine;
+use App\Models\TransactionSellLinesDay;
 use App\Models\TypesOfService;
 use App\Models\User;
 use App\Utils\AppConstant;
@@ -356,6 +357,7 @@ class SellPosController extends Controller
                 $discount = ['discount_type' => $input['discount_type'],
                                 'discount_amount' => $input['discount_amount']
                             ];
+
                 $invoice_total = $this->productUtil->calculateInvoiceTotal($discount,$input['products'], $input['product'], $input['tax_rate_id'],$input['total']);
 
                 /*DB::beginTransaction();*/
@@ -490,14 +492,15 @@ class SellPosController extends Controller
                 //if ($input['status'] == 'final') {
                 if($input['status'] == AppConstant::FINAL || $input['status'] == AppConstant::COMPLETED || $input['status'] == AppConstant::PROCESSING){
                     //update product stock
-                    foreach ($input['products'] as $product) {
+
+                   /* foreach ($input['products'] as $product) {
 
                         $decrease_qty = $this->productUtil
                                     ->num_uf($product['quantity']);
                         if (!empty($product['base_unit_multiplier'])) {
                             $decrease_qty = $decrease_qty * $product['base_unit_multiplier'];
                         }
-                    }
+                    }*/
 
                     //Add payments to Cash Register
                     if (!$is_direct_sale && !$transaction->is_suspend && !empty($input['payment']) && !$is_credit_sale) {
@@ -778,103 +781,69 @@ class SellPosController extends Controller
         $business_location = BusinessLocation::find($location_id);
         $payment_types = $this->productUtil->payment_types($business_location, true);
         $location_printer_type = $business_location->receipt_printer_type;
-        $sell_details = TransactionSellLine::
-                        join(
-                            'products AS p',
-                            'transaction_sell_lines.product_id',
-                            '=',
-                            'p.id'
-                        )
-                        ->join(
-                            'variations AS variations',
-                            'transaction_sell_lines.variation_id',
-                            '=',
-                            'variations.id'
-                        )
-                        ->join(
-                            'product_variations AS pv',
-                            'variations.product_variation_id',
-                            '=',
-                            'pv.id'
-                        )
-                        ->leftjoin('variation_location_details AS vld', function ($join) use ($location_id) {
-                            $join->on('variations.id', '=', 'vld.variation_id')
-                                ->where('vld.location_id', '=', $location_id);
-                        })
-                        ->leftjoin('units', 'units.id', '=', 'p.unit_id')
-                        ->where('transaction_sell_lines.transaction_id', $id)
-                        ->select(
-                            DB::raw("IF(pv.is_dummy = 0, CONCAT(p.name, ' (', pv.name, ':',variations.name, ')'), p.name) AS product_name"),
-                            'p.id as product_id',
-                            'p.name as product_actual_name',
-                            'p.type as product_type',
-                            'pv.name as product_variation_name',
-                            'pv.is_dummy as is_dummy',
-                            'variations.name as variation_name',
-                            'variations.sub_sku',
-                            'p.barcode_type',
-                            'p.enable_sr_no',
-                            'variations.id as variation_id',
-                            'units.short_name as unit',
-                            'units.allow_decimal as unit_allow_decimal',
-                            'transaction_sell_lines.tax_id as tax_id',
-                            'transaction_sell_lines.item_tax as item_tax',
-                            'transaction_sell_lines.unit_price as default_sell_price',
-                            'transaction_sell_lines.unit_price_before_discount as unit_price_before_discount',
-                            'transaction_sell_lines.unit_price_inc_tax as sell_price_inc_tax',
-                            'transaction_sell_lines.id as transaction_sell_lines_id',
-                            'transaction_sell_lines.id',
-                            'transaction_sell_lines.quantity as quantity_ordered',
-                            'transaction_sell_lines.sell_line_note as sell_line_note',
-                            'transaction_sell_lines.parent_sell_line_id',
-                            'transaction_sell_lines.lot_no_line_id',
-                            'transaction_sell_lines.line_discount_type',
-                            'transaction_sell_lines.line_discount_amount',
-                            'transaction_sell_lines.res_service_staff_id',
-                            'units.id as unit_id',
-                            'transaction_sell_lines.sub_unit_id',
-                            DB::raw('vld.qty_available + transaction_sell_lines.quantity AS qty_available')
-                        )
-                        ->get();
+        $sell_details = TransactionSellLine::with(['sub_unit','product','so_line','transactionSellLinesVariants'])->where('transaction_id',$id)->get();
+        $transaction_sell_lines_id = [];
+        $transaction_sell_lines_days = '';
+        $time_slot = '';
+        $product_id = [];
+        $product_name = [];
+        $edit_product = [];
         if (!empty($sell_details)) {
             foreach ($sell_details as $key => $value) {
-
+                $product_id[] = $value->product_id;
+                $edit_product[$value->product_id] = [
+                    'start_date' => $value->start_date,
+                    'time_slot' => $value->time_slot,
+                    'delivery_date' => $value->delivery_date,
+                    'delivery_time' => $value->delivery_time,
+                    'unit_value' => $value->unit_value,
+                    'quantity' => $value->quantity,
+                    'total_item_value' => $value->total_item_value,
+                    'unit' => $value->unit_name,
+                    'unit_id' => $value->unit_id,
+                    'default_sell_price' => $value->unit_price,
+                    'unit_price_before_discount' => $value->unit_price_before_discount,
+                ];
+                $product_name[] = $value->product_name;
                 //If modifier or combo sell line then unset
                 if (!empty($sell_details[$key]->parent_sell_line_id)) {
                     unset($sell_details[$key]);
                 } else {
+
                     if ($transaction->status != AppConstant::FINAL || $transaction->status != AppConstant::COMPLETED || $transaction->status != AppConstant::PROCESSING) {
-                    //if ($transaction->status != 'final') {
-                        $actual_qty_avlbl = $value->qty_available - $value->quantity_ordered;
+                        $actual_qty_avlbl = $value->qty_available - $value->quantity;
                         $sell_details[$key]->qty_available = $actual_qty_avlbl;
                         $value->qty_available = $actual_qty_avlbl;
                     }
 
-                    $sell_details[$key]->formatted_qty_available = $this->productUtil->num_f($value->qty_available, false, null, true);
 
-                    //Add available lot numbers for dropdown to sell lines
+                    //$number_of_days = $value->number_of_days;
+                    $time_slot = $value->time_slot;
+                    $transaction_sell_lines_days = TransactionSellLinesDay::where('transaction_sell_lines_id', $value->id)->get();
+                    foreach ($transaction_sell_lines_days as $days) {
+                        $transaction_sell_lines_id[$value->product_id][] = $days->day;
+                    }
+                    $sell_details[$key]->formatted_qty_available = $this->productUtil->num_f($value->qty_available, false, null, true);
                     $lot_numbers = [];
-                    if (request()->session()->get('business.enable_lot_number') == 1 || request()->session()->get('business.enable_product_expiry') == 1) {
+
+                    if (request()->session()->get('business.enable_lot_number') == 1) {
                         $lot_number_obj = $this->transactionUtil->getLotNumbersFromVariation($value->variation_id, $business_id, $location_id);
                         foreach ($lot_number_obj as $lot_number) {
                             //If lot number is selected added ordered quantity to lot quantity available
                             if ($value->lot_no_line_id == $lot_number->purchase_line_id) {
-                                $lot_number->qty_available += $value->quantity_ordered;
+                                $lot_number->qty_available += $value->quantity;
                             }
 
-                            $lot_number->qty_formated = $this->productUtil->num_f($lot_number->qty_available);
+                            $lot_number->qty_formated = $this->transactionUtil->num_f($lot_number->qty_available);
                             $lot_numbers[] = $lot_number;
                         }
                     }
                     $sell_details[$key]->lot_numbers = $lot_numbers;
 
                     if (!empty($value->sub_unit_id)) {
-                        $value = $this->productUtil->changeSellLineUnit($business_id, $value);
-                        $sell_details[$key] = $value;
+                        $values = $this->productUtil->changeSellLineUnit($business_id, $value);
+                        $sell_details[$key] = $values;
                     }
-
-                    $sell_details[$key]->formatted_qty_available = $this->productUtil->num_f($value->qty_available, false, null, true);
-
                     if ($this->transactionUtil->isModuleEnabled('modifiers')) {
                         //Add modifier details to sel line details
                         $sell_line_modifiers = TransactionSellLine::where('parent_sell_line_id', $sell_details[$key]->transaction_sell_lines_id)
@@ -911,16 +880,15 @@ class SellPosController extends Controller
                         foreach ($sell_line_combos as $combo_line) {
                             $combo_variations[] = [
                                 'variation_id' => $combo_line['variation_id'],
-                                'quantity' => $combo_line['quantity'] / $sell_details[$key]->quantity_ordered,
+                                'quantity' => $combo_line['quantity'] / $sell_details[$key]->quantity,
                                 'unit_id' => null
                             ];
                         }
                         $sell_details[$key]->qty_available =
-                        $this->productUtil->calculateComboQuantity($location_id, $combo_variations);
+                            $this->productUtil->calculateComboQuantity($location_id, $combo_variations);
 
-                        if($transaction->status == AppConstant::FINAL || $transaction->status == AppConstant::COMPLETED || $transaction->status == AppConstant::PROCESSING){
-                        //if ($transaction->status == 'final') {
-                            $sell_details[$key]->qty_available = $sell_details[$key]->qty_available + $sell_details[$key]->quantity_ordered;
+                        if ($transaction->status == AppConstant::FINAL || $transaction->status == AppConstant::COMPLETED || $transaction->status == AppConstant::PROCESSING) {
+                            $sell_details[$key]->qty_available = $sell_details[$key]->qty_available + $sell_details[$key]->quantity;
                         }
 
                         $sell_details[$key]->formatted_qty_available = $this->productUtil->num_f($sell_details[$key]->qty_available, false, null, true);
@@ -928,6 +896,9 @@ class SellPosController extends Controller
                 }
             }
         }
+        $product_ids = array_unique($product_id);
+        $product_count = count($product_ids);
+        $product_names = array_unique($product_name);
 
         $featured_products = $business_location->getFeaturedProducts();
 
@@ -1021,8 +992,7 @@ class SellPosController extends Controller
      */
     public function update(Request $request, $id)
     {
-
-        if (!auth()->user()->can('sell.update') && !auth()->user()->can('direct_sell.access') && !auth()->user()->can('so.update')) {
+       if (!auth()->user()->can('sell.update') && !auth()->user()->can('direct_sell.access') && !auth()->user()->can('so.update')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -1088,6 +1058,7 @@ class SellPosController extends Controller
                             ];
 
                 $invoice_total = $this->productUtil->calculateInvoiceTotal($discount,$input['products'], $input['product'],$input['tax_rate_id'],$transaction_before->total);
+
 
                 if (!empty($request->input('transaction_date'))) {
                     $input['transaction_date'] = $this->productUtil->uf_date($request->input('transaction_date'), true);
@@ -1182,8 +1153,8 @@ class SellPosController extends Controller
 
                 //Update Sell lines
 
-                $deleted_lines = $this->transactionUtil->createOrUpdateSellLines($input,$transaction, $input['products'], $input['location_id'], /*$input['number_of_days'],$input['time_slot'],*/ $status_before,'');
 
+                $deleted_lines = $this->transactionUtil->createOrUpdateSellLines($input,$transaction, $input['products'], $input['location_id'], /*$input['number_of_days'],$input['time_slot'],*/ $status_before,'');
                 if($transaction->status != ''){
                     MasterList::where('transaction_id',$transaction->id)->whereDate('delivery_date', '>=', date('Y-m-d'))->update([
                         'status'=>$transaction->status

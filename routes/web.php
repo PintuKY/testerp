@@ -406,20 +406,26 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/suppliers/ledger', 'SupplierController@getLedger');
     Route::get('/supplier/payments/{supplier_id}', 'SupplierController@getSupplierPayments')->name('supplier.payments');
 
-    // supplier product
+    // supplier product 
+    Route::get('/supplier-products/quick_add', 'SupplierProductController@quickAdd');
+    Route::get('/supplier-products/stock-history/{id}', 'SupplierProductController@productStockHistory');
+    Route::post('/supplier-products/save_quick_product', 'SupplierProductController@saveQuickProduct');
     Route::get('supplier-products/list', 'SupplierProductController@getProducts');
     Route::resource('supplier-products', 'SupplierProductController');
 
     // supplier product unit
     Route::resource('supplier-product-units', 'SupplierProductUnitController');
     Route::resource('supplier-product-categories', 'SupplierProductCategoryController');
-
+    
+    // supplier product brands
+    Route::resource('supplier-product-brands', 'SupplierProductBrandController');
+    
     // supplier purchases modules
     Route::post('/supplier-purchases/update-status', 'SupplierPurchaseController@updateStatus');
     Route::get('/supplier-purchases/get_products', 'SupplierPurchaseController@getProducts');
     Route::get('/suppliers-purchases/get_suppliers', 'SupplierPurchaseController@getSuppliers');
     Route::post('/supplier-purchases/get_purchase_entry_row', 'SupplierPurchaseController@getPurchaseEntryRow');
-    // Route::post('/supplier-purchases/check_ref_number', 'SupplierPurchaseController@checkRefNumber');
+    Route::post('/supplier-purchases/check_ref_number', 'SupplierPurchaseController@checkRefNumber');
     Route::resource('/supplier-purchases', 'SupplierPurchaseController');
     Route::post('/import-supplier-purchase-products', 'SupplierPurchaseController@importPurchaseProducts');
 

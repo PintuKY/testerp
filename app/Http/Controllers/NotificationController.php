@@ -139,87 +139,7 @@ class NotificationController extends Controller
             $business_id = request()->session()->get('business.id');
 
             $transaction = !empty($transaction_id) ? Transaction::find($transaction_id) : null;
-
-            $sell_details = TransactionSellLine::
-            join(
-                'products AS p',
-                'transaction_sell_lines.product_id',
-                '=',
-                'p.id'
-            )
-                ->join(
-                    'variations AS variations',
-                    'transaction_sell_lines.variation_id',
-                    '=',
-                    'variations.id'
-                )
-                ->join(
-                    'product_variations AS pv',
-                    'variations.product_variation_id',
-                    '=',
-                    'pv.id'
-                )
-                ->join(
-                    'transaction_sell_lines_variants',
-                    'transaction_sell_lines_variants.transaction_sell_lines_id',
-                    '=',
-                    'transaction_sell_lines.id'
-                )
-                /*->join(
-                    'transaction_sell_lines_days',
-                    'transaction_sell_lines_days.transaction_sell_lines_id',
-                    '=',
-                    'transaction_sell_lines.id'
-                )*/
-                /*->leftjoin('variation_location_details AS vld', function ($join) use ($location_id) {
-                    $join->on('variations.id', '=', 'vld.variation_id')
-                        ->where('vld.location_id', '=', $location_id);
-                })*/
-                ->leftjoin('units', 'units.id', '=', 'p.unit_id')
-                ->where('transaction_sell_lines.transaction_id', $transaction_id)
-                ->with(['so_line'])
-                ->select(
-                    \Illuminate\Support\Facades\DB::raw("IF(pv.is_dummy = 0, CONCAT(p.name, ' (', pv.name, ':',variations.name, ')'), p.name) AS product_name"),
-                    'p.id as product_id',
-                    'p.name as product_actual_name',
-                    'p.type as product_type',
-                    'pv.name as product_variation_name',
-                    'pv.is_dummy as is_dummy',
-                    'variations.name as variation_name',
-                    'variations.sub_sku',
-                    'p.barcode_type',
-                    'variations.id as variation_id',
-                    'units.short_name as unit',
-                    'units.allow_decimal as unit_allow_decimal',
-                    'transaction_sell_lines.tax_id as tax_id',
-                    'transaction_sell_lines.item_tax as item_tax',
-                    'transaction_sell_lines.unit_price as default_sell_price',
-                    'transaction_sell_lines.unit_price_before_discount as unit_price_before_discount',
-                    'transaction_sell_lines.unit_price_inc_tax as sell_price_inc_tax',
-                    'transaction_sell_lines.id as transaction_sell_lines_id',
-                    'transaction_sell_lines.id',
-                    'transaction_sell_lines.quantity as quantity_ordered',
-                    'transaction_sell_lines.return_amount as return_amount',
-                    'transaction_sell_lines.total_item_value as total_item_value',
-                    'transaction_sell_lines.sell_line_note as sell_line_note',
-                    'transaction_sell_lines.parent_sell_line_id',
-                    'transaction_sell_lines.lot_no_line_id',
-                    'transaction_sell_lines.line_discount_type',
-                    'transaction_sell_lines.line_discount_amount',
-                    'transaction_sell_lines.res_service_staff_id',
-                    'transaction_sell_lines.time_slot',
-                    'transaction_sell_lines.start_date',
-                    'transaction_sell_lines.delivery_date',
-                    'transaction_sell_lines.delivery_time',
-                    'transaction_sell_lines.unit_price_inc_tax',
-                    'transaction_sell_lines.unit_price_inc_tax',
-                    'units.id as unit_id',
-                    'transaction_sell_lines.sub_unit_id',
-                    'transaction_sell_lines_variants.value',
-                    'transaction_sell_lines_variants.pax',
-                    'transaction_sell_lines_variants.name as transaction_sell_lines_variants_name',
-                )
-                ->get();
+            $sell_details = TransactionSellLine::with(['sub_unit','product','so_line','transactionSellLinesVariants'])->where('transaction_id',$transaction_id)->get();
             $product_id = [];
             $product_name = [];
             $edit_product = [];
@@ -232,15 +152,15 @@ class NotificationController extends Controller
                         'delivery_date' => $value->delivery_date,
                         'delivery_time' => $value->delivery_time,
                         'unit_value' => $value->unit_value,
-                        'quantity' => $value->quantity_ordered,
+                        'quantity' => $value->quantity,
                         'total_item_value' => $value->total_item_value,
-                        'unit' => $value->unit,
+                        'unit' => $value->unit_name,
                         'unit_id' => $value->unit_id,
-                        'default_sell_price' => $value->default_sell_price,
+                        'default_sell_price' => $value->unit_price,
                         'unit_price_before_discount' => $value->unit_price_before_discount,
                         'return_amount' => $value->return_amount,
                     ];
-                    $product_name[] = $value->product_actual_name;
+                    $product_name[] = $value->product_name;
                 }
             }
             $product_ids = array_unique($product_id);

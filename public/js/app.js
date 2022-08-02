@@ -78,7 +78,7 @@ $(document).ready(function () {
     var brands_table = $('#brands_table').DataTable({
         processing: true,
         serverSide: true,
-        ajax: '/brands',
+        ajax: '/supplier-product-brands',
         columnDefs: [
             {
                 targets: 2,
@@ -2054,7 +2054,7 @@ $(document).ready(function () {
             {data: 'ref_no', name: 'ref_no'},
             {data: 'recur_details', name: 'recur_details', orderable: false, searchable: false},
             {data: 'category', name: 'ec.name'},
-            {data: 'location_name', name: 'bl.name'},
+            {data: 'location_name', name: 'kl.name'},
             {data: 'payment_status', name: 'payment_status', orderable: false},
             {data: 'tax', name: 'tr.name'},
             {data: 'final_total', name: 'final_total'},

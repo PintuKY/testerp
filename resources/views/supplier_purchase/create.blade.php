@@ -228,7 +228,7 @@
 			</div>
 			<div class="col-sm-2">
 				<div class="form-group">
-					<button tabindex="-1" type="button" class="btn btn-link btn-modal"data-href="{{action('ProductController@quickAdd')}}" 
+					<button tabindex="-1" type="button" class="btn btn-link btn-modal"data-href="{{action('SupplierProductController@quickAdd')}}" 
             	data-container=".quick_add_product_modal"><i class="fa fa-plus"></i> @lang( 'product.add_new_product' ) </button>
 				</div>
 			</div>

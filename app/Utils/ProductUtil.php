@@ -2198,14 +2198,14 @@ class ProductUtil extends Util
     }
     public function getSupplierProductStockHistory($business_id, $product_id, $location_id)
     {
-        $stock_history = SupplierTransaction::leftjoin('supplier_transaction_sell_lines as sl',
-            'sl.supplier_transaction_id', '=', 'supplier_transactions.id')
-                                ->leftjoin('supplier_purchase_lines as pl',
+        $stock_history = SupplierTransaction::leftjoin('supplier_transaction_sell_lines as sl', 
+                                'sl.supplier_transaction_id', '=', 'supplier_transactions.id')
+                                ->leftjoin('supplier_purchase_lines as pl', 
                                     'pl.supplier_transactions_id', '=', 'supplier_transactions.id')
                                 ->leftjoin('supplier_stock_adjustment_lines as al',
                                     'al.supplier_transaction_id', '=', 'supplier_transactions.id')
-                                ->leftjoin('supplier_transactions as return', 'supplier_transactions.return_parent_id', '=', 'supplier_transactions.id')
-                                ->leftjoin('supplier_purchase_lines as rpl',
+                                ->leftjoin('supplier_transactions as return', 'supplier_transactions.return_parent_id', '=', 'return.id')
+                                ->leftjoin('supplier_purchase_lines as rpl', 
                                     'rpl.supplier_transactions_id', '=', 'return.id')
                                 ->leftjoin('supplier_transaction_sell_lines as rsl',
                                         'rsl.supplier_transaction_id', '=', 'return.id')

@@ -231,7 +231,9 @@
             </li>
             <li><a href="https://rcgerp.com/reports/customer-group"><i class="fa fas fa-users"></i> <span>Customer Groups Report</span></a>
             </li>
-            <li><a href="https://rcgerp.com/reports/customer-supplier"><i class="fa fas fa-address-book"></i> <span>Supplier &amp; Customer Report</span></a>
+            <li><a href="/reports/customers"><i class="fa fas fa-address-book"></i> <span>Customer Report</span></a>
+            </li>
+            <li><a href="/reports/suppliers"><i class="fa fas fa-address-book"></i> <span>Supplier Report</span></a>
             </li>
             <li><a href="https://rcgerp.com/reports/tax-report"><i class="fa fas fa-percent"></i>
                     <span>Tax Report</span></a></li>

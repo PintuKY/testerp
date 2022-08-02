@@ -2,25 +2,26 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\BusinessLocation;
+use DB;
 
-use App\Charts\CommonChart;
+use Datatables;
+use Carbon\Carbon;
+use App\Utils\Util;
+use App\Models\User;
+
+use App\Models\Media;
 use App\Models\Currency;
+use App\Utils\ModuleUtil;
+use App\Charts\CommonChart;
 use App\Models\Transaction;
 use App\Utils\BusinessUtil;
-
-use App\Utils\ModuleUtil;
-use App\Utils\TransactionUtil;
-use App\Models\VariationLocationDetails;
-use Datatables;
-use DB;
 use Illuminate\Http\Request;
-use App\Utils\Util;
 use App\Utils\RestaurantUtil;
-use App\Models\User;
+use App\Utils\TransactionUtil;
+use App\Models\BusinessLocation;
+use App\Models\VariationLocationDetails;
+use App\Models\SupplierProductLocationDetail;
 use Illuminate\Notifications\DatabaseNotification;
-use App\Models\Media;
-use Carbon\Carbon;
 
 class HomeController extends Controller
 {
@@ -274,74 +275,50 @@ class HomeController extends Controller
         if (request()->ajax()) {
             $business_id = request()->session()->get('user.business_id');
 
-            $query = VariationLocationDetails::join(
-                'product_variations as pv',
-                'variation_location_details.product_variation_id',
-                '=',
-                'pv.id'
-            )
-                    ->join(
-                        'variations as v',
-                        'variation_location_details.variation_id',
+            $query = SupplierProductLocationDetail::join(
+                        'supplier_products',
+                        'supplier_product_location_details.product_id',
                         '=',
-                        'v.id'
-                    )
-                    ->join(
-                        'products as p',
-                        'variation_location_details.product_id',
-                        '=',
-                        'p.id'
+                        'supplier_products.id'
                     )
                     ->leftjoin(
-                        'business_locations as l',
-                        'variation_location_details.location_id',
+                        'kitchens_locations as l',
+                        'supplier_product_location_details.location_id',
                         '=',
                         'l.id'
                     )
-                    ->leftjoin('units as u', 'p.unit_id', '=', 'u.id')
-                    ->where('p.business_id', $business_id)
-                    ->where('p.is_inactive', 0)
-                    ->whereNull('v.deleted_at')
-                    ->whereRaw('variation_location_details.qty_available <= p.alert_quantity');
+                    ->leftjoin('supplier_product_units as u', 'supplier_products.unit_id', '=', 'u.id')
+                    // ->where('supplier_products.business_id', $business_id)
+                    ->whereNull('supplier_products.deleted_at')
+                    ->whereRaw('supplier_product_location_details.qty_available <= supplier_products.alert_quantity');
 
             //Check for permitted locations of a user
             $permitted_locations = auth()->user()->permitted_locations();
             if ($permitted_locations != 'all') {
-                $query->whereIn('variation_location_details.location_id', $permitted_locations);
+                $query->whereIn('supplier_product_location_details.location_id', $permitted_locations);
             }
 
             $products = $query->select(
-                'p.name as product',
-                'p.type',
-                'p.sku',
-                'pv.name as product_variation',
-                'v.name as variation',
-                'v.sub_sku',
+                'supplier_products.name as product',
+                'supplier_products.sku',
                 'l.name as location',
-                'variation_location_details.qty_available as stock',
+                'supplier_product_location_details.qty_available as stock',
                 'u.short_name as unit'
             )
-                    ->groupBy('variation_location_details.id')
+                    ->groupBy('supplier_product_location_details.id')
                     ->orderBy('stock', 'asc');
 
             return Datatables::of($products)
                 ->editColumn('product', function ($row) {
-                    if ($row->type == 'single') {
                         return $row->product . ' (' . $row->sku . ')';
-                    } else {
-                        return $row->product . ' - ' . $row->product_variation . ' - ' . $row->variation . ' (' . $row->sub_sku . ')';
-                    }
                 })
                 ->editColumn('stock', function ($row) {
                     $stock = $row->stock ? $row->stock : 0 ;
                     return '<span data-is_quantity="true" class="display_currency" data-currency_symbol=false>'. (float)$stock . '</span> ' . $row->unit;
                 })
                 ->removeColumn('sku')
-                ->removeColumn('sub_sku')
                 ->removeColumn('unit')
                 ->removeColumn('type')
-                ->removeColumn('product_variation')
-                ->removeColumn('variation')
                 ->rawColumns([2])
                 ->make(false);
         }

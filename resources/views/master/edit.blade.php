@@ -140,13 +140,15 @@
                     <th>{{ __('sale.subtotal') }}</th>
                 </tr>
                 @foreach($transaction->sell_lines as $sell_line)
+                    @foreach($sell_line->transactionSellLinesVariants as $varients)
+
                     @if($sell_line->product->id == $productId)
                         <tr>
                             <td>{{ $loop->iteration }}</td>
                             <td>
                                 @if( $sell_line->product->type == 'variable')
-                                    {{ $sell_line->variations->product_variation->name ?? ''}}
-                                    - {{ $sell_line->variations->name ?? ''}}
+                                    {{ $varients->pax ?? ''}}
+                                    - {{ $varients->name ?? ''}}
                                 @endif
 
 
@@ -170,7 +172,7 @@
 
                             <td>
                 <span class="display_currency"
-                      data-currency_symbol="true">{{  ($sell_line->transactionSellLinesVariants->isNotEmpty()) ? $sell_line->transactionSellLinesVariants[0]->value : '0'}}</span>
+                      data-currency_symbol="true">{{  ($varients->value) ? $varients->value : '0'}}</span>
                             </td>
                         </tr>
                     @endif
@@ -214,6 +216,8 @@
                             </tr>
                         @endforeach
                     @endif
+
+                @endforeach
                 @endforeach
             </table>
             <table class="table table-condensed table-bordered table-striped pos_table_{{$productId}}">

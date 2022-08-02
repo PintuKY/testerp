@@ -38,6 +38,7 @@ class AppConstant
     const PAYMENT_PENDING = '5';
     const REFUND = '6';
     const FAILED = '7';
+    const SELL = 'sell';
     const STATUS_DELIVERED = '8';
 
 }

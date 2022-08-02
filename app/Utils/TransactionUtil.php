@@ -2,44 +2,39 @@
 
 namespace App\Utils;
 
-use Carbon\Carbon;
-use App\Models\Contact;
-use App\Models\Product;
-use App\Models\TaxRate;
-use App\Models\Business;
-use App\Models\Currency;
-use App\Models\Variation;
-use App\Utils\ModuleUtil;
-use App\Models\MasterList;
-use App\Models\Transaction;
-use App\Utils\BusinessUtil;
-use Illuminate\Support\Str;
-use App\Models\PurchaseLine;
-use App\Restaurant\ResTable;
-use App\Models\InvoiceScheme;
-use App\Models\SupplierProduct;
-use App\Models\BusinessLocation;
 use App\Models\AccountTransaction;
-use App\Models\TransactionPayment;
-use Illuminate\Support\Facades\DB;
-use App\Models\SupplierTransaction;
-use App\Models\TransactionActivity;
-use App\Models\TransactionSellLine;
-use Illuminate\Support\Facades\Log;
-use App\Models\SupplierPurchaseLine;
-use App\Models\VariationValueTemplate;
+use App\Models\Business;
+use App\Models\BusinessLocation;
+use App\Models\Contact;
+use App\Models\Currency;
 use App\Events\TransactionPaymentAdded;
-use App\Models\TransactionSellLinesDay;
-use App\Exceptions\PurchaseSellMismatch;
-use App\Models\VariationLocationDetails;
 use App\Events\TransactionPaymentDeleted;
 use App\Events\TransactionPaymentUpdated;
-use App\Models\SupplierTransactionSellLine;
-use App\Models\TransactionSellLinesVariants;
+use App\Exceptions\PurchaseSellMismatch;
 use App\Exceptions\AdvanceBalanceNotAvailable;
+use App\Models\InvoiceScheme;
+use App\Models\MasterList;
+use App\Models\Product;
+use App\Models\PurchaseLine;
+use App\Models\TransactionActivity;
+use App\Models\TransactionSellLinesDay;
+use App\Restaurant\ResTable;
+use App\Models\TaxRate;
+use App\Models\Transaction;
+use App\Models\TransactionPayment;
+use App\Models\TransactionSellLine;
 use App\Models\TransactionSellLinesPurchaseLines;
+use App\Models\TransactionSellLinesVariants;
+use App\Models\Variation;
+use App\Models\VariationLocationDetails;
+use App\Models\VariationValueTemplate;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use App\Utils\ModuleUtil;
+use App\Utils\BusinessUtil;
+use Carbon\Carbon;
 use PhpOffice\PhpSpreadsheet\Calculation\DateTime;
-use App\Models\SupplierTransactionSellLinesPurchaseLines;
 
 class TransactionUtil extends Util
 {
@@ -325,7 +320,6 @@ class TransactionUtil extends Util
         $master_list_less_id = '';
         $tra_day = [];
         $tra_sell_days = TransactionSellLine::with('product', 'sell_lines_days')->where(['transaction_id' => $transaction->id])->groupBy('product_id')->get();
-
         foreach ($products as $variationId => $product) {
             //$transaction_sell_lines_id[] = $product['transaction_sell_lines_id'];
             $product_delivery_date = $input['product'][$product['product_id']];
@@ -341,7 +335,7 @@ class TransactionUtil extends Util
             }
 
             if (array_key_exists('variation_value_id', $product)) {
-                $variation_value_id[] = $product['variation_value_id'];
+                $variation_value_id[$product['product_id']][] = $product['variation_value_id'];
             }
             $multiplier = 1;
             $product_data = Product::with('unit')->where('id', $product['product_id'])->first();
@@ -356,6 +350,7 @@ class TransactionUtil extends Util
 
             //Check if transaction_sell_lines_id is set, used when editing.
             if (!empty($product['transaction_sell_lines_id'])) {
+
                 $edit_id_temp = $this->editSellLine($product, $input['product'], $variationId, $location_id, $status_before, $multiplier, $uf_data);
                 $edit_ids = array_merge($edit_ids, $edit_id_temp);
 
@@ -391,6 +386,7 @@ class TransactionUtil extends Util
                     }
                 }
             } else {
+
                 $products_modified_combo[] = $product;
 
                 //calculate unit price and unit price before discount
@@ -400,7 +396,6 @@ class TransactionUtil extends Util
                 if (!empty($product_delivery_date['line_discount_type']) && $product_delivery_date['line_discount_amount']) {
                     $discount_amount = $uf_data ? $this->num_uf($product_delivery_date['line_discount_amount']) : $product_delivery_date['line_discount_amount'];
                     if ($product_delivery_date['line_discount_type'] == 'fixed') {
-
                         //Note: Consider multiplier for fixed discount amount
                         $unit_price = $unit_price_before_discount - ($discount_amount / $multiplier);
                     } elseif ($product_delivery_date['line_discount_type'] == 'percentage') {
@@ -430,7 +425,7 @@ class TransactionUtil extends Util
                     $start_date = Carbon::parse($product_delivery_date['start_date'])->format('Y-m-d H:i');
                     $time_slot = $product_delivery_date['time_slot'];
                 }
-                $line = [
+                $line[$product['product_id']] = [
                     'product_name' => $product_data->name,
                     'product_id' => $product['product_id'],
                     'unit_name' => $product_data->unit->short_name,
@@ -459,17 +454,16 @@ class TransactionUtil extends Util
                     'delivery_time' => $delivery_time,
                 ];
                 foreach ($extra_line_parameters as $key => $value) {
-                    $line[$key] = isset($product[$value]) ? $product[$value] : '';
+                    $line[$product['product_id']][$key] = isset($product[$value]) ? $product[$value] : '';
                 }
 
                 if (!empty($product['lot_no_line_id'])) {
-                    $line['lot_no_line_id'] = $product['lot_no_line_id'];
+                    $line[$product['product_id']]['lot_no_line_id'] = $product['lot_no_line_id'];
                 }
 
                 //Check if restaurant module is enabled then add more data related to that.
                 if ($this->isModuleEnabled('modifiers')) {
                     $sell_line_modifiers = [];
-
                     if (!empty($product['modifier'])) {
                         foreach ($product['modifier'] as $key => $value) {
                             if (!empty($product['modifier_price'][$key])) {
@@ -493,10 +487,17 @@ class TransactionUtil extends Util
                 /*$tra_sell_line = TransactionSellLine::where(['transaction_id'=>$transaction->id,'product_id'=>$product['product_id']])->first();
 
                 if($tra_sell_line == null){*/
-                $lines_formatted[] = new TransactionSellLine($line);
+                //$lines_formatted[] = new TransactionSellLine($line);
 
                 //Update purchase order line quantity received
-                $this->updateSalesOrderLine($line['so_line_id'], $line['quantity'], 0);
+                //$this->updateSalesOrderLine($line['so_line_id'], $line['quantity'], 0);
+            }
+        }
+
+        if (!empty($line)) {
+            foreach ($line as $line_data) {
+                $lines_formatted[] = new TransactionSellLine($line_data);
+                $this->updateSalesOrderLine($line_data['so_line_id'], $line_data['quantity'], 0);
             }
         }
         foreach ($tra_sell_days as $sell_days) {
@@ -553,48 +554,54 @@ class TransactionUtil extends Util
         }
         $combo_lines = [];
         if (!empty($lines_formatted)) {
-
             $sell_line_data = $transaction->sell_lines()->saveMany($lines_formatted);
 
             $sell_line_data_ids = !empty($sell_line_data) ? array_column($sell_line_data, "id") : [];
+
             $data = [];
             $days = [];
             // Add transaction sell lines variants data
-            $sell_line_ids = 0;
+
             $variation_id = [];
             foreach ($lines_formatted as $line_data) {
                 $variation_id[] = [
                     'variation_id' => $line_data->variation_id,
                     'product_id' => $line_data->product_id];
             }
+            $total = 0;
+            foreach ($variation_value_id as $key => $ids) {
+                foreach ($ids as $id) {
+                    $variation_value_data = Variation::where('id', $id)->first();
+                    $variation_value_data_id[$total][] = $variation_value_data->variation_value_id;
+                    $variation_value[$total][] = $variation_value_data->default_sell_price;
+                }
+                $total++;
+            }
+            foreach ($variation_value_data_id as $keys => $datas) {
 
-            foreach ($variation_value_id as $id) {
-                $variation_value_data = Variation::where('id', $id)->first();
-                $variation_value_data_id[] = $variation_value_data->variation_value_id;
-                $variation_value[] = $variation_value_data->default_sell_price;
+                foreach ($datas as $key => $data) {
+                    $variation_value_datas = VariationValueTemplate::with('variationTemplate')->where('id', $data)->first();
+                    $variation_value_key = $this->num_uf($variation_value[$keys][$key]);
+
+                    TransactionSellLinesVariants::insert(
+                        [
+                            'transaction_sell_lines_id' => $sell_line_data_ids[$keys],
+                            //'transaction_sell_lines_id' => $id,
+                            'variation_templates_id' => $variation_value_datas->variation_template_id,
+                            'variation_value_templates_id' => $variation_value_datas->id,
+                            'pax' => $variation_value_datas->variationTemplate->name,
+                            'addon' => $variation_value_datas->name . '(+ $' . $variation_value_key . ')',
+                            'name' => $variation_value_datas->name,
+                            //'value' => $variation_value_datas->value,
+                            'value' => $variation_value[$keys][$key],
+                            'created_at' => Carbon::now(),
+                            'updated_at' => Carbon::now(),
+                        ]
+                    );
+                }
             }
 
-            foreach ($variation_value_data_id as $key => $data) {
-                $variation_value_datas = VariationValueTemplate::with('variationTemplate')->where('id', $data)->first();
-                $variation_value_key = $this->num_uf($variation_value[$key]);
 
-                TransactionSellLinesVariants::insert(
-                    [
-                        //'transaction_sell_lines_id' => $sell_line_data_ids[$sell_line_ids],
-                        'transaction_sell_lines_id' => $sell_line_data_ids[0],
-                        'variation_templates_id' => $variation_value_datas->variation_template_id,
-                        'variation_value_templates_id' => $variation_value_datas->id,
-                        'pax' => $variation_value_datas->variationTemplate->name,
-                        'addon' => $variation_value_datas->name . '(+ $' . $variation_value_key . ')',
-                        'name' => $variation_value_datas->name,
-                        //'value' => $variation_value_datas->value,
-                        'value' => $variation_value[$key],
-                        'created_at' => Carbon::now(),
-                        'updated_at' => Carbon::now(),
-                    ]
-                );
-                $sell_line_ids++;
-            }
             $tra_sell_days = TransactionSellLine::with('product')->where(['transaction_id' => $transaction->id])->groupBy('product_id')->get();
             //master list add
             foreach ($tra_sell_days as $sell_day) {
@@ -627,207 +634,6 @@ class TransactionUtil extends Util
 
         if (!empty($modifiers_formatted)) {
             $sell_line_data = $transaction->sell_lines()->saveMany($modifiers_formatted);
-        }
-
-        if ($return_deleted) {
-            return $deleted_lines;
-        }
-        return true;
-    }
-    public function createOrUpdateSupplierProductSellLines($transaction, $products, $location_id, $return_deleted = false, $status_before = null, $extra_line_parameters = [], $uf_data = true)
-    {
-        $lines_formatted = [];
-        $modifiers_array = [];
-        $edit_ids = [0];
-        $modifiers_formatted = [];
-        $combo_lines = [];
-        $products_modified_combo = [];
-        foreach ($products as $product) {
-            $multiplier = 1;
-            if (isset($product['sub_unit_id']) && $product['sub_unit_id'] == $product['product_unit_id']) {
-                unset($product['sub_unit_id']);
-            }
-
-            if (!empty($product['sub_unit_id']) && !empty($product['base_unit_multiplier'])) {
-                $multiplier = $product['base_unit_multiplier'];
-            }
-
-            //Check if transaction_sell_lines_id is set, used when editing.
-            if (!empty($product['transaction_sell_lines_id'])) {
-
-                $edit_id_temp = $this->editSupplierProductSellLine($product,$status_before, $location_id,  $multiplier, $uf_data);
-                $edit_ids = array_merge($edit_ids, $edit_id_temp);
-
-                //update or create modifiers for existing sell lines
-                if ($this->isModuleEnabled('modifiers')) {
-                    if (!empty($product['modifier'])) {
-                        foreach ($product['modifier'] as $key => $value) {
-                            if (!empty($product['modifier_sell_line_id'][$key])) {
-                                $edit_modifier = TransactionSellLine::find($product['modifier_sell_line_id'][$key]);
-                                $edit_modifier->quantity = isset($product['modifier_quantity'][$key]) ? $product['modifier_quantity'][$key] : 1;
-                                $modifiers_formatted[] = $edit_modifier;
-                                //Dont delete modifier sell line if exists
-                                $edit_ids[] = $product['modifier_sell_line_id'][$key];
-                            } else {
-                                if (!empty($product['modifier_price'][$key])) {
-                                    $this_price = $uf_data ? $this->num_uf($product['modifier_price'][$key]) : $product['modifier_price'][$key];
-                                    $modifier_quantity = isset($product['modifier_quantity'][$key]) ? $product['modifier_quantity'][$key] : 1;
-                                    $modifiers_formatted[] = new TransactionSellLine([
-                                        'product_id' => $product['modifier_set_id'][$key],
-                                        'variation_id' => $value,
-                                        'quantity' => $modifier_quantity,
-                                        'unit_price_before_discount' => $this_price,
-                                        'unit_price' => $this_price,
-                                        'unit_price_inc_tax' => $this_price,
-                                        'parent_sell_line_id' => $product['transaction_sell_lines_id'],
-                                        'children_type' => 'modifier'
-                                    ]);
-                                }
-                            }
-                        }
-                    }
-                }
-            } else {
-                $products_modified_combo[] = $product;
-                //calculate unit price and unit price before discount
-                $uf_unit_price = $uf_data ? $this->num_uf($product['unit_price']) : $product['unit_price'];
-                $unit_price_before_discount = $uf_unit_price / $multiplier;
-                $unit_price = $unit_price_before_discount;
-                if (!empty($product['line_discount_type']) && $product['line_discount_amount']) {
-                    $discount_amount = $uf_data ? $this->num_uf($product['line_discount_amount']) : $product['line_discount_amount'];
-                    if ($product['line_discount_type'] == 'fixed') {
-
-                        //Note: Consider multiplier for fixed discount amount
-                        $unit_price = $unit_price_before_discount - ($discount_amount/$multiplier);
-                    } elseif ($product['line_discount_type'] == 'percentage') {
-                        $unit_price = ((100 - $discount_amount) * $unit_price_before_discount) / 100;
-                    }
-                }
-                $uf_quantity = $uf_data ? $this->num_uf($product['quantity']) : $product['quantity'];
-                $uf_item_tax = $uf_data ? $this->num_uf($product['item_tax']) : $product['item_tax'];
-                $uf_unit_price_inc_tax = $uf_data ? $this->num_uf($product['unit_price_inc_tax']) : $product['unit_price_inc_tax'];
-
-                $line_discount_amount = 0;
-                if (!empty($product['line_discount_amount'])) {
-                    $line_discount_amount = $uf_data ? $this->num_uf($product['line_discount_amount']) : $product['line_discount_amount'];  
-
-                    if ($product['line_discount_type'] == 'fixed') {
-                        $line_discount_amount = $line_discount_amount/$multiplier;
-                    }
-                }
-
-                $line = [
-                    'product_id' => $product['product_id'],
-                    'quantity' =>  $uf_quantity * $multiplier,
-                    'unit_price_before_discount' => $unit_price_before_discount,
-                    'unit_price' => $unit_price,
-                    'line_discount_type' => !empty($product['line_discount_type']) ? $product['line_discount_type'] : null,
-                    'line_discount_amount' => $line_discount_amount,
-                    'item_tax' =>  $uf_item_tax / $multiplier,
-                    'tax_id' => $product['tax_id'],
-                    'unit_price_inc_tax' =>  $uf_unit_price_inc_tax / $multiplier,
-                    'sell_line_note' => !empty($product['sell_line_note']) ? $product['sell_line_note'] : '',
-                    'sub_unit_id' => !empty($product['sub_unit_id']) ? $product['sub_unit_id'] : null,
-                    'discount_id' => !empty($product['discount_id']) ? $product['discount_id'] : null,
-                    'res_service_staff_id' => !empty($product['res_service_staff_id']) ? $product['res_service_staff_id'] : null,
-                    'res_line_order_status' => !empty($product['res_service_staff_id']) ? 'received' : null,
-                    'so_line_id' => !empty($product['so_line_id']) ? $product['so_line_id'] : null
-                ];
-
-                foreach ($extra_line_parameters as $key => $value) {
-                    $line[$key] = isset($product[$value]) ? $product[$value] : '';
-                }
-
-                if (!empty($product['lot_no_line_id'])) {
-                    $line['lot_no_line_id'] = $product['lot_no_line_id'];
-                }
-                //Check if restaurant module is enabled then add more data related to that.
-                if ($this->isModuleEnabled('modifiers')) {
-                    $sell_line_modifiers = [];
-
-                    if (!empty($product['modifier'])) {
-                        foreach ($product['modifier'] as $key => $value) {
-                            if (!empty($product['modifier_price'][$key])) {
-                                $this_price = $uf_data ? $this->num_uf($product['modifier_price'][$key]) : $product['modifier_price'][$key];
-                                $modifier_quantity = isset($product['modifier_quantity'][$key]) ? $product['modifier_quantity'][$key] : 1;
-                                $sell_line_modifiers[] = [
-                                    'product_id' => $product['modifier_set_id'][$key],
-                                    'variation_id' => $value,
-                                    'quantity' => $modifier_quantity,
-                                    'unit_price_before_discount' => $this_price,
-                                    'unit_price' => $this_price,
-                                    'unit_price_inc_tax' => $this_price,
-                                    'children_type' => 'modifier'
-                                ];
-                            }
-                        }
-                    }
-                    $modifiers_array[] = $sell_line_modifiers;
-                }
-
-                $lines_formatted[] = new SupplierTransactionSellLine($line);
-
-                $sell_line_warranties[] = !empty($product['warranty_id']) ? $product['warranty_id'] : 0;
-
-                //Update purchase order line quantity received
-                $this->updateSupplierProductSalesOrderLine($line['so_line_id'], $line['quantity'], 0);
-            }
-        }
-        if (!is_object($transaction)) {
-            $transaction = SupplierTransaction::findOrFail($transaction);
-        }
-
-        //Delete the products removed and increment product stock.
-        $deleted_lines = [];
-        if (!empty($edit_ids)) {
-            $deleted_lines = SupplierTransactionSellLine::where('supplier_transaction_id', $transaction->id)
-                    ->whereNotIn('id', $edit_ids)
-                    ->select('id')->get()->toArray();
-            // $combo_delete_lines = SupplierTransactionSellLine::whereIn('parent_sell_line_id', $deleted_lines)->where('children_type', 'combo')->select('id')->get()->toArray();
-            // $deleted_lines = array_merge($deleted_lines, $combo_delete_lines);
-
-            $adjust_qty = $status_before == 'draft' ? false : true;
-
-            $this->deleteSellLines($deleted_lines, $location_id, $adjust_qty);
-        }
-
-        $combo_lines = [];
-
-        if (!empty($lines_formatted)) {
-            $transaction->sell_lines()->saveMany($lines_formatted);
-
-            //Add corresponding modifier sell lines if exists
-            if ($this->isModuleEnabled('modifiers')) {
-                foreach ($lines_formatted as $key => $value) {
-                    if (!empty($modifiers_array[$key])) {
-                        foreach ($modifiers_array[$key] as $modifier) {
-                            $modifier['parent_sell_line_id'] = $value->id;
-                            $modifiers_formatted[] = new SupplierTransactionSellLine($modifier);
-                        }
-                    }
-                }
-            }
-
-            //Combo product lines.
-            //$products_value = array_values($products);
-            // foreach ($lines_formatted as $key => $value) {
-            //     if (!empty($products_modified_combo[$key]['product_type']) && $products_modified_combo[$key]['product_type'] == 'combo') {
-            //         $combo_lines = array_merge($combo_lines, $this->__makeLinesForComboProduct($products_modified_combo[$key]['combo'], $value));
-            //     }
-
-            //     //Save sell line warranty if set
-            //     if (!empty($sell_line_warranties[$key])) {
-            //         $value->warranties()->sync([$sell_line_warranties[$key]]);
-            //     }
-            // }
-        }
-
-        // if (!empty($combo_lines)) {
-        //     $transaction->sell_lines()->saveMany($combo_lines);
-        // }
-
-        if (!empty($modifiers_formatted)) {
-            $transaction->sell_lines()->saveMany($modifiers_formatted);
         }
 
         if ($return_deleted) {
@@ -1273,16 +1079,6 @@ class TransactionUtil extends Util
         }
     }
 
-    private function updateSupplierProductSalesOrderLine($so_line_id, $new_qty, $old_qty = 0)
-    {
-        $diff = $new_qty - $old_qty;
-        if (!empty($so_line_id) && !empty($diff)) {
-            $so_line = SUpplierTransactionSellLine::find($so_line_id);
-            $so_line->so_quantity_invoiced += ($diff);
-            $so_line->save();
-        }
-    }
-
     /**
      * Returns the line for combo product
      *
@@ -1344,7 +1140,6 @@ class TransactionUtil extends Util
         //Get the old order quantity
         $sell_line = TransactionSellLine::with(['product'])
             ->find($product['transaction_sell_lines_id']);
-
         $old_qty = $sell_line->quantity;
         $edit_ids[] = $product['transaction_sell_lines_id'];
         //Adjust quanity
@@ -1411,85 +1206,6 @@ class TransactionUtil extends Util
 
         return $edit_ids;
     }
-    public function editSupplierProductSellLine($product,$status_before, $location_id,  $multiplier = 1, $uf_data = true)
-    {
-        //Get the old order quantity
-        $sell_line = SupplierTransactionSellLine::with(['product'])
-        ->find($product['transaction_sell_lines_id']);
-        
-        $old_qty = $sell_line->quantity;
-        $edit_ids[] = $product['transaction_sell_lines_id'];
-        //Adjust quanity
-        if ($status_before != 'draft') {
-            $new_qty = $this->num_uf($product['quantity']) * $multiplier;
-            $difference = $sell_line->quantity - $new_qty;
-            $this->adjustQuantity($location_id, $product['product_id'], $product['variation_id'], $difference);
-        }
-        
-        $uf_unit_price = $uf_data ? $this->num_uf($product['unit_price']) : $product['unit_price'];
-        $unit_price_before_discount = $uf_unit_price / $multiplier;
-        $unit_price = $unit_price_before_discount;
-        if (!empty($product['line_discount_type']) && $product['line_discount_amount']) {
-            $discount_amount = $uf_data ? $this->num_uf($product['line_discount_amount']) : $product['line_discount_amount'];
-            if ($product['line_discount_type'] == 'fixed') {
-                $unit_price = $unit_price_before_discount - ($discount_amount/$multiplier);
-            } elseif ($product['line_discount_type'] == 'percentage') {
-                $unit_price = ((100 - $discount_amount) * $unit_price_before_discount) / 100;
-            }
-        }
-        $line_discount_amount = 0;
-        if (!empty($product['line_discount_amount'])) {
-            $line_discount_amount = $uf_data ? $this->num_uf($product['line_discount_amount']) : $product['line_discount_amount'];  
-            
-            if ($product['line_discount_type'] == 'fixed') {
-                $line_discount_amount = $line_discount_amount/$multiplier;
-            }
-        }
-
-        //Update sell lines.
-        $sell_line->fill(['product_id' => $product['product_id'],
-            'quantity' => $uf_data ? $this->num_uf($product['quantity']) * $multiplier : $product['quantity'] * $multiplier,
-            'unit_price_before_discount' => $unit_price_before_discount,
-            'unit_price' => $unit_price,
-            'line_discount_type' => !empty($product['line_discount_type']) ? $product['line_discount_type'] : null,
-            'line_discount_amount' => $line_discount_amount,
-            'item_tax' => $uf_data ? $this->num_uf($product['item_tax']) / $multiplier : $product['item_tax'] / $multiplier,
-            'tax_id' => $product['tax_id'],
-            'unit_price_inc_tax' => $uf_data ? $this->num_uf($product['unit_price_inc_tax']) / $multiplier : $product['unit_price_inc_tax'] / $multiplier,
-            'sell_line_note' => !empty($product['sell_line_note']) ? $product['sell_line_note'] : '',
-            'sub_unit_id' => !empty($product['sub_unit_id']) ? $product['sub_unit_id'] : null,
-            'res_service_staff_id' => !empty($product['res_service_staff_id']) ? $product['res_service_staff_id'] : null
-        ]);
-        $sell_line->save();
-
-        //Set warranty
-        // if (!empty($product['warranty_id'])) {
-            //     $warranty_ids = $sell_line->warranties->pluck('warranty_id')->toArray();
-            //     if (!in_array($product['warranty_id'], $warranty_ids)) {
-                //         $warranty_ids[] = $product['warranty_id'];
-                //         $sell_line->warranties()->sync(array_filter($warranty_ids));
-                //     }
-                // } else {
-                    //     $sell_line->warranties()->sync([]);
-                    // }
-                    
-                    // //Adjust the sell line for combo items.
-                    // if (isset($product['product_type']) && $product['product_type'] == 'combo' && !empty($product['combo'])) {
-                        //     //$this->editSellLineCombo($sell_line, $location_id, $sell_line->quantity, $new_qty);
-                        
-                        //     //Assign combo product sell line to $edit_ids so that it will not get deleted
-                        //     foreach ($product['combo'] as $combo_line) {
-                            //         $edit_ids[] = $combo_line['transaction_sell_lines_id'];
-                            //     }
-                            
-                            //     $adjust_stock = ($status_before != 'draft');
-                            //     $this->updateEditedSellLineCombo($product['combo'], $location_id, $adjust_stock);
-                            // }
-                            
-        $this->updateSupplierProductSalesOrderLine($sell_line->so_line_id, $sell_line->quantity, $old_qty);
-        return $edit_ids;
-    }
-
 
     /**
      * Delete the products removed and increment product stock.
@@ -1526,33 +1242,6 @@ class TransactionUtil extends Util
 
         }
     }
-    public function deleteSupplierProductSellLines($transaction_line_ids, $location_id, $adjust_qty = true)
-    {
-
-        if (!empty($transaction_line_ids)) {
-
-            $sell_lines = SupplierTransactionSellLine::whereIn('id', $transaction_line_ids)
-                ->get();
-            //Adjust quanity
-
-            foreach ($sell_lines as $line) {
-                if ($adjust_qty) {
-                    $this->adjustSupplierProductQuantity($location_id, $line->product_id, $line->variation_id, $line->quantity);
-                }
-
-                //Update purchase order line quantity received
-                $this->updateSupplierProductSalesOrderLine($line->so_line_id, 0, $line->quantity);
-            }
-
-            //unset so_line_id if set
-            TransactionSellLine::whereIn('so_line_id', $transaction_line_ids)
-                ->update(['so_line_id' => null]);
-
-            TransactionSellLine::whereIn('id', $transaction_line_ids)
-                ->delete();
-
-        }
-    }
 
     /**
      * Adjust the quantity of product and its variation
@@ -1576,20 +1265,6 @@ class TransactionUtil extends Util
                     ->where('location_id', $location_id)
                     ->increment('qty_available', $increment_qty);
             }
-        }
-    }
-    private function adjustSupplierProductQuantity($location_id, $product_id, $variation_id, $increment_qty)
-    {
-        if ($increment_qty != 0) {
-            // $enable_stock = Product::find($product_id)->enable_stock;
-
-            // if ($enable_stock == 1) {
-                //Adjust Quantity in variations location table
-                SupplierProductLocationDetails::where('variation_id', $variation_id)
-                    ->where('product_id', $product_id)
-                    ->where('location_id', $location_id)
-                    ->increment('qty_available', $increment_qty);
-            // }
         }
     }
 
@@ -3785,14 +3460,6 @@ class TransactionUtil extends Util
 
         return $status;
     }
-    public function updateSupplierProductPaymentStatus($transaction_id, $final_amount = null)
-    {
-        $status = $this->calculatePaymentStatus($transaction_id, $final_amount);
-        Transaction::where('id', $transaction_id)
-            ->update(['payment_status' => $status]);
-
-        return $status;
-    }
 
     /**
      * Purchase currency details
@@ -5662,7 +5329,7 @@ class TransactionUtil extends Util
     public function getListSells($business_id, $sale_type = 'sell')
     {
         $sells = Transaction::leftJoin('contacts', 'transactions.contact_id', '=', 'contacts.id')
-            // ->leftJoin('transaction_payments as tp', 'transactions.id', '=', 'tp.transaction_id')
+            ->leftJoin('transaction_payments as tp', 'transactions.id', '=', 'tp.transaction_id')
             ->leftJoin('transaction_sell_lines as tsl', function ($join) {
                 $join->on('transactions.id', '=', 'tsl.transaction_id')
                     ->whereNull('tsl.parent_sell_line_id');
@@ -5752,6 +5419,7 @@ class TransactionUtil extends Util
         /*if ($sale_type == 'sell') {
             $sells->whereIn('transactions.status', [AppConstant::FINAL, AppConstant::COMPLETED, AppConstant::PROCESSING]);
         }*/
+        //dd($sells->toSql());
         return $sells;
     }
 

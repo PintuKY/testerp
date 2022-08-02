@@ -11,7 +11,6 @@ use App\Utils\ProductUtil;
 use App\Models\PurchaseLine;
 
 use Illuminate\Http\Request;
-
 use App\Utils\TransactionUtil;
 use App\Models\KitchenLocation;
 use App\Models\SupplierProduct;
@@ -202,20 +201,20 @@ class StockTransferController extends Controller
         }
         try {
             $business_id = $request->session()->get('user.business_id');
-            
+
             //Check if subscribed or not
             if (!$this->moduleUtil->isSubscribed($business_id)) {
                 return $this->moduleUtil->expiredResponse(action('StockTransferController@index'));
             }
-            
+
             DB::beginTransaction();
-            
+
             $input_data = $request->only([ 'location_id', 'ref_no', 'transaction_date', 'additional_notes', 'shipping_charges', 'final_total']);
             $status = $request->input('status');
             $user_id = $request->session()->get('user.id');
-            
+
             $input_data['total_before_tax'] = $input_data['final_total'];
-            
+
             $input_data['type'] = 'sell_transfer';
             $input_data['business_id'] = $business_id;
             $input_data['created_by'] = $user_id;
@@ -223,18 +222,18 @@ class StockTransferController extends Controller
             $input_data['shipping_charges'] = $this->productUtil->num_uf($input_data['shipping_charges']);
             $input_data['payment_status'] = 'paid';
             $input_data['status'] = $status == 'completed' ? 'final' : $status;
-            
+
             //Update reference count
             $ref_count = $this->productUtil->setAndGetReferenceCount('C');
             //Generate reference number
             if (empty($input_data['ref_no'])) {
                 $input_data['ref_no'] = $this->productUtil->generateReferenceNumber('stock_transfer', $ref_count);
             }
-            
+
             $products = $request->input('products');
             $sell_lines = [];
             $purchase_lines = [];
-                
+
             if (!empty($products)) {
                 foreach ($products as $product) {
                     $supplier_product = SupplierProduct::find($product['product_id']);
@@ -243,22 +242,22 @@ class StockTransferController extends Controller
                         'quantity' => $this->productUtil->num_uf($product['quantity']),
                         'item_tax' => 0,
                         'tax_id' => null];
-                        
+
                         if (!empty($product['product_unit_id'])) {
                             $sell_line_arr['product_unit_id'] = $supplier_product->unit_id;
                         }
-                        
+
                         $purchase_line_arr = $sell_line_arr;
-                        
-                        
+
+
                         $sell_line_arr['unit_price'] = $this->productUtil->num_uf($supplier_product->purchase_price);
                         $sell_line_arr['unit_price_inc_tax'] = $sell_line_arr['unit_price'];
-                        
+
                         $purchase_line_arr['purchase_price'] = $sell_line_arr['unit_price'];
                         $purchase_line_arr['purchase_price_inc_tax'] = $sell_line_arr['unit_price'];
-                        
+
                        unset($purchase_line_arr['product_unit_id']);
-                        
+
                         $sell_lines[] = $sell_line_arr;
                         $purchase_lines[] = $purchase_line_arr;
                     }
@@ -447,7 +446,7 @@ class StockTransferController extends Controller
                 //Get purchase lines from transaction_sell_lines_purchase_lines and decrease quantity_sold
                 $sell_lines = $sell_transfer->sell_lines;
                 $deleted_sell_purchase_ids = [];
-                $products = []; 
+                $products = [];
 
                 foreach ($sell_lines as $sell_line) {
                     $purchase_sell_line = SupplierTransactionSellLinesPurchaseLines::where('sell_line_id', $sell_line->id)->first();
@@ -465,7 +464,7 @@ class StockTransferController extends Controller
                     SupplierTransactionSellLinesPurchaseLines::whereIn('id', $deleted_sell_purchase_ids)
                     ->delete();
                 }
-                
+
                 //Delete both transactions
                 $sell_transfer->delete();
                 $purchase_transfer->delete();
@@ -570,9 +569,9 @@ class StockTransferController extends Controller
                     $product->quantity_ordered = $sell_line->quantity;
                     $product->transaction_sell_lines_id = $sell_line->id;
                     $product->lot_no_line_id = $sell_line->lot_no_line_id;
-                    
+
                     // $product->unit_details = $this->productUtil->getSubUnits($business_id, $product->unit_id);
-                    
+
                     //Get lot number dropdown if enabled
                     // $lot_numbers = [];
                     // if (request()->session()->get('business.enable_lot_number') == 1 || request()->session()->get('business.enable_product_expiry') == 1) {
@@ -583,10 +582,10 @@ class StockTransferController extends Controller
                     //     }
                     // }
                     // $product->lot_numbers = $lot_numbers;
-                    
+
                     $products[] = $product;
                 }
-                
+
 
         return view('stock_transfer.edit')
         ->with(compact('sell_transfer', 'purchase_transfer', 'kitchen_locations', 'statuses', 'products'));

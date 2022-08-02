@@ -408,9 +408,9 @@ class ProductUtil extends Util
         } else {
             $qty_difference = $new_quantity - $old_quantity;
         }
-        
+
         $product = SupplierProduct::find($product_id);
-        
+
         //Check if stock is enabled or not.
         if ($qty_difference != 0) {
             //Add quantity in SupplierProductLocationDetails
@@ -418,7 +418,7 @@ class ProductUtil extends Util
             ->where('product_id', $product_id)
             ->where('location_id', $location_id)
             ->first();
-            
+
             if (empty($supplier_product_location_details)) {
                 $supplier_product_location_details = new SupplierProductLocationDetail();
                 $supplier_product_location_details->product_id = $product_id;
@@ -451,7 +451,7 @@ class ProductUtil extends Util
                             'qty_available' => 0
                           ]);
             }
-            
+
             $details->decrement('qty_available', $qty_difference);
 
         return true;
@@ -542,14 +542,14 @@ class ProductUtil extends Util
             ->where('supplier_products.business_id', $business_id)
             ->where('supplier_products.id', $product_id)
             ->where('supplier_product_location_details.location_id',$location_id);
-            
+
             //Add condition for check of quantity. (if stock is not enabled or qty_available > 0)
             // if ($check_qty) {
             //     $query->where(function ($query) use ($location_id) {
             //         $query->Where('supplier_product_location_details.qty_available', '>', 0);
             //     });
             // }
-            
+
             // if (!empty($location_id)) {
             //     //Check for enable stock, if enabled check for location id.
             //     $query->where(function ($query) use ($location_id) {
@@ -652,7 +652,6 @@ class ProductUtil extends Util
     public function calculateInvoiceTotal($discount,$products,$products_line, $tax_id,$total,$uf_number = true)
     {
 
-
         if (empty($products)) {
             return false;
         }
@@ -660,8 +659,8 @@ class ProductUtil extends Util
         $output = ['total_before_tax' => 0, 'tax' => 0, 'final_total' => 0];
         //Sub Total
         foreach ($products as $product) {
-
             $product_line = $products_line[$product['product_id']];
+
 
             /*$unit_price_inc_tax = $uf_number ? $this->num_uf($product_line['unit_price_inc_tax']) : $product_line['unit_price_inc_tax'];*/
             $unit_price_inc_tax = $uf_number ? $this->num_uf($product_line['total']) : $product_line['total'];
@@ -685,7 +684,6 @@ class ProductUtil extends Util
             }
 
         }
-
         //Calculate discount
         if (is_array($discount)) {
             $discount_amount = $uf_number ? $this->num_uf($discount['discount_amount']) : $discount['discount_amount'];
@@ -1330,13 +1328,13 @@ class ProductUtil extends Util
             if (isset($data['sub_unit_id']) && $data['sub_unit_id'] == $data['product_unit_id']) {
                 unset($data['sub_unit_id']);
             }
-            
+
             if (!empty($data['sub_unit_id'])) {
                 $unit = Unit::find($data['sub_unit_id']);
                 $multiplier = !empty($unit->base_unit_multiplier) ? $unit->base_unit_multiplier : 1;
             }
             $new_quantity = $this->num_uf($data['quantity']) * $multiplier;
-            
+
             $new_quantity_f = $this->num_f($new_quantity);
             $old_qty = 0;
             //update existing supplier purchase line
@@ -1344,20 +1342,20 @@ class ProductUtil extends Util
                 $supplier_purchase_line = SupplierPurchaseLine::findOrFail($data['purchase_line_id']);
                 $updated_purchase_line_ids[] = $supplier_purchase_line->id;
                 $old_qty = $supplier_purchase_line->quantity;
-                
+
                 $this->updateSupplierProductStock($before_status, $supplier_transaction, $data['product_id'], $new_quantity, $supplier_purchase_line->quantity, $currency_details);
             } else {
                 //create newly added supplier purchase lines
                 $supplier_purchase_line = new SupplierPurchaseLine();
-                
+
                 $supplier_purchase_line->product_id = $data['product_id'];
-                
+
                 //Increase quantity only if status is received
                 if ($supplier_transaction->status == 'received') {
                 $this->updateSupplierProductQuantity($supplier_transaction->location_id, $data['product_id'], $new_quantity_f, 0, $currency_details);
                 }
             }
-            
+
             $supplier_purchase_line->quantity = $new_quantity;
             $supplier_purchase_line->pp_without_discount = ($this->num_uf($data['pp_without_discount'], $currency_details) * $exchange_rate) / $multiplier;
             $supplier_purchase_line->discount_percent = $this->num_uf($data['discount_percent'], $currency_details);
@@ -1370,9 +1368,9 @@ class ProductUtil extends Util
             $supplier_purchase_line->exp_date = !empty($data['exp_date']) ? $this->uf_date($data['exp_date']) : null;
             $supplier_purchase_line->sub_unit_id = !empty($data['sub_unit_id']) ? $data['sub_unit_id'] : null;
             $supplier_purchase_line->purchase_order_line_id = !empty($data['purchase_order_line_id']) ? $data['purchase_order_line_id'] : null;
-            
+
             $updated_purchase_lines[] = $supplier_purchase_line;
-            
+
             //Edit product price
             if ($enable_product_editing == 1) {
                 if (isset($data['default_sell_price'])) {
@@ -1381,7 +1379,7 @@ class ProductUtil extends Util
                 $product_data['product_id'] = $supplier_purchase_line->product_id;
                 $product_data['purchase_price'] = $supplier_purchase_line->purchase_price;
                 $product_data['pp_without_discount'] = $supplier_purchase_line->pp_without_discount;
-                
+
                 $this->updateSupplierProductFromPurchase($product_data);
             }
             //Update purchase order line quantity received
@@ -1541,8 +1539,8 @@ class ProductUtil extends Util
      */
     public function changeSellLineUnit($business_id, $sell_line)
     {
-        $unit_details = $this->getSubUnits($business_id, $sell_line->unit_id, false, $sell_line->product_id);
 
+        $unit_details = $this->getSubUnits($business_id, $sell_line->sub_unit_id, false, $sell_line->product_id);
         $sub_unit = null;
         $sub_unit_id = $sell_line->sub_unit_id;
         foreach ($unit_details as $key => $value) {
@@ -1553,7 +1551,7 @@ class ProductUtil extends Util
 
         if (!empty($sub_unit)) {
             $multiplier = $sub_unit['multiplier'];
-            $sell_line->quantity_ordered = $sell_line->quantity_ordered / $multiplier;
+            $sell_line->quantity = $sell_line->quantity / $multiplier;
             $sell_line->item_tax = $sell_line->item_tax * $multiplier;
             $sell_line->default_sell_price = $sell_line->default_sell_price * $multiplier;
             $sell_line->unit_price_before_discount = $sell_line->unit_price_before_discount * $multiplier;
@@ -1562,7 +1560,6 @@ class ProductUtil extends Util
 
             $sell_line->unit_details = $unit_details;
         }
-
         return $sell_line;
     }
 
@@ -1665,7 +1662,7 @@ class ProductUtil extends Util
                 if ($purchase_line_qty_avlbl <= 0) {
                     continue;
                 }
-                
+
                 //update sell line purchase line mapping
                 $sell_line_purchase_lines = SupplierTransactionSellLinesPurchaseLines::where('purchase_line_id', $purchase_line->id)
                 ->join('supplier_transaction_sell_lines as stsl', 'stsl.id', '=', 'supplier_transaction_sell_lines_purchase_lines.sell_line_id')
@@ -1674,7 +1671,7 @@ class ProductUtil extends Util
                 ->where('stsl.product_id', $purchase_line->product_id)
                 ->select('supplier_transaction_sell_lines_purchase_lines.*')
                 ->get();
-                
+
                 foreach ($sell_line_purchase_lines as $slpl) {
                     if ($purchase_line_qty_avlbl > 0) {
                         if ($slpl->quantity <= $purchase_line_qty_avlbl) {
@@ -1689,11 +1686,11 @@ class ProductUtil extends Util
                             $slpl->purchase_line_id = $purchase_line->id;
                             $slpl->quantity = $purchase_line_qty_avlbl;
                             $slpl->save();
-                            
+
                             //update purchase line quantity sold
                             $purchase_line->quantity_sold += $slpl->quantity;
                             $purchase_line->save();
-                            
+
                             SupplierTransactionSellLinesPurchaseLines::create([
                                 'sell_line_id' => $slpl->sell_line_id,
                                 'purchase_line_id' => 0,
@@ -2021,8 +2018,8 @@ class ProductUtil extends Util
                 });
             }
         }
-        
-        
+
+
         $query->select(
             'supplier_products.id as product_id',
             'supplier_products.name',
@@ -2185,7 +2182,7 @@ class ProductUtil extends Util
         $product_name = $purchase_details->product . ' (' . $purchase_details->sku . ')';
 
         $output = [
-            'product' => $product_name, 
+            'product' => $product_name,
             'unit' => $purchase_details->unit,
             'total_purchase' => $purchase_details->total_purchase,
             'total_purchase_return' => $purchase_details->total_purchase_return,
@@ -2205,12 +2202,12 @@ class ProductUtil extends Util
                                 'sl.supplier_transaction_id', '=', 'supplier_transactions.id')
                                 ->leftjoin('supplier_purchase_lines as pl', 
                                     'pl.supplier_transactions_id', '=', 'supplier_transactions.id')
-                                ->leftjoin('supplier_stock_adjustment_lines as al', 
+                                ->leftjoin('supplier_stock_adjustment_lines as al',
                                     'al.supplier_transaction_id', '=', 'supplier_transactions.id')
                                 ->leftjoin('supplier_transactions as return', 'supplier_transactions.return_parent_id', '=', 'return.id')
                                 ->leftjoin('supplier_purchase_lines as rpl', 
                                     'rpl.supplier_transactions_id', '=', 'return.id')
-                                ->leftjoin('supplier_transaction_sell_lines as rsl', 
+                                ->leftjoin('supplier_transaction_sell_lines as rsl',
                                         'rsl.supplier_transaction_id', '=', 'return.id')
                                 ->where('supplier_transactions.location_id', $location_id)
                                 ->where( function($q) use ($product_id){
@@ -2317,7 +2314,7 @@ class ProductUtil extends Util
                 if ($stock_line->status != 'received') {
                     continue;
                 }
-                
+
                 $quantity_change = $stock_line->purchase_line_quantity;
                 $stock += $quantity_change;
                 $stock_history_array[] = [
@@ -2380,7 +2377,7 @@ class ProductUtil extends Util
                     'ref_no' => $stock_line->invoice_no,
                     'transaction_id' => $stock_line->transaction_id
                 ];
-            } 
+            }
         }
         return array_reverse($stock_history_array);
     }

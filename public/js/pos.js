@@ -273,7 +273,7 @@ $(document).ready(function () {
                     // business_name +
                     // ')' +
                     // '<br> Type: ' +
-                    // item.type 
+                    // item.type
                     +'</li>';
                 return $(string).appendTo(ul);
             } else {
@@ -2550,24 +2550,31 @@ $(document).on('change', '.product_row .product_pos_unit_price', function (e) {
 $(window).on("load", function () {
     let priceTotal = 0;
     let priceTotals = 0;
+
     $('.product_row').each(function () {
         var product_id = $(this).attr('data-productId');
-        let posLineTotal = parseFloat($(this).find('.pos_line_total_'+product_id).val());
-        let posLineTotals = parseFloat($(this).find('.pos_line_totals').val().replace('$', ''));
-        let productVariationValue = parseFloat($(this).find('.product_variation_value').val());
-        let sum = posLineTotal + productVariationValue;
-        let sums = posLineTotals;
-        $(this).find('.pos_line_total_'+product_id).val(sum);
-        $(this).find('.pos_line_total_text_'+product_id).html(sum);
+        var type = $('#product_type_'+product_id).val();
+        let posLineTotal = $(this).find('.pos_line_total_'+product_id).val();
 
-        $(this).find('.pos_line_totals_'+product_id).val(sums);
-        $(this).find('.pos_line_total_texts_'+product_id).html(sums);
-
-        priceTotal += sum
-        priceTotals += sums
+        if(type == 'single'){
+            priceTotal += posLineTotal.replace('$', '');
+            priceTotals += posLineTotal.replace('$', '');
+        }else{
+            let posLineTotals = parseFloat($(this).find('.pos_line_totals').val().replace('$', ''));
+            let productVariationValue = parseFloat($(this).find('.product_variation_value').val());
+            let sum = posLineTotal + productVariationValue;
+            let sums = posLineTotals;
+            /*$(this).find('.pos_line_total_'+product_id).val(sum);
+            $(this).find('.pos_line_total_text_'+product_id).html(sum);
+            $(this).find('.pos_line_totals_'+product_id).val(sums);
+            $(this).find('.pos_line_total_texts_'+product_id).html(sums);*/
+            priceTotal += sum
+            priceTotals += sums
+        }
     });
-    $('.price_total').html('$' + priceTotal);/*
-    $('.price_totals').html('$' + priceTotals);*/
+    $('.price_total').html('');
+    $('.price_total').html('$' + priceTotal);
+    /*  $('.price_totals').html('$' + priceTotals);*/
     $('#total').val(priceTotal);
     var quantity = $('.pos_quantity').val();
     var total_value = (priceTotals * parseInt(quantity));

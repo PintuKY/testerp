@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\ApiSetting;
 use App\Models\BusinessLocation;
+use App\Utils\AppConstant;
 use Illuminate\Console\Command;
 use App\Models\Category;
 use App\Models\Contact;
@@ -287,7 +288,7 @@ class SyncOrder extends Command
                 'business_id' => 1,
                 'location_id' => $bussiness_location_id,
                 'status' => getOrderStatusNumber($order->status),
-                'type' => 'sell',
+                'type' => AppConstant::SELL,
                 'payment_status' => $this->getPaymentStatus($order),
                 'contact_id' => $customerId,
                 'billing_address_line_1' => optional($order->billing)->address_1,
@@ -459,7 +460,7 @@ class SyncOrder extends Command
             $newCustomer = Contact::create(
                 [
                     'business_id' => 1,
-                    'business_location_id' => $bussiness_location_id,
+                    'location_id' => $bussiness_location_id,
                     'type' => $customer->role,
                     'name' => $customer->first_name . ' ' . $customer->last_name,
                     'first_name' => $customer->first_name,

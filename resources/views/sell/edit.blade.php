@@ -372,83 +372,77 @@ $multiplier = 1;
                                                 $allow_decimal = false;
                                             }
                                         @endphp
-                                        @foreach($sell_line->transactionSellLinesVariants as $varients)
+                                        @php
+                                            $pos_unit_price = !empty($sell_line->unit_price_before_discount) ? $sell_line->unit_price_before_discount : $sell_line->default_sell_price;
 
-                                            @if($sell_line->product_id == $productId)
+                                        if(!empty($so_line)) {
+                                            $pos_unit_price = $so_line->unit_price_before_discount;
+                                        }
 
-                                                @php
-                                                    $pos_unit_price = !empty($sell_line->unit_price_before_discount) ? $sell_line->unit_price_before_discount : $sell_line->default_sell_price;
-
-                                                if(!empty($so_line)) {
-                                                    $pos_unit_price = $so_line->unit_price_before_discount;
+                                        @endphp
+                                        @if( session()->get('business.enable_lot_number') == 1 || session()->get('business.enable_product_expiry') == 1)
+                                            @php
+                                                $lot_enabled = session()->get('business.enable_lot_number');
+                                                $exp_enabled = session()->get('business.enable_product_expiry');
+                                                $lot_no_line_id = '';
+                                                if(!empty($sell_line->lot_no_line_id)){
+                                                    $lot_no_line_id = $sell_line->lot_no_line_id;
                                                 }
 
-                                                @endphp
-                                                @if( session()->get('business.enable_lot_number') == 1 || session()->get('business.enable_product_expiry') == 1)
+                                            @endphp
+                                            @if(!empty($sell_line->lot_numbers) && empty($is_sales_order))
+                                                @foreach($sell_line->lot_numbers as $lot_number)
                                                     @php
-                                                        $lot_enabled = session()->get('business.enable_lot_number');
-                                                        $exp_enabled = session()->get('business.enable_product_expiry');
-                                                        $lot_no_line_id = '';
-                                                        if(!empty($sell_line->lot_no_line_id)){
-                                                            $lot_no_line_id = $sell_line->lot_no_line_id;
+                                                        $selected = "";
+                                                        if($lot_number->purchase_line_id == $lot_no_line_id){
+                                                            $selected = "selected";
+
+                                                            $max_qty_rule = $lot_number->qty_available;
+                                                            $max_qty_msg = __('lang_v1.quantity_error_msg_in_lot', ['qty'=> $lot_number->qty_formated, 'unit' => $product->unit  ]);
                                                         }
 
+                                                        $expiry_text = '';
+                                                        if($exp_enabled == 1 && !empty($lot_number->exp_date)){
+                                                            if( \Carbon\Carbon::now()->gt(\Carbon\Carbon::createFromFormat('Y-m-d', $lot_number->exp_date)) ){
+                                                                $expiry_text = '(' . __('report.expired') . ')';
+                                                            }
+                                                        }
+
+                                                        //preselected lot number if product searched by lot number
+                                                        if(!empty($purchase_line_id) && $purchase_line_id == $lot_number->purchase_line_id) {
+                                                            $selected = "selected";
+
+                                                            $max_qty_rule = $lot_number->qty_available;
+                                                            $max_qty_msg = __('lang_v1.quantity_error_msg_in_lot', ['qty'=> $lot_number->qty_formated, 'unit' => $product->unit  ]);
+                                                        }
                                                     @endphp
-                                                    @if(!empty($sell_line->lot_numbers) && empty($is_sales_order))
-                                                        @foreach($sell_line->lot_numbers as $lot_number)
-                                                            @php
-                                                                $selected = "";
-                                                                if($lot_number->purchase_line_id == $lot_no_line_id){
-                                                                    $selected = "selected";
-
-                                                                    $max_qty_rule = $lot_number->qty_available;
-                                                                    $max_qty_msg = __('lang_v1.quantity_error_msg_in_lot', ['qty'=> $lot_number->qty_formated, 'unit' => $product->unit  ]);
-                                                                }
-
-                                                                $expiry_text = '';
-                                                                if($exp_enabled == 1 && !empty($lot_number->exp_date)){
-                                                                    if( \Carbon\Carbon::now()->gt(\Carbon\Carbon::createFromFormat('Y-m-d', $lot_number->exp_date)) ){
-                                                                        $expiry_text = '(' . __('report.expired') . ')';
-                                                                    }
-                                                                }
-
-                                                                //preselected lot number if product searched by lot number
-                                                                if(!empty($purchase_line_id) && $purchase_line_id == $lot_number->purchase_line_id) {
-                                                                    $selected = "selected";
-
-                                                                    $max_qty_rule = $lot_number->qty_available;
-                                                                    $max_qty_msg = __('lang_v1.quantity_error_msg_in_lot', ['qty'=> $lot_number->qty_formated, 'unit' => $product->unit  ]);
-                                                                }
-                                                            @endphp
-                                                        @endforeach
-                                                    @endif
-                                                @endif
-                                                @php
-                                                    $subtotal_type = !empty($pos_settings['is_pos_subtotal_editable']) ? 'text' : 'hidden';
-
-                                                @endphp
-
-                                                @if($sell_line->product_type == 'single')
-
-                                                    <tr class="product_row" data-row_index="{{ $loop->index}}"
-                                                        data-productId="{{$productId}}">
-                                                        <input type="{{$subtotal_type}}"
-                                                               class="form-control pos_line_totals pos_line_total_{{$productId}} @if(!empty($pos_settings['is_pos_subtotal_editable'])) input_number @endif"
-                                                               value="{{'$'.@num_format((float)$sell_line->default_sell_price)}}">
-                                                        <input type="hidden" name="product_type"
-                                                               id="product_type_{{$productId}}" value="single">
-                                                        <td>{{$product_names[$key]}}</td>
-                                                        <td>Single</td>
-                                                        <td>{{$sell_line->default_sell_price}}</td>
-
-
-                                                    </tr>
-                                                @else
-                                                    @include('sell.product_row_edit', ['product' => $sell_line, 'row_count' => $loop->index, 'tax_dropdown' => $taxes, 'sub_units' => !empty($sell_line->unit_details) ? $sell_line->unit_details : [], 'action' => 'edit', 'is_direct_sell' => true, 'so_line' => $sell_line->so_line,'varients'=>$varients, 'is_sales_order' => $transaction->type == 'sales_order','pid'=>$productId])
-                                                @endif
-
+                                                @endforeach
                                             @endif
+                                        @endif
+                                        @php
+                                            $subtotal_type = !empty($pos_settings['is_pos_subtotal_editable']) ? 'text' : 'hidden';
 
+                                        @endphp
+                                        @if($sell_line->product->type == 'single')
+
+                                            <tr class="product_row" data-row_index="{{ $loop->index}}"
+                                                data-productId="{{$productId}}">
+                                                <input type="{{$subtotal_type}}"
+                                                       class="form-control pos_line_totals pos_line_total_{{$productId}} @if(!empty($pos_settings['is_pos_subtotal_editable'])) input_number @endif"
+                                                       value="{{'$'.@num_format((float)$sell_line->default_sell_price)}}">
+                                                <input type="hidden" name="product_type"
+                                                       id="product_type_{{$productId}}" value="single">
+                                                <td>{{$product_names[$key]}}</td>
+                                                <td>Single</td>
+                                                <td>{{$sell_line->unit_price}}</td>
+
+
+                                            </tr>
+                                        @endif
+                                        @foreach($sell_line->transactionSellLinesVariants as $varients)
+                                            @if($sell_line->product_id == $productId)
+                                                @include('sell.product_row_edit', ['product' => $sell_line, 'row_count' => $loop->index, 'tax_dropdown' => $taxes, 'sub_units' => !empty($sell_line->unit_details) ? $sell_line->unit_details : [], 'action' => 'edit', 'is_direct_sell' => true, 'so_line' => $sell_line->so_line,'varients'=>$varients, 'is_sales_order' => $transaction->type == 'sales_order','pid'=>$productId])
+                                            @endif
                                         @endforeach
                                     @endforeach
                                     </tbody>

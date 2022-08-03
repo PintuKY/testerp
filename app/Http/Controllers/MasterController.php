@@ -51,7 +51,7 @@ class MasterController extends Controller
         $masterListCols = config('masterlist.' . $role . '_columns');
         $masterListStatus = config('masterlist.' . $role . '_status');
         $business_id = request()->session()->get('user.business_id');
-        $sells = MasterList::whereIn('status',[AppConstant::FINAL,AppConstant::COMPLETED,AppConstant::PROCESSING])->whereHas('transasction', function ($query) use ($masterListStatus) {
+        $sells = MasterList::whereIn('status', [AppConstant::FINAL, AppConstant::COMPLETED, AppConstant::PROCESSING])->whereHas('transasction', function ($query) use ($masterListStatus) {
             $query->whereIn('status', $masterListStatus);
         })->with(['transaction_sell_lines', 'transaction_sell_lines.transactionSellLinesVariants']
         );
@@ -71,7 +71,7 @@ class MasterController extends Controller
             $type = request()->type;
             if ($type == AppConstant::BOTH) {
                 $sells->whereIn('master_list.time_slot', [AppConstant::LUNCH, AppConstant::DINNER]);
-            }  else {
+            } else {
                 $sells->where('master_list.time_slot', '=', $type);
             }
         }
@@ -133,15 +133,17 @@ class MasterController extends Controller
                             }
                         }
                     }
-
-                    if (str_contains($value->pax, 'Add on:')) {
-                        //$addon = preg_replace('/[^0-9]/', '', $value->name);
-                        $addon_pax = ($value->addon != 'None') ? '+' . $value->addon : '';
-                        $arr = explode("+", $addon_pax, 2);
-                        $first = $arr[0];
-                        $addon_name[] = str_replace("Add on:", "", $value->pax) . '' . $first;
-                        //$addonTotal += (int)$addon;
+                    if ($value->value != '0.0000' && $value->value != '' && $value->value != 'none') {
+                        if (str_contains($value->pax, 'Add on:')) {
+                            //$addon = preg_replace('/[^0-9]/', '', $value->name);
+                            $addon_pax = ($value->addon != 'None') ? '+' . $value->addon : '';
+                            $arr = explode("+", $addon_pax, 2);
+                            $first = $arr[0];
+                            $addon_name[] = str_replace("Add on:", "", $value->pax) . '' . $first;
+                            //$addonTotal += (int)$addon;
+                        }
                     }
+
                 }
             }
         }
@@ -152,15 +154,16 @@ class MasterController extends Controller
             foreach ($sell as $row) {
                 if (isset($row->transaction_sell_lines->transactionSellLinesVariants)) {
                     foreach ($row->transaction_sell_lines->transactionSellLinesVariants as $value) {
-                        if (str_contains($value->pax, $name)) {
-                            $addon = preg_replace('/[^0-9]/', '', $value->name);
-                            $addon_pax = ($value->addon != 'None') ? '+' . $value->addon : '';
-                            $arr = explode("+", $addon_pax, 2);
-                            $first = $arr[0];
-                            $addonTotal += (int)$addon;
+                        if ($value->value != '0.0000' && $value->value != '' && $value->value != 'none') {
+                            if (str_contains($value->pax, $name)) {
+                                $addon = preg_replace('/[^0-9]/', '', $value->name);
+                                $addon_pax = ($value->addon != 'None') ? '+' . $value->addon : '';
+                                $arr = explode("+", $addon_pax, 2);
+                                $first = $arr[0];
+                                $addonTotal += (int)$addon;
+                            }
                         }
                     }
-
                 }
             }
             $addon_namess[$name][] = $addonTotal;
@@ -173,7 +176,7 @@ class MasterController extends Controller
         $lunch = $sell->where('time_slot', AppConstant::LUNCH)->count();
         $dinner = $sell->where('time_slot', AppConstant::DINNER)->count();
         if (request()->ajax()) {
-            $sells = MasterList::whereIn('status',[AppConstant::FINAL,AppConstant::COMPLETED,AppConstant::PROCESSING])->whereHas('transasction', function ($query) use ($masterListStatus) {
+            $sells = MasterList::whereIn('status', [AppConstant::FINAL, AppConstant::COMPLETED, AppConstant::PROCESSING])->whereHas('transasction', function ($query) use ($masterListStatus) {
                 $query->whereIn('status', $masterListStatus);
             })->with(['transaction_sell_lines', 'transaction_sell_lines.transactionSellLinesVariants']
             );
@@ -269,9 +272,11 @@ class MasterController extends Controller
                     $addon = [];
                     if (isset($row->transaction_sell_lines->transactionSellLinesVariants)) {
                         foreach ($row->transaction_sell_lines->transactionSellLinesVariants as $value) {
-                            if (str_contains($value->pax, 'Add on:')) {
-                                $addon_pax = ($value->addon != 'None') ? '+' . $value->addon : '';
-                                $addon[] = str_replace("Add on:", "", $value->pax) . '' . $addon_pax;
+                            if ($value->value != '0.0000' && $value->value != '' && $value->value != 'none') {
+                                if (str_contains($value->pax, 'Add on:')) {
+                                    $addon_pax = ($value->addon != 'None') ? '+' . $value->addon : '';
+                                    $addon[] = str_replace("Add on:", "", $value->pax) . '' . $addon_pax;
+                                }
                             }
                         }
                     }
@@ -323,7 +328,7 @@ class MasterController extends Controller
         $masterListCols = config('masterlist.' . $role . '_columns');
         $masterListStatus = config('masterlist.' . $role . '_status');
         $business_id = request()->session()->get('user.business_id');
-        $sells = MasterList::whereIn('status',[AppConstant::FINAL,AppConstant::COMPLETED,AppConstant::PROCESSING])->whereHas('transasction', function ($query) use ($masterListStatus) {
+        $sells = MasterList::whereIn('status', [AppConstant::FINAL, AppConstant::COMPLETED, AppConstant::PROCESSING])->whereHas('transasction', function ($query) use ($masterListStatus) {
             $query->whereIn('status', $masterListStatus);
         })->with(['transaction_sell_lines', 'transaction_sell_lines.transactionSellLinesVariants']
         );
@@ -343,7 +348,7 @@ class MasterController extends Controller
             $type = request()->type;
             if ($type == AppConstant::BOTH) {
                 $sells->whereIn('master_list.time_slot', [AppConstant::LUNCH, AppConstant::DINNER]);
-            }  else {
+            } else {
                 $sells->where('master_list.time_slot', '=', $type);
             }
         }
@@ -421,14 +426,16 @@ class MasterController extends Controller
                             }
                         }
                     }
+                    if ($value->value != '0.0000' && $value->value != '' && $value->value != 'none') {
 
-                    if (str_contains($value->pax, 'Add on:')) {
+                        if (str_contains($value->pax, 'Add on:')) {
                         //$addon = preg_replace('/[^0-9]/', '', $value->name);
                         $addon_pax = ($value->addon != 'None') ? '+' . $value->addon : '';
                         $arr = explode("+", $addon_pax, 2);
                         $first = $arr[0];
                         $addon_name[] = str_replace("Add on:", "", $value->pax) . '' . $first;
                         //$addonTotal += (int)$addon;
+                    }
                     }
                 }
             }
@@ -440,12 +447,15 @@ class MasterController extends Controller
             foreach ($sell as $row) {
                 if (isset($row->transaction_sell_lines->transactionSellLinesVariants)) {
                     foreach ($row->transaction_sell_lines->transactionSellLinesVariants as $value) {
-                        if (str_contains($value->pax, $name)) {
+                        if ($value->value != '0.0000' && $value->value != '' && $value->value != 'none') {
+
+                            if (str_contains($value->pax, $name)) {
                             $addon = preg_replace('/[^0-9]/', '', $value->name);
                             $addon_pax = ($value->addon != 'None') ? '+' . $value->addon : '';
                             $arr = explode("+", $addon_pax, 2);
                             $first = $arr[0];
                             $addonTotal += (int)$addon;
+                        }
                         }
                     }
 
@@ -476,7 +486,7 @@ class MasterController extends Controller
         $masterListCols = config('masterlist.' . $role . '_columns');
         $masterListStatus = config('masterlist.' . $role . '_status');
         $business_id = request()->session()->get('user.business_id');
-        $sells = MasterList::whereIn('status',[AppConstant::FINAL,AppConstant::COMPLETED,AppConstant::PROCESSING])->whereHas('transasction', function ($query) use ($masterListStatus) {
+        $sells = MasterList::whereIn('status', [AppConstant::FINAL, AppConstant::COMPLETED, AppConstant::PROCESSING])->whereHas('transasction', function ($query) use ($masterListStatus) {
             $query->whereIn('status', $masterListStatus);
         })->with(['transaction_sell_lines', 'transaction_sell_lines.transactionSellLinesVariants']
         );
@@ -506,7 +516,7 @@ class MasterController extends Controller
         $lunch = $sell->where('time_slot', AppConstant::LUNCH)->count();
         $dinner = $sell->where('time_slot', AppConstant::DINNER)->count();
         if (request()->ajax()) {
-            $sells = MasterList::whereIn('status',[AppConstant::FINAL,AppConstant::COMPLETED,AppConstant::PROCESSING])->where(['transaction_id' => $id, 'transaction_sell_lines_id' => $sell_id])->with(['transaction_sell_lines' => function ($query) {
+            $sells = MasterList::whereIn('status', [AppConstant::FINAL, AppConstant::COMPLETED, AppConstant::PROCESSING])->where(['transaction_id' => $id, 'transaction_sell_lines_id' => $sell_id])->with(['transaction_sell_lines' => function ($query) {
                 $query->with('transactionSellLinesVariants');
             }, 'transasction']);
 
@@ -563,9 +573,11 @@ class MasterController extends Controller
                     $addon = [];
                     if (isset($row->transaction_sell_lines->transactionSellLinesVariants)) {
                         foreach ($row->transaction_sell_lines->transactionSellLinesVariants as $value) {
-                            if (str_contains($value->pax, 'Add on:')) {
-                                $addon_pax = ($value->addon != 'None') ? '+' . $value->addon : '';
-                                $addon[] = str_replace("Add on:", "", $value->pax) . '' . $addon_pax;
+                            if ($value->value != '0.0000' && $value->value != '' && $value->value != 'none') {
+                                if (str_contains($value->pax, 'Add on:')) {
+                                    $addon_pax = ($value->addon != 'None') ? '+' . $value->addon : '';
+                                    $addon[] = str_replace("Add on:", "", $value->pax) . '' . $addon_pax;
+                                }
                             }
                         }
                     }
@@ -644,7 +656,7 @@ class MasterController extends Controller
             $total_compensate = MasterList::where(['transaction_id' => $request->transaction_id, 'is_compensate' => AppConstant::COMPENSATE_YES])->count();
             $compensates = $total_cansel_sell - $total_compensate;
             if ($compensates > 0) {
-                $compensate = MasterList::where(['transaction_id' => $request->transaction_id, 'is_compensate' => AppConstant::COMPENSATE_NO,'status' => AppConstant::CANCELLED])->whereNotNull('cancel_reason')->first();
+                $compensate = MasterList::where(['transaction_id' => $request->transaction_id, 'is_compensate' => AppConstant::COMPENSATE_NO, 'status' => AppConstant::CANCELLED])->whereNotNull('cancel_reason')->first();
                 $add_compensate = $compensate->replicate();
                 $add_compensate->time_slot = $request->time_slot;
                 $add_compensate->is_compensate = AppConstant::COMPENSATE_YES;
@@ -725,7 +737,7 @@ class MasterController extends Controller
         $transaction = Transaction::findOrFail($master_list->transaction_id);
         $sell_line = TransactionSellLine::findOrFail($master_list->transaction_sell_lines_id);
         $location_id = $transaction->location_id;
-        $sell_details = TransactionSellLine::with(['sub_unit','product','so_line','transactionSellLinesVariants'])->where('transaction_id',$transaction->id)->get();
+        $sell_details = TransactionSellLine::with(['sub_unit', 'product', 'so_line', 'transactionSellLinesVariants'])->where('transaction_id', $transaction->id)->get();
         $transaction_sell_lines_id = [];
         $transaction_sell_lines_days = '';
         $time_slot = '';

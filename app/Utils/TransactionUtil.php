@@ -406,7 +406,7 @@ class TransactionUtil extends Util
                 $uf_item_tax = $uf_data ? $this->num_uf($product_delivery_date['item_tax']) : $product_delivery_date['item_tax'];
                 $uf_unit_price_inc_tax = $uf_data ? $this->num_uf($product_delivery_date['unit_price_inc_tax']) : $product_delivery_date['unit_price_inc_tax'];
                 $line_discount_amount = 0;
-                $total_item_value = $product_delivery_date['total'];
+                $total_item_value = ($product_delivery_date['total']) ? $product_delivery_date['total'] : $product_delivery_date['unit_price'] * $product_delivery_date['quantity'];
                 if (!empty($product_delivery_date['line_discount_amount'])) {
                     $line_discount_amount = $uf_data ? $this->num_uf($product_delivery_date['line_discount_amount']) : $product_delivery_date['line_discount_amount'];
 
@@ -569,23 +569,32 @@ class TransactionUtil extends Util
                     'product_id' => $line_data->product_id];
             }
             $total = 0;
+            $product_ids = [];
             foreach ($variation_value_id as $key => $ids) {
                 foreach ($ids as $id) {
                     $variation_value_data = Variation::where('id', $id)->first();
-                    $variation_value_data_id[$total][] = $variation_value_data->variation_value_id;
-                    $variation_value[$total][] = $variation_value_data->default_sell_price;
+                    $variation_value_data_id[$key][$total][] = $variation_value_data->variation_value_id;
+                    $variation_value[$key][$total][] = $variation_value_data->default_sell_price;
+                    $product_ids[]=$key;
                 }
                 $total++;
             }
-            foreach ($variation_value_data_id as $keys => $datas) {
+            $productid = array_unique($product_ids);
+            $implode_product = implode(',',$productid);
 
+            $tra_sell_datas = TransactionSellLine::where('transaction_id',$transaction->id)->pluck('id','product_id')->toArray();
+
+            foreach ($variation_value_data_id as $keyd => $datad) {
+            foreach ($datad as $keys => $datas) {
                 foreach ($datas as $key => $data) {
                     $variation_value_datas = VariationValueTemplate::with('variationTemplate')->where('id', $data)->first();
-                    $variation_value_key = $this->num_uf($variation_value[$keys][$key]);
+
+                    $variation_value_key = $this->num_uf($variation_value[$keyd][$keys][$key]);
 
                     TransactionSellLinesVariants::insert(
                         [
-                            'transaction_sell_lines_id' => $sell_line_data_ids[$keys],
+                            'transaction_sell_lines_id' => $tra_sell_datas[$keyd],
+                            'product_id' => $keyd,
                             //'transaction_sell_lines_id' => $id,
                             'variation_templates_id' => $variation_value_datas->variation_template_id,
                             'variation_value_templates_id' => $variation_value_datas->id,
@@ -593,11 +602,12 @@ class TransactionUtil extends Util
                             'addon' => $variation_value_datas->name . '(+ $' . $variation_value_key . ')',
                             'name' => $variation_value_datas->name,
                             //'value' => $variation_value_datas->value,
-                            'value' => $variation_value[$keys][$key],
+                            'value' => $variation_value[$keyd][$keys][$key],
                             'created_at' => Carbon::now(),
                             'updated_at' => Carbon::now(),
                         ]
                     );
+                }
                 }
             }
 
@@ -2477,7 +2487,6 @@ class TransactionUtil extends Util
         $is_warranty_enabled = !empty($business_details->common_settings['enable_product_warranty']) ? true : false;
         $line = $lines[0];
         foreach ($line->transactionSellLinesVariants as $var_value) {
-            Log::info($var_value->value);
             $product = $line->product;
             $variation = $line->variations;
             $product_variation = $line->variations->product_variation;

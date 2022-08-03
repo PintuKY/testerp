@@ -328,7 +328,7 @@ $multiplier = 1;
                             }
                         @endphp
 
-                        <?php //dd($product_ids);?>
+                        <?php //dd($sell_details);?>
                         <div class="table-responsive">
                             @foreach($product_ids as $key=>$productId)
                                 <table
@@ -423,28 +423,35 @@ $multiplier = 1;
                                             $subtotal_type = !empty($pos_settings['is_pos_subtotal_editable']) ? 'text' : 'hidden';
 
                                         @endphp
-                                        @if($sell_line->product->type == 'single')
-<?php //dd($sell_line); ?>
-                                            <tr class="product_row" data-row_index="{{ $loop->index}}"
-                                                data-productId="{{$productId}}">
-                                                <input type="{{$subtotal_type}}"
-                                                       class="form-control pos_line_totals pos_line_total_{{$productId}} @if(!empty($pos_settings['is_pos_subtotal_editable'])) input_number @endif"
-                                                       value="{{'$'.@num_format($sell_line->unit_price_inc_tax)}}">
-                                                <input type="hidden" name="product_type"
-                                                       id="product_type_{{$productId}}" value="single">
-                                                <td>{{$product_names[$key]}}</td>
-                                                <td>Single</td>
-                                                <td>{{$sell_line->unit_price}}</td>
-
-
-                                            </tr>
-                                        @endif
-                                        @foreach($sell_line->transactionSellLinesVariants as $varients)
+                                        @if($sell_line->product->type === "single")
                                             @if($sell_line->product_id == $productId)
-                                                @include('sell.product_row_edit', ['product' => $sell_line, 'row_count' => $loop->index, 'tax_dropdown' => $taxes, 'sub_units' => !empty($sell_line->unit_details) ? $sell_line->unit_details : [], 'action' => 'edit', 'is_direct_sell' => true, 'so_line' => $sell_line->so_line,'varients'=>$varients, 'is_sales_order' => $transaction->type == 'sales_order','pid'=>$productId])
+                                                <tr class="product_row" data-row_index="{{ $loop->index}}"
+                                                    data-productId="{{$productId}}">
+                                                    <input type="{{$subtotal_type}}"
+                                                           class="form-control pos_line_totals pos_line_total_{{$productId}} @if(!empty($pos_settings['is_pos_subtotal_editable'])) input_number @endif"
+                                                           value="{{'$'.@num_format($sell_line->unit_price_inc_tax)}}">
+                                                    <input type="hidden" name="product_type"
+                                                           id="product_type_{{$productId}}" value="single">
+                                                    <td>{{$product_names[$key]}}</td>
+                                                    <td>Single</td>
+                                                    <td>{{$sell_line->total_item_value}}</td>
+                                                </tr>
                                             @endif
-                                        @endforeach
+                                       @endif
+
+
+                                        @if(!($sell_line->transactionSellLinesVariants->isEmpty()) && $sell_line->product->type === "variable")
+
+                                                @if($sell_line->product_id == $productId )
+                                                    @foreach($sell_line->transactionSellLinesVariants as $varients)
+                                                    @include('sell.product_row_edit', ['product' => $sell_line, 'row_count' => $loop->index, 'tax_dropdown' => $taxes, 'sub_units' => !empty($sell_line->unit_details) ? $sell_line->unit_details : [], 'action' => 'edit', 'is_direct_sell' => true, 'so_line' => $sell_line->so_line,'varients'=>$varients, 'is_sales_order' => $transaction->type == 'sales_order','pid'=>$productId])
+
+                                            @endforeach
+                                                @endif
+                                        @endif
+
                                     @endforeach
+
                                     </tbody>
                                 </table>
                                 <input type="hidden" class="total_item_price" id="total_{{$productId}}"
@@ -597,7 +604,7 @@ $multiplier = 1;
                                                             <input type="text"
                                                                    name="product[{{$productId}}][unit_price]"
                                                                    class="form-control product_pos_unit_price  product_pos_unit_prices_{{$productId}} input_number mousetrap"
-                                                                   value="{{($edit_product[$productId]['total_item_value']) ? @num_format($edit_product[$productId]['total_item_value']) : @num_format($edit_product[$productId]['default_sell_price'])}}"
+                                                                   value="{{@num_format($edit_product[$productId]['total_item_value'])}}"
                                                                    @if(!empty($pos_settings['enable_msp'])) data-rule-min-value="{{@num_format($edit_product[$productId]['total_item_value'])}}"
                                                                    data-msg-min-value="{{__('lang_v1.minimum_selling_price_error_msg', ['price' => @num_format($edit_product[$productId]['total_item_value'])])}}" @endif>
                                                         </div>
@@ -635,6 +642,7 @@ $multiplier = 1;
 
                                 </div>
                             @endforeach
+
                         </div>
 
 

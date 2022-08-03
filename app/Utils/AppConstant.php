@@ -39,6 +39,8 @@ class AppConstant
     const REFUND = '6';
     const FAILED = '7';
     const SELL = 'sell';
+    const VARIABLE = 'variable';
+    const SINGLE = 'single';
     const STATUS_DELIVERED = '8';
 
 }

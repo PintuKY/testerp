@@ -1691,7 +1691,6 @@ class SellController extends Controller
             }
         }
         $product_ids = array_unique($product_id);
-
         $product_count = count($product_ids);
         $product_names = array_unique($product_name);
         $commsn_agnt_setting = $business_details->sales_cmsn_agnt;
@@ -2510,9 +2509,9 @@ class SellController extends Controller
             }
             $default_datetime = $this->businessUtil->format_date('now', true);
             $default_time = $this->businessUtil->format_times(Carbon::parse(now())->format('H:i'));
-
+            $product = Product::findOrFail($product_id);
             $output['html_content'] = view('sell.product_row')
-                ->with(compact('product_id', 'default_datetime', 'default_time', 'productDatas', 'row_count', 'tax_dropdown', /*'enabled_modules',*/ 'pos_settings', 'sub_units', 'discount', 'waiters', 'edit_discount', 'edit_price', 'purchase_line_id', 'quantity', 'is_direct_sell', 'so_line', 'is_sales_order'))
+                ->with(compact('product','product_id', 'default_datetime', 'default_time', 'productDatas', 'row_count', 'tax_dropdown', /*'enabled_modules',*/ 'pos_settings', 'sub_units', 'discount', 'waiters', 'edit_discount', 'edit_price', 'purchase_line_id', 'quantity', 'is_direct_sell', 'so_line', 'is_sales_order'))
                 ->render();
         }
         return $output;

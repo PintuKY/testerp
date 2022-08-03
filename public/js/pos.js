@@ -58,7 +58,6 @@ $(document).ready(function () {
             dataType: 'json',
             delay: 250,
             data: function (params) {
-                console.log(params);
                 return {
                     q: params.term, // search term
                     page: params.page,
@@ -198,7 +197,6 @@ $(document).ready(function () {
                                     .append(result.html_content);
                             }else{
                             }
-                            console.log(result);
                             /*if (result.success) {
                                 $('.ing')
                                     .append(result.html_content);
@@ -449,7 +447,7 @@ $(document).ready(function () {
 
         var unit_price_inc_tax = __read_number(tr.find('input.pos_unit_price_inc_tax'));
         var line_total = entered_qty * unit_price_inc_tax;
-
+alert('2');
         __write_number(tr.find('input.pos_line_total'), line_total, false, 2);
         tr.find('span.pos_line_total_text').text(__currency_trans_from_en(line_total, true));
         //Change modifier quantity
@@ -482,7 +480,7 @@ $(document).ready(function () {
 
         var unit_price_inc_tax = __add_percent(discounted_unit_price, tax_rate);
         var line_total = quantity * unit_price_inc_tax;
-
+        alert('3');
         __write_number(tr.find('input.pos_unit_price_inc_tax'), unit_price_inc_tax);
         __write_number(tr.find('input.pos_line_total'), line_total, false, 2);
         tr.find('span.pos_line_total_text').text(__currency_trans_from_en(line_total, true));
@@ -528,7 +526,7 @@ $(document).ready(function () {
         var line_total = quantity * unit_price_inc_tax;
         var discounted_unit_price = __get_principle(unit_price_inc_tax, tax_rate);
         var unit_price = get_unit_price_from_discounted_unit_price(tr, discounted_unit_price);
-
+        alert('4');
         __write_number(tr.find('input.pos_unit_price'), unit_price);
         __write_number(tr.find('input.pos_line_total'), line_total, false, 2);
         tr.find('span.pos_line_total_text').text(__currency_trans_from_en(line_total, true));
@@ -618,7 +616,7 @@ $(document).ready(function () {
 
             var unit_price_inc_tax = __add_percent(discounted_unit_price, tax_rate);
             var line_total = quantity * unit_price_inc_tax;
-
+            alert('5');
             __write_number(tr.find('input.pos_unit_price_inc_tax'), unit_price_inc_tax);
             __write_number(tr.find('input.pos_line_total'), line_total, false, 2);
             tr.find('span.pos_line_total_text').text(__currency_trans_from_en(line_total, true));
@@ -946,6 +944,7 @@ $(document).ready(function () {
             $('.pos_unit_price_inc_tax').each(function () {
                 if (!$(this).is(":visible") && $(this).data('rule-min-value')) {
                     var val = __read_number($(this));
+                    alert('6');
                     var error_msg_td = $(this).closest('tr').find('.pos_line_total_text').closest('td');
                     if (val > $(this).data('rule-min-value')) {
                         is_msp_valid = false;
@@ -1257,6 +1256,7 @@ $(document).ready(function () {
         $('.pos_unit_price_inc_tax').each(function () {
             if (!$(this).is(":visible") && $(this).data('rule-min-value')) {
                 var val = __read_number($(this));
+                alert('7');
                 var error_msg_td = $(this).closest('tr').find('.pos_line_total_text').closest('td');
                 if (val > $(this).data('rule-min-value')) {
                     is_msp_valid = false;
@@ -1525,7 +1525,6 @@ $(document).ready(function () {
                 $('button#weighing_scale_submit').trigger('click');
             },
             onScanError: function (oDebug) {
-                console.log(oDebug);
             },
             minLength: 2
             // onKeyDetect: function(iKeyCode){ // output all potentially relevant key events - great for debugging!
@@ -1792,8 +1791,6 @@ function pos_product_row(product_id = null, purchase_line_id = null, weighing_sc
                     $('.pos')
                         .append(result.html_content);
 
-
-
                     $('table#pos_table tbody')
                         .find('input.pos_quantity');
 
@@ -1804,7 +1801,6 @@ function pos_product_row(product_id = null, purchase_line_id = null, weighing_sc
                         .last();
 
                     pos_each_row(this_row);
-
                     //For initial discount if present
                     var line_total = __read_number(this_row.find('input.pos_line_total'));
                     this_row.find('span.pos_line_total_text').text(line_total);
@@ -1927,11 +1923,9 @@ function pos_each_row(row_obj) {
     }
     // always show first radio selected
     $('.product_row td').each(function() {
-        console.log($(this));
         $(this).find("input[type='radio']").first().prop('checked', true);
     });
     $('.product_row td').each(function() {
-        console.log($(this));
         $(this).find("input[type='radio']").first().prop('checked', true);
     });
 
@@ -1944,7 +1938,6 @@ function pos_each_row(row_obj) {
 function pos_total_row() {
     var total_quantity = 0;
     var price_total = get_subtotal();
-
     $('table#pos_table tbody tr').each(function () {
         total_quantity = total_quantity + __read_number($(this).find('input.pos_quantity'));
     });
@@ -1954,9 +1947,9 @@ function pos_total_row() {
         __currency_trans_from_en(__read_number($('input#shipping_charges_modal')), false)
     );
 
-    /*$('span.total_quantity').each(function () {
+    $('span.total_quantity').each(function () {
         $(this).html(__number_f($('.product_table').length));
-    });*/
+    });
 
     //$('span.unit_price_total').html(unit_price_total);
     $('span.price_total').html('$' + __currency_trans_from_en(price_total, false));
@@ -2438,13 +2431,11 @@ $(document).on('click', '.input-number .product-quantity-up, .input-number .prod
 });
 
 function productVariationsPriceCalculation($this,quantity,product_id) {
+    alert('1');
     let unitPrice = parseFloat($this.parents('.product_row_'+product_id).find('.product_pos_unit_price').val());
     let posQuantity = $this.parents('.product_row_'+product_id).find('.pos_quantity_'+product_id).val();
     let subTotal = posQuantity * unitPrice;
 
-  /*  console.log($this.parents('.product_row_'+product_id).find('.pos_quantity'));
-    console.log(posQuantity);
-    console.log(subTotal);*/
 
     let priceTotal = 0;
     let totalQuantity = 0;
@@ -2573,9 +2564,8 @@ $(window).on("load", function () {
         }
     });
     $('.price_total').html('');
-    $('.price_totals').html('');
     $('.price_total').html('$' + priceTotal);
-    $('.price_totals').html('$' + priceTotal);
+   /* $('.price_totals').html('$' + priceTotal);*/
     /*  $('.price_totals').html('$' + priceTotals);*/
     $('#total').val(priceTotal);
     var quantity = $('.pos_quantity').val();
@@ -2645,7 +2635,7 @@ $('table#pos_table tbody').on('change', 'input.pos_line_total', function () {
     if (pos_form_validator) {
         pos_form_validator.element(quantity_element);
     }
-
+    alert('9');
     tr.find('span.pos_line_total_text').text(__currency_trans_from_en(subtotal, true));
 
     pos_total_row();
@@ -3186,7 +3176,7 @@ $("#sales_order_ids").on("select2:select", function (e) {
                     pos_each_row(this_row);
 
                     product_row = parseInt(product_row) + 1;
-
+                    alert('12');
                     //For initial discount if present
                     var line_total = __read_number(this_row.find('input.pos_line_total'));
                     this_row.find('span.pos_line_total_text').text(line_total);

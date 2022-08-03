@@ -17,8 +17,9 @@
     }
 @endphp
 
-<table class="table table-condensed table-bordered table-striped table-responsive product_table pos_table_{{$product_id}}"
-       id="pos_table">
+<table
+    class="table table-condensed table-bordered table-striped table-responsive product_table pos_table_{{$product_id}}"
+    id="pos_table">
     <thead>
     <tr>
         <th class="text-center">
@@ -47,9 +48,11 @@
         @if(!empty($common_settings['enable_product_warranty']))
             <th>@lang('lang_v1.warranty')</th>
         @endif
-        <th class="text-center">
-            @lang('product.variation_name')
-        </th>
+        @if($product->type == \App\Utils\AppConstant::VARIABLE)
+            <th class="text-center">
+                @lang('product.variation_name')
+            </th>
+        @endif
         {{--<th class="text-center">
             @lang('product.variation_values')
         </th>--}}
@@ -73,7 +76,8 @@
 
         @endphp
 
-        <tr class="product_row product_row_{{$product_id}}" data-productId="{{$product_id}}" data-row_index="{{$row_count}}"
+        <tr class="product_row product_row_{{$product_id}}" data-productId="{{$product_id}}"
+            data-row_index="{{$row_count}}"
             @if(!empty($so_line)) data-so_id="{{($so_line != '')?$so_line->transaction_id:''}}" @endif>
 
             <td>
@@ -298,7 +302,8 @@
                 @endforeach
                 <div class="input-group input-number">
                 <span class="input-group-btn"><button type="button"
-                                                      class="btn btn-default btn-flat product-quantity-down" data-productId="{{$product_id}}"><i
+                                                      class="btn btn-default btn-flat product-quantity-down"
+                                                      data-productId="{{$product_id}}"><i
                             class="fa fa-minus text-danger"></i></button></span>
                     <input type="text" data-min="1"
                            class="form-control pos_quantity pos_quantity_{{$product_id}} input_number mousetrap input_quantity"
@@ -317,7 +322,8 @@
 
                     >
                     <span class="input-group-btn"><button type="button"
-                                                          class="btn btn-default btn-flat product-quantity-up" data-productId="{{$product_id}}"><i
+                                                          class="btn btn-default btn-flat product-quantity-up"
+                                                          data-productId="{{$product_id}}"><i
                                 class="fa fa-plus text-success"></i></button></span>
                 </div>
 
@@ -325,7 +331,8 @@
                        value="{{$productData->product->unit->id}}">
                 @if(count($sub_units) > 0)
                     <br>
-                    <select name="products[{{$productData->id}}][sub_unit_id]" class="hide form-control input-sm sub_unit">
+                    <select name="products[{{$productData->id}}][sub_unit_id]"
+                            class="hide form-control input-sm sub_unit">
                         @foreach($sub_units as $key => $value)
                             <option value="{{$key}}" data-multiplier="{{$value['multiplier']}}"
                                     data-unit_name="{{$value['name']}}" data-allow_decimal="{{$value['allow_decimal']}}"
@@ -365,7 +372,9 @@
                 @endphp
                 <td class="hide @if(!auth()->user()->can('edit_product_price_from_sale_screen')) hide @endif">
 
-                    <input type="hidden" name="product[{{$product_id}}][unit_prices]" class="form-control product_pos_unit_price" id="product_pos_unit_prices" value="{{@num_format($pos_unit_price)}}">
+                    <input type="hidden" name="product[{{$product_id}}][unit_prices]"
+                           class="form-control product_pos_unit_price" id="product_pos_unit_prices"
+                           value="{{@num_format($pos_unit_price)}}">
                     <input type="text" name="products[{{$productData->id}}][unit_price]"
                            class="form-control product_pos_unit_prices product_pos_unit_prices_{{$product_id}} input_number mousetrap"
                            value="{{@num_format($pos_unit_price)}}"
@@ -375,7 +384,9 @@
                 </td>
                 <td class="hide" @if(!$edit_discount) class="hide" @endif>
 
-                    <input type="text" name="products[{{$productData->id}}][line_discount_amount]" value="{{@num_format($discount_amount)}}" class="form-control input_number discount_amount" data-productId="{{$product_id}}">
+                    <input type="text" name="products[{{$productData->id}}][line_discount_amount]"
+                           value="{{@num_format($discount_amount)}}" class="form-control input_number discount_amount"
+                           data-productId="{{$product_id}}">
                     <br>
                     {!! Form::select("products[$productData->id][line_discount_type]", ['fixed' => __('lang_v1.fixed'), 'percentage' => __('lang_v1.percentage')], $discount_type , ['class' => 'form-control product_row_discount_type']); !!}
                     @if(!empty($discount))
@@ -453,46 +464,47 @@
                     <td class="text-center v-center">
                         <h5>{{$productData->product_variation->variation_template->name}}</h5>
                         <select class="form-control select_variation_value select2" required
-                                name="products[{{$productData->id}}][variation_value_id]" data-productId="{{$product_id}}">
+                                name="products[{{$productData->id}}][variation_value_id]"
+                                data-productId="{{$product_id}}">
                             {{--<option value="">Please Select</option>--}}
                             @foreach ($selected_variation as $key => $product_variation_name_data)
                                 <option value="{{$product_variation_name_data->id}}"
                                         data-price="{{number_format($product_variation_name_data->default_sell_price,2,'.')}}"
                                         data-products-variation-id="{{$productData->id}}">{{$product_variation_name_data->name}}
-                                    - ${{number_format($product_variation_name_data->default_sell_price,2,'.')}}</option>
+                                    -
+                                    ${{number_format($product_variation_name_data->default_sell_price,2,'.')}}</option>
                             @endforeach
                         </select>
                     </td>
                     {{--<td class="text-center v-center">
                         <input type="text" class="product_selectd_variation_value" value="" readonly required>
                     </td>--}}
-                    @endif
-
+                @endif
 
             @endif
 
 
-                @if(!empty($productData->product_variation) && $productData->product_variation != null)
-                    @if(!empty($productData->product_variation->variation_template) && $productData->product_variation->variation_template->type == 2)
-
+            @if(!empty($productData->product_variation) && $productData->product_variation != null)
+                @if(!empty($productData->product_variation->variation_template) && $productData->product_variation->variation_template->type == 2)
 
                     <td>
-                    <h5>{{$productData->product_variation->variation_template->name}}</h5>
-                    @foreach($selected_variation as $key => $product_variation_name_data)
-                        <label class="radio-inline">
-                            <input type="radio" class="radio_variation_value"
-                                   data-products-variation-id="{{$productData->id}}"
-                                   data-price="{{number_format($product_variation_name_data->default_sell_price,2,'.')}}" data-productId="{{$product_id}}"
-                                   name="products[{{$productData->id}}][variation_value_id]"
-                                   value="{{$product_variation_name_data->id}}">{{$product_variation_name_data->name}}
-                            - ${{number_format($product_variation_name_data->default_sell_price,2,'.')}}
-                        </label><br>
-                    @endforeach
-                </td>
-                {{--<td>
-                    <input type="text" class="product_radio_variation_value" value="" readonly required>
-                </td>--}}
-            @endif
+                        <h5>{{$productData->product_variation->variation_template->name}}</h5>
+                        @foreach($selected_variation as $key => $product_variation_name_data)
+                            <label class="radio-inline">
+                                <input type="radio" class="radio_variation_value"
+                                       data-products-variation-id="{{$productData->id}}"
+                                       data-price="{{number_format($product_variation_name_data->default_sell_price,2,'.')}}"
+                                       data-productId="{{$product_id}}"
+                                       name="products[{{$productData->id}}][variation_value_id]"
+                                       value="{{$product_variation_name_data->id}}">{{$product_variation_name_data->name}}
+                                - ${{number_format($product_variation_name_data->default_sell_price,2,'.')}}
+                            </label><br>
+                        @endforeach
+                    </td>
+                    {{--<td>
+                        <input type="text" class="product_radio_variation_value" value="" readonly required>
+                    </td>--}}
+                @endif
             @endif
             <td class="text-center">
                 @php
@@ -516,7 +528,8 @@
 
     </tbody>
 </table>
-<input type="hidden" class="total_item_price" id="total_{{$product_id}}" name="product[{{$product_id}}][total]" value="">
+<input type="hidden" class="total_item_price" id="total_{{$product_id}}" name="product[{{$product_id}}][total]"
+       value="">
 
 @if(!empty($productData->transaction_sell_lines_id))
     <input type="hidden" name="products[{{$productData->id}}][transaction_sell_lines_id]"
@@ -574,7 +587,8 @@
                         @endforeach
                     </div>
                 </div>
-                <div class="@if(!empty($commission_agent)) col-sm-4 @else col-sm-4 @endif start_dates_{{$product_id}} hide">
+                <div
+                    class="@if(!empty($commission_agent)) col-sm-4 @else col-sm-4 @endif start_dates_{{$product_id}} hide">
                     <div class="form-group">
                         {!! Form::label('start_date', __('sale.start_date') . ':*') !!}
                         <div class="input-group">
@@ -635,10 +649,12 @@
                         <label for="quantity">Quantity:*</label>
                         <div class="input-group input-number">
                 <span class="input-group-btn"><button type="button"
-                                                      class="btn btn-default btn-flat product-quantity-down" data-productId="{{$product_id}}"><i
+                                                      class="btn btn-default btn-flat product-quantity-down"
+                                                      data-productId="{{$product_id}}"><i
                             class="fa fa-minus text-danger"></i></button></span>
                             <input id="quantity" type="text" data-min="1"
-                                   class="form-control pos_quantity pos_quantity_{{$product_id}} input_number mousetrap input_quantity" data-productId="{{$product_id}}"
+                                   class="form-control pos_quantity pos_quantity_{{$product_id}} input_number mousetrap input_quantity"
+                                   data-productId="{{$product_id}}"
                                    value="{{@format_quantity($productData->quantity_ordered)}}"
                                    name="product[{{$product_id}}][quantity]"
                                    data-allow-overselling="@if(empty($pos_settings['allow_overselling'])){{'false'}}@else{{'true'}}@endif"
@@ -654,7 +670,8 @@
 
                             >
                             <span class="input-group-btn"><button type="button"
-                                                                  class="btn btn-default btn-flat product-quantity-up" data-productId="{{$product_id}}"><i
+                                                                  class="btn btn-default btn-flat product-quantity-up"
+                                                                  data-productId="{{$product_id}}"><i
                                         class="fa fa-plus text-success"></i></button></span>
                         </div>
 
@@ -663,7 +680,8 @@
                         @if(count($sub_units) > 0)
 
                             {{--<label for="sub_unit_id">Sub Unit Id:*</label>--}}
-                            <select name="product[{{$product_id}}][sub_unit_id]" class="hide form-control input-sm sub_unit">
+                            <select name="product[{{$product_id}}][sub_unit_id]"
+                                    class="hide form-control input-sm sub_unit">
                                 @foreach($sub_units as $key => $value)
                                     <option value="{{$key}}" data-multiplier="{{$value['multiplier']}}"
                                             data-unit_name="{{$value['name']}}"
@@ -673,8 +691,8 @@
                                     </option>
                                 @endforeach
                             </select>
-                        {{--@else
-                            {{$productData->product->unit->short_name}}--}}
+                            {{--@else
+                                {{$productData->product->unit->short_name}}--}}
                         @endif
 
                         <input type="hidden" class="base_unit_multiplier"
@@ -691,7 +709,9 @@
                         <label for="unit_price">Unit Price:*</label>
                         <div class="form-group">
 
-                            <input type="hidden" name="product[{{$product_id}}][unit_price]" class="product_pos_unit_price" id="product_pos_unit_prices" value="{{@num_format($pos_unit_price)}}">
+                            <input type="hidden" name="product[{{$product_id}}][unit_price]"
+                                   class="product_pos_unit_price" id="product_pos_unit_prices"
+                                   value="{{@num_format($pos_unit_price)}}">
                             <input type="text" name="products[{{$productData->id}}][unit_prices]"
                                    class="form-control product_pos_unit_prices product_pos_unit_prices_{{$product_id}} input_number mousetrap"
                                    value="{{@num_format($pos_unit_price)}}"
@@ -718,7 +738,7 @@
                 <span class="total_quantity_{{$product_id}} total_quantity">0</span>
                 &nbsp;&nbsp;&nbsp;&nbsp;
                 <b>@lang('sale.total'): </b>
-                <span class="price_total_{{$product_id}} total_prices">$0</span>
+                <span class="price_total price_total_{{$product_id}} total_prices">$0</span>
             </div>
         </td>
     </tr>

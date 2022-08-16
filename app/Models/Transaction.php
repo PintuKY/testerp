@@ -160,8 +160,8 @@ class Transaction extends Model
      */
     public function shipping_address($array = false)
     {
-        $addresses = !empty($this->order_addresses) ? json_decode($this->order_addresses, true) : [];
 
+        $addresses = !empty($this->order_addresses) ? json_decode($this->order_addresses, true) : [];
         $shipping_address = [];
 
         if (!empty($addresses['shipping_address'])) {

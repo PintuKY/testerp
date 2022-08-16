@@ -5,7 +5,7 @@ namespace App\Utils;
 use App\Models\Contact;
 use App\Utils\TransactionUtil;
 use App\Models\Transaction;
-use DB;
+use Illuminate\Support\Facades\DB;
 
 class ContactUtil extends Util
 {
@@ -53,7 +53,7 @@ class ContactUtil extends Util
         if (empty($customer_id)) {
             return $cg;
         }
-
+        return
         $contact = Contact::leftjoin('customer_groups as CG', 'contacts.customer_group_id', 'CG.id')
             ->where('contacts.id', $customer_id)
             ->where('contacts.business_id', $business_id)

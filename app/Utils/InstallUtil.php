@@ -8,8 +8,7 @@ use App\Models\VariationLocationDetails;
 use App\Models\Product;
 use App\Models\VariationTemplate;
 use App\Models\VariationValueTemplate;
-
-use DB;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\QueryException;
 
 class InstallUtil extends Util
@@ -26,8 +25,9 @@ class InstallUtil extends Util
     public function resetStockAdjustmentForAllBusiness()
     {
         try {
-            DB::beginTransaction();
 
+
+            DB::beginTransaction();
             //Get all business
             $businesses = Business::all();
 
@@ -64,7 +64,7 @@ class InstallUtil extends Util
             DB::commit();
         } catch (QueryException $e) {
             abort(404);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             DB::rollBack();
             die($e->getMessage());
         }
@@ -171,7 +171,7 @@ class InstallUtil extends Util
                 }
             }
             DB::commit();
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             DB::rollBack();
             die($e->getMessage());
         }

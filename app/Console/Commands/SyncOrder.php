@@ -18,10 +18,10 @@ use App\Models\TransactionSellLinesDay;
 use App\Models\TransactionSellLinesVariant;
 use App\Models\Variation;
 use Carbon\Carbon;
-
 use App\Utils\ContactUtil;
 use App\Utils\ProductUtil;
 use App\Utils\TransactionUtil;
+use Illuminate\Support\Facades\Log;
 use Exception;
 
 class SyncOrder extends Command
@@ -32,6 +32,7 @@ class SyncOrder extends Command
      * @var string
      */
     protected $signature = 'sync:order {business_location_id=all}';
+
 
     /**
      * The console command description.
@@ -55,12 +56,19 @@ class SyncOrder extends Command
         $this->contactUtil = $contactUtil;
         $this->transactionUtil = $transactionUtil;
         $this->productUtil = $productUtil;
+
         $business_location_id = $this->argument('business_location_id');
+        Log::info($business_location_id);
         if ($business_location_id !== 'all') {
+            Log::info("Requested for all order");
             $this->syncOrderDetails($business_location_id);
         } else {
+
+            Log::info("Requested for one by one order");
+
             $apiSettings = ApiSetting::get();
             foreach ($apiSettings as $apiSetting) {
+                Log::info("business id: ". $apiSetting->business_locations_id);
                 $this->syncOrderDetails($apiSetting->business_locations_id);
             }
         }
@@ -74,12 +82,15 @@ class SyncOrder extends Command
      */
     public function syncOrderDetails($bussiness_location_id)
     {
+        Log::info("Order sync started.......");
         $i = 1;
         while (true) {
+
             try {
 
                 $orderEndpoint = (config('api.is_order_first_time_sync') == true) ? config("api.order_endpoint") . '?page=' . $i . '&orderby=date&order=desc' : config("api.order_endpoint") . '?page=' . $i . '&orderby=date&order=desc&after=' . now()->subDays(config("api.api_setting_90_days_to_sync_order"));
 
+                Log::info("Order EndPoint".$orderEndpoint);
                 $orders = getData(getConfiguration($bussiness_location_id), $orderEndpoint);
 
                 if (count($orders) <= 0) {
@@ -87,14 +98,21 @@ class SyncOrder extends Command
                 }
                 $customerId = null;
                 $transection = null;
+
                 foreach ($orders as $order) {
+
                     if (Transaction::where('web_order_id', $order->id)->exists()) {
+                        
+                        Log::info("Order Already exists :". $order->id);
                         $transection = Transaction::where('web_order_id', $order->id)->first();
                         Transaction::where('web_order_id', $order->id)->update([
                             'status' => getOrderStatusNumber($order->status),
                         ]);
-                        $this->transactionUtil->activityLog(Transaction::where('web_order_id', $order->id)->first() , 'edited' , $transection);
+                        $this->transactionUtil->activityLog($transection , 'edited' );
+                    
                     } else {
+                    
+                        Log::info("Checking customer");
                         if (Contact::where('contact_id', $order->customer_id)->exists()) {
                             $customerId = Contact::where('contact_id', $order->customer_id)->value('id');
                         } else {
@@ -112,6 +130,7 @@ class SyncOrder extends Command
                         $product_id = null;
                         $isBothLunchOrDinner = false;
                         foreach ($lineItems as $lineItem) {
+
                             if (Product::where('product_id', $lineItem->product_id)->exists()) {
                                 $product_id = Product::where('product_id', $lineItem->product_id)->value('id');
                             } else {
@@ -228,13 +247,15 @@ class SyncOrder extends Command
                         }
                     }
 
+                    Log::info("Order Sync : ", [$i, $order->id]);
+                    echo "<br>".$order->id;
                     // }
                 }
             } catch (Exception $e) {
                 dd('Ex. - ', $e);
             }
             $i++;
-
+            echo "<br>Page : ".$i;
         }
         return 'Order completed';
     }
@@ -455,42 +476,46 @@ class SyncOrder extends Command
     public function createCustomer($customerId, $bussiness_location_id)
     {
         try {
+            
+            Log::info("Start customer fetch process ...". $customerId);
             $customerEndpoint = config("api.customer_endpoint") . '/' . $customerId;
             $customer = getData(getConfiguration($bussiness_location_id), $customerEndpoint);
-            $newCustomer = Contact::create(
-                [
-                    'business_id' => 1,
-                    'location_id' => $bussiness_location_id,
-                    'type' => $customer->role,
-                    'name' => $customer->first_name . ' ' . $customer->last_name,
-                    'first_name' => $customer->first_name,
-                    'last_name' => $customer->last_name,
-                    'email' => $customer->email,
-                    'contact_id' => $this->getContactId($bussiness_location_id).''.$customer->id,
-                    'city' => optional($customer->billing)->city,
-                    'state' => optional($customer->billing)->state,
-                    'country' => optional($customer->billing)->country,
-                    'address_line_1' => optional($customer->billing)->address_1,
-                    'address_line_2' => optional($customer->billing)->address_2,
-                    'zip_code' => optional($customer->billing)->postcode,
-                    'mobile' => optional($customer->billing)->phone,
-                    'created_by' => 1,
-                    'shipping_address' => null,
-                    'shipping_custom_field_details' => null,
-                    'billing_phone' => optional($customer->billing)->phone,
-                    'billing_email' => optional($customer->billing)->email,
-                    'shipping_address_1' => optional($customer->shipping)->address_1,
-                    'shipping_address_2' => optional($customer->shipping)->address_2,
-                    'shipping_city' => optional($customer->shipping)->city,
-                    'shipping_state' => optional($customer->shipping)->state,
-                    'shipping_zipcode' => optional($customer->shipping)->postcode,
-                    'customer_group_id' => 1
+            Log::info("Customer fetched");
+            
+            $newCustomer = Contact::create([
 
-                ]
-            );
+                'business_id' => 1,
+                'location_id' => $bussiness_location_id,
+                'type' => $customer->role,
+                'name' => $customer->first_name . ' ' . $customer->last_name,
+                'first_name' => $customer->first_name,
+                'last_name' => $customer->last_name,
+                'email' => $customer->email,
+                'contact_id' => $this->getContactId($bussiness_location_id).''.$customer->id,
+                'city' => optional($customer->billing)->city,
+                'state' => optional($customer->billing)->state,
+                'country' => optional($customer->billing)->country,
+                'address_line_1' => optional($customer->billing)->address_1,
+                'address_line_2' => optional($customer->billing)->address_2,
+                'zip_code' => optional($customer->billing)->postcode,
+                'mobile' => optional($customer->billing)->phone,
+                'created_by' => 1,
+                'shipping_address' => null,
+                'shipping_custom_field_details' => null,
+                'billing_phone' => optional($customer->billing)->phone,
+                'billing_email' => optional($customer->billing)->email,
+                'shipping_address_1' => optional($customer->shipping)->address_1,
+                'shipping_address_2' => optional($customer->shipping)->address_2,
+                'shipping_city' => optional($customer->shipping)->city,
+                'shipping_state' => optional($customer->shipping)->state,
+                'shipping_zipcode' => optional($customer->shipping)->postcode,
+                'customer_group_id' => 1
+            ]);
             $this->contactUtil->activityLog($newCustomer, 'added');
             return $newCustomer->id;
+
         } catch (Exception $e) {
+
             dd('Ex. - ', $e, 'customerEndpoint', $customerEndpoint);
         }
     }
@@ -506,10 +531,14 @@ class SyncOrder extends Command
     public function createProduct($productId, $bussiness_location_id)
     {
         try {
+            
+            Log::info("Start Getting product for : ".$productId);
             $productEndpoint = config("api.product_endpoint") . '/' . $productId;
             $product = getData(getConfiguration($bussiness_location_id), $productEndpoint);
             $category_id =  $this->getCategoryId($product->sku) ?? 1;
             $admin_id = 1;
+
+            Log::info("Product fetched..");
             if ($product->status === 'publish') {
                     $newProduct = Product::create(
                     [

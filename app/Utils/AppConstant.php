@@ -42,7 +42,6 @@ class AppConstant
     const VARIABLE = 'variable';
     const SINGLE = 'single';
     const STATUS_DELIVERED = '8';
-
 }
 
 

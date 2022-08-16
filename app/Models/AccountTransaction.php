@@ -74,7 +74,6 @@ class AccountTransaction extends Model
         ];
 
         $account_transaction = AccountTransaction::create($transaction_data);
-
         return $account_transaction;
     }
 
@@ -87,6 +86,7 @@ class AccountTransaction extends Model
      */
     public static function updateAccountTransaction($transaction_payment, $transaction_type)
     {
+
         if (!empty($transaction_payment->account_id)) {
             $account_transaction = AccountTransaction::where(
                 'transaction_payment_id',

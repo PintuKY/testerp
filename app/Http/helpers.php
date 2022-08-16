@@ -149,12 +149,11 @@ if (!function_exists('str_ordinal')) {
 // Variations types lists
 function variationTypes()
 {
-    $data = [
+    return [
         '1' => 'Select',
         '2' => 'Radio Button',
         '3' => 'input'
     ];
-    return $data;
 }
 
 // Transaction actity type
@@ -181,21 +180,24 @@ function reasonCancelOrder()
 
 function getReasonName($day)
 {
-    $dayName = '';
-    switch ($day) {
-        case ('1'):
-            $dayName = 'Food Not Cooked';
-            break;
-        case ('2'):
-            $dayName = 'Not Packaged';
-            break;
-        case ('3'):
-            $dayName = 'Wrong Delivery';
-            break;
-        default:
-            $dayName = 'NA';
-    }
-    return $dayName;
+
+    $dayName = reasonCancelOrder();
+    return isset($dayName[$day]) ? $dayName[$day] : "NA";
+    // $dayName = '';
+    // switch ($day) {
+    //     case ('1'):
+    //         $dayName = 'Food Not Cooked';
+    //         break;
+    //     case ('2'):
+    //         $dayName = 'Not Packaged';
+    //         break;
+    //     case ('3'):
+    //         $dayName = 'Wrong Delivery';
+    //         break;
+    //     default:
+    //         $dayName = 'NA';
+    // }
+    // return $dayName;
 }
 
 // MEal types lists

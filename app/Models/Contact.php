@@ -231,7 +231,6 @@ class Contact extends Authenticatable
             $types['customer'] = __('report.customer');
         }
 
-
         return $types;
     }
 
